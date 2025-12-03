@@ -1,0 +1,76 @@
+//file:noinspection SpellCheckingInspection
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.8' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+ext {
+    springCloudVersion = "2025.0.0"
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'store._0982'
+    version = '0.0.1-SNAPSHOT'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    // 모든 모듈의 공통 의존성
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter'
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+        implementation 'org.springframework.cloud:spring-cloud-starter-config'
+        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+        implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
+
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+        implementation 'org.apache.commons:commons-lang3'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+        }
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+}
+
+project(':config') {
+    dependencies {
+        configurations.configureEach {
+            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+        }
+    }
+}
+
+project(':discovery') {
+    dependencies {
+        configurations.configureEach {
+            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+        }
+    }
+}

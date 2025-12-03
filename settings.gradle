@@ -1,0 +1,12 @@
+rootProject.name = 'group-purchase'
+
+include 'config'
+include 'discovery'
+include 'gateway'
+include 'member'
+include 'notification'
+include 'order'
+include 'point'
+include 'product'
+include 'settlement'
+include 'elastic-search'
