@@ -63,6 +63,7 @@ project(':config') {
     dependencies {
         configurations.configureEach {
             exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-bootstrap'
             exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
         }
     }
@@ -71,6 +72,8 @@ project(':config') {
 project(':discovery') {
     dependencies {
         configurations.configureEach {
+            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-bootstrap'
             exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
         }
     }

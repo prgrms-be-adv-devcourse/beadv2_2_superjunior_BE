@@ -1,3 +1,40 @@
 spring:
   application:
     name: gateway
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-api
+              uri: lb://member
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - RewritePath=/api/users/(?<segment>.*), /${segment}
+
+            - id: order-api
+              uri: lb://order
+              predicates:
+                - Path=/api/orders/**
+              filters:
+                - RewritePath=/api/orders/(?<segment>.*), /${segment}
+
+            - id: cart-api
+              uri: lb://order
+              predicates:
+                - Path=/api/orders/**
+              filters:
+                - RewritePath=/api/orders/(?<segment>.*), /${segment}
+
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+server:
+  port: 8000

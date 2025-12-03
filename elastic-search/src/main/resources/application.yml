@@ -1,3 +1,9 @@
 spring:
   application:
     name: elastic-search
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+server:
+  port: 8082
