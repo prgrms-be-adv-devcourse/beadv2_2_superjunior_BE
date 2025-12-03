@@ -5,3 +5,16 @@
 **/.gradle
 **/build
 **/.DS_Store
+
+# Docker 관련
+docker/postgres/init/*.sql
+docker/postgres/init/*.log
+
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# 로그 파일
+*.log
+logs/
