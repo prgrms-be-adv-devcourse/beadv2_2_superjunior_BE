@@ -15,7 +15,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<String> SecurityExceptionHandler(SecurityException e) {
+    public ResponseEntity<String> handleSecurityException(SecurityException e) {
         e.printStackTrace();
         return new ResponseEntity<>(HttpStatus.FORBIDDEN, null, e.getMessage());
     }
