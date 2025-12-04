@@ -11,10 +11,11 @@ import store._0982.product.common.dto.ResponseDto;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final String ERROR_LOG_FORMAT = "[{}] {}";
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {
-        log.error("[{}] {}", e.getErrorCode(), e.getMessage(), e);
+        log.error(ERROR_LOG_FORMAT, e.getErrorCode(), e.getMessage(), e);
         HttpStatus httpStatus = e.getErrorCode().getHttpStatus();
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
@@ -23,14 +24,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SecurityException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseDto<String> handleSecurityException(SecurityException e) {
-        log.error("[{}] {}", HttpStatus.FORBIDDEN, e.getMessage(), e);
+        log.error(ERROR_LOG_FORMAT, HttpStatus.FORBIDDEN, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.FORBIDDEN, null, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<String> handleException(Exception e) {
-        log.error("[{}] {}", HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        log.error(ERROR_LOG_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
 }
