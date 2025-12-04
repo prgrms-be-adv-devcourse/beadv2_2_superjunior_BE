@@ -13,7 +13,8 @@ create table member_schema.member
     role          varchar(20)              default 'CUSTOMER'::character varying not null
         constraint role_check
             check ((role)::text = ANY
-                   (ARRAY [('PENDING'::character varying)::text, ('COMPLETED'::character varying)::text])),
+                   (ARRAY [('CUSTOMER'::character varying)::text, ('SELLER'::character varying)::text,
+                       ('ADMIN'::character varying)::text])),
     salt_key      varchar(32)                                                    not null,
     point_balance integer                  default 0                             not null,
     image_url     varchar(255),
