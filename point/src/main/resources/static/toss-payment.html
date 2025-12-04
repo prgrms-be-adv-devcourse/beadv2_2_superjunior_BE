@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Toss Payment Demo</title>
+    <script src="https://js.tosspayments.com/v1/payment"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+        #payment-method {
+            margin-top: 1rem;
+            border: 1px solid #e0e0e0;
+            padding: 1rem;
+        }
+        button {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #3182f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>Toss 결제 테스트</h1>
+<p>아래 버튼을 클릭하면 Toss Payment Widget이 실행됩니다.</p>
+
+<!--<label>-->
+<!--    상품 ID:-->
+<!--    <input type="text" id="product-id" placeholder="상품 UUID">-->
+<!--</label>-->
+<!--<br/>-->
+<!--<label>-->
+<!--    구매자 ID:-->
+<!--    <input type="text" id="member-id" placeholder="구매자 UUID">-->
+<!--</label>-->
+<br/>
+<button id="pay-button">주문 생성 후 결제하기</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        try {
+            if (typeof window.TossPayments !== 'function') {
+                throw new Error('TossPayments is not defined. 스크립트가 로드되었는지 확인하세요.');
+            }
+
+            const clientKey = 'test_ck_0RnYX2w532qpnn7EPAAN8NeyqApQ'; // 테스트 클라이언트 키
+            const tossPayments = window.TossPayments(clientKey);
+            const amount = 1000;
+            const orderId = crypto.randomUUID();
+
+            document.getElementById('pay-button').addEventListener('click', async function () {
+                //const orderId = await createOrder();
+                //if (!orderId) {
+                 //   return;
+               // }
+                tossPayments.requestPayment('간편결제', {
+                    company: '토스페이',
+                    orderId,
+                    amount,
+                    orderName: '테스트 상품',
+                    successUrl: 'http://localhost:8086/shop-service/payments/success.html',
+                    failUrl: 'http://localhost:8086/shop-service/payments/fail.html'
+                });
+            });
+
+            async function createOrder() {
+                const productId = document.getElementById('product-id').value;
+                const memberId = document.getElementById('member-id').value;
+                if (!productId || !memberId) {
+                    alert('상품 ID와 구매자 ID를 입력하세요.');
+                    return null;
+                }
+                const response = await fetch('/api/v1/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId, memberId })
+                });
+                if (!response.ok) {
+                    alert('주문 생성 실패');
+                    return null;
+                }
+                const data = await response.json();
+                return data.data.id;
+            }
+        } catch (error) {
+            console.error('Toss 위젯 초기화 실패:', error);
+            alert('Toss 위젯을 불러오지 못했습니다. 콘솔을 확인하세요.');
+        }
+    });
+</script>
+</body>
+</html>

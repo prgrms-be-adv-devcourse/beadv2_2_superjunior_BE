@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 실패</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; color: #b71c1c; }
+        code { background: #f4f4f4; padding: 0.2rem 0.4rem; }
+    </style>
+</head>
+<body>
+<h1>결제가 실패했습니다.</h1>
+<p>아래 오류 정보를 확인한 후 서버에 실패 내역을 전달합니다.</p>
+<pre id="payload"></pre>
+<pre id="result"></pre>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const info = {};
+    params.forEach((value, key) => info[key] = value);
+    const payload = {
+        orderId: info.orderId,
+        paymentKey: info.paymentKey,
+        code: info.code,
+        message: info.message,
+        amount: info.amount ? Number(info.amount) : null,
+        rawPayload: JSON.stringify(info)
+    };
+    document.getElementById('payload').textContent = JSON.stringify(payload, null, 2);
+
+    async function notifyFailure() {
+        try {
+            const response = await fetch('/api/v1/payments/fail', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            document.getElementById('result').textContent = '실패 내역 전송 실패: ' + error;
+        }
+    }
+
+    notifyFailure();
+</script>
+</body>
+</html>

@@ -93,7 +93,9 @@ alter table point_schema.payment_point_failure
 
 create table point_schema.member_point
 (
-    member_id       uuid                                   not null,
+    member_id       uuid                                   not null
+            constraint member_point_pk
+                primary key,
     point_balance           integer
 );
 

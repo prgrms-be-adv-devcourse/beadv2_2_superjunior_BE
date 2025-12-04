@@ -1,6 +1,7 @@
 package store._0982.point.point.application.dto;
 
 import store._0982.point.point.domain.PaymentPoint;
+import store._0982.point.point.domain.PaymentPointStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -16,7 +17,17 @@ public record PaymentPointInfo(
         OffsetDateTime createdAt,
         OffsetDateTime requestedAt
 ) {
-//    public static PaymentPointInfo from(PaymentPoint paymentPoint){
-//
-//    }
+    public static PaymentPointInfo from(PaymentPoint paymentPoint){
+        return new PaymentPointInfo(
+                paymentPoint.getId(),
+                paymentPoint.getMemberId(),
+                paymentPoint.getOrderId(),
+                paymentPoint.getPaymentMethod(),
+                paymentPoint.getPaymentKey(),
+                paymentPoint.getAmount(),
+                paymentPoint.getStatus(),
+                paymentPoint.getCreatedAt(),
+                paymentPoint.getRequestedAt()
+        );
+    }
 }

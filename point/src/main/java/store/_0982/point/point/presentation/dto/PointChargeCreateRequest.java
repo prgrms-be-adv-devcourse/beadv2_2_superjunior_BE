@@ -1,5 +1,7 @@
 package store._0982.point.point.presentation.dto;
 
+import store._0982.point.point.application.dto.PaymentPointCommand;
+
 import java.util.UUID;
 
 public record PointChargeCreateRequest(
@@ -8,4 +10,7 @@ public record PointChargeCreateRequest(
         int amount,
         String paymentMethod
 ) {
+    public PaymentPointCommand toCommand(){
+        return new PaymentPointCommand(orderId, paymentKey, amount, paymentMethod);
+    }
 }

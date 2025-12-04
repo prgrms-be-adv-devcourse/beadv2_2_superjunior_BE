@@ -1,4 +1,4 @@
-package store._0982.point.point.application.dto;
+package store._0982.point.point.domain;
 
 public enum PaymentPointStatus {
     REQUESTED,
