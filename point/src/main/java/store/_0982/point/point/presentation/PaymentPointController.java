@@ -1,9 +1,7 @@
 package store._0982.point.point.presentation;
 
 
-import jakarta.ws.rs.PATCH;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import store._0982.point.common.dto.ResponseDto;
@@ -11,13 +9,12 @@ import store._0982.point.point.application.PaymentPointService;
 import store._0982.point.point.application.dto.MemberPointInfo;
 import store._0982.point.point.application.dto.PaymentPointInfo;
 import store._0982.point.point.presentation.dto.PointChargeCreateRequest;
-import store._0982.point.point.presentation.dto.PointMinusRequest;
 
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping()
+@RequestMapping("/api/points")
 public class PaymentPointController {
 
     private final PaymentPointService paymentPointService;

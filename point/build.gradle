@@ -7,10 +7,6 @@ dependencies {
     //DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
-    //JWT
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-    runtimeOnly 'io.jsonwebtoken:jjwt-gson:0.12.3'
     //security
     //implementation 'org.springframework.boot:spring-boot-starter-security'
 }

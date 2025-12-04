@@ -10,12 +10,3 @@ toss:
 
 server:
   port: 8086
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs          # 접두사 없이 명시
-  swagger-ui:
-    path: /swagger-ui/index.html
-    urls:
-      - name: point
-        url: /v3/api-docs       # docs URL도 루트 기준으로 고정

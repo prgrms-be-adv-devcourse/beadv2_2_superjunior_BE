@@ -10,7 +10,7 @@ import java.util.UUID;
 public record TossPaymentResponse(
         String paymentKey,
         UUID orderId,
-        @JsonProperty("amount")
+        @JsonProperty("totlaAmount")
         int amount,
         String method,
         String status,
