@@ -90,3 +90,13 @@ comment on column point_schema.payment_point_failure.created_at is '생성 시�
 
 alter table point_schema.payment_point_failure
     owner to postgres;
+
+create table point_schema.member_point
+(
+    member_id       uuid                                   not null,
+    point_balance           integer
+);
+
+comment on table point_schema.payment_point_failure is '멤버 ID';
+
+comment on column point_schema.payment_point_failure.failure_id is '포인트 잔액';
