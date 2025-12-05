@@ -36,12 +36,12 @@ public class ProductController {
 
     @Operation(summary = "상품 삭제", description = "판매자가 자신이 등록한 상품을 삭제한다.")
     @DeleteMapping("/{productId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.OK)
     public ResponseDto<ProductRegisterInfo> deleteProduct(
             @PathVariable UUID productId,
             @RequestHeader("X-Member-Id") UUID memberId) {
         productService.deleteProduct(productId, memberId);
-        return new ResponseDto<>(HttpStatus.NO_CONTENT, null, "상품이 삭제되었습니다.");
+        return new ResponseDto<>(HttpStatus.OK, null, "상품이 삭제되었습니다.");
     }
 
     @ResponseStatus(HttpStatus.OK)
