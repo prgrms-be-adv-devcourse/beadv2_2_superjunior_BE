@@ -10,4 +10,5 @@ public interface MemberRepository {
 
     Optional<Member> findById(UUID memberId);
 
+    void deleteById(UUID memberId);
 }

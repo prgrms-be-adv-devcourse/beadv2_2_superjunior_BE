@@ -1,6 +1,7 @@
 package store._0982.gateway.filter;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -49,19 +50,16 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
 
             AuthMember authMember;
             try {
-                Claims claims = jwtProvider.parseToken(token);
-
-                Date expiration = claims.getExpiration();
-                if (expiration != null && expiration.before(new Date())) {  // 토큰이 있으나, 만료된 경우 돌려보냄.
-                    return unauthorized(exchange, "Token expired");
-                }
-
+                Claims claims = jwtProvider.parseToken(token); //여기서 예외 던짐.
+//                Date expiration = claims.getExpiration();
                 String memberId = claims.getSubject();
                 String email = claims.get("email", String.class);
                 String role = claims.get("role", String.class);
                 authMember = new AuthMember(memberId, email, role);
+            } catch (ExpiredJwtException e) {
+                return unauthorized(exchange, "토큰 만료");
             } catch (JwtException | IllegalArgumentException e) {
-                return unauthorized(exchange, "Invalid token");
+                return unauthorized(exchange, "비정상 토큰");
             }
 
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.common.dto.ResponseDto;
@@ -17,6 +18,7 @@ import store._0982.member.presentation.dto.MemberLoginRequest;
 public class AuthController {
     private final AuthService authService;
 
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
     public ResponseDto<?> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                 HttpServletResponse response) {
@@ -37,6 +39,7 @@ public class AuthController {
         return new ResponseDto<>(HttpStatus.OK, null, "로그인을 성공하였습니다.");
     }
 
+    @Operation(summary = "액세스 토큰 재발급", description = "refreshToken 쿠키를 이용해 새로운 accessToken 쿠키를 발급합니다.")
     @GetMapping("/refresh")
     public ResponseDto<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();

@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -52,13 +53,13 @@ public class Member {
     private String imageUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
     public static Member create(String email, String name, String password, String phoneNumber){
         Member member = new Member();
@@ -67,13 +68,20 @@ public class Member {
         member.name = name;
         member.password = password;
         member.phoneNumber = phoneNumber;
-        member.saltKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        member.createdAt = LocalDateTime.now();
+        member.saltKey = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        member.createdAt = OffsetDateTime.now();
         return member;
     }
 
     public void changePassword(String password) {
         this.password = password;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void update(String name, String phoneNumber) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.updatedAt = OffsetDateTime.now();
     }
 }
 

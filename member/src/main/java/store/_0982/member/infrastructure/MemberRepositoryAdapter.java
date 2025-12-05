@@ -27,4 +27,9 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Optional<Member> findById(UUID memberId) {
         return memberJpaRepository.findById(memberId);
     }
+
+    @Override
+    public void deleteById(UUID memberId) {
+        memberJpaRepository.deleteById(memberId);
+    }
 }
