@@ -1,9 +1,37 @@
 package store._0982.product.presentation;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+import store._0982.product.application.ProductService;
+import store._0982.product.application.dto.ProductDetailInfo;
+import store._0982.product.application.dto.ProductUpdateInfo;
+import store._0982.product.common.dto.ResponseDto;
+import store._0982.product.presentation.dto.ProductUpdateRequest;
 
+import java.util.UUID;
+
+@Tag(name="Product", description = "상품 정보 관련")
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
+    private final ProductService productService;
+
+    @Operation(summary = "상품 정보 조회", description = "선택한 상품의 정보를 조회한다.")
+    @GetMapping("/{productId}")
+    public ResponseDto<ProductDetailInfo> getProductInfo(
+            @PathVariable UUID productId
+    ){
+        return productService.getProductInfo(productId);
+    }
+
+    @Operation(summary = "상품 정보 수정", description = "판매자 정보를 수정한다.")
+    @PatchMapping("/{productId}")
+    public ResponseDto<ProductUpdateInfo> updateProduct(
+            @PathVariable UUID productId,
+            @RequestBody ProductUpdateRequest request){
+        return productService.updateProduct(productId, request.toCommand());
+    }
 }

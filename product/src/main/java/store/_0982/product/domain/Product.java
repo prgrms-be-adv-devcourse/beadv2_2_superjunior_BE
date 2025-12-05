@@ -65,4 +65,18 @@ public class Product {
         this.originalUrl = originalUrl;
         this.sellerId = sellerId;
     }
+
+    public void updateProduct(String name,
+                              int price,
+                              ProductCategory category,
+                              String description,
+                              int stock,
+                              String originalUrl){
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.description = description;
+        this.stock  = stock;
+        this.originalUrl = originalUrl;
+    }
 }
