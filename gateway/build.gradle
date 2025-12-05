@@ -1,6 +1,13 @@
 dependencies {
-    // 필요한 의존성 추가
+    // Gateway
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
+
+    // JWT (member 서비스와 동일 조합 사용)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.14'
 }
 
 bootJar {
