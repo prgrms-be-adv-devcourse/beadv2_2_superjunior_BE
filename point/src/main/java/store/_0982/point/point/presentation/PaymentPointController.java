@@ -14,6 +14,8 @@ import store._0982.point.point.presentation.dto.PointChargeConfirmRequest;
 import store._0982.point.point.presentation.dto.PointChargeCreateRequest;
 
 import org.springframework.data.domain.Pageable;
+import store._0982.point.point.presentation.dto.PointMinusRequest;
+
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -46,8 +48,15 @@ public class PaymentPointController {
 
     @Operation(summary = "포인트 조회", description = "선택한 멤버의 포인트를 조회한다.")
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping()
+    @GetMapping
     public ResponseDto<MemberPointInfo> pointCheck(@RequestHeader("X-Member-Id") UUID memberId){
         return paymentPointService.pointCheck(memberId);
+    }
+
+    @Operation(summary = "포인트 차감", description = "선택한 멤버의 포인트를 차감한다.")
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/minus")
+    public ResponseDto<MemberPointInfo> pointMinus(@RequestHeader("X-Member-Id") UUID memberId, @RequestBody PointMinusRequest request){
+        return paymentPointService.pointMinus(memberId, request);
     }
 }

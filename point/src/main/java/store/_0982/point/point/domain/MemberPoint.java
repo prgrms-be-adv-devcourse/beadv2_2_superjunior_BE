@@ -31,4 +31,8 @@ public class MemberPoint {
         return new MemberPoint(memberId, pointBalance);
 
     }
+
+    public void minus(int pointBalance) {
+        this.pointBalance = pointBalance;
+    }
 }

@@ -12,9 +12,10 @@ public enum CustomErrorCode {
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST),
     PAYMENT_KEY_ISNULL(HttpStatus.BAD_REQUEST),
+    LACK_OF_POINT(HttpStatus.BAD_REQUEST),
 
     // 401 Unauthorized
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED),
+    NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED),
 
     // 403 Forbidden
     FORBIDDEN(HttpStatus.FORBIDDEN),

@@ -1,6 +1,5 @@
 package store._0982.point.point.application;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,10 +14,16 @@ import store._0982.point.point.client.dto.TossPaymentResponse;
 import store._0982.point.point.domain.*;
 
 import org.springframework.data.domain.Pageable;
+import store._0982.point.point.presentation.dto.PointMinusRequest;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Tag(name="Point", description = "포인트 관련")
+/**
+ * 토스 결제 관리
+ * 포인트 관리
+ */
+
 @RequiredArgsConstructor
 @Service
 public class PaymentPointService {
@@ -27,17 +32,27 @@ public class PaymentPointService {
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
 
-
+    /**
+     * 상품 정보 조회
+     * @param memberId 멤버 id
+     * @param command orderId, amount
+     * @return PaymentPointCreateInfo
+     */
     public ResponseDto<PaymentPointCreateInfo> createPointPayment(PaymentPointCommand command, UUID memberId) {
         if(memberId == null){
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다.");
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+        }
+
+        if (!memberPointRepository.existsById(memberId)) {
+            MemberPoint newMember = new MemberPoint(memberId, 0);
+            memberPointRepository.save(newMember);
         }
 
         if (command.amount() <= 0) {
             throw new CustomException(CustomErrorCode.INVALID_AMOUNT, "잘못된 충전 금액입니다.");
         }
         PaymentPoint paymentPoint = PaymentPoint.create(
-                //todo 추후 프론트 헤더 토큰으로 수정
+                //todo 추후 프론트(toss-payment.html) 헤더 토큰으로 수정
                 memberId,
                 command.orderId(),
                 command.amount(),
@@ -49,12 +64,18 @@ public class PaymentPointService {
     }
 
     public ResponseDto<MemberPointInfo> pointCheck(UUID memberId) {
+        if(memberId == null){
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+        }
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND,"멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
         return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 조회 성공");
     }
 
     public ResponseDto<PageResponse<PaymentPointHistoryInfo>> findPaymentHistory(UUID memberId, Pageable pageable) {
+        if(memberId == null){
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+        }
         if (!memberPointRepository.existsById(memberId)) {
             throw new CustomException(CustomErrorCode.HISTORY_NOT_FOUND, "포인트 충전 내역이 없습니다.");
         }
@@ -87,6 +108,7 @@ public class PaymentPointService {
         }catch (Exception e){
             throw new CustomException(CustomErrorCode.PAYMENT_COMPLETE_FAILED, "결제 승인 중 오류가 발생했습니다.");
         }
+
         OffsetDateTime approvedAt = tossPayment.approvedAt() != null ? tossPayment.approvedAt() : null;
         paymentPoint.markConfirmed(
                 tossPayment.method(),
@@ -98,12 +120,33 @@ public class PaymentPointService {
         }
         PaymentPoint saved = paymentPointRepository.save(paymentPoint);
         MemberPoint prevPoint = memberPointRepository.findById(saved.getMemberId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND,"멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
         MemberPoint afterPayment = MemberPoint.plusPoint(saved.getMemberId(), prevPoint.getPointBalance()+saved.getAmount());
         MemberPoint afterPoint = memberPointRepository.save(afterPayment);
         PointChargeConfirmInfo pointChargeConfirmInfo = new PointChargeConfirmInfo(
                 PaymentPointInfo.from(saved), MemberPointInfo.from(afterPoint)
         );
         return new ResponseDto<>(HttpStatus.CREATED.value(), pointChargeConfirmInfo,"결제 및 포인트 충전 성공");
+    }
+
+    public ResponseDto<MemberPointInfo> pointMinus(UUID memberId, PointMinusRequest request) {
+        if(memberId == null){
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+        }
+        if(request.amount() <= 0){
+            throw new CustomException(CustomErrorCode.INVALID_AMOUNT, "잘못된 차감 금액입니다.");
+        }
+        MemberPoint memberPoint = memberPointRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
+
+        int pointBalance = memberPoint.getPointBalance() - request.amount();
+
+        if(pointBalance < 0){
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT, "보유 포인트가 부족합니다.");
+        }
+
+        memberPoint.minus(pointBalance);
+        memberPointRepository.save(memberPoint);
+        return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 차감 완료");
     }
 }
