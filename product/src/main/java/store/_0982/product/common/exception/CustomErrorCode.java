@@ -13,6 +13,7 @@ public enum CustomErrorCode {
 
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
+    GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다."),
 
     // 403 Forbidden
     NON_SELLER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 거부되었습니다. 판매자 권한이 필요합니다."),
