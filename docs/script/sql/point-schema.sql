@@ -9,13 +9,13 @@ create table point_schema.payment_point
     pg_order_id      uuid                                   not null
         constraint payment_point_pk_2
             unique,
-    payment_method   varchar(30)                            not null,
-    payment_key      varchar(50)                            not null,
+    payment_method   varchar(30),
+    payment_key      varchar(50),
     amount           integer                                not null,
     status           varchar(20)                            not null
         constraint status_check
             check ((status)::text = ANY
-                   (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('FAILED'::character varying)::text])),
+                   (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('REFUNDED'::character varying)::text, ('FAILED'::character varying)::text])),
     fail_message     text,
     created_at       timestamp with time zone default now() not null,
     requested_at     timestamp with time zone,
