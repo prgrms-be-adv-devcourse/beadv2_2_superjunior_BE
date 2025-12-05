@@ -14,4 +14,6 @@ public interface GroupPurchaseRepository {
 
     Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
 
+    void delete(GroupPurchase groupPurchase);
+
 }

@@ -19,8 +19,8 @@ public class PurchaseService {
 
     private final GroupPurchaseRepository groupPurchaseRepository;
 
-    public GroupPurchaseInfo getGroupPurchaseById(UUID groupPurchaseId) {
-        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+    public GroupPurchaseInfo getGroupPurchaseById(UUID purchaseId) {
+        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
         // TODO : 참가자 수 집계 기능
         int participantCount = 0;
@@ -52,4 +52,16 @@ public class PurchaseService {
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
+
+    public void deleteGroupPurchase(UUID purchaseId, UUID memberId) {
+        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (!findGroupPurchase.getSellerId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
+        }
+
+        groupPurchaseRepository.delete(findGroupPurchase);
+    }
+
 }

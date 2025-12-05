@@ -30,4 +30,10 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable) {
         return groupPurchaseJpaRepository.findAllBySellerId(sellerId, pageable);
     }
+
+    @Override
+    public void delete(GroupPurchase groupPurchase) {
+        groupPurchaseJpaRepository.delete(groupPurchase);
+    }
+
 }
