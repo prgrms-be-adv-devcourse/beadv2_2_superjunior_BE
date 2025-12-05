@@ -16,14 +16,8 @@ public class PaymentPointFailure {
     @Column(name = "failure_id", nullable = false)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "payment_point_id",
-            nullable = false,
-            unique = true,
-            foreignKey = @ForeignKey(name = "payment_point_failure_payment_point_payment_point_id_fk")
-    )
-    private PaymentPoint paymentPoint;
+    @Column(name = "payment_point_id", nullable = false)
+    private UUID paymentPointId;
 
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
@@ -40,8 +34,7 @@ public class PaymentPointFailure {
     @Column(name = "amount")
     private Integer amount;
 
-    @Lob
-    @Column(name = "raw_payload", nullable = false)
+    @Column(name = "raw_payload", nullable = false, columnDefinition = "TEXT")
     private String rawPayload;
 
     @CreationTimestamp
@@ -51,6 +44,7 @@ public class PaymentPointFailure {
     protected PaymentPointFailure(){}
 
     private PaymentPointFailure(
+            UUID paymentPointId,
             UUID orderId,
             String paymentKey,
             String errorCode,
@@ -59,6 +53,7 @@ public class PaymentPointFailure {
             String rawPayload
     ){
         this.id = UUID.randomUUID();
+        this.paymentPointId = paymentPointId;
         this.orderId = orderId;
         this.paymentKey = paymentKey;
         this.errorCode = errorCode;
@@ -67,12 +62,13 @@ public class PaymentPointFailure {
         this.rawPayload = rawPayload;
     }
 
-    public static PaymentPointFailure from(UUID orderId,
+    public static PaymentPointFailure from(UUID paymentPointId,
+                                           UUID orderId,
                                            String paymentKey,
                                            String errorCode,
                                            String errorMessage,
                                            int amount,
                                            String rawPayload) {
-        return new PaymentPointFailure(orderId, paymentKey, errorCode, errorMessage, amount, rawPayload);
+        return new PaymentPointFailure(paymentPointId, orderId, paymentKey, errorCode, errorMessage, amount, rawPayload);
     }
 }

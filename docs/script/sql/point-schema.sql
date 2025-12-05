@@ -62,7 +62,7 @@ create table point_schema.payment_point_failure
             unique
         constraint payment_point_failure_payment_point_payment_point_id_fk
             references point_schema.payment_point,
-    payment_key      varchar(50)                            not null,
+    payment_key      varchar(50),
     error_code       varchar(30),
     error_message    text,
     amount           integer,

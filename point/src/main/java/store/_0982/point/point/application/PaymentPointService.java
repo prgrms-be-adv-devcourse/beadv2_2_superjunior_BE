@@ -147,7 +147,9 @@ public class PaymentPointService {
     }
 
     public PointChargeFailInfo pointPaymentFail(PointChargeFailCommand command) {
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         PaymentPointFailure failure = PaymentPointFailure.from(
+                paymentPoint.getId(),
                 command.orderId(),
                 command.paymentKey(),
                 command.errorCode(),

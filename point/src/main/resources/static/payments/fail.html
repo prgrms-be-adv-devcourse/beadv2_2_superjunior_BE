@@ -20,8 +20,8 @@
     const payload = {
         orderId: info.orderId,
         paymentKey: info.paymentKey,
-        code: info.code,
-        message: info.message,
+        errorCode: info.code,
+        errorMessage: info.message,
         amount: info.amount ? Number(info.amount) : null,
         rawPayload: JSON.stringify(info)
     };
