@@ -4,7 +4,6 @@ import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductCategory;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 public record ProductDetailInfo(
