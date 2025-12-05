@@ -88,10 +88,10 @@
                     '결제 request 생성 실패: ' + error;
             }
 
-                tossPayments.requestPayment('간편결제', {
+                tossPayments.requestPayment('카드', {
                     company: '토스페이',
                     orderId,
-                    amount,
+                    amount: 1001,
                     orderName: '테스트 상품',
                     successUrl: 'http://localhost:8086/payments/success.html',
                     failUrl: 'http://localhost:8086/payments/fail.html'

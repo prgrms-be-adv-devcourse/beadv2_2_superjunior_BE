@@ -31,6 +31,7 @@ public class PaymentPointService {
     private final TossPaymentClient tossPaymentClient;
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
+    private final PaymentPointFailureRepository paymentPointFailureRepository;
 
     /**
      * 상품 정보 조회
@@ -148,5 +149,18 @@ public class PaymentPointService {
         memberPoint.minus(pointBalance);
         memberPointRepository.save(memberPoint);
         return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 차감 완료");
+    }
+
+    public ResponseDto<PointChargeFailInfo> pointPaymentFail(PointChargeFailCommand command) {
+        PaymentPointFailure failure = PaymentPointFailure.from(
+                command.orderId(),
+                command.paymentKey(),
+                command.errorCode(),
+                command.errorMessage(),
+                command.amount(),
+                command.rawPayload()
+        );
+        PaymentPointFailure saved = paymentPointFailureRepository.save(failure);
+        return new ResponseDto<>(HttpStatus.CREATED.value(), PointChargeFailInfo.from(saved), "결제 실패 정보 저장 완료");
     }
 }

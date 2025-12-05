@@ -14,6 +14,7 @@ import store._0982.point.point.presentation.dto.PointChargeConfirmRequest;
 import store._0982.point.point.presentation.dto.PointChargeCreateRequest;
 
 import org.springframework.data.domain.Pageable;
+import store._0982.point.point.presentation.dto.PointChargeFailRequest;
 import store._0982.point.point.presentation.dto.PointMinusRequest;
 
 import java.util.UUID;
@@ -32,11 +33,18 @@ public class PaymentPointController {
         return paymentPointService.pointPaymentCreate(request.toCommand(), memberId);
     }
 
-    @Operation(summary = "포인트 충전 완료", description = "포인트를 충전 성공.")
+    @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/confirm")
     public ResponseDto<PointChargeConfirmInfo> pointPaymentConfirm(@RequestBody PointChargeConfirmRequest request){
         return paymentPointService.pointPaymentConfirm(request.toCommand());
+    }
+
+    @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/fail")
+    public ResponseDto<PointChargeFailInfo> pointPaymentFail(@RequestBody PointChargeFailRequest request){
+        return paymentPointService.pointPaymentFail(request.toCommand());
     }
 
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
