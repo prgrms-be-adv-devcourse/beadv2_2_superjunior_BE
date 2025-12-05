@@ -6,7 +6,7 @@ spring:
     import: optional:configserver:http://localhost:8888
 
 toss:
-  secret-key: "test_sk_P9BRQmyarYxneAG2PRYNVJ07KzLN"
+  secret-key: ${TOSS_SECRET_KEY}
 
 server:
   port: 8086
