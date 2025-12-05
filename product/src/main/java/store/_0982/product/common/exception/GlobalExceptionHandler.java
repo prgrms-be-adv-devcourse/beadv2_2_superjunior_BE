@@ -3,13 +3,15 @@ package store._0982.product.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store._0982.product.common.dto.ResponseDto;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final String ERROR_LOG_FORMAT = "[{}] {}";
 
@@ -33,5 +35,18 @@ public class GlobalExceptionHandler {
     public ResponseDto<String> handleException(Exception e) {
         log.error(ERROR_LOG_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
+    }
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
     }
 }
