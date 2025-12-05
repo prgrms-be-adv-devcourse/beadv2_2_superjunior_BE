@@ -9,5 +9,4 @@ public interface MemberRepository {
     Optional<Member> findByEmail(String email);
 
     Optional<Member> findById(UUID memberId);
-
 }

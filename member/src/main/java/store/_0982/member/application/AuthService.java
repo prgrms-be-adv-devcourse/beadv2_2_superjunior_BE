@@ -27,7 +27,7 @@ public class AuthService {
         Member member = memberRepository.findByEmail(memberLoginCommand.email())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
 
-        if (passwordEncoder.matches(memberLoginCommand.password(), member.getPassword())) {
+        if (!passwordEncoder.matches(member.getSaltKey() + memberLoginCommand.password(), member.getPassword())) {
             throw new CustomException(CustomErrorCode.BAD_REQUEST);
         }
 

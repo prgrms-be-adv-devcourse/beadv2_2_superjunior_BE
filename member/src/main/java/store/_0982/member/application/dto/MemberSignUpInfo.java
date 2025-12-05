@@ -2,7 +2,7 @@ package store._0982.member.application.dto;
 
 import store._0982.member.domain.Member;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record MemberSignUpInfo (
@@ -10,9 +10,9 @@ public record MemberSignUpInfo (
     String email,
     String name,
     String phoneNumber,
-    LocalDateTime createdAt
+    OffsetDateTime createdAt
 ){
     public static MemberSignUpInfo from(Member member) {
-        return new MemberSignUpInfo (member.getId(), member.getEmail(), member.getName(), member.getPhoneNumber(), member.getCreatedAt());
+        return new MemberSignUpInfo (member.getMemberId(), member.getEmail(), member.getName(), member.getPhoneNumber(), member.getCreatedAt());
     }
 }

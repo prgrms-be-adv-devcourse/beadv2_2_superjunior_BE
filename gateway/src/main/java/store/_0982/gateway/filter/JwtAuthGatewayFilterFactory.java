@@ -1,22 +1,23 @@
 package store._0982.gateway.filter;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import store._0982.gateway.common.exception.CustomErrorCode;
 import store._0982.gateway.domain.AuthMember;
+import store._0982.gateway.domain.Role;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 
 /**
  * 특정 라우트에서만 적용할 수 있는 JWT 인증 필터.
@@ -49,19 +50,15 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
 
             AuthMember authMember;
             try {
-                Claims claims = jwtProvider.parseToken(token);
-
-                Date expiration = claims.getExpiration();
-                if (expiration != null && expiration.before(new Date())) {  // 토큰이 있으나, 만료된 경우 돌려보냄.
-                    return unauthorized(exchange, "Token expired");
-                }
-
+                Claims claims = jwtProvider.parseToken(token); //여기서 예외 던짐.
                 String memberId = claims.getSubject();
                 String email = claims.get("email", String.class);
                 String role = claims.get("role", String.class);
-                authMember = new AuthMember(memberId, email, role);
+                authMember = new AuthMember(memberId, email, Role.valueOf(role));
+            } catch (ExpiredJwtException e) {
+                return responseError(exchange, CustomErrorCode.EXPIRED);
             } catch (JwtException | IllegalArgumentException e) {
-                return unauthorized(exchange, "Invalid token");
+                return responseError(exchange, CustomErrorCode.INVALID);
             }
 
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
@@ -74,7 +71,7 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
                         // 2) Gateway가 검증한 정보로 덮어쓰기
                         headers.set("X-Member-Id", authMember.getId());
                         headers.set("X-Member-Email", authMember.getEmail());
-                        headers.set("X-Member-Role", authMember.getRole());
+                        headers.set("X-Member-Role", authMember.getRole().name());
                     })
                     .build();
 
@@ -82,10 +79,10 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
         };
     }
 
-    private Mono<Void> unauthorized(ServerWebExchange exchange, String message) {
+    private Mono<Void> responseError(ServerWebExchange exchange, CustomErrorCode errorCode) {
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+        response.setStatusCode(errorCode.getHttpStatus());
+        byte[] bytes = errorCode.getMessage().getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = response.bufferFactory().wrap(bytes);
         return response.writeWith(Mono.just(buffer));
     }

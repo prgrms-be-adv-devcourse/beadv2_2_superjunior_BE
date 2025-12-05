@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class JwtProvider {
         Date expiry = new Date(now.getTime() + accessTokenValidityPeriod);
 
         return Jwts.builder()
-                .setSubject(member.getId().toString())
+                .setSubject(member.getMemberId().toString())
                 .claim("email", member.getEmail())
                 .claim("role", member.getRole().name())
                 .setIssuer("member-service")
@@ -43,7 +44,7 @@ public class JwtProvider {
         Date expiry = new Date(now.getTime() + refreshTokenValidityPeriod);
 
         return Jwts.builder()
-                .setSubject(member.getId().toString())
+                .setSubject(member.getMemberId().toString())
                 .claim("email", member.getEmail())
                 .claim("role", member.getRole().name())
                 .setIssuer("member-service")
@@ -52,16 +53,6 @@ public class JwtProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-
-//    public boolean validateRefreshToken(String refreshToken) {
-//        try {
-//            Claims claims = parseToken(refreshToken);
-//            Date expiration = claims.getExpiration();
-//            return expiration != null && expiration.after(new Date());
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
 
     public UUID getMemberIdFromToken(String token) {
         Claims claims = parseToken(token);

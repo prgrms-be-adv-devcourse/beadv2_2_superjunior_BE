@@ -1,20 +1,14 @@
 package store._0982.member.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,12 +18,12 @@ public class Member {
 
     @Id
     @Column(name = "member_id", nullable = false)
-    private UUID id;
+    private UUID memberId;
 
     @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;
 
     @Column(name = "password", length = 60, nullable = false)
@@ -48,32 +42,50 @@ public class Member {
     @Column(name = "point_balance", nullable = false)
     private Integer pointBalance = 0;
 
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url", length = 2048)
     private String imageUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @UpdateTimestamp
+    private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private OffsetDateTime deletedAt;
 
-    public static Member create(String email, String name, String password, String phoneNumber){
+    public static Member create(String email, String name, String password, String phoneNumber) {
         Member member = new Member();
-        member.id = UUID.randomUUID();
+        member.memberId = UUID.randomUUID();
         member.email = email;
         member.name = name;
         member.password = password;
         member.phoneNumber = phoneNumber;
-        member.saltKey = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        member.createdAt = LocalDateTime.now();
+        member.saltKey = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        member.createdAt = OffsetDateTime.now();
         return member;
     }
 
     public void changePassword(String password) {
         this.password = password;
+        this.updatedAt = OffsetDateTime.now();
     }
+
+    public void encodePassword(String password) {
+        this.password = password;
+    }
+
+    public void update(String name, String phoneNumber) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void delete() {
+        this.deletedAt = OffsetDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
+    }
+
 }
 

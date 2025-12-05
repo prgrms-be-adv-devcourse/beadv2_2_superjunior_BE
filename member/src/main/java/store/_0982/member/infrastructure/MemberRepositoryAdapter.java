@@ -23,7 +23,6 @@ public class MemberRepositoryAdapter implements MemberRepository {
         return memberJpaRepository.findByEmail(email);
     }
 
-    @Override
     public Optional<Member> findById(UUID memberId) {
         return memberJpaRepository.findById(memberId);
     }
