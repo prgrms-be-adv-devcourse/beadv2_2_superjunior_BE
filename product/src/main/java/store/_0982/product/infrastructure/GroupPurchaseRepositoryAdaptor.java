@@ -1,6 +1,8 @@
 package store._0982.product.infrastructure;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
@@ -17,5 +19,10 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     @Override
     public Optional<GroupPurchase> findById(UUID groupPurchaseId) {
         return groupPurchaseJpaRepository.findById(groupPurchaseId);
+    }
+
+    @Override
+    public Page<GroupPurchase> findAll(Pageable pageable) {
+        return groupPurchaseJpaRepository.findAll(pageable);
     }
 }
