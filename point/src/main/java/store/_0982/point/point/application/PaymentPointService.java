@@ -2,10 +2,8 @@ package store._0982.point.point.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import store._0982.point.common.dto.PageResponse;
-import store._0982.point.common.dto.ResponseDto;
 import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
 import store._0982.point.point.application.dto.*;
@@ -39,7 +37,7 @@ public class PaymentPointService {
      * @param command orderId, amount
      * @return PaymentPointCreateInfo
      */
-    public ResponseDto<PaymentPointCreateInfo> pointPaymentCreate(PaymentPointCommand command, UUID memberId) {
+    public PaymentPointCreateInfo pointPaymentCreate(PaymentPointCommand command, UUID memberId) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
@@ -60,20 +58,19 @@ public class PaymentPointService {
                 OffsetDateTime.now()
         );
         PaymentPoint requested = paymentPointRepository.save(paymentPoint);
-        return new ResponseDto<>(HttpStatus.CREATED.value(), PaymentPointCreateInfo.from(requested),"결제 요청 생성");
-
+        return PaymentPointCreateInfo.from(requested);
     }
 
-    public ResponseDto<MemberPointInfo> pointCheck(UUID memberId) {
+    public MemberPointInfo pointCheck(UUID memberId) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
-        return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 조회 성공");
+        return MemberPointInfo.from(memberPoint);
     }
 
-    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> paymentHistoryFind(UUID memberId, Pageable pageable) {
+    public PageResponse<PaymentPointHistoryInfo> paymentHistoryFind(UUID memberId, Pageable pageable) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
@@ -86,10 +83,10 @@ public class PaymentPointService {
         if(page.isEmpty()){
             throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "잘못된 페이지 번호입니다.");
         }
-        return  new ResponseDto<>(HttpStatus.OK.value(), PageResponse.from(page), "포인트 충전 내역 조회 성공");
+        return  PageResponse.from(page);
     }
 
-    public ResponseDto<PointChargeConfirmInfo> pointPaymentConfirm(PointChargeConfirmCommand command) {
+    public PointChargeConfirmInfo pointPaymentConfirm(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         if (paymentPoint == null) {
             throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND, "결제 요청을 찾을 수 없습니다.");
@@ -124,13 +121,11 @@ public class PaymentPointService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
         MemberPoint afterPayment = MemberPoint.plusPoint(saved.getMemberId(), prevPoint.getPointBalance()+saved.getAmount());
         MemberPoint afterPoint = memberPointRepository.save(afterPayment);
-        PointChargeConfirmInfo pointChargeConfirmInfo = new PointChargeConfirmInfo(
-                PaymentPointInfo.from(saved), MemberPointInfo.from(afterPoint)
-        );
-        return new ResponseDto<>(HttpStatus.CREATED.value(), pointChargeConfirmInfo,"결제 및 포인트 충전 성공");
+        return new PointChargeConfirmInfo(
+                PaymentPointInfo.from(saved), MemberPointInfo.from(afterPoint));
     }
 
-    public ResponseDto<MemberPointInfo> pointMinus(UUID memberId, PointMinusRequest request) {
+    public MemberPointInfo pointMinus(UUID memberId, PointMinusRequest request) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
@@ -148,10 +143,10 @@ public class PaymentPointService {
 
         memberPoint.minus(pointBalance);
         memberPointRepository.save(memberPoint);
-        return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 차감 완료");
+        return MemberPointInfo.from(memberPoint);
     }
 
-    public ResponseDto<PointChargeFailInfo> pointPaymentFail(PointChargeFailCommand command) {
+    public PointChargeFailInfo pointPaymentFail(PointChargeFailCommand command) {
         PaymentPointFailure failure = PaymentPointFailure.from(
                 command.orderId(),
                 command.paymentKey(),
@@ -161,6 +156,6 @@ public class PaymentPointService {
                 command.rawPayload()
         );
         PaymentPointFailure saved = paymentPointFailureRepository.save(failure);
-        return new ResponseDto<>(HttpStatus.CREATED.value(), PointChargeFailInfo.from(saved), "결제 실패 정보 저장 완료");
+        return PointChargeFailInfo.from(saved);
     }
 }
