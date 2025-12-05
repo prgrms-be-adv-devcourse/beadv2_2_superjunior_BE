@@ -50,4 +50,5 @@ public class GlobalExceptionHandler {
         log.error(ERROR_LOG_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
+  
 }
