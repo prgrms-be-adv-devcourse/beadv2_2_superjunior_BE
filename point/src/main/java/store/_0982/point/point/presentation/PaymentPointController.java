@@ -28,22 +28,22 @@ public class PaymentPointController {
     @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/create")
-    public ResponseDto<PaymentPointCreateInfo> createPointPayment(@RequestBody PointChargeCreateRequest request, @RequestHeader("X-Member-Id") UUID memberId){
-        return paymentPointService.createPointPayment(request.toCommand(), memberId);
+    public ResponseDto<PaymentPointCreateInfo> pointPaymentCreate(@RequestBody PointChargeCreateRequest request, @RequestHeader("X-Member-Id") UUID memberId){
+        return paymentPointService.pointPaymentCreate(request.toCommand(), memberId);
     }
 
     @Operation(summary = "포인트 충전 완료", description = "포인트를 충전 성공.")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/confirm")
-    public ResponseDto<PointChargeConfirmInfo> confirmPointPayment(@RequestBody PointChargeConfirmRequest request){
-        return paymentPointService.confirmPointPayment(request.toCommand());
+    public ResponseDto<PointChargeConfirmInfo> pointPaymentConfirm(@RequestBody PointChargeConfirmRequest request){
+        return paymentPointService.pointPaymentConfirm(request.toCommand());
     }
 
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/payment")
-    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> findPaymentHistory(@RequestHeader("X-Member-Id") UUID memberId, Pageable pageable){
-        return paymentPointService.findPaymentHistory(memberId, pageable);
+    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> paymentHistoryFind(@RequestHeader("X-Member-Id") UUID memberId, Pageable pageable){
+        return paymentPointService.paymentHistoryFind(memberId, pageable);
     }
 
     @Operation(summary = "포인트 조회", description = "선택한 멤버의 포인트를 조회한다.")

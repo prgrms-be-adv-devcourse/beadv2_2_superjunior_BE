@@ -38,7 +38,7 @@ public class PaymentPointService {
      * @param command orderId, amount
      * @return PaymentPointCreateInfo
      */
-    public ResponseDto<PaymentPointCreateInfo> createPointPayment(PaymentPointCommand command, UUID memberId) {
+    public ResponseDto<PaymentPointCreateInfo> pointPaymentCreate(PaymentPointCommand command, UUID memberId) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
@@ -72,7 +72,7 @@ public class PaymentPointService {
         return new ResponseDto<>(HttpStatus.OK.value(), MemberPointInfo.from(memberPoint), "포인트 조회 성공");
     }
 
-    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> findPaymentHistory(UUID memberId, Pageable pageable) {
+    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> paymentHistoryFind(UUID memberId, Pageable pageable) {
         if(memberId == null){
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
         }
@@ -88,7 +88,7 @@ public class PaymentPointService {
         return  new ResponseDto<>(HttpStatus.OK.value(), PageResponse.from(page), "포인트 충전 내역 조회 성공");
     }
 
-    public ResponseDto<PointChargeConfirmInfo> confirmPointPayment(PointChargeConfirmCommand command) {
+    public ResponseDto<PointChargeConfirmInfo> pointPaymentConfirm(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         if (paymentPoint == null) {
             throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND, "결제 요청을 찾을 수 없습니다.");
