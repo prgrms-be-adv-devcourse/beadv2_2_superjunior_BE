@@ -19,4 +19,14 @@ public class MemberPointRepositoryAdapter implements MemberPointRepository {
     public Optional<MemberPoint> findById(UUID memberId) {
         return memberPointJpaRepository.findById(memberId);
     }
+
+    @Override
+    public MemberPoint save(MemberPoint afterPayment) {
+        return memberPointJpaRepository.save(afterPayment);
+    }
+
+    @Override
+    public boolean existsById(UUID memberId) {
+        return memberPointJpaRepository.existsById(memberId);
+    }
 }

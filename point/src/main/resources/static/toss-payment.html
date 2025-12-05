@@ -22,41 +22,72 @@
             border: none;
             cursor: pointer;
         }
+        input {
+            padding: 0.4rem;
+            margin-top: 0.3rem;
+        }
     </style>
 </head>
 <body>
 <h1>Toss 결제 테스트</h1>
-<p>아래 버튼을 클릭하면 Toss Payment Widget이 실행됩니다.</p>
+<p>결제 금액을 입력한 후 버튼을 누르세요.</p>
+<pre id="result"></pre>
 
-<!--<label>-->
-<!--    상품 ID:-->
-<!--    <input type="text" id="product-id" placeholder="상품 UUID">-->
-<!--</label>-->
-<!--<br/>-->
-<!--<label>-->
-<!--    구매자 ID:-->
-<!--    <input type="text" id="member-id" placeholder="구매자 UUID">-->
-<!--</label>-->
-<br/>
+<label>
+    결제 금액:
+    <input type="number" id="amount" placeholder="금액 입력" />
+</label>
+
+<br><br>
+
 <button id="pay-button">주문 생성 후 결제하기</button>
 
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
         try {
             if (typeof window.TossPayments !== 'function') {
-                throw new Error('TossPayments is not defined. 스크립트가 로드되었는지 확인하세요.');
+                throw new Error('TossPayments is not defined.');
             }
 
-            const clientKey = 'test_ck_0RnYX2w532qpnn7EPAAN8NeyqApQ'; // 테스트 클라이언트 키
+            const clientKey = 'test_ck_0RnYX2w532qpnn7EPAAN8NeyqApQ';
             const tossPayments = window.TossPayments(clientKey);
-            const amount = 1000;
-            const orderId = crypto.randomUUID();
 
             document.getElementById('pay-button').addEventListener('click', async function () {
-                //const orderId = await createOrder();
-                //if (!orderId) {
-                 //   return;
-               // }
+                const amountInput = document.getElementById('amount').value;
+
+                if (!amountInput || Number(amountInput) <= 0) {
+                    alert("결제 금액을 입력하세요.");
+                    return;
+                }
+
+                const amount = Number(document.getElementById("amount").value);
+                const orderId = crypto.randomUUID();
+
+                const payload = {
+                    orderId: orderId,
+                    amount: amount
+                };
+
+            try {
+                const response = await fetch('/api/points/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Member-Id': '3fa85f64-5717-4562-b3fc-2c963f66afa6' //나중에 토큰으로 교체
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                document.getElementById('result').textContent =
+                    JSON.stringify(data, null, 2);
+
+            } catch (error) {
+                document.getElementById('result').textContent =
+                    '결제 request 생성 실패: ' + error;
+            }
+
                 tossPayments.requestPayment('간편결제', {
                     company: '토스페이',
                     orderId,
@@ -67,25 +98,6 @@
                 });
             });
 
-            async function createOrder() {
-                const productId = document.getElementById('product-id').value;
-                const memberId = document.getElementById('member-id').value;
-                if (!productId || !memberId) {
-                    alert('상품 ID와 구매자 ID를 입력하세요.');
-                    return null;
-                }
-                const response = await fetch('/api/v1/orders', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId, memberId })
-                });
-                if (!response.ok) {
-                    alert('주문 생성 실패');
-                    return null;
-                }
-                const data = await response.json();
-                return data.data.id;
-            }
         } catch (error) {
             console.error('Toss 위젯 초기화 실패:', error);
             alert('Toss 위젯을 불러오지 못했습니다. 콘솔을 확인하세요.');

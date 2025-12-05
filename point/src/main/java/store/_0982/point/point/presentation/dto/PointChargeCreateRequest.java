@@ -6,11 +6,9 @@ import java.util.UUID;
 
 public record PointChargeCreateRequest(
         UUID orderId,
-        String paymentKey,
-        int amount,
-        String paymentMethod
+        int amount
 ) {
     public PaymentPointCommand toCommand(){
-        return new PaymentPointCommand(orderId, paymentKey, amount, paymentMethod);
+        return new PaymentPointCommand(orderId, amount);
     }
 }

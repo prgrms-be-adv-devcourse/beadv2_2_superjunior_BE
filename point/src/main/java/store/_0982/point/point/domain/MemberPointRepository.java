@@ -5,4 +5,7 @@ import java.util.UUID;
 
 public interface MemberPointRepository {
     Optional<MemberPoint> findById(UUID memberId);
+    MemberPoint save(MemberPoint afterPayment);
+
+    boolean existsById(UUID memberId);
 }

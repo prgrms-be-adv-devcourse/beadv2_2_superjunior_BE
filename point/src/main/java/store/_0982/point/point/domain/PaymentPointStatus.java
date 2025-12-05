@@ -4,5 +4,5 @@ public enum PaymentPointStatus {
     REQUESTED,
     COMPLETED,
     FAILED,
-    REFUND
+    REFUNDED
 }

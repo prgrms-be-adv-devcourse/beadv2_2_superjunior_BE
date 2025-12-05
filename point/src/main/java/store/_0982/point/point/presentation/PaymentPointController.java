@@ -1,15 +1,19 @@
 package store._0982.point.point.presentation;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.dto.ResponseDto;
 import store._0982.point.point.application.PaymentPointService;
-import store._0982.point.point.application.dto.MemberPointInfo;
-import store._0982.point.point.application.dto.PaymentPointInfo;
+import store._0982.point.point.application.dto.*;
+import store._0982.point.point.presentation.dto.PointChargeConfirmRequest;
 import store._0982.point.point.presentation.dto.PointChargeCreateRequest;
 
+import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -19,21 +23,31 @@ public class PaymentPointController {
 
     private final PaymentPointService paymentPointService;
 
+    @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/create")
-    public ResponseDto<PaymentPointInfo> createPointPayment(@RequestBody PointChargeCreateRequest request){
-        return paymentPointService.createPointPayment(request.toCommand());
+    public ResponseDto<PaymentPointCreateInfo> createPointPayment(@RequestBody PointChargeCreateRequest request, @RequestHeader("X-Member-Id") UUID memberId){
+        return paymentPointService.createPointPayment(request.toCommand(), memberId);
     }
 
-    //포인트 조회
-    @GetMapping("{memberId}")
-    public ResponseDto<MemberPointInfo> pointCheck(@PathVariable() UUID memberId){
+    @Operation(summary = "포인트 충전 완료", description = "포인트를 충전 성공.")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/confirm")
+    public ResponseDto<PointChargeConfirmInfo> confirmPointPayment(@RequestBody PointChargeConfirmRequest request){
+        return paymentPointService.confirmPointPayment(request.toCommand());
+    }
+
+    @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/payment")
+    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> findPaymentHistory(@RequestHeader("X-Member-Id") UUID memberId, Pageable pageable){
+        return paymentPointService.findPaymentHistory(memberId, pageable);
+    }
+
+    @Operation(summary = "포인트 조회", description = "선택한 멤버의 포인트를 조회한다.")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping()
+    public ResponseDto<MemberPointInfo> pointCheck(@RequestHeader("X-Member-Id") UUID memberId){
         return paymentPointService.pointCheck(memberId);
     }
-
-    //포인트 차감
-//    @PatchMapping("use")
-//    public ResponseDto<MemberPointInfo> pointMinus(@RequestBody PointMinusRequest request){
-//
-//    }
-
 }

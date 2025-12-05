@@ -55,24 +55,24 @@ public class PaymentPoint {
 
     protected PaymentPoint(){}
 
-    private PaymentPoint(UUID memberId, String paymentKey, UUID orderId, int amount){
+    private PaymentPoint(UUID memberId, UUID orderId, int amount, OffsetDateTime requestedAt){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
-        this.paymentKey = paymentKey;
         this.orderId = orderId;
         this.amount = amount;
+        this.requestedAt = requestedAt;
         this.status = PaymentPointStatus.REQUESTED;
     }
 
-    public static PaymentPoint create(UUID memberId, String paymentKey, UUID orderId, int amount){
-        return new PaymentPoint(memberId, paymentKey, orderId, amount);
+    public static PaymentPoint create(UUID memberId, UUID orderId, int amount, OffsetDateTime requestedAt){
+        return new PaymentPoint(memberId, orderId, amount, requestedAt);
     }
 
-    public void markConfirmed(String method, OffsetDateTime approvedAt, OffsetDateTime requestedAt) {
+    public void markConfirmed(String method, OffsetDateTime approvedAt, String paymentKey) {
         this.status = PaymentPointStatus.COMPLETED;
         this.paymentMethod = method;
+        this.paymentKey = paymentKey;
         this.approvedAt = approvedAt;
-        this.requestedAt = requestedAt;
         this.failMessage = null;
     }
 }

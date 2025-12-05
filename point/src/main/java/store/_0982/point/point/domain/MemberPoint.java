@@ -19,4 +19,16 @@ public class MemberPoint {
 
     @Column(name = "point_balance")
     private Integer pointBalance;
+
+    protected MemberPoint(){}
+
+    public MemberPoint(UUID memberId, int pointBalance){
+        this.memberId = memberId;
+        this.pointBalance = pointBalance;
+    }
+
+    public static MemberPoint plusPoint(UUID memberId, int pointBalance) {
+        return new MemberPoint(memberId, pointBalance);
+
+    }
 }

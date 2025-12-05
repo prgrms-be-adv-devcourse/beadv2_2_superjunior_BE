@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.point.point.application.dto.PaymentPointCommand;
+import store._0982.point.point.application.dto.PointChargeConfirmCommand;
 import store._0982.point.point.client.TossPaymentProperties;
 
 import java.nio.charset.StandardCharsets;
@@ -28,7 +28,7 @@ public class TossPaymentClient {
         this.properties = properties;
     }
 
-    public TossPaymentResponse confirm(PaymentPointCommand command) {
+    public TossPaymentResponse confirm(PointChargeConfirmCommand command) {
         if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
             throw new IllegalStateException("Toss secret key is not configured");
         }
