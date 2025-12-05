@@ -2,7 +2,6 @@ package store._0982.point.common.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.protocol.HTTP;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -24,6 +23,7 @@ public enum CustomErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND),
     HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND),
+    PAGE_NOT_FOUND(HttpStatus.NOT_FOUND),
 
     // 409 Conflict
     COMPLETED_PAYMENT(HttpStatus.CONFLICT),

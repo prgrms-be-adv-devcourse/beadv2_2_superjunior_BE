@@ -81,7 +81,7 @@ public class PaymentPointService {
                 paymentPointRepository.findAllByMemberId(memberId, pageable)
                         .map(PaymentPointHistoryInfo::from);
         if(page.isEmpty()){
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "잘못된 페이지 번호입니다.");
+            throw new CustomException(CustomErrorCode.PAGE_NOT_FOUND, "잘못된 페이지 번호입니다.");
         }
         return  PageResponse.from(page);
     }
@@ -148,6 +148,10 @@ public class PaymentPointService {
 
     public PointChargeFailInfo pointPaymentFail(PointChargeFailCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
+        if(paymentPoint.getStatus() == PaymentPointStatus.REQUESTED){
+            paymentPoint.markFailed(command.errorMessage());
+            paymentPointRepository.save(paymentPoint);
+        }
         PaymentPointFailure failure = PaymentPointFailure.from(
                 paymentPoint.getId(),
                 command.orderId(),

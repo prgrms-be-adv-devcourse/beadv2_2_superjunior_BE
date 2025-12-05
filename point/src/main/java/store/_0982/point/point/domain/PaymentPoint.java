@@ -75,4 +75,9 @@ public class PaymentPoint {
         this.approvedAt = approvedAt;
         this.failMessage = null;
     }
+
+    public void markFailed(String errorMessage){
+        this.status=PaymentPointStatus.FAILED;
+        this.failMessage=errorMessage;
+    }
 }
