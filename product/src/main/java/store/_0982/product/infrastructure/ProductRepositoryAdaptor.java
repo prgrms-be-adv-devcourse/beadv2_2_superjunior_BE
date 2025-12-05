@@ -5,6 +5,9 @@ import org.springframework.stereotype.Repository;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryAdaptor implements ProductRepository {
@@ -15,4 +18,15 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public Product save(Product product) {
         return productJpaRepository.save(product);
     }
+
+    @Override
+    public Optional<Product> findById(UUID productId) {
+        return productJpaRepository.findById(productId);
+    }
+
+    @Override
+    public void delete(Product product) {
+        productJpaRepository.delete(product);
+    }
+
 }

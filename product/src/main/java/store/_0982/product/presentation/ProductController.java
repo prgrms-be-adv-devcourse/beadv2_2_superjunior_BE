@@ -27,4 +27,13 @@ public class ProductController {
         return new ResponseDto<>(HttpStatus.CREATED, info, "상품이 등록되었습니다.");
     }
 
+    @DeleteMapping("/{productId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseDto<ProductRegisterInfo> createProduct(
+            @PathVariable UUID productId,
+            @RequestHeader("X-Member-Id") UUID memberId) {
+        productService.deleteProduct(productId, memberId);
+        return new ResponseDto<>(HttpStatus.NO_CONTENT, null, "상품이 삭제되었습니다.");
+    }
+
 }
