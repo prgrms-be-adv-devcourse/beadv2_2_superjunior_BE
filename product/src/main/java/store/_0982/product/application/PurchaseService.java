@@ -39,4 +39,17 @@ public class PurchaseService {
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
+
+    public PageResponseDto<GroupPurchaseInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
+        Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
+
+        Page<GroupPurchaseInfo> groupPurchaseInfoPage = groupPurchasePage.map(
+                groupPurchase -> {
+                    // TODO : 참가자 수 집계 기능
+                    int participantCount = 0;
+                    return GroupPurchaseInfo.from(groupPurchase, participantCount);
+                });
+
+        return PageResponseDto.from(groupPurchaseInfoPage);
+    }
 }

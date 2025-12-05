@@ -38,4 +38,14 @@ public class GroupPurchaseController {
         return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 목록 조회 성공");
     }
 
+    @Operation(summary = "공동구매 판매자별 목록 조회", description = "공동구매 목록을 페이징하여 조회되었습니다.")
+    @GetMapping("/seller/{sellerId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponseDto<GroupPurchaseInfo>> getGroupPurchasesBySeller(
+            @PathVariable UUID sellerId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        PageResponseDto<GroupPurchaseInfo> pageResponse = purchaseService.getGroupPurchasesBySeller(sellerId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 판매자별 목록 조회되었습니다");
+    }
+
 }

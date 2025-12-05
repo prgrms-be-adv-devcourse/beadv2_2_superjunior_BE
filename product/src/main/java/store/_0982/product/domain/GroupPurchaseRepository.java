@@ -12,4 +12,6 @@ public interface GroupPurchaseRepository {
 
     Page<GroupPurchase> findAll(Pageable pageable);
 
+    Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
+
 }

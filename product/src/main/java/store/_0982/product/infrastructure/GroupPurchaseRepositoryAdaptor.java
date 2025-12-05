@@ -25,4 +25,9 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public Page<GroupPurchase> findAll(Pageable pageable) {
         return groupPurchaseJpaRepository.findAll(pageable);
     }
+
+    @Override
+    public Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable) {
+        return groupPurchaseJpaRepository.findAllBySellerId(sellerId, pageable);
+    }
 }
