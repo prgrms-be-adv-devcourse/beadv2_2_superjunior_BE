@@ -8,6 +8,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProductRepository {
-    Page<Product> findAll(Pageable pageable);
+
+    Product save(Product product);
+
     Optional<Product> findById(UUID productId);
+
+    void delete(Product product);
+
+    Page<Product> findAll(Pageable pageable);
+  
 }

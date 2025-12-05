@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import store._0982.product.application.dto.ProductRegisterCommand;
+import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
 import store._0982.product.application.dto.ProductUpdateCommand;
 import store._0982.product.application.dto.ProductUpdateInfo;
@@ -17,12 +20,37 @@ import store._0982.product.domain.ProductRepository;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
+@Service
 public class ProductService {
+
     private final ProductRepository productRepository;
+
+    public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
+        if (!command.memberRole().equals("SELLER") && !command.memberRole().equals("ADMIN")) {
+            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+        }
+        Product product = new Product(command.name(),
+                command.price(), command.category(),
+                command.description(), command.stock(),
+                command.originalUrl(), command.sellerId());
+
+        Product savedProduct = productRepository.save(product);
+        return ProductRegisterInfo.from(savedProduct);
+    }
+
+    public void deleteProduct(UUID productId, UUID memberId) {
+        Product findProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        if (!findProduct.getSellerId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
+        }
+
+        productRepository.delete(findProduct);
+    }
 
     /**
      * 상품 정보 조회
@@ -56,5 +84,4 @@ public class ProductService {
 
         return ProductUpdateInfo.from(product);
     }
-
 }

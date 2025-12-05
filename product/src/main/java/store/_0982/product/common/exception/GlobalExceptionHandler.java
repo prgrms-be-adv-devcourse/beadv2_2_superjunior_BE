@@ -6,14 +6,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import store._0982.product.common.dto.ResponseDto;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import store._0982.product.common.dto.ResponseDto;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final String ERROR_LOG_FORMAT = "[{}] {}";
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
+    }
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {
@@ -36,17 +50,5 @@ public class GlobalExceptionHandler {
         log.error(ERROR_LOG_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
-    @ExceptionHandler(NoResourceFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
-        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
-    }
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
-        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
-    }
+  
 }

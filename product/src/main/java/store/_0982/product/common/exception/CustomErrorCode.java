@@ -14,6 +14,10 @@ public enum CustomErrorCode {
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 
+    // 403 Forbidden
+    NON_SELLER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근이 거부되었습니다. 판매자 권한이 필요합니다."),
+    FORBIDDEN_NOT_PRODUCT_OWNER(HttpStatus.FORBIDDEN, "본인이 등록한 상품만 삭제할 수 있습니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
