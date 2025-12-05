@@ -1,6 +1,7 @@
 package store._0982.member.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import store._0982.member.application.dto.LoginTokens;
@@ -15,23 +16,25 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
+
     public LoginTokens login(MemberLoginCommand memberLoginCommand) {
         Member member = memberRepository.findByEmail(memberLoginCommand.email())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
-        String encryptedPassword = passwordEncoder.encode(memberLoginCommand.password());
-        if (!encryptedPassword.equals(memberLoginCommand.password())) {
+
+        if (passwordEncoder.matches(memberLoginCommand.password(), member.getPassword())) {
             throw new CustomException(CustomErrorCode.BAD_REQUEST);
         }
 
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
 
-        //redis에 등록해야함.
+        //todo //redis에 등록해야함.
 
         return new LoginTokens(accessToken, refreshToken);
     }

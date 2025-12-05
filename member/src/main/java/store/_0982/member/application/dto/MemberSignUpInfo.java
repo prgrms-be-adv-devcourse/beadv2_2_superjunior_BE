@@ -13,6 +13,6 @@ public record MemberSignUpInfo (
     LocalDateTime createdAt
 ){
     public static MemberSignUpInfo from(Member member) {
-        return new MemberSignUpInfo (member.getMemberId(), member.getEmail(), member.getName(), member.getPhoneNumber(), member.getCreatedAt());
+        return new MemberSignUpInfo (member.getId(), member.getEmail(), member.getName(), member.getPhoneNumber(), member.getCreatedAt());
     }
 }

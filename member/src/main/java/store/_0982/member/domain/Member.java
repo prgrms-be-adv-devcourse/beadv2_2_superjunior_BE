@@ -62,6 +62,7 @@ public class Member {
 
     public static Member create(String email, String name, String password, String phoneNumber){
         Member member = new Member();
+        member.id = UUID.randomUUID();
         member.email = email;
         member.name = name;
         member.password = password;

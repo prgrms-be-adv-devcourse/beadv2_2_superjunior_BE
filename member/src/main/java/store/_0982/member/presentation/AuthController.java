@@ -5,21 +5,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.common.dto.ResponseDto;
 import store._0982.member.presentation.dto.MemberLoginRequest;
 
-@RestController("tmp")
+@RestController
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public ResponseDto<?> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                 HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
@@ -27,19 +25,19 @@ public class AuthController {
 
         Cookie accessTokenCookie = new Cookie("accessToken", tokens.accessToken());
         accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
+        accessTokenCookie.setPath("/api");
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("refreshToken", tokens.refreshToken());
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/tmp/auth/refresh"); //swagger에서 숨길 때 tmp도 떼야함.
+        refreshTokenCookie.setPath("/api/auth/refresh");
         response.addCookie(refreshTokenCookie);
 
 
         return new ResponseDto<>(HttpStatus.OK, null, "로그인을 성공하였습니다.");
     }
 
-    @GetMapping("/auth/refresh")
+    @GetMapping("/refresh")
     public ResponseDto<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
 
@@ -57,7 +55,7 @@ public class AuthController {
 
         Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
         accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
+        accessTokenCookie.setPath("/api");
         response.addCookie(accessTokenCookie);
 
         return new ResponseDto<>(HttpStatus.OK, null, "토큰이 발급되었습니다.");
