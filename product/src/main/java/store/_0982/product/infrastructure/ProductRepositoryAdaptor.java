@@ -7,7 +7,6 @@ import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
 import java.awt.print.Pageable;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

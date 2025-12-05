@@ -3,21 +3,17 @@ package store._0982.product.application;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
 import store._0982.product.application.dto.ProductUpdateCommand;
 import store._0982.product.application.dto.ProductUpdateInfo;
-import store._0982.product.common.dto.ResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
