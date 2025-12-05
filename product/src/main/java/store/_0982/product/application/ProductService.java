@@ -25,12 +25,24 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     /**
+     * 상품 정보 조회
+     * @param productId 상품 id
+     * @return ProductDetailInfo
+     */
+    public ProductDetailInfo getProductInfo(UUID  productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        return ProductDetailInfo.from(product);
+    }
+
+    /**
      * 상품 업데이트
      * @param productId 상품 id
      * @param command 업데이트할 command 데이터
      * @return ProductUpdateInfo
      */
-    public ResponseDto<ProductUpdateInfo> updateProduct(UUID productId, ProductUpdateCommand command){
+    public ProductUpdateInfo updateProduct(UUID productId, ProductUpdateCommand command){
         Product product = productRepository.findById(productId)
                 .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
@@ -41,18 +53,8 @@ public class ProductService {
                 command.description(),
                 command.stock(),
                 command.originalLink());
-        return new ResponseDto<>(HttpStatus.OK.value(), ProductUpdateInfo.from(product), "상품 업데이트가 완료되었습니다.");
+
+        return ProductUpdateInfo.from(product);
     }
 
-    /**
-     * 상품 정보 조회
-     * @param productId 상품 id
-     * @return ProductDetailInfo
-     */
-    public ResponseDto<ProductDetailInfo> getProductInfo(UUID  productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-
-        return new ResponseDto<>(HttpStatus.OK.value(), ProductDetailInfo.from(product), "상품 조회가 완료되었습니다.");
-    }
 }
