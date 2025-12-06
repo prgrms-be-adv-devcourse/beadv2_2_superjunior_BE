@@ -96,7 +96,8 @@ create table point_schema.member_point
     member_id       uuid                                   not null
             constraint member_point_pk
                 primary key,
-    point_balance           integer
+    point_balance           integer,
+    last_used_at timestamp with time zone
 );
 
 comment on table point_schema.payment_point_failure is '멤버 ID';
