@@ -21,6 +21,7 @@ public class MemberPoint {
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
+    // TODO: 밸런스를 정말 안전하게 long 타입으로 관리하는 게 좋을까?
     @Column(name = "point_balance")
     private Integer pointBalance;
 
