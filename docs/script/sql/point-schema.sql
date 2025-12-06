@@ -20,6 +20,7 @@ create table point_schema.payment_point
     created_at       timestamp with time zone default now() not null,
     requested_at     timestamp with time zone,
     approved_at      timestamp with time zone,
+    refunded_at      timestamp with time zone,
     updated_at       timestamp with time zone
 );
 
