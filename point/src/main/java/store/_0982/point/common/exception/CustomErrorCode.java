@@ -9,19 +9,20 @@ import org.springframework.http.HttpStatus;
 public enum CustomErrorCode {
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 금액입니다."),
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "적절하지 않은 요청 값이 존재합니다."),
+    REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
+    ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
 
     // 401 Unauthorized
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
-
-    // 403 Forbidden
-
+    NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
+    NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
 
     // 404 Not Found
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 요청을 찾을 수 없습니다."),
-    PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다."),
 
     // 409 Conflict
     ALREADY_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
