@@ -3,6 +3,7 @@ package store._0982.point.point.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import store._0982.point.point.application.dto.PointChargeFailCommand;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -58,13 +59,15 @@ public class PaymentPointFailure {
         this.rawPayload = rawPayload;
     }
 
-    public static PaymentPointFailure from(UUID paymentPointId,
-                                           UUID orderId,
-                                           String paymentKey,
-                                           String errorCode,
-                                           String errorMessage,
-                                           int amount,
-                                           String rawPayload) {
-        return new PaymentPointFailure(paymentPointId, orderId, paymentKey, errorCode, errorMessage, amount, rawPayload);
+    public static PaymentPointFailure from(UUID paymentPointId, PointChargeFailCommand command) {
+        return new PaymentPointFailure(
+                paymentPointId,
+                command.orderId(),
+                command.paymentKey(),
+                command.errorCode(),
+                command.errorMessage(),
+                command.amount(),
+                command.rawPayload()
+        );
     }
 }

@@ -1,9 +1,13 @@
 package store._0982.point.point.client;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+@Setter
+@Getter
 @Component
 @ConfigurationProperties(prefix = "payment.toss")
 public class TossPaymentProperties {
@@ -23,28 +27,4 @@ public class TossPaymentProperties {
      * 프론트 실패 리다이렉트 URL.
      */
     private String failUrl;
-
-    public String getSecretKey() {
-        return secretKey;
-    }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    public String getSuccessUrl() {
-        return successUrl;
-    }
-
-    public void setSuccessUrl(String successUrl) {
-        this.successUrl = successUrl;
-    }
-
-    public String getFailUrl() {
-        return failUrl;
-    }
-
-    public void setFailUrl(String failUrl) {
-        this.failUrl = failUrl;
-    }
 }

@@ -1,6 +1,8 @@
 package store._0982.point.point.presentation.dto;
 
+import jakarta.validation.constraints.Positive;
+
 public record PointMinusRequest(
-        int amount
+        @Positive int amount
 ) {
 }

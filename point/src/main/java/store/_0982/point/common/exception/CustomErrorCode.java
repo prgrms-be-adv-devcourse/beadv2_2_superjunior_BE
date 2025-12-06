@@ -31,8 +31,14 @@ public enum CustomErrorCode {
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
+    // 502 Bad Gateway
+    PAYMENT_API_ERROR(HttpStatus.BAD_GATEWAY, "결제 API 호출에 실패했습니다."),
+
     // 503 Service Unavailable
-    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다.");
+    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
+
+    // 504
+    PAYMENT_API_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "결제 API 호출이 주어진 시간에 완료되지 않았습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -24,9 +24,4 @@ public class MemberPointRepositoryAdapter implements MemberPointRepository {
     public MemberPoint save(MemberPoint afterPayment) {
         return memberPointJpaRepository.save(afterPayment);
     }
-
-    @Override
-    public boolean existsById(UUID memberId) {
-        return memberPointJpaRepository.existsById(memberId);
-    }
 }

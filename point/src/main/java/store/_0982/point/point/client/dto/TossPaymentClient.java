@@ -1,5 +1,6 @@
 package store._0982.point.point.client.dto;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -16,17 +17,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class TossPaymentClient {
 
     private static final String CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
     private final RestTemplate restTemplate;
     private final TossPaymentProperties properties;
-
-    public TossPaymentClient(RestTemplate restTemplate, TossPaymentProperties properties) {
-        this.restTemplate = restTemplate;
-        this.properties = properties;
-    }
 
     public TossPaymentResponse confirm(PointChargeConfirmCommand command) {
         if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
