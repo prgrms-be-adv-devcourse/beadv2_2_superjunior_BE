@@ -41,4 +41,8 @@ public class MemberPoint {
         this.memberId = memberId;
         this.pointBalance = pointBalance;
     }
+
+    public void refund(int pointBalance) {
+        this.pointBalance = pointBalance;
+    }
 }

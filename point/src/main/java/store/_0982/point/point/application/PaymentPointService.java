@@ -13,7 +13,6 @@ import store._0982.point.point.domain.*;
 
 import org.springframework.data.domain.Pageable;
 import store._0982.point.point.presentation.dto.PointMinusRequest;
-import store._0982.point.point.presentation.dto.PointRefundRequest;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -177,7 +176,8 @@ public class PaymentPointService {
         if(paymentPoint.getStatus() != PaymentPointStatus.COMPLETED){
             throw new CustomException(CustomErrorCode.NOT_COMPLTED_PAYMENT);
         }
-        if(paymentPoint.getMemberId() != memberId){
+        //todo 추후 헤더값으로 수정
+        if(!paymentPoint.getMemberId().equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))){
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
         }
         MemberPoint memberPoint = memberPointRepository.findById(paymentPoint.getMemberId())
@@ -194,7 +194,7 @@ public class PaymentPointService {
         paymentPoint.markRefunded(response.cancels().get(0).canceledAt(), response.cancels().get(0).cancelReason());
         paymentPointRepository.save(paymentPoint);
         int pointBalance = memberPoint.getPointBalance() - response.cancels().get(0).cancelAmount();
-        memberPoint.minus(pointBalance, OffsetDateTime.now());
+        memberPoint.refund(pointBalance);
         memberPointRepository.save(memberPoint);
         return PointRefundInfo.from(paymentPoint);
     }
