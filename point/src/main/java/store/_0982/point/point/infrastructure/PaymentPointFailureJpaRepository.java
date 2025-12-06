@@ -5,5 +5,5 @@ import store._0982.point.point.domain.PaymentPointFailure;
 
 import java.util.UUID;
 
-public interface PaymentPointFailureJpaRepository extends JpaRepository<PaymentPointFailure, UUID> {
+interface PaymentPointFailureJpaRepository extends JpaRepository<PaymentPointFailure, UUID> {
 }

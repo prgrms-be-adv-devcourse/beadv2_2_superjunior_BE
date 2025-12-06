@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.point.point.domain.PaymentPoint;
 import java.util.UUID;
 
-public interface PaymentPointJpaRepository extends JpaRepository<PaymentPoint, UUID> {
+interface PaymentPointJpaRepository extends JpaRepository<PaymentPoint, UUID> {
     Page<PaymentPoint> findAllByMemberId(UUID memberId, Pageable pageable);
     PaymentPoint findByOrderId(UUID orderId);
 }

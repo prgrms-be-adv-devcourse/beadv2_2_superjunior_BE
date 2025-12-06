@@ -13,14 +13,13 @@ import java.util.UUID;
 public class PaymentPointFailure {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "failure_id", nullable = false)
     private UUID id;
 
-    @Column(name = "payment_point_id", nullable = false)
-    private UUID paymentPointId;
-
-    @Column(name = "order_id", nullable = false)
-    private UUID orderId;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_point_id")
+    private PaymentPoint paymentPoint;
 
     @Column(name = "payment_key", nullable = false, length = 50)
     private String paymentKey;
@@ -52,9 +51,6 @@ public class PaymentPointFailure {
             int amount,
             String rawPayload
     ){
-        this.id = UUID.randomUUID();
-        this.paymentPointId = paymentPointId;
-        this.orderId = orderId;
         this.paymentKey = paymentKey;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
