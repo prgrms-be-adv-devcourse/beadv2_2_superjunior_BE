@@ -99,6 +99,8 @@ create table point_schema.member_point
     point_balance           integer
 );
 
-comment on table point_schema.payment_point_failure is '멤버 ID';
+comment on table point_schema.member_point is '회원별 보유 포인트';
 
-comment on column point_schema.payment_point_failure.failure_id is '포인트 잔액';
+comment on column point_schema.member_point.member_id is '멤버 ID';
+
+comment on column point_schema.member_point.point_balance is '포인트 잔액';
