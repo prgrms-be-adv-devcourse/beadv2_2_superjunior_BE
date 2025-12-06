@@ -56,17 +56,17 @@ public class PaymentPoint {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private PaymentPoint(UUID memberId, UUID orderId, int amount, OffsetDateTime requestedAt){
+    private PaymentPoint(UUID memberId, UUID orderId, int amount){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
         this.orderId = orderId;
         this.amount = amount;
-        this.requestedAt = requestedAt;
+        this.requestedAt = OffsetDateTime.now();
         this.status = PaymentPointStatus.REQUESTED;
     }
 
-    public static PaymentPoint create(UUID memberId, UUID orderId, int amount, OffsetDateTime requestedAt){
-        return new PaymentPoint(memberId, orderId, amount, requestedAt);
+    public static PaymentPoint create(UUID memberId, UUID orderId, int amount){
+        return new PaymentPoint(memberId, orderId, amount);
     }
 
     public void markConfirmed(String method, OffsetDateTime approvedAt, String paymentKey) {
