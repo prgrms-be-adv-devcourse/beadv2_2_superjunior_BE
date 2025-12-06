@@ -17,6 +17,7 @@ create table point_schema.payment_point
             check ((status)::text = ANY
                    (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('REFUNDED'::character varying)::text, ('FAILED'::character varying)::text])),
     fail_message     text,
+    refund_message   text,
     created_at       timestamp with time zone default now() not null,
     requested_at     timestamp with time zone,
     approved_at      timestamp with time zone,
