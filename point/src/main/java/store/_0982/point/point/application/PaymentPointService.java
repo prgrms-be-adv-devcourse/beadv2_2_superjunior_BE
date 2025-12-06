@@ -31,37 +31,6 @@ public class PaymentPointService {
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
 
-    /**
-     * 상품 정보 조회
-     *
-     * @param memberId 멤버 id
-     * @param command  orderId, amount
-     * @return PaymentPointCreateInfo
-     */
-    public PaymentPointCreateInfo pointPaymentCreate(PaymentPointCommand command, UUID memberId) {
-        if (memberId == null) {
-            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
-        }
-
-        if (!memberPointRepository.existsById(memberId)) {
-            MemberPoint newMember = new MemberPoint(memberId, 0);
-            memberPointRepository.save(newMember);
-        }
-
-        if (command.amount() <= 0) {
-            throw new CustomException(CustomErrorCode.INVALID_AMOUNT);
-        }
-        PaymentPoint paymentPoint = PaymentPoint.create(
-                //todo 추후 프론트(toss-payment.html) 헤더 토큰으로 수정
-                memberId,
-                command.orderId(),
-                command.amount(),
-                OffsetDateTime.now()
-        );
-        PaymentPoint requested = paymentPointRepository.save(paymentPoint);
-        return PaymentPointCreateInfo.from(requested);
-    }
-
     public MemberPointInfo pointCheck(UUID memberId) {
         if (memberId == null) {
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);

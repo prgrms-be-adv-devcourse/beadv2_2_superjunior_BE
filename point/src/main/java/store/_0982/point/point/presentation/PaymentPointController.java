@@ -2,17 +2,17 @@ package store._0982.point.point.presentation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.dto.ResponseDto;
 import store._0982.point.point.application.PaymentPointService;
-import store._0982.point.point.application.dto.*;
+import store._0982.point.point.application.dto.MemberPointInfo;
+import store._0982.point.point.application.dto.PaymentPointHistoryInfo;
+import store._0982.point.point.application.dto.PointChargeConfirmInfo;
+import store._0982.point.point.application.dto.PointChargeFailInfo;
 import store._0982.point.point.presentation.dto.PointChargeConfirmRequest;
-import store._0982.point.point.presentation.dto.PointChargeCreateRequest;
-
-import org.springframework.data.domain.Pageable;
 import store._0982.point.point.presentation.dto.PointChargeFailRequest;
 import store._0982.point.point.presentation.dto.PointMinusRequest;
 
@@ -24,14 +24,6 @@ import java.util.UUID;
 public class PaymentPointController {
 
     private final PaymentPointService paymentPointService;
-
-    @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/create")
-    public ResponseDto<PaymentPointCreateInfo> pointPaymentCreate(@RequestBody PointChargeCreateRequest request, @RequestHeader("X-Member-Id") UUID memberId) {
-        PaymentPointCreateInfo info = paymentPointService.pointPaymentCreate(request.toCommand(), memberId);
-        return new ResponseDto<>(HttpStatus.CREATED.value(), info, "결제 요청 생성");
-    }
 
     @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ResponseStatus(HttpStatus.OK)
