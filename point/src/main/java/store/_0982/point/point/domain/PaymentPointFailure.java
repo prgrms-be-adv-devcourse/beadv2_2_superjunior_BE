@@ -10,6 +10,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "payment_point_failure", schema = "point_schema")
 public class PaymentPointFailure {
 
@@ -41,17 +42,15 @@ public class PaymentPointFailure {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    protected PaymentPointFailure(){}
-
     private PaymentPointFailure(
-            UUID paymentPointId,
-            UUID orderId,
+            PaymentPoint paymentPoint,
             String paymentKey,
             String errorCode,
             String errorMessage,
             int amount,
             String rawPayload
-    ){
+    ) {
+        this.paymentPoint = paymentPoint;
         this.paymentKey = paymentKey;
         this.errorCode = errorCode;
         this.errorMessage = errorMessage;
@@ -59,10 +58,9 @@ public class PaymentPointFailure {
         this.rawPayload = rawPayload;
     }
 
-    public static PaymentPointFailure from(UUID paymentPointId, PointChargeFailCommand command) {
+    public static PaymentPointFailure from(PaymentPoint paymentPoint, PointChargeFailCommand command) {
         return new PaymentPointFailure(
-                paymentPointId,
-                command.orderId(),
+                paymentPoint,
                 command.paymentKey(),
                 command.errorCode(),
                 command.errorMessage(),

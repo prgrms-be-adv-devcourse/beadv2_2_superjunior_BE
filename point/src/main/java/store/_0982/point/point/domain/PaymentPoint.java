@@ -1,7 +1,9 @@
 package store._0982.point.point.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "payment_point", schema = "point_schema")
 public class PaymentPoint {
 
@@ -53,8 +56,6 @@ public class PaymentPoint {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    protected PaymentPoint(){}
-
     private PaymentPoint(UUID memberId, UUID orderId, int amount, OffsetDateTime requestedAt){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
@@ -76,8 +77,8 @@ public class PaymentPoint {
         this.failMessage = null;
     }
 
-    public void markFailed(String errorMessage){
-        this.status=PaymentPointStatus.FAILED;
-        this.failMessage=errorMessage;
+    public void markFailed(String errorMessage) {
+        this.status = PaymentPointStatus.FAILED;
+        this.failMessage = errorMessage;
     }
 }

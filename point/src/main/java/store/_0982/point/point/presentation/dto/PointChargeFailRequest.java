@@ -12,7 +12,7 @@ public record PointChargeFailRequest(
         String errorCode,
         String errorMessage,
         int amount,
-        String rawPayload
+        @NotBlank String rawPayload
 ) {
     public PointChargeFailCommand toCommand() {
         return new PointChargeFailCommand(orderId, paymentKey, errorCode, errorMessage, amount, rawPayload);

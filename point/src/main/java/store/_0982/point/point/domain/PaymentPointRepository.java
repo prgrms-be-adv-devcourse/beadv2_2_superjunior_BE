@@ -7,9 +7,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentPointRepository {
-    void save(PaymentPoint paymentPoint);
+    PaymentPoint save(PaymentPoint paymentPoint);
 
     Page<PaymentPoint> findAllByMemberId(UUID memberId, Pageable pageable);
 
     Optional<PaymentPoint> findByOrderId(UUID orderId);
+
+    boolean existsByOrderId(UUID orderId);
 }

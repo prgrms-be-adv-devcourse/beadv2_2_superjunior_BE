@@ -10,11 +10,12 @@ import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
 import store._0982.point.point.application.dto.*;
-import store._0982.point.point.client.dto.TossPaymentClient;
+import store._0982.point.point.client.TossPaymentClient;
 import store._0982.point.point.client.dto.TossPaymentResponse;
 import store._0982.point.point.domain.*;
 import store._0982.point.point.presentation.dto.PointMinusRequest;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,6 +27,17 @@ public class PaymentPointService {
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
+
+    public PaymentPointCreateInfo createPaymentPoint(PaymentPointCommand command, UUID memberId) {
+        PaymentPoint paymentPoint = PaymentPoint.create(
+                // TODO: 추후 프론트(toss-payment.html) 헤더 토큰으로 수정
+                memberId,
+                command.orderId(),
+                command.amount(),
+                OffsetDateTime.now()
+        );
+        return PaymentPointCreateInfo.from(paymentPointRepository.save(paymentPoint));
+    }
 
     @Transactional(readOnly = true)
     public MemberPointInfo getPoints(UUID memberId) {
@@ -45,11 +57,8 @@ public class PaymentPointService {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
-        if (command.amount() != paymentPoint.getAmount()) {
-            throw new CustomException(CustomErrorCode.DIFFERENT_AMOUNT);
-        }
         if (paymentPoint.getStatus() == PaymentPointStatus.COMPLETED) {
-            throw new CustomException(CustomErrorCode.COMPLETED_PAYMENT);
+            throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
         }
 
         TossPaymentResponse tossPaymentResponse = executePaymentConfirmation(command);
@@ -77,7 +86,6 @@ public class PaymentPointService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         memberPoint.deductPoints(request.amount());
-        memberPointRepository.save(memberPoint);
         return MemberPointInfo.from(memberPoint);
     }
 
@@ -90,9 +98,8 @@ public class PaymentPointService {
             paymentPointRepository.save(paymentPoint);
         }
 
-        PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint.getId(), command);
-        failure = paymentPointFailureRepository.save(failure);
-        return PointChargeFailInfo.from(failure);
+        PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
+        return PointChargeFailInfo.from(paymentPointFailureRepository.save(failure));
     }
 
     private TossPaymentResponse executePaymentConfirmation(PointChargeConfirmCommand command) {

@@ -1,6 +1,7 @@
-package store._0982.point.point.client.dto;
+package store._0982.point.point.client;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -9,13 +10,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.point.application.dto.PointChargeConfirmCommand;
-import store._0982.point.point.client.TossPaymentProperties;
+import store._0982.point.point.client.dto.TossPaymentResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TossPaymentClient {
@@ -39,7 +42,9 @@ public class TossPaymentClient {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
-            return restTemplate.postForObject(CONFIRM_URL, entity, TossPaymentResponse.class);
+            TossPaymentResponse tossPaymentResponse = restTemplate.postForObject(CONFIRM_URL, entity, TossPaymentResponse.class);
+            log.debug(Objects.requireNonNull(tossPaymentResponse).toString());
+            return tossPaymentResponse;
         } catch (HttpStatusCodeException ex) {
             HttpStatusCode statusCode = ex.getStatusCode();
             String responseBody = ex.getResponseBodyAsString();

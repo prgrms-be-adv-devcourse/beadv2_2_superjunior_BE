@@ -17,8 +17,8 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     private final PaymentPointJpaRepository paymentPointJpaRepository;
 
     @Override
-    public void save(PaymentPoint paymentPoint) {
-        paymentPointJpaRepository.save(paymentPoint);
+    public PaymentPoint save(PaymentPoint paymentPoint) {
+        return paymentPointJpaRepository.save(paymentPoint);
     }
 
     @Override
@@ -29,5 +29,10 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     @Override
     public Optional<PaymentPoint> findByOrderId(UUID orderId) {
         return paymentPointJpaRepository.findByOrderId(orderId);
+    }
+
+    @Override
+    public boolean existsByOrderId(UUID orderId) {
+        return paymentPointJpaRepository.existsByOrderId(orderId);
     }
 }

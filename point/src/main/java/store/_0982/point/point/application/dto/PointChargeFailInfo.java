@@ -16,7 +16,7 @@ public record PointChargeFailInfo(
     public static PointChargeFailInfo from(PaymentPointFailure failure) {
         return new PointChargeFailInfo(
                 failure.getId(),
-                failure.getOrderId(),
+                failure.getPaymentPoint().getOrderId(),
                 failure.getPaymentKey(),
                 failure.getErrorCode(),
                 failure.getErrorMessage(),

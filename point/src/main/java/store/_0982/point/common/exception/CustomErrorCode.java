@@ -24,7 +24,7 @@ public enum CustomErrorCode {
     PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다."),
 
     // 409 Conflict
-    COMPLETED_PAYMENT(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
+    ALREADY_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
     DIFFERENT_AMOUNT(HttpStatus.CONFLICT, "결제 금액이 불일치합니다."),
     ORDER_ID_MISMATCH(HttpStatus.CONFLICT, "주문 번호가 일치하지 않습니다."),
 

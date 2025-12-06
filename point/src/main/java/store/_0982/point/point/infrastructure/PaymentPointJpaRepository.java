@@ -12,4 +12,6 @@ interface PaymentPointJpaRepository extends JpaRepository<PaymentPoint, UUID> {
     Page<PaymentPoint> findAllByMemberId(UUID memberId, Pageable pageable);
 
     Optional<PaymentPoint> findByOrderId(UUID orderId);
+
+    boolean existsByOrderId(UUID orderId);
 }
