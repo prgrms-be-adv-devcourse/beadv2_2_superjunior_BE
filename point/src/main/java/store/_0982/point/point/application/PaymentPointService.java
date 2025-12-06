@@ -39,7 +39,7 @@ public class PaymentPointService {
      */
     public PaymentPointCreateInfo pointPaymentCreate(PaymentPointCommand command, UUID memberId) {
         if(memberId == null){
-            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
 
         if (!memberPointRepository.existsById(memberId)) {
@@ -48,7 +48,7 @@ public class PaymentPointService {
         }
 
         if (command.amount() <= 0) {
-            throw new CustomException(CustomErrorCode.INVALID_AMOUNT, "잘못된 충전 금액입니다.");
+            throw new CustomException(CustomErrorCode.INVALID_AMOUNT);
         }
         PaymentPoint paymentPoint = PaymentPoint.create(
                 //todo 추후 프론트(toss-payment.html) 헤더 토큰으로 수정
@@ -63,25 +63,25 @@ public class PaymentPointService {
 
     public MemberPointInfo pointCheck(UUID memberId) {
         if(memberId == null){
-            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
         return MemberPointInfo.from(memberPoint);
     }
 
     public PageResponse<PaymentPointHistoryInfo> paymentHistoryFind(UUID memberId, Pageable pageable) {
         if(memberId == null){
-            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
         if (!memberPointRepository.existsById(memberId)) {
-            throw new CustomException(CustomErrorCode.HISTORY_NOT_FOUND, "포인트 충전 내역이 없습니다.");
+            throw new CustomException(CustomErrorCode.HISTORY_NOT_FOUND);
         }
         Page<PaymentPointHistoryInfo> page =
                 paymentPointRepository.findAllByMemberId(memberId, pageable)
                         .map(PaymentPointHistoryInfo::from);
         if(page.isEmpty()){
-            throw new CustomException(CustomErrorCode.PAGE_NOT_FOUND, "잘못된 페이지 번호입니다.");
+            throw new CustomException(CustomErrorCode.PAGE_NOT_FOUND);
         }
         return  PageResponse.from(page);
     }
@@ -89,22 +89,22 @@ public class PaymentPointService {
     public PointChargeConfirmInfo pointPaymentConfirm(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         if (paymentPoint == null) {
-            throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND, "결제 요청을 찾을 수 없습니다.");
+            throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND);
         }
         if(command.paymentKey() == null){
-            throw new CustomException(CustomErrorCode.PAYMENT_KEY_ISNULL, "paymentKey는 필수입니다.");
+            throw new CustomException(CustomErrorCode.PAYMENT_KEY_ISNULL);
         }
         if(command.amount() != paymentPoint.getAmount()){
-            throw new CustomException(CustomErrorCode.DIFFERENT_AMOUNT, "결제 금액이 불일치합니다.");
+            throw new CustomException(CustomErrorCode.DIFFERENT_AMOUNT);
         }
         if(paymentPoint.getStatus() == PaymentPointStatus.COMPLETED){
-            throw new CustomException(CustomErrorCode.COMPLETED_PAYMENT, "이미 완료된 결제입니다.");
+            throw new CustomException(CustomErrorCode.COMPLETED_PAYMENT);
         }
         TossPaymentResponse tossPayment;
         try{
             tossPayment = tossPaymentClient.confirm(command);
         }catch (Exception e){
-            throw new CustomException(CustomErrorCode.PAYMENT_COMPLETE_FAILED, "결제 승인 중 오류가 발생했습니다.");
+            throw new CustomException(CustomErrorCode.PAYMENT_COMPLETE_FAILED);
         }
 
         OffsetDateTime approvedAt = tossPayment.approvedAt() != null ? tossPayment.approvedAt() : null;
@@ -114,11 +114,11 @@ public class PaymentPointService {
                 tossPayment.paymentKey());
 
         if (!paymentPoint.getOrderId().equals(tossPayment.orderId())) {
-            throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH, "주문 번호가 일치하지 않습니다.");
+            throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
         }
         PaymentPoint saved = paymentPointRepository.save(paymentPoint);
         MemberPoint prevPoint = memberPointRepository.findById(saved.getMemberId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
         MemberPoint afterPayment = MemberPoint.plusPoint(saved.getMemberId(), prevPoint.getPointBalance()+saved.getAmount());
         MemberPoint afterPoint = memberPointRepository.save(afterPayment);
         return new PointChargeConfirmInfo(
@@ -127,18 +127,18 @@ public class PaymentPointService {
 
     public MemberPointInfo pointMinus(UUID memberId, PointMinusRequest request) {
         if(memberId == null){
-            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO, "로그인 정보가 없습니다.");
+            throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
         if(request.amount() <= 0){
-            throw new CustomException(CustomErrorCode.INVALID_AMOUNT, "잘못된 차감 금액입니다.");
+            throw new CustomException(CustomErrorCode.INVALID_AMOUNT);
         }
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND, "멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         int pointBalance = memberPoint.getPointBalance() - request.amount();
 
         if(pointBalance < 0){
-            throw new CustomException(CustomErrorCode.LACK_OF_POINT, "보유 포인트가 부족합니다.");
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
 
         memberPoint.minus(pointBalance);

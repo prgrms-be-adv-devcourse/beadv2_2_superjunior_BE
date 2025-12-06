@@ -12,7 +12,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import store._0982.point.common.dto.ResponseDto;
 
 @Slf4j
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
     private static final String ERROR_LOG_FORMAT = "[{}] {}";
 

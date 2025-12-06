@@ -26,6 +26,7 @@ public class PaymentPointController {
 
     private final PaymentPointService paymentPointService;
 
+    //todo 동시성 생각
     @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/create")
@@ -66,6 +67,7 @@ public class PaymentPointController {
         return new ResponseDto<>(HttpStatus.OK.value(), info, "포인트 조회 성공");
     }
 
+    //todo 동시성 생각
     @Operation(summary = "포인트 차감", description = "선택한 멤버의 포인트를 차감한다.")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/minus")
