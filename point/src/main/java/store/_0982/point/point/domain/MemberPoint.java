@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -20,6 +21,9 @@ public class MemberPoint {
     @Column(name = "point_balance")
     private Integer pointBalance;
 
+    @Column(name = "last_used_at")
+    private OffsetDateTime lastUsedAt;
+
     protected MemberPoint(){}
 
     public MemberPoint(UUID memberId, int pointBalance){
@@ -27,12 +31,14 @@ public class MemberPoint {
         this.pointBalance = pointBalance;
     }
 
-    public static MemberPoint plusPoint(UUID memberId, int pointBalance) {
-        return new MemberPoint(memberId, pointBalance);
 
+    public void minus(int pointBalance, OffsetDateTime lastUsedAt) {
+        this.pointBalance = pointBalance;
+        this.lastUsedAt = lastUsedAt;
     }
 
-    public void minus(int pointBalance) {
+    public void plusPoint(UUID memberId, int pointBalance) {
+        this.memberId = memberId;
         this.pointBalance = pointBalance;
     }
 }

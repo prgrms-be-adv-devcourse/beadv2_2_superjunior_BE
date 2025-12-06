@@ -12,17 +12,20 @@ public enum CustomErrorCode {
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 충전 금액입니다."),
     PAYMENT_KEY_ISNULL(HttpStatus.BAD_REQUEST, "paymentKey는 필수입니다."),
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    NOT_COMPLTED_PAYMENT(HttpStatus.BAD_REQUEST, "완료 상태의 결제가 아닙니다."),
+    REFUND_AFTER_ORDER(HttpStatus.BAD_REQUEST,"결제 이후 포인트 사용 내역이 있습니다."),
 
     // 401 Unauthorized
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
 
     // 403 Forbidden
-
+    PAYMENT_OWNER_MISMATCH(HttpStatus.FORBIDDEN, "해당 결제의 유저가 아닙니다."),
     // 404 Not Found
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 요청을 찾을 수 없습니다."),
     HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "포인트 충전 내역이 없습니다."),
     PAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "잘못된 페이지 번호입니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
 
     // 409 Conflict
     COMPLETED_PAYMENT(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),

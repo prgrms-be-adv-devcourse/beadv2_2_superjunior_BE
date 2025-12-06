@@ -13,6 +13,7 @@ import store._0982.point.point.domain.*;
 
 import org.springframework.data.domain.Pageable;
 import store._0982.point.point.presentation.dto.PointMinusRequest;
+import store._0982.point.point.presentation.dto.PointRefundRequest;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -87,7 +88,8 @@ public class PaymentPointService {
     }
 
     public PointChargeConfirmInfo pointPaymentConfirm(PointChargeConfirmCommand command) {
-        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
         if (paymentPoint == null) {
             throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND);
         }
@@ -119,8 +121,8 @@ public class PaymentPointService {
         PaymentPoint saved = paymentPointRepository.save(paymentPoint);
         MemberPoint prevPoint = memberPointRepository.findById(saved.getMemberId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-        MemberPoint afterPayment = MemberPoint.plusPoint(saved.getMemberId(), prevPoint.getPointBalance()+saved.getAmount());
-        MemberPoint afterPoint = memberPointRepository.save(afterPayment);
+        prevPoint.plusPoint(saved.getMemberId(), prevPoint.getPointBalance()+saved.getAmount());
+        MemberPoint afterPoint = memberPointRepository.save(prevPoint);
         return new PointChargeConfirmInfo(
                 PaymentPointInfo.from(saved), MemberPointInfo.from(afterPoint));
     }
@@ -141,13 +143,14 @@ public class PaymentPointService {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
 
-        memberPoint.minus(pointBalance);
+        memberPoint.minus(pointBalance, OffsetDateTime.now());
         memberPointRepository.save(memberPoint);
         return MemberPointInfo.from(memberPoint);
     }
 
     public PointChargeFailInfo pointPaymentFail(PointChargeFailCommand command) {
-        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
         if(paymentPoint.getStatus() == PaymentPointStatus.REQUESTED){
             paymentPoint.markFailed(command.errorMessage());
             paymentPointRepository.save(paymentPoint);
@@ -163,5 +166,36 @@ public class PaymentPointService {
         );
         PaymentPointFailure saved = paymentPointFailureRepository.save(failure);
         return PointChargeFailInfo.from(saved);
+    }
+
+    public PointRefundInfo pointRefund(UUID memberId, PointRefundCommand command) {
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+        if (paymentPoint == null) {
+            throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND);
+        }
+        if(paymentPoint.getStatus() != PaymentPointStatus.COMPLETED){
+            throw new CustomException(CustomErrorCode.NOT_COMPLTED_PAYMENT);
+        }
+        if(paymentPoint.getMemberId() != memberId){
+            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
+        MemberPoint memberPoint = memberPointRepository.findById(paymentPoint.getMemberId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        OffsetDateTime paymentAt = paymentPoint.getApprovedAt();
+        OffsetDateTime lastUsedAt = memberPoint.getLastUsedAt();
+
+        if (lastUsedAt != null && lastUsedAt.isAfter(paymentAt)) {
+            throw new CustomException(CustomErrorCode.REFUND_AFTER_ORDER);
+        }
+
+        TossPaymentResponse response = tossPaymentClient.cancel(paymentPoint.getPaymentKey(), command.cancelReason(), paymentPoint.getAmount());
+        paymentPoint.markRefunded(response.cancels().get(0).canceledAt(), response.cancels().get(0).cancelReason());
+        paymentPointRepository.save(paymentPoint);
+        int pointBalance = memberPoint.getPointBalance() - response.cancels().get(0).cancelAmount();
+        memberPoint.minus(pointBalance, OffsetDateTime.now());
+        memberPointRepository.save(memberPoint);
+        return PointRefundInfo.from(paymentPoint);
     }
 }

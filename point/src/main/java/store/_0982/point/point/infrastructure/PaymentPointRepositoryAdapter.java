@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import store._0982.point.point.domain.PaymentPoint;
 import store._0982.point.point.domain.PaymentPointRepository;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -25,7 +27,7 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     }
 
     @Override
-    public PaymentPoint findByOrderId(UUID orderId) {
+    public Optional<PaymentPoint> findByOrderId(UUID orderId) {
         return paymentPointJpaRepository.findByOrderId(orderId);
     }
 
