@@ -37,7 +37,6 @@ public class GlobalExceptionHandler {
 
         CustomException ex = switch (fieldError.getField()) {
             case "amount" -> new CustomException(CustomErrorCode.INVALID_AMOUNT);
-            case "memberId" -> new CustomException(CustomErrorCode.NO_LOGIN_INFO);
             case "orderId" -> new CustomException(CustomErrorCode.ORDER_ID_IS_NULL);
             case "paymentKey" -> new CustomException(CustomErrorCode.PAYMENT_KEY_IS_NULL);
             default -> new CustomException(CustomErrorCode.INVALID_PARAMETER);
