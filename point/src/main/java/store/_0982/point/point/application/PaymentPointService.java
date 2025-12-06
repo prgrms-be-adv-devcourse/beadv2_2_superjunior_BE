@@ -31,7 +31,7 @@ public class PaymentPointService {
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
 
-    public MemberPointInfo pointCheck(UUID memberId) {
+    public MemberPointInfo getPoints(UUID memberId) {
         if (memberId == null) {
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
@@ -40,7 +40,7 @@ public class PaymentPointService {
         return MemberPointInfo.from(memberPoint);
     }
 
-    public PageResponse<PaymentPointHistoryInfo> paymentHistoryFind(UUID memberId, Pageable pageable) {
+    public PageResponse<PaymentPointHistoryInfo> getPaymentHistory(UUID memberId, Pageable pageable) {
         if (memberId == null) {
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
@@ -52,7 +52,7 @@ public class PaymentPointService {
         return PageResponse.from(page);
     }
 
-    public PointChargeConfirmInfo pointPaymentConfirm(PointChargeConfirmCommand command) {
+    public PointChargeConfirmInfo confirmPayment(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         if (paymentPoint == null) {
             throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND);
@@ -91,7 +91,7 @@ public class PaymentPointService {
                 PaymentPointInfo.from(saved), MemberPointInfo.from(afterPoint));
     }
 
-    public MemberPointInfo pointMinus(UUID memberId, PointMinusRequest request) {
+    public MemberPointInfo deductPoints(UUID memberId, PointMinusRequest request) {
         if (memberId == null) {
             throw new CustomException(CustomErrorCode.NO_LOGIN_INFO);
         }
@@ -112,7 +112,7 @@ public class PaymentPointService {
         return MemberPointInfo.from(memberPoint);
     }
 
-    public PointChargeFailInfo pointPaymentFail(PointChargeFailCommand command) {
+    public PointChargeFailInfo handlePaymentFailure(PointChargeFailCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId());
         if (paymentPoint.getStatus() == PaymentPointStatus.REQUESTED) {
             paymentPoint.markFailed(command.errorMessage());

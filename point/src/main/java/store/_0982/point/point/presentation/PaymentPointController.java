@@ -28,40 +28,40 @@ public class PaymentPointController {
     @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/confirm")
-    public ResponseDto<PointChargeConfirmInfo> pointPaymentConfirm(@RequestBody PointChargeConfirmRequest request) {
-        PointChargeConfirmInfo info = paymentPointService.pointPaymentConfirm(request.toCommand());
+    public ResponseDto<PointChargeConfirmInfo> confirmPayment(@RequestBody PointChargeConfirmRequest request) {
+        PointChargeConfirmInfo info = paymentPointService.confirmPayment(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED.value(), info, "결제 및 포인트 충전 성공");
     }
 
     @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/fail")
-    public ResponseDto<PointChargeFailInfo> pointPaymentFail(@RequestBody PointChargeFailRequest request) {
-        PointChargeFailInfo info = paymentPointService.pointPaymentFail(request.toCommand());
+    public ResponseDto<PointChargeFailInfo> handlePaymentFailure(@RequestBody PointChargeFailRequest request) {
+        PointChargeFailInfo info = paymentPointService.handlePaymentFailure(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED.value(), info, "결제 실패 정보 저장 완료");
     }
 
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/payment")
-    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> paymentHistoryFind(@RequestHeader("X-Member-Id") UUID memberId, Pageable pageable) {
-        PageResponse<PaymentPointHistoryInfo> page = paymentPointService.paymentHistoryFind(memberId, pageable);
+    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> getPaymentHistory(@RequestHeader("X-Member-Id") UUID memberId, Pageable pageable) {
+        PageResponse<PaymentPointHistoryInfo> page = paymentPointService.getPaymentHistory(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK.value(), page, "포인트 충전 내역 조회 성공");
     }
 
     @Operation(summary = "포인트 조회", description = "선택한 멤버의 포인트를 조회한다.")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public ResponseDto<MemberPointInfo> pointCheck(@RequestHeader("X-Member-Id") UUID memberId) {
-        MemberPointInfo info = paymentPointService.pointCheck(memberId);
+    public ResponseDto<MemberPointInfo> getPoints(@RequestHeader("X-Member-Id") UUID memberId) {
+        MemberPointInfo info = paymentPointService.getPoints(memberId);
         return new ResponseDto<>(HttpStatus.OK.value(), info, "포인트 조회 성공");
     }
 
     @Operation(summary = "포인트 차감", description = "선택한 멤버의 포인트를 차감한다.")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/minus")
-    public ResponseDto<MemberPointInfo> pointMinus(@RequestHeader("X-Member-Id") UUID memberId, @RequestBody PointMinusRequest request) {
-        MemberPointInfo info = paymentPointService.pointMinus(memberId, request);
+    public ResponseDto<MemberPointInfo> deductPoints(@RequestHeader("X-Member-Id") UUID memberId, @RequestBody PointMinusRequest request) {
+        MemberPointInfo info = paymentPointService.deductPoints(memberId, request);
         return new ResponseDto<>(HttpStatus.OK.value(), info, "포인트 차감 완료");
     }
 }
