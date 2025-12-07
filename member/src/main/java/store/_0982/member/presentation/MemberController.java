@@ -7,12 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.member.application.MemberService;
+import store._0982.member.application.SellerService;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.dto.ResponseDto;
-import store._0982.member.presentation.dto.MemberDeleteRequest;
-import store._0982.member.presentation.dto.MemberSignUpRequest;
-import store._0982.member.presentation.dto.PasswordChangeRequest;
-import store._0982.member.presentation.dto.ProfileUpdateRequest;
+import store._0982.member.presentation.dto.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,12 +24,14 @@ import java.util.UUID;
 //TODO: 이메일 인증 endpoint
 public class MemberController {
     private final MemberService memberService;
+    private final SellerService sellerService;
 
     @Operation(summary = "회원가입", description = "신규 회원을 등록합니다.")
     @PostMapping
-    public ResponseDto<MemberSignUpInfo> signUpMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
-        MemberSignUpInfo memberSignUpInfo = memberService.signUpMember(memberSignUpRequest.toCommand());
-        return new ResponseDto<>(HttpStatus.OK, memberSignUpInfo, "회원가입이 완료되었습니다.");
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<MemberSignUpInfo> createMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
+        MemberSignUpInfo memberSignUpInfo = memberService.createMember(memberSignUpRequest.toCommand());
+        return new ResponseDto<>(HttpStatus.CREATED, memberSignUpInfo, "회원가입이 완료되었습니다.");
     }
 
     @Operation(summary = "회원 탈퇴", description = "비밀번호를 확인하고 회원을 탈퇴 처리합니다.")
@@ -80,5 +80,13 @@ public class MemberController {
         headers.put("X-Member-Role", role);
 
         return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");
+    }
+
+    //아래는 Seller 관련 endpoint
+    @PostMapping("/seller")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest){
+        sellerRegisterRequest.toCommand(memberId);
+        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(sellerRegisterRequest.toCommand(memberId)), "판매자 등록이 완료되었습니다.");
     }
 }

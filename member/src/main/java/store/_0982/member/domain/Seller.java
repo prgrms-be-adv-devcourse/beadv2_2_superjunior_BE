@@ -1,18 +1,12 @@
 package store._0982.member.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,11 +32,11 @@ public class Seller {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @Column(name = "account_number", length = 20, nullable = false, unique = true)
-    private String accountNumber;
-
     @Column(name = "bank_code", length = 20, nullable = false)
     private String bankCode;
+
+    @Column(name = "account_number", length = 20, nullable = false, unique = true)
+    private String accountNumber;
 
     @Column(name = "account_holder", length = 50, nullable = false)
     private String accountHolder;
@@ -50,9 +44,16 @@ public class Seller {
     @Column(name = "business_registration_number", length = 15, nullable = false, unique = true)
     private String businessRegistrationNumber;
 
-    public static Seller create(settlementBalance) {
-
-
+    public static Seller create(Member member, String bankCode, String accountNumber, String accountHolder, String businessRegistrationNumber) {
+        Seller seller = new Seller();
+        seller.member = member;
+        seller.sellerId = member.getMemberId();
+        seller.createdAt = OffsetDateTime.now();
+        seller.bankCode = bankCode;
+        seller.accountNumber = accountNumber;
+        seller.accountHolder = accountHolder;
+        seller.businessRegistrationNumber = businessRegistrationNumber;
+        return seller;
     }
 }
 

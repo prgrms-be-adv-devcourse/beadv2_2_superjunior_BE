@@ -15,6 +15,11 @@ public enum CustomErrorCode {
     INVALID_EMAIL(HttpStatus.BAD_REQUEST, "적절한 이메일 형식이 아닙니다."),
     INVALID_NAME(HttpStatus.BAD_REQUEST, "이름은 영문, 한글, 숫자로 구성되고, 2자 이상 50자 이하이어야 합니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
+    // Seller
+    INVALID_SELLER_ACCOUNT_NUMBER(HttpStatus.BAD_REQUEST, "계좌번호는 숫자만 입력 가능합니다."),
+    INVALID_SELLER_BANK_CODE(HttpStatus.BAD_REQUEST, "은행 코드는 숫자만 입력 가능합니다."),
+    INVALID_SELLER_ACCOUNT_HOLDER(HttpStatus.BAD_REQUEST, "예금주는 50자 미만의 한글과 영어만 입력 가능합니다."),
+    INVALID_SELLER_BUSINESS_REGISTRATION_NUMBER(HttpStatus.BAD_REQUEST, "사업자 등록번호는 XXX-XX-XXXXX 형식으로 입력해야 합니다."),
 
     // 409 Conflict
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),

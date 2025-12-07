@@ -39,6 +39,10 @@ public class GlobalExceptionHandler {
             case "email" -> new CustomException(CustomErrorCode.INVALID_EMAIL);
             case "password" -> new CustomException(CustomErrorCode.INVALID_PASSWORD);
             case "name" -> new CustomException(CustomErrorCode.INVALID_NAME);
+            case "accountNumber" -> new CustomException(CustomErrorCode.INVALID_SELLER_ACCOUNT_NUMBER);
+            case "bankCode" -> new CustomException(CustomErrorCode.INVALID_SELLER_BANK_CODE);
+            case "accountHolder" -> new CustomException(CustomErrorCode.INVALID_SELLER_ACCOUNT_HOLDER);
+            case "businessRegistrationNumber" -> new CustomException(CustomErrorCode.INVALID_SELLER_BUSINESS_REGISTRATION_NUMBER);
             default -> new CustomException(CustomErrorCode.INVALID_PARAMETER);
         };
         return handleCustomException(ex);

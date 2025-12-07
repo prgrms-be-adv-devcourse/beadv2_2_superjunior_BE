@@ -21,7 +21,7 @@ public class MemberService {
 
     //TODO: 이메일 검증 SMTP
     @Transactional
-    public MemberSignUpInfo signUpMember(MemberSignUpCommand command) {
+    public MemberSignUpInfo createMember(MemberSignUpCommand command) {
         checkEmailDuplication(command.email());
         checkNameDuplication(command.name());
         //TODO: 메일 인증 여부 체크
@@ -72,5 +72,4 @@ public class MemberService {
     public void checkNameDuplication(String name) {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
-
 }
