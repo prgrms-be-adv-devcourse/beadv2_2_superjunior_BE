@@ -22,7 +22,7 @@ public record PaymentPointHistoryInfo(
         return new PaymentPointHistoryInfo(
                 paymentPoint.getId(),
                 paymentPoint.getMemberId(),
-                paymentPoint.getOrderId(),
+                paymentPoint.getPgOrderId(),
                 paymentPoint.getPaymentMethod(),
                 paymentPoint.getPaymentKey(),
                 paymentPoint.getAmount(),

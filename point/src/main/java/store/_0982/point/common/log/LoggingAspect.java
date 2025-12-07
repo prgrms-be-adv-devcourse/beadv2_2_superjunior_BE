@@ -17,6 +17,7 @@ import java.util.Objects;
 @Aspect
 @Component
 public class LoggingAspect {
+    // TODO: 컨트롤러에서 거를 메서드는 거르자. 서비스도 마찬가지
     @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
     public void controller() {}
 

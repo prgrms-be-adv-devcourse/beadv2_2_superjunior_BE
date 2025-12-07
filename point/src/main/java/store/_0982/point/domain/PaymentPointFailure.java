@@ -15,7 +15,6 @@ import java.util.UUID;
 public class PaymentPointFailure {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "failure_id", nullable = false)
     private UUID id;
 
@@ -50,6 +49,7 @@ public class PaymentPointFailure {
             int amount,
             String rawPayload
     ) {
+        this.id = UUID.randomUUID();
         this.paymentPoint = paymentPoint;
         this.paymentKey = paymentKey;
         this.errorCode = errorCode;
