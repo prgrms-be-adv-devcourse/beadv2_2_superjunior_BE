@@ -49,7 +49,6 @@ public class Member {
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
-    @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
