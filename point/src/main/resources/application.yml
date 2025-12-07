@@ -5,5 +5,13 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+  default-flat-param-object: true
+
 server:
   port: 8086

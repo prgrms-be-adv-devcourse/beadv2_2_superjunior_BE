@@ -1,0 +1,61 @@
+package store._0982.product.presentation;
+
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import store._0982.product.application.PurchaseService;
+import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.common.dto.PageResponseDto;
+import store._0982.product.common.dto.ResponseDto;
+
+import java.util.UUID;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/purchases")
+public class GroupPurchaseController {
+
+    private final PurchaseService purchaseService;
+
+    @Operation(summary = "공동구매 상세 조회", description = "공동구매를 상세 조회한다.")
+    @GetMapping("/{purchaseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<GroupPurchaseInfo> getGroupPurchaseById(
+            @PathVariable UUID purchaseId) {
+        GroupPurchaseInfo info = purchaseService.getGroupPurchaseById(purchaseId);
+        return new ResponseDto<>(HttpStatus.OK, info, "공동구매가 상세 조회되었습니다.");
+    }
+
+    @Operation(summary = "공동구매 목록 조회", description = "공동구매 목록을 페이징하여 조회한다.")
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponseDto<GroupPurchaseInfo>> getGroupPurchase(
+            @PageableDefault(size = 10) Pageable pageable) {
+        PageResponseDto<GroupPurchaseInfo> pageResponse = purchaseService.getGroupPurchase(pageable);
+        return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 목록 조회되었습니다.");
+    }
+
+    @Operation(summary = "공동구매 판매자별 목록 조회", description = "공동구매 판매자별 목록을 페이징하여 조회한다.")
+    @GetMapping("/seller/{sellerId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponseDto<GroupPurchaseInfo>> getGroupPurchasesBySeller(
+            @PathVariable UUID sellerId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        PageResponseDto<GroupPurchaseInfo> pageResponse = purchaseService.getGroupPurchasesBySeller(sellerId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 판매자별 목록 조회되었습니다");
+    }
+
+    @Operation(summary = "공동구매 삭제", description = "공동구매 삭제한다.")
+    @DeleteMapping("/{purchaseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> deleteGroupPurchase(
+            @PathVariable UUID purchaseId,
+            @RequestHeader("X-Member-Id") UUID memberId) {
+        purchaseService.deleteGroupPurchase(purchaseId, memberId);
+        return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 삭제되었습니다");
+    }
+
+}
