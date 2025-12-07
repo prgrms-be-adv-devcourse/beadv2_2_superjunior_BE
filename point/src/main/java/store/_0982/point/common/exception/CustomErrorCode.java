@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-// TODO: 에러 메시지 수정 필요
 public enum CustomErrorCode {
 
     // 400 Bad Request
