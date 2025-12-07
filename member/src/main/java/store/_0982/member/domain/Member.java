@@ -39,9 +39,6 @@ public class Member {
     @Column(name = "salt_key", length = 32, nullable = false)
     private String saltKey;
 
-    @Column(name = "point_balance", nullable = false)
-    private Integer pointBalance = 0;
-
     @Column(name = "image_url", length = 2048)
     private String imageUrl;
 

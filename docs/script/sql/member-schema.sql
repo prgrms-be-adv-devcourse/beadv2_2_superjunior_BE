@@ -17,7 +17,6 @@ create table member_schema.member
                    (ARRAY [('CUSTOMER'::character varying)::text, ('SELLER'::character varying)::text,
                        ('ADMIN'::character varying)::text])),
     salt_key      varchar(32)                                                    not null,
-    point_balance integer                  default 0                             not null,
     image_url     varchar(2048),
     created_at    timestamp with time zone default now()                         not null,
     updated_at    timestamp with time zone,
