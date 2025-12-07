@@ -84,15 +84,30 @@ public class MemberController {
     }
 
     //아래는 Seller 관련 endpoint
+    @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) String role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest){
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, Role.valueOf(role));
+    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
+        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
         return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
     }
+
+    @Operation(summary = "판매자 정보 조회", description = "판매자 정보를 조회합니다.")
     @GetMapping("/seller/{sellerId}")
     public ResponseDto<SellerInfo> getSeller(@RequestHeader(value = "X-Member-Id", required = false) UUID memberId, @PathVariable UUID sellerId) {
         SellerCommand command = new SellerCommand(memberId, sellerId);
         return new ResponseDto<>(HttpStatus.OK, sellerService.getSeller(command), "판매자 정보");
+    }
+
+    @Operation(summary = "판매자 정산 잔액 조회", description = "판매자 정산 잔액을 조회합니다.")
+    @GetMapping("balance")
+    public ResponseDto<SellerBalanceInfo> getSellerBalance(@RequestHeader(value = "X-Member-Id", required = false) UUID memberId, @RequestHeader(value = "X-Member-Role", required = false) Role role) {
+        return new ResponseDto<>(HttpStatus.OK, sellerService.getSellerBalance(new BalanceCommand(memberId, role)), "판매자 정산 잔금");
+    }
+
+    @PutMapping("/seller")
+    public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
+        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
+        return new ResponseDto<>(HttpStatus.CREATED, sellerService.updateSeller(command), "판매자 정보 수정이 완료되었습니다.");
     }
 }

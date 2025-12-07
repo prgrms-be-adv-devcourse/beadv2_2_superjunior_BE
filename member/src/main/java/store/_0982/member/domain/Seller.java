@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -29,6 +30,7 @@ public class Seller {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
@@ -55,5 +57,11 @@ public class Seller {
         seller.businessRegistrationNumber = businessRegistrationNumber;
         return seller;
     }
-}
 
+    public void update(String bankCode, String accountNumber, String accountHolder, String businessRegistrationNumber) {
+        this.bankCode = bankCode;
+        this.accountNumber = accountNumber;
+        this.accountHolder = accountHolder;
+        this.businessRegistrationNumber = businessRegistrationNumber;
+    }
+}
