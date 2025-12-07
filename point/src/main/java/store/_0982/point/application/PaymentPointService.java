@@ -5,9 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.ResourceAccessException;
 import store._0982.point.application.dto.*;
-import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.exception.CustomErrorCode;
@@ -23,7 +21,7 @@ import java.util.UUID;
 @Transactional
 public class PaymentPointService {
 
-    private final TossPaymentClient tossPaymentClient;
+    private final TossPaymentService tossPaymentService;
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
@@ -41,7 +39,7 @@ public class PaymentPointService {
     @Transactional(readOnly = true)
     public MemberPointInfo getPoints(UUID memberId) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+                .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
         return MemberPointInfo.from(memberPoint);
     }
 
@@ -64,13 +62,13 @@ public class PaymentPointService {
             throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
         }
 
-        TossPaymentResponse tossPaymentResponse = getValidTossPaymentResponse(paymentPoint, command);
+        TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(paymentPoint, command);
         paymentPoint.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
 
         UUID memberId = paymentPoint.getMemberId();
         // 처음 결제 승인 시 보유 포인트 0인 객체를 미리 생성
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId, 0)));
+                .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
 
         memberPoint.addPoints(paymentPoint.getAmount());
         return new PointChargeConfirmInfo(
@@ -113,8 +111,8 @@ public class PaymentPointService {
         if (paymentPoint.getStatus() != PaymentPointStatus.COMPLETED) {
             throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
         }
-        //todo 추후 헤더값으로 수정
-        if (!paymentPoint.getMemberId().equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))) {
+
+        if (!paymentPoint.getMemberId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
         }
         MemberPoint memberPoint = memberPointRepository.findById(paymentPoint.getMemberId())
@@ -128,31 +126,11 @@ public class PaymentPointService {
         }
         // TODO: 일정 기간 이내에서만 환불되게 수정
 
-        TossPaymentResponse response = tossPaymentClient.cancel(paymentPoint.getPaymentKey(), command.cancelReason(), paymentPoint.getAmount());
+        TossPaymentResponse response = tossPaymentService.cancelPayment(paymentPoint, command);
         TossPaymentResponse.CancelInfo cancelInfo = response.cancels().get(0);
 
         paymentPoint.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
         memberPoint.refund(paymentPoint.getAmount());
         return PointRefundInfo.from(paymentPoint);
-    }
-
-    private TossPaymentResponse getValidTossPaymentResponse(PaymentPoint paymentPoint, PointChargeConfirmCommand command) {
-        TossPaymentResponse tossPaymentResponse = executePaymentConfirmation(command);
-        if (!paymentPoint.getPgOrderId().equals(tossPaymentResponse.orderId())) {
-            throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
-        }
-        return tossPaymentResponse;
-    }
-
-    private TossPaymentResponse executePaymentConfirmation(PointChargeConfirmCommand command) {
-        try {
-            return tossPaymentClient.confirm(command);
-        } catch (CustomException e) {
-            throw e;
-        } catch (ResourceAccessException e) {
-            throw new CustomException(CustomErrorCode.PAYMENT_API_TIMEOUT);
-        } catch (Exception e) {
-            throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
-        }
     }
 }

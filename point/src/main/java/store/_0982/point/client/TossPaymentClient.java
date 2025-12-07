@@ -9,16 +9,22 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.point.application.dto.PointChargeConfirmCommand;
+import store._0982.point.client.dto.TossPaymentCancelRequest;
+import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * 실제로 토스 API를 호출하는 클래스입니다.
+ * <p>API 호출 메서드를 정의할 때는 client.dto 패키지에서 정의된 클래스만 파라미터로 이용해 주세요.</p>
+ *
+ * @author Minhyung Kim
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -29,22 +35,22 @@ public class TossPaymentClient {
     private final RestTemplate restTemplate;
     private final TossPaymentProperties properties;
 
-    public TossPaymentResponse confirm(PointChargeConfirmCommand command) {
+    public TossPaymentResponse confirm(TossPaymentConfirmRequest request) {
         if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
             throw new IllegalStateException("Toss secret key is not configured");
         }
         HttpHeaders headers = createHeaders();
 
         Map<String, Object> body = new HashMap<>();
-        body.put("paymentKey", command.paymentKey());
-        body.put("orderId", command.orderId());
-        body.put("amount", command.amount());
+        body.put("paymentKey", request.paymentKey());
+        body.put("orderId", request.orderId());
+        body.put("amount", request.amount());
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         try {
             TossPaymentResponse tossPaymentResponse = restTemplate.postForObject(CONFIRM_URL, entity, TossPaymentResponse.class);
-            log.debug(Objects.requireNonNull(tossPaymentResponse).toString());
+            log.debug(String.valueOf(tossPaymentResponse));
             return tossPaymentResponse;
         } catch (HttpStatusCodeException ex) {
             HttpStatusCode statusCode = ex.getStatusCode();
@@ -53,8 +59,8 @@ public class TossPaymentClient {
         }
     }
 
-    public TossPaymentResponse cancel(String paymentKey, String reason, int cancelAmount) {
-        String url = "https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel";
+    public TossPaymentResponse cancel(TossPaymentCancelRequest request) {
+        String url = "https://api.tosspayments.com/v1/payments/" + request.paymentKey() + "/cancel";
 
         if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
             throw new IllegalStateException("Toss secret key is not configured");
@@ -65,8 +71,8 @@ public class TossPaymentClient {
         headers.set("Idempotency-Key", UUID.randomUUID().toString());
 
         Map<String, Object> body = new HashMap<>();
-        body.put("cancelReason", reason);
-        body.put("cancelAmount", cancelAmount);
+        body.put("cancelReason", request.reason());
+        body.put("cancelAmount", request.amount());
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         return restTemplate.postForObject(url, entity, TossPaymentResponse.class);
