@@ -20,20 +20,17 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
-    //TODO: .setSecure, setAge, setDomain
+    //TODO: .setSecure, setAge
+    //setDomain은 필요 없음, 브라우저 입장에서는 발급받은 곳도 localhost:8000 쓰는 곳도 localhost:8000
+
     public ResponseDto<Void> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
 
-
-        Cookie accessTokenCookie = new Cookie("accessToken", tokens.accessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/api");
+        Cookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken());
         response.addCookie(accessTokenCookie);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", tokens.refreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/auth/refresh");
+        Cookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken());
         response.addCookie(refreshTokenCookie);
 
 
@@ -57,11 +54,30 @@ public class AuthController {
 
         String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/api");
+        Cookie accessTokenCookie = generateAccessTokenCookie(newAccessToken);
         response.addCookie(accessTokenCookie);
 
         return new ResponseDto<>(HttpStatus.OK, null, "토큰이 발급되었습니다.");
     }
+
+    private Cookie generateAccessTokenCookie(String accessToken) {
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/api");
+//        accessTokenCookie.setMaxAge();
+//        accessTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
+        return accessTokenCookie;
+    }
+
+    private Cookie generateRefreshTokenCookie(String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/api/auth/refresh");
+//        refreshTokenCookie.setMaxAge();
+//        refreshTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
+        return refreshTokenCookie;
+    }
+
 }
+
+

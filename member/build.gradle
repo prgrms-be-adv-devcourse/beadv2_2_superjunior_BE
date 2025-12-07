@@ -1,8 +1,9 @@
-
-
 dependencies {
     /* === Web */
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    /* === Mail === */
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     /* === JPA / DB === */
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

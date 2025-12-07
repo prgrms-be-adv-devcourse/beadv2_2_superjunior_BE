@@ -20,9 +20,11 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     //TODO: 이메일 검증 SMTP
-    //TODO: 이메일 중복 검사, name 중복 검사
     @Transactional
     public MemberSignUpInfo signUpMember(MemberSignUpCommand command) {
+        checkEmailDuplication(command.email());
+        checkNameDuplication(command.name());
+        //TODO: 메일 인증 여부 체크
         Member member = Member.create(command.email(), command.name(), command.password(), command.phoneNumber());
         member.encodePassword(passwordEncoder.encode(member.getSaltKey() + member.getPassword()));
         return MemberSignUpInfo.from(memberRepository.save(member));
@@ -30,17 +32,14 @@ public class MemberService {
 
     @Transactional
     public void changePassword(PasswordChangeCommand command) {
-        Member member = memberRepository.findById(command.memberId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+        Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         checkPassword(command.password(), member);
         member.changePassword(passwordEncoder.encode(member.getSaltKey() + command.newPassword()));
     }
 
     @Transactional
     public void deleteMember(MemberDeleteCommand command) {
-        UUID memberId = command.memberId();
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+        Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         checkPassword(command.password(), member);
         member.delete();
         memberRepository.save(member);
@@ -48,15 +47,14 @@ public class MemberService {
 
     @Transactional
     public ProfileUpdateInfo updateProfile(ProfileUpdateCommand command) {
-        Member member = memberRepository.findById(command.memberId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+        checkNameDuplication(command.name());
+        Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         member.update(command.name(), command.phoneNumber());
         return ProfileUpdateInfo.from(member);
     }
 
     public ProfileInfo getProfile(UUID memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         return ProfileInfo.from(member);
     }
 
@@ -64,6 +62,15 @@ public class MemberService {
         if (!passwordEncoder.matches(member.getSaltKey() + password, member.getPassword())) {
             throw new CustomException(CustomErrorCode.WRONG_PASSWORD);
         }
+    }
+
+    private void checkEmailDuplication(String email) {
+        if (memberRepository.findByEmail(email).isPresent())
+            throw new CustomException(CustomErrorCode.DUPLICATED_EMAIL);
+    }
+
+    public void checkNameDuplication(String name) {
+        if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
 
 }

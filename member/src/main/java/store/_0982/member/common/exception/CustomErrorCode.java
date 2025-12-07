@@ -15,6 +15,11 @@ public enum CustomErrorCode {
     INVALID_EMAIL(HttpStatus.BAD_REQUEST, "적절한 이메일 형식이 아닙니다."),
     INVALID_NAME(HttpStatus.BAD_REQUEST, "이름은 영문, 한글, 숫자로 구성되고, 2자 이상 50자 이하이어야 합니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
+
+    // 409 Conflict
+    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),
+    DUPLICATED_NAME(HttpStatus.BAD_REQUEST, "이미 사용중인 이름입니다."),
+
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
@@ -25,8 +30,12 @@ public enum CustomErrorCode {
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
     NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
     NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
+
     //403 비밀번호 틀림
-    WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다.");
+    WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다."),
+
+    //404
+    NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

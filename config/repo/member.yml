@@ -14,7 +14,6 @@ spring:
         format_sql: true
     show-sql: false
 
-
 jwt:
   secret: ${JWT_SECRET}
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
