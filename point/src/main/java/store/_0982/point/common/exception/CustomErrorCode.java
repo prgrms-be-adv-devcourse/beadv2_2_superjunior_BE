@@ -15,8 +15,9 @@ public enum CustomErrorCode {
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
     ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
+
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
-    REFUND_AFTER_ORDER(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않습니다."),
+    REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않아 환불이 불가합니다."),
 
     // 401 Unauthorized
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
