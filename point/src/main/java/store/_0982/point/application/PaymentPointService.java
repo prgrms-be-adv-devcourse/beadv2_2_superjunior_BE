@@ -15,6 +15,7 @@ import store._0982.point.common.exception.CustomException;
 import store._0982.point.domain.*;
 import store._0982.point.presentation.dto.PointMinusRequest;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -101,6 +102,36 @@ public class PaymentPointService {
 
         PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
         return PointChargeFailInfo.from(paymentPointFailureRepository.save(failure));
+    }
+
+    // TODO: 환불 기능 수정 필요 (멤버 검증도 추가)
+    public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (paymentPoint.getStatus() != PaymentPointStatus.COMPLETED) {
+            throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
+        }
+        //todo 추후 헤더값으로 수정
+        if (!paymentPoint.getMemberId().equals(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))) {
+            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
+        MemberPoint memberPoint = memberPointRepository.findById(paymentPoint.getMemberId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        OffsetDateTime paymentAt = paymentPoint.getApprovedAt();
+        OffsetDateTime lastUsedAt = memberPoint.getLastUsedAt();
+
+        if (lastUsedAt != null && lastUsedAt.isAfter(paymentAt)) {
+            throw new CustomException(CustomErrorCode.REFUND_AFTER_ORDER);
+        }
+
+        TossPaymentResponse response = tossPaymentClient.cancel(paymentPoint.getPaymentKey(), command.cancelReason(), paymentPoint.getAmount());
+        TossPaymentResponse.CancelInfo cancelInfo = response.cancels().get(0);
+
+        paymentPoint.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
+        memberPoint.refund(paymentPoint.getAmount());
+        return PointRefundInfo.from(paymentPoint);
     }
 
     private TossPaymentResponse getValidTossPaymentResponse(PaymentPoint paymentPoint, PointChargeConfirmCommand command) {

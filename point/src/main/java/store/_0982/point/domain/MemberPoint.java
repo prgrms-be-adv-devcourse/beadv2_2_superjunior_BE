@@ -8,6 +8,7 @@ import lombok.*;
 import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -25,11 +26,24 @@ public class MemberPoint {
     @Column(name = "point_balance")
     private Integer pointBalance;
 
+    @Column(name = "last_used_at")
+    private OffsetDateTime lastUsedAt;
+
+    public MemberPoint(UUID memberId, Integer pointBalance) {
+        this.memberId = memberId;
+        this.pointBalance = pointBalance;
+    }
+
     public void addPoints(int pointBalance) {
         this.pointBalance += pointBalance;
     }
 
     public void deductPoints(int pointBalance) {
+        refund(pointBalance);
+        lastUsedAt = OffsetDateTime.now();
+    }
+
+    public void refund(int pointBalance) {
         if (this.pointBalance < pointBalance) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }

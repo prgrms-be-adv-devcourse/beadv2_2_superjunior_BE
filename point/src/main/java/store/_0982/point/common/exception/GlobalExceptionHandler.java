@@ -16,7 +16,7 @@ import store._0982.point.common.log.LogFormat;
 import store._0982.point.common.dto.ResponseDto;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {

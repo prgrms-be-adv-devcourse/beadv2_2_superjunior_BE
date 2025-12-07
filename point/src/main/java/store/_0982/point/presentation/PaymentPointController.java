@@ -11,10 +11,7 @@ import store._0982.point.application.dto.*;
 import store._0982.point.common.HeaderName;
 import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.dto.ResponseDto;
-import store._0982.point.presentation.dto.PointChargeConfirmRequest;
-import store._0982.point.presentation.dto.PointChargeCreateRequest;
-import store._0982.point.presentation.dto.PointChargeFailRequest;
-import store._0982.point.presentation.dto.PointMinusRequest;
+import store._0982.point.presentation.dto.*;
 
 import java.util.UUID;
 
@@ -50,6 +47,17 @@ public class PaymentPointController {
     public ResponseDto<PointChargeFailInfo> handlePaymentFailure(@RequestBody @Valid PointChargeFailRequest request) {
         PointChargeFailInfo info = paymentPointService.handlePaymentFailure(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED.value(), info, "결제 실패 정보 저장 완료");
+    }
+
+    @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/refund")
+    public ResponseDto<PointRefundInfo> refundPaymentPoint(
+            @RequestHeader(HeaderName.ID) UUID memberId,
+            @RequestBody PointRefundRequest request
+    ) {
+        PointRefundInfo info = paymentPointService.refundPaymentPoint(memberId, request.toCommand());
+        return new ResponseDto<>(HttpStatus.OK, info, "포인트 결제 환불 완료");
     }
 
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")

@@ -53,13 +53,14 @@ public class TossPaymentClient {
         }
     }
 
-    public  TossPaymentResponse cancel(String paymentKey, String reason, int cancelAmount){
+    public TossPaymentResponse cancel(String paymentKey, String reason, int cancelAmount) {
         String url = "https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel";
 
         if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
             throw new IllegalStateException("Toss secret key is not configured");
         }
         HttpHeaders headers = createHeaders();
+
         //멱등키
         headers.set("Idempotency-Key", UUID.randomUUID().toString());
 

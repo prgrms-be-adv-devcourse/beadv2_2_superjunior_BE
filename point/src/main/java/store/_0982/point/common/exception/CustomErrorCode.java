@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
+// TODO: 에러 메시지 수정 필요
 public enum CustomErrorCode {
 
     // 400 Bad Request
@@ -15,6 +16,7 @@ public enum CustomErrorCode {
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
     ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    REFUND_AFTER_ORDER(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않습니다."),
 
     // 401 Unauthorized
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
@@ -34,6 +36,7 @@ public enum CustomErrorCode {
     CANNOT_HANDLE_FAILURE(HttpStatus.CONFLICT, "결제가 이미 완료 또는 환불되었습니다."),
     DIFFERENT_AMOUNT(HttpStatus.CONFLICT, "결제 금액이 불일치합니다."),
     ORDER_ID_MISMATCH(HttpStatus.CONFLICT, "주문 번호가 일치하지 않습니다."),
+    NOT_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "환불할 수 없는 상태입니다."),
 
     // 500 Internal Server Error
     PAYMENT_COMPLETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 승인 중 오류가 발생했습니다."),
