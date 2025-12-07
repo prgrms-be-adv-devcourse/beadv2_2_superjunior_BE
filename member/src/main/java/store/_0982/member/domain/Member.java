@@ -8,16 +8,19 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "member", schema = "member_schema")
-public class Member {
+public class Member {           //TODO: Addresses 필드에 넣기 관계의 주인은 address
 
     @Id
     @Column(name = "member_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private UUID memberId;
 
     @Column(name = "email", length = 100, nullable = false, unique = true)
@@ -51,6 +54,9 @@ public class Member {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<Address> addresses = new ArrayList<>();
+
     public static Member create(String email, String name, String password, String phoneNumber) {
         Member member = new Member();
         member.memberId = UUID.randomUUID();
@@ -82,6 +88,5 @@ public class Member {
         this.deletedAt = OffsetDateTime.now();
         this.updatedAt = OffsetDateTime.now();
     }
-
 }
 

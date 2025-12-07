@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.common.exception.CustomException;
+import store._0982.member.domain.Address;
+import store._0982.member.domain.AddressRepository;
 import store._0982.member.domain.Member;
 import store._0982.member.domain.MemberRepository;
 
@@ -18,6 +20,8 @@ import java.util.UUID;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final AddressRepository addressRepository;
 
     //TODO: 이메일 검증 SMTP
     @Transactional
@@ -72,4 +76,12 @@ public class MemberService {
     public void checkNameDuplication(String name) {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
+
+    //여기 아래로는 Address 관련 메소드
+    public AddressInfo addAddress(AddressAddCommand command) {
+        Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
+        Address address = Address.create(member, command.address(), command.addressDetail(), command.postalCode(), command.receiverName(), command.phoneNumber());
+        return AddressInfo.from(addressRepository.save(address));
+    }
+
 }

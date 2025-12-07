@@ -110,4 +110,12 @@ public class MemberController {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
         return new ResponseDto<>(HttpStatus.CREATED, sellerService.updateSeller(command), "판매자 정보 수정이 완료되었습니다.");
     }
+
+    //이 아래로는 Address endpoint
+    @PostMapping("/address")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseDto<AddressInfo> addAddress(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @Valid @RequestBody AddressAddRequest addressAddRequest) {
+        AddressAddCommand command = addressAddRequest.toCommand(memberId);
+        return new ResponseDto<>(HttpStatus.CREATED,memberService.addAddress(command), "주소 등록이 완료되었습니다.");
+    }
 }

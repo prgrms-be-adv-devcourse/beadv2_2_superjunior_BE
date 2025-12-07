@@ -101,8 +101,9 @@ create table member_schema.address
             primary key,
     address        varchar(100) not null,
     address_detail varchar(100) not null,
-    postal_code    varchar(50)  not null,
+    postal_code    varchar(5)  not null,
     receiver_name  varchar(100),
+    phone_number  varchar(20),
     member_id      uuid         not null
         constraint address_member_id_fk
             references member_schema.member,
