@@ -44,6 +44,14 @@ spring:
                 - Path=/v3/api-docs/**
               filters:
                 - RewritePath=/v3/api-docs/(?<segment>.*), /$\{segment}/v3/api-docs
+
+            - id: product-api
+              uri: lb://product
+              predicates:
+                - Path=/api/product/**
+              filters:
+                - RewritePath=/api/product/(?<segment>.*), /${segment}
+
           discovery:
             locator:
               enabled: true

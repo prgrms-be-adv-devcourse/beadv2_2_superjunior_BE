@@ -13,7 +13,7 @@ create table product_schema.product
                    (ARRAY [('HOME'::character varying)::text, ('FOOD'::character varying)::text, ('HEALTH'::character varying)::text, ('BEAUTY'::character varying)::text, ('FASHION'::character varying)::text, ('ELECTRONICS'::character varying)::text, ('KIDS'::character varying)::text, ('HOBBY'::character varying)::text, ('PET'::character varying)::text])),
     description  text                                   not null,
     stock        integer                  default 0     not null,
-    original_url varchar(255)                           not null,
+    original_url varchar(255)                           null,
     seller_id    uuid                                   not null,
     created_at   timestamp with time zone default now() not null,
     updated_at   timestamp with time zone
