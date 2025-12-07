@@ -51,17 +51,17 @@ public class ProductController {
             @PathVariable UUID productId
     ){
         ProductDetailInfo response = productService.getProductInfo(productId);
-        return new ResponseDto<>(HttpStatus.OK.value(), response, "상품 조회가 완료되었습니다.");
+        return new ResponseDto<>(HttpStatus.OK, response, "상품 조회가 완료되었습니다.");
     }
 
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 정보 수정", description = "판매자 정보를 수정한다.")
     @PatchMapping("/{productId}")
     public ResponseDto<ProductUpdateInfo> updateProduct(
             @PathVariable UUID productId,
             @RequestBody ProductUpdateRequest request){
         ProductUpdateInfo response = productService.updateProduct(productId, request.toCommand());
-        return new ResponseDto<>(HttpStatus.OK.value(), response, "상품 수정이 완료되었습니다.");
+        return new ResponseDto<>(HttpStatus.OK, response, "상품 수정이 완료되었습니다.");
     }
 
 }
