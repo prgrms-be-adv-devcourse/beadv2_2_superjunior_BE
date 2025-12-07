@@ -46,6 +46,24 @@
 
 <button id="pay-button">주문 생성 후 결제하기</button>
 
+<br><br>
+
+<label>
+    주문번호(orderId):
+    <input type="text" id="orderId" placeholder="주문번호(UUID) 입력" />
+</label>
+
+<br><br>
+
+<label>
+    취소사유(cancelReason):
+    <input type="text" id="cancelReason" placeholder="취소사유" />
+</label>
+
+<br><br>
+
+<button id="refund-button">환불 하기</button>
+
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
         try {
@@ -104,6 +122,52 @@
                     failUrl: 'http://localhost:8086/payments/fail.html'
                 });
             });
+
+        document.getElementById("refund-button").addEventListener("click", async () => {
+
+        const orderId = document.getElementById("orderId").value;
+        const cancelReason = document.getElementById("cancelReason").value;
+
+        if (!orderId) {
+            alert("orderId를 입력하세요.");
+            return;
+        }
+
+        if (!cancelReason) {
+            alert("취소사유를 입력하세요.");
+            return;
+        }
+
+        const requestBody = {
+            orderId: orderId,
+            cancelReason: cancelReason
+        };
+
+        try {
+            const response = await fetch("/api/points/refund", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Member-Id": '3fa85f64-5717-4562-b3fc-2c963f66afa6' // 🔥 실제 memberId 넣기
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                alert(error.message);
+                return;
+            }
+
+            const result = await response.json();
+            console.log(result);
+            alert("환불 성공: " + JSON.stringify(result));
+
+        } catch (e) {
+            console.error(e);
+            alert("환불 중 오류가 발생했습니다.");
+        }
+    });
 
         } catch (error) {
             console.error('Toss 위젯 초기화 실패:', error);

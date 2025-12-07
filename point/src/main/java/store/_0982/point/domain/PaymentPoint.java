@@ -42,6 +42,9 @@ public class PaymentPoint {
     @Column(name = "fail_message")
     private String failMessage;
 
+    @Column(name = "refund_message")
+    private String refundMessage;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
@@ -51,6 +54,9 @@ public class PaymentPoint {
 
     @Column(name = "approved_at")
     private OffsetDateTime approvedAt;
+
+    @Column(name = "refunded_at")
+    private OffsetDateTime refundedAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -80,5 +86,11 @@ public class PaymentPoint {
     public void markFailed(String errorMessage) {
         this.status = PaymentPointStatus.FAILED;
         this.failMessage = errorMessage;
+    }
+
+    public void markRefunded(OffsetDateTime refundedAt, String cancelReason) {
+        this.status = PaymentPointStatus.REFUNDED;
+        this.refundedAt = refundedAt;
+        this.refundMessage = cancelReason;
     }
 }

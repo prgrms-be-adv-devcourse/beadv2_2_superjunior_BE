@@ -17,6 +17,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -50,6 +51,24 @@ public class TossPaymentClient {
             String responseBody = ex.getResponseBodyAsString();
             throw new IllegalStateException("Toss confirm failed (" + statusCode + "): " + responseBody, ex);
         }
+    }
+
+    public  TossPaymentResponse cancel(String paymentKey, String reason, int cancelAmount){
+        String url = "https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel";
+
+        if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
+            throw new IllegalStateException("Toss secret key is not configured");
+        }
+        HttpHeaders headers = createHeaders();
+        //멱등키
+        headers.set("Idempotency-Key", UUID.randomUUID().toString());
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("cancelReason", reason);
+        body.put("cancelAmount", cancelAmount);
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+        return restTemplate.postForObject(url, entity, TossPaymentResponse.class);
     }
 
     private HttpHeaders createHeaders() {

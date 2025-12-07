@@ -17,9 +17,11 @@ create table point_schema.payment_point
             check ((status)::text = ANY
                    (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('REFUNDED'::character varying)::text, ('FAILED'::character varying)::text])),
     fail_message     text,
+    refund_message   text,
     created_at       timestamp with time zone default now() not null,
     requested_at     timestamp with time zone,
     approved_at      timestamp with time zone,
+    refunded_at      timestamp with time zone,
     updated_at       timestamp with time zone
 );
 
@@ -96,7 +98,8 @@ create table point_schema.member_point
     member_id       uuid                                   not null
             constraint member_point_pk
                 primary key,
-    point_balance           integer
+    point_balance           integer,
+    last_used_at timestamp with time zone
 );
 
 comment on table point_schema.member_point is '회원별 보유 포인트';
