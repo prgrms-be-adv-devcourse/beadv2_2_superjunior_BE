@@ -1,0 +1,15 @@
+package store._0982.point.domain;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PaymentPointRepository {
+    Page<PaymentPoint> findAllByMemberId(UUID memberId, Pageable pageable);
+
+    Optional<PaymentPoint> findByOrderId(UUID orderId);
+
+    PaymentPoint save(PaymentPoint paymentPoint);
+}

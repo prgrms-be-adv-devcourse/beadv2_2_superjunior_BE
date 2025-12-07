@@ -9,17 +9,19 @@ create table point_schema.payment_point
     pg_order_id      uuid                                   not null
         constraint payment_point_pk_2
             unique,
-    payment_method   varchar(30)                            not null,
-    payment_key      varchar(50)                            not null,
+    payment_method   varchar(30),
+    payment_key      varchar(50),
     amount           integer                                not null,
     status           varchar(20)                            not null
         constraint status_check
             check ((status)::text = ANY
-                   (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('FAILED'::character varying)::text])),
+                   (ARRAY [('REQUESTED'::character varying)::text, ('COMPLETED'::character varying)::text, ('REFUNDED'::character varying)::text, ('FAILED'::character varying)::text])),
     fail_message     text,
+    refund_message   text,
     created_at       timestamp with time zone default now() not null,
     requested_at     timestamp with time zone,
     approved_at      timestamp with time zone,
+    refunded_at      timestamp with time zone,
     updated_at       timestamp with time zone
 );
 
@@ -62,7 +64,7 @@ create table point_schema.payment_point_failure
             unique
         constraint payment_point_failure_payment_point_payment_point_id_fk
             references point_schema.payment_point,
-    payment_key      varchar(50)                            not null,
+    payment_key      varchar(50),
     error_code       varchar(30),
     error_message    text,
     amount           integer,
@@ -90,3 +92,18 @@ comment on column point_schema.payment_point_failure.created_at is '생성 시�
 
 alter table point_schema.payment_point_failure
     owner to postgres;
+
+create table point_schema.member_point
+(
+    member_id       uuid                                   not null
+            constraint member_point_pk
+                primary key,
+    point_balance           integer,
+    last_used_at timestamp with time zone
+);
+
+comment on table point_schema.member_point is '회원별 보유 포인트';
+
+comment on column point_schema.member_point.member_id is '멤버 ID';
+
+comment on column point_schema.member_point.point_balance is '포인트 잔액';
