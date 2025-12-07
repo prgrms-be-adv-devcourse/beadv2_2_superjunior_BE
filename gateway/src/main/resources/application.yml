@@ -10,12 +10,20 @@ spring:
       server:
         webflux:
           routes:
-            - id: user-api
+            # === 기존 API 라우트들 ===
+            - id: member-api
               uri: lb://member
               predicates:
-                - Path=/api/users/**
+                - Path=/api/members/**
               filters:
-                - RewritePath=/api/users/(?<segment>.*), /${segment}
+                - JwtAuth
+                - RewritePath=/api/members/(?<segment>.*), /api/members/${segment}
+            - id: member-auth-api
+              uri: lb://member
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
 
             - id: order-api
               uri: lb://order
@@ -30,6 +38,12 @@ spring:
                 - Path=/api/orders/**
               filters:
                 - RewritePath=/api/orders/(?<segment>.*), /${segment}
+            - id: openapi
+              uri: http://${GATEWAY_HOSTNAME:localhost}:${server.port}
+              predicates:
+                - Path=/v3/api-docs/**
+              filters:
+                - RewritePath=/v3/api-docs/(?<segment>.*), /$\{segment}/v3/api-docs
 
             - id: product-api
               uri: lb://product
@@ -42,6 +56,17 @@ spring:
             locator:
               enabled: true
               lower-case-service-id: true
+
+springdoc:
+  swagger-ui:
+    # Gateway Swagger UI에서 선택할 수 있는 문서 목록
+    urls:
+      - name: member-service
+        url: /v3/api-docs/member
+      - name: order-service
+        url: /v3/api-docs/order
+    # 필요하면 경로도 커스터마이징 가능 (옵션)
+    # path: /swagger-ui.html
 
 server:
   port: 8000

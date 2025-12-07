@@ -17,7 +17,7 @@ create table member_schema.member
                        ('ADMIN'::character varying)::text])),
     salt_key      varchar(32)                                                    not null,
     point_balance integer                  default 0                             not null,
-    image_url     varchar(255),
+    image_url     varchar(2048),
     created_at    timestamp with time zone default now()                         not null,
     updated_at    timestamp with time zone,
     deleted_at    timestamp with time zone,
@@ -61,6 +61,7 @@ create table member_schema.seller
         constraint seller_member_id_fk
             references member_schema.member,
     settlement_balance           integer     not null,
+    created_at    timestamp with time zone default now()                         not null,
     updated_at                   timestamp with time zone,
     account_number               varchar(20) not null
         constraint seller_pk_3
@@ -77,6 +78,8 @@ comment on table member_schema.seller is '판매자';
 comment on column member_schema.seller.seller_id is '판매자 ID';
 
 comment on column member_schema.seller.settlement_balance is '정산 잔금';
+
+comment on column member_schema.seller.created_at is '판매자 등록일';
 
 comment on column member_schema.seller.updated_at is '수정일';
 
@@ -103,6 +106,7 @@ create table member_schema.address
     member_id      uuid         not null
         constraint address_member_id_fk
             references member_schema.member,
+    created_at    timestamp with time zone default now()                         not null,
     updated_at     timestamp with time zone
 );
 
@@ -123,31 +127,4 @@ comment on column member_schema.address.member_id is '멤버 ID';
 comment on column member_schema.address.updated_at is '수정일';
 
 alter table member_schema.address
-    owner to postgres;
-
-create table member_schema.token
-(
-    token_id      integer      not null
-        constraint token_pk
-            primary key,
-    refresh_token varchar(255) not null,
-    member_id     uuid         not null
-        constraint token_pk_2
-            unique
-        constraint token_member_id_fk
-            references member_schema.member,
-    updated_at    timestamp with time zone
-);
-
-comment on table member_schema.token is '회원 토큰';
-
-comment on column member_schema.token.token_id is '토큰 ID';
-
-comment on column member_schema.token.refresh_token is '리프레시 토큰';
-
-comment on column member_schema.token.member_id is '멤버 ID';
-
-comment on column member_schema.token.updated_at is '수정일';
-
-alter table member_schema.token
     owner to postgres;
