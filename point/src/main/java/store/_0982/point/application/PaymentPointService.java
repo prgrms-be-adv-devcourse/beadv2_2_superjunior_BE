@@ -105,6 +105,7 @@ public class PaymentPointService {
     }
 
     // TODO: 환불 기능 수정 필요 (멤버 검증도 추가)
+    // TODO: 환불 조건을 어떻게 할까?
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
@@ -125,6 +126,7 @@ public class PaymentPointService {
         if (lastUsedAt != null && lastUsedAt.isAfter(paymentAt)) {
             throw new CustomException(CustomErrorCode.REFUND_AFTER_ORDER);
         }
+        // TODO: 일정 기간 이내에서만 환불되게 수정
 
         TossPaymentResponse response = tossPaymentClient.cancel(paymentPoint.getPaymentKey(), command.cancelReason(), paymentPoint.getAmount());
         TossPaymentResponse.CancelInfo cancelInfo = response.cancels().get(0);
@@ -136,7 +138,7 @@ public class PaymentPointService {
 
     private TossPaymentResponse getValidTossPaymentResponse(PaymentPoint paymentPoint, PointChargeConfirmCommand command) {
         TossPaymentResponse tossPaymentResponse = executePaymentConfirmation(command);
-        if (!paymentPoint.getOrderId().equals(tossPaymentResponse.orderId())) {
+        if (!paymentPoint.getPgOrderId().equals(tossPaymentResponse.orderId())) {
             throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
         }
         return tossPaymentResponse;

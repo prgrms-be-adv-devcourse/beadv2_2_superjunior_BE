@@ -21,7 +21,7 @@ public record PaymentPointInfo(
         return new PaymentPointInfo(
                 paymentPoint.getId(),
                 paymentPoint.getMemberId(),
-                paymentPoint.getOrderId(),
+                paymentPoint.getPgOrderId(),
                 paymentPoint.getPaymentMethod(),
                 paymentPoint.getPaymentKey(),
                 paymentPoint.getAmount(),
