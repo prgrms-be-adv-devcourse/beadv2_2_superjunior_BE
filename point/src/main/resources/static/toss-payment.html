@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!--suppress ALL -->
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -9,11 +10,13 @@
             font-family: Arial, sans-serif;
             margin: 2rem;
         }
+
         #payment-method {
             margin-top: 1rem;
             border: 1px solid #e0e0e0;
             padding: 1rem;
         }
+
         button {
             margin-top: 1.5rem;
             padding: 0.75rem 1.5rem;
@@ -22,6 +25,7 @@
             border: none;
             cursor: pointer;
         }
+
         input {
             padding: 0.4rem;
             margin-top: 0.3rem;
@@ -35,7 +39,7 @@
 
 <label>
     결제 금액:
-    <input type="number" id="amount" placeholder="금액 입력" />
+    <input type="number" id="amount" placeholder="금액 입력"/>
 </label>
 
 <br><br>
@@ -63,12 +67,15 @@
 <script>
     document.addEventListener('DOMContentLoaded', async function () {
         try {
-            if (typeof window.TossPayments !== 'function') {
-                throw new Error('TossPayments is not defined.');
+            if (typeof globalThis.TossPayments !== 'function') {
+                throw new TypeError('TossPayments is not defined.');
             }
 
-            const clientKey = 'test_ck_0RnYX2w532qpnn7EPAAN8NeyqApQ';
-            const tossPayments = window.TossPayments(clientKey);
+            // HTML 파일로 결제 테스트 시 클라이언트 키 바꿔 주세요!
+
+            // const clientKey = 'test_ck_0RnYX2w532qpnn7EPAAN8NeyqApQ';
+            const clientKey = 'test_ck_ex6BJGQOVDke4JO2pWwR3W4w2zNb';
+            const tossPayments = globalThis.TossPayments(clientKey);
 
             document.getElementById('pay-button').addEventListener('click', async function () {
                 const amountInput = document.getElementById('amount').value;
@@ -86,25 +93,25 @@
                     amount: amount
                 };
 
-            try {
-                const response = await fetch('/api/points/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Member-Id': '3fa85f64-5717-4562-b3fc-2c963f66afa6' //나중에 토큰으로 교체
-                    },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const response = await fetch('/api/points/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Member-Id': '3fa85f64-5717-4562-b3fc-2c963f66afa6' //나중에 토큰으로 교체
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-                const data = await response.json();
+                    const data = await response.json();
 
-                document.getElementById('result').textContent =
-                    JSON.stringify(data, null, 2);
+                    document.getElementById('result').textContent =
+                        JSON.stringify(data, null, 2);
 
-            } catch (error) {
-                document.getElementById('result').textContent =
-                    '결제 request 생성 실패: ' + error;
-            }
+                } catch (error) {
+                    document.getElementById('result').textContent =
+                        '결제 request 생성 실패: ' + error;
+                }
 
                 tossPayments.requestPayment('카드', {
                     company: '토스페이',
