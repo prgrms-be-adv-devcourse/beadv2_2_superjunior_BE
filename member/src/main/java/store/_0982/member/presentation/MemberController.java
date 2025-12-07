@@ -10,6 +10,7 @@ import store._0982.member.application.MemberService;
 import store._0982.member.application.SellerService;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.dto.ResponseDto;
+import store._0982.member.domain.Role;
 import store._0982.member.presentation.dto.*;
 
 import java.util.HashMap;
@@ -85,8 +86,13 @@ public class MemberController {
     //아래는 Seller 관련 endpoint
     @PostMapping("/seller")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest){
-        sellerRegisterRequest.toCommand(memberId);
-        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(sellerRegisterRequest.toCommand(memberId)), "판매자 등록이 완료되었습니다.");
+    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) String role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest){
+        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, Role.valueOf(role));
+        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
+    }
+    @GetMapping("/seller/{sellerId}")
+    public ResponseDto<SellerInfo> getSeller(@RequestHeader(value = "X-Member-Id", required = false) UUID memberId, @PathVariable UUID sellerId) {
+        SellerCommand command = new SellerCommand(memberId, sellerId);
+        return new ResponseDto<>(HttpStatus.OK, sellerService.getSeller(command), "판매자 정보");
     }
 }

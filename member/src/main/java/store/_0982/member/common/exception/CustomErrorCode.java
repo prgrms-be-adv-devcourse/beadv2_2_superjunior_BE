@@ -38,9 +38,12 @@ public enum CustomErrorCode {
 
     //403 비밀번호 틀림
     WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다."),
+    NOT_CUSTOMER(HttpStatus.FORBIDDEN, "CUSTOMER가 아닙니다."),
+    NOT_SELLER(HttpStatus.FORBIDDEN, "SELLER가 아닙니다."),
 
     //404
-    NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다.");
+    NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+    NOT_EXIST_SELLER(HttpStatus.NOT_FOUND, "존재하지 않는 판매자입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
