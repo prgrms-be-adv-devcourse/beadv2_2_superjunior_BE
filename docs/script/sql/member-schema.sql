@@ -8,7 +8,8 @@ create table member_schema.member
     email         varchar(100)                                                   not null
         constraint member_pk_2
             unique,
-    name          varchar(100)                                                   not null,
+    name          varchar(100)                                                   not null
+            unique,
     password      varchar(60)                                                    not null,
     role          varchar(20)              default 'CUSTOMER'::character varying not null
         constraint role_check

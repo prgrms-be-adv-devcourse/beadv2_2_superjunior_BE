@@ -10,15 +10,21 @@ public enum CustomErrorCode {
 
     // 400 Bad Request
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
-
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "적절하지 않은 요청 값이 존재합니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호는 8자리 이상이며 영어, 숫자, 특수문자를 각각 하나 이상 포함해야 합니다."),
+    INVALID_EMAIL(HttpStatus.BAD_REQUEST, "적절한 이메일 형식이 아닙니다."),
+    INVALID_NAME(HttpStatus.BAD_REQUEST, "이름은 영문, 한글, 숫자로 구성되고, 2자 이상 50자 이하이어야 합니다."),
+    REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
 
-    //401 토큰 없음
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
+    // 401 Unauthorized
+    NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
+    NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
+    NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
     //403 비밀번호 틀림
     WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다.");
 

@@ -20,6 +20,7 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
+    //TODO: .setSecure, setAge, setDomain
     public ResponseDto<Void> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
