@@ -13,5 +13,9 @@ springdoc:
     disable-swagger-default-url: true
   default-flat-param-object: true
 
+logging:
+  level:
+    store: debug
+
 server:
   port: 8086

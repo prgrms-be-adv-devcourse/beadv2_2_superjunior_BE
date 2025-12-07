@@ -1,6 +1,8 @@
 package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.point.application.dto.PointChargeConfirmCommand;
@@ -11,6 +13,8 @@ import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
+import store._0982.point.common.exception.PaymentClientException;
+import store._0982.point.common.log.LogFormat;
 import store._0982.point.domain.PaymentPoint;
 
 import java.util.function.Supplier;
@@ -21,6 +25,7 @@ import java.util.function.Supplier;
  *
  * @author Minhyung Kim
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TossPaymentService {
@@ -50,11 +55,12 @@ public class TossPaymentService {
     private static TossPaymentResponse executeWithExceptionHandling(Supplier<TossPaymentResponse> apiCall) {
         try {
             return apiCall.get();
-        } catch (CustomException e) {
+        } catch (CustomException | PaymentClientException e) {
             throw e;
         } catch (ResourceAccessException e) {
             throw new CustomException(CustomErrorCode.PAYMENT_API_TIMEOUT);
         } catch (Exception e) {
+            log.error(LogFormat.errorOf(HttpStatus.BAD_GATEWAY, e.getMessage()), e);
             throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
         }
     }

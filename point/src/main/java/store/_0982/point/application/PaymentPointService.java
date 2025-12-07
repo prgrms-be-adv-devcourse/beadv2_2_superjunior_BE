@@ -104,7 +104,6 @@ public class PaymentPointService {
         return PointChargeFailInfo.from(paymentPointFailureRepository.save(failure));
     }
 
-    // TODO: 환불 기능 수정 필요 (멤버 검증도 추가)
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));

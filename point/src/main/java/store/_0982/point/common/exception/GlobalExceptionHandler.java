@@ -27,6 +27,14 @@ public class GlobalExceptionHandler {
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
 
+    @ExceptionHandler(PaymentClientException.class)
+    public ResponseEntity<ResponseDto<Void>> handlePaymentClientException(PaymentClientException e) {
+        HttpStatus httpStatus = e.getStatus();
+        log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        return ResponseEntity.status(httpStatus)
+                .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
+    }
+
     // @Valid 어노테이션에 의한 검증 에러 핸들러
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto<String>> handleInvalidArgumentException(MethodArgumentNotValidException e) {
