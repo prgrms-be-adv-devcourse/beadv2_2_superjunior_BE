@@ -70,6 +70,7 @@ public class GroupPurchase {
                          UUID productId){
         this.groupPurchaseId = UUID.randomUUID();
         this.minQuantity = mintQuantity;
+
         this.maxQuantity = maxQuantity;
         this.title = title;
         this.description = description;

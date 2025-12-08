@@ -1,0 +1,41 @@
+package store._0982.product.application.dto;
+
+import store._0982.product.domain.GroupPurchase;
+import store._0982.product.domain.GroupPurchaseStatus;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+public record PurchaseRegisterInfo(
+        UUID groupPurchaseId,
+        int minQuantity,
+        int maxQuantity,
+        String title,
+        String description,
+        GroupPurchaseStatus status,
+        LocalDateTime startDate,
+        LocalDate endDate,
+        UUID sellerId,
+        UUID productId,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
+) {
+    public static PurchaseRegisterInfo from(GroupPurchase groupPurchase) {
+        return new PurchaseRegisterInfo(
+                groupPurchase.getGroupPurchaseId(),
+                groupPurchase.getMinQuantity(),
+                groupPurchase.getMaxQuantity(),
+                groupPurchase.getTitle(),
+                groupPurchase.getDescription(),
+                groupPurchase.getStatus(),
+                groupPurchase.getStartDate(),
+                groupPurchase.getEndDate(),
+                groupPurchase.getSellerId(),
+                groupPurchase.getProductId(),
+                groupPurchase.getCreatedAt(),
+                groupPurchase.getUpdatedAt()
+        );
+    }
+}

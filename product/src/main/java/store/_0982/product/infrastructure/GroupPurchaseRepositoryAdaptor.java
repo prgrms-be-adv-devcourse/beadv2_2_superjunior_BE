@@ -10,11 +10,19 @@ import store._0982.product.domain.GroupPurchaseRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
 
     private final GroupPurchaseJpaRepository groupPurchaseJpaRepository;
+
+    @Override
+    public GroupPurchase save(GroupPurchase groupPurchase) {
+        return groupPurchaseJpaRepository.save(groupPurchase);
+    }
 
     @Override
     public Optional<GroupPurchase> findById(UUID groupPurchaseId) {

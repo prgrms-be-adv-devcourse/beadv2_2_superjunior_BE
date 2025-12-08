@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
+import store._0982.product.application.dto.PurchaseRegisterCommand;
+import store._0982.product.application.dto.PurchaseRegisterInfo;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
@@ -14,6 +16,7 @@ import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
+import store._0982.product.presentation.dto.PurchaseRegisterRequest;
 
 import java.util.UUID;
 
@@ -21,9 +24,55 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PurchaseService {
-
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
+
+        /**
+     * 공동 구매 생성
+     * @param memberId 로그인 유저
+     * @param memberRole 로그인 유저 권한
+     * @param command 생성할 command 데이터
+     * @return PurchaseRegisterInfo
+     */
+    public PurchaseRegisterInfo createGroupPurchase(UUID memberId, String memberRole, PurchaseRegisterCommand command) {
+        // 권한 확인
+        if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
+            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+        }
+
+        // 상품 있는지 확인
+        Product product = productRepository.findById(command.productId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        // 상품이 신청한 사람의 상품이 맞는지 확인
+        if(!product.getSellerId().equals(memberId)){
+            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
+        }
+
+        // 입력값 검증
+        if(command.minQuantity() > command.maxQuantity()){
+            throw new CustomException(CustomErrorCode.INVALID_QUANTITY_RANGE);
+        }
+
+        if(command.startDate().isAfter(command.endDate().atStartOfDay())){
+            throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
+        }
+        GroupPurchase groupPurchase = new GroupPurchase(
+                command.minQuantity(),
+                command.maxQuantity(),
+                command.title(),
+                command.description(),
+                command.discountedPrice(),
+                command.startDate(),
+                command.endDate(),
+                memberId,
+                command.productId()
+        );
+
+        GroupPurchase saved = groupPurchaseRepository.save(groupPurchase);
+
+        return PurchaseRegisterInfo.from(saved);
+    }
 
     @Transactional(readOnly = true)
     public GroupPurchaseInfo getGroupPurchaseById(UUID purchaseId) {
