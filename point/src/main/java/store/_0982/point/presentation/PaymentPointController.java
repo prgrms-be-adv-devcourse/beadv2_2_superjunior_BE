@@ -11,6 +11,7 @@ import store._0982.point.application.dto.*;
 import store._0982.point.common.HeaderName;
 import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.dto.ResponseDto;
+import store._0982.point.common.log.ControllerLog;
 import store._0982.point.presentation.dto.*;
 
 import java.util.UUID;
@@ -23,6 +24,7 @@ public class PaymentPointController {
 
     @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
     @ResponseStatus(HttpStatus.CREATED)
+    @ControllerLog
     @PostMapping("/create")
     public ResponseDto<PaymentPointCreateInfo> createPaymentPoint(
             @RequestBody @Valid PointChargeCreateRequest request,
@@ -35,6 +37,7 @@ public class PaymentPointController {
     // TODO: 결제 성공 / 실패 이후 리다이렉트할 링크 설정 필요 (RedirectView 형태로 반환)
     @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ResponseStatus(HttpStatus.CREATED)
+    @ControllerLog
     @PostMapping("/confirm")
     public ResponseDto<PointChargeConfirmInfo> confirmPayment(@RequestBody @Valid PointChargeConfirmRequest request) {
         PointChargeConfirmInfo info = paymentPointService.confirmPayment(request.toCommand());
@@ -43,6 +46,7 @@ public class PaymentPointController {
 
     @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
     @ResponseStatus(HttpStatus.CREATED)
+    @ControllerLog
     @PostMapping("/fail")
     public ResponseDto<PointChargeFailInfo> handlePaymentFailure(@RequestBody @Valid PointChargeFailRequest request) {
         PointChargeFailInfo info = paymentPointService.handlePaymentFailure(request.toCommand());
@@ -51,6 +55,7 @@ public class PaymentPointController {
 
     @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
     @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
     @PostMapping("/refund")
     public ResponseDto<PointRefundInfo> refundPaymentPoint(
             @RequestHeader(HeaderName.ID) UUID memberId,
@@ -81,6 +86,7 @@ public class PaymentPointController {
 
     @Operation(summary = "포인트 차감", description = "선택한 멤버의 포인트를 차감한다.")
     @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
     @PatchMapping("/deduct")
     public ResponseDto<MemberPointInfo> deductPoints(
             @RequestHeader(HeaderName.ID) UUID memberId,
@@ -88,5 +94,17 @@ public class PaymentPointController {
     ) {
         MemberPointInfo info = paymentPointService.deductPoints(memberId, request);
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 차감 완료");
+    }
+
+    @Operation(summary = "포인트 반환", description = "선택한 멤버의 포인트를 반환한다.")
+    @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
+    @PatchMapping("/return")
+    public ResponseDto<MemberPointInfo> returnPoints(
+            @RequestHeader(HeaderName.ID) UUID memberId,
+            @RequestBody @Valid PointReturnRequest request
+    ) {
+        MemberPointInfo info = paymentPointService.returnPoints(memberId, request);
+        return new ResponseDto<>(HttpStatus.OK, info, "포인트 반환 완료");
     }
 }
