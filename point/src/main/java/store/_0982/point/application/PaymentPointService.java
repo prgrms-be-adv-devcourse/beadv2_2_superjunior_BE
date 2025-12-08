@@ -10,6 +10,7 @@ import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.common.dto.PageResponse;
 import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
+import store._0982.point.common.log.ServiceLog;
 import store._0982.point.domain.*;
 import store._0982.point.presentation.dto.PointMinusRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
@@ -29,6 +30,7 @@ public class PaymentPointService {
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
 
+    @ServiceLog
     // TODO: 같은 orderId로 주문 생성이 동시에 여러 번 요청되었을 때, 낙관적 락이나 비관적 락을 이용할 것인가?
     public PaymentPointCreateInfo createPaymentPoint(PaymentPointCommand command, UUID memberId) {
         return paymentPointRepository.findByOrderId(command.orderId())
@@ -39,7 +41,6 @@ public class PaymentPointService {
                 });
     }
 
-    @Transactional(readOnly = true)
     public MemberPointInfo getPoints(UUID memberId) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
                 .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
@@ -57,6 +58,7 @@ public class PaymentPointService {
     TODO: 결제 승인 도중 에러가 발생하면, 그냥 에러를 반환해서 클라이언트가 실패 처리를 요청하게 할까,
           아니면 서버에서 바로 실패 처리를 진행할까?
      */
+    @ServiceLog
     public PointChargeConfirmInfo confirmPayment(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
@@ -79,6 +81,7 @@ public class PaymentPointService {
     }
 
     // TODO: 한 번만 진행되어야 하는 포인트 차감이 동시에 여러 번 일어나지 않도록 검증이 필요할 것 같다.
+    @ServiceLog
     public MemberPointInfo deductPoints(UUID memberId, PointMinusRequest request) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
@@ -87,6 +90,7 @@ public class PaymentPointService {
         return MemberPointInfo.from(memberPoint);
     }
 
+    @ServiceLog
     public PointChargeFailInfo handlePaymentFailure(PointChargeFailCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
@@ -105,6 +109,7 @@ public class PaymentPointService {
         return PointChargeFailInfo.from(paymentPointFailureRepository.save(failure));
     }
 
+    @ServiceLog
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
@@ -128,6 +133,7 @@ public class PaymentPointService {
         return PointRefundInfo.from(paymentPoint);
     }
 
+    @ServiceLog
     public MemberPointInfo returnPoints(UUID memberId, PointReturnRequest request) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));

@@ -40,6 +40,9 @@ subprojects {
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
         implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
 
+        implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+        implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+
         implementation 'org.springframework.boot:spring-boot-starter-validation'
 
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
