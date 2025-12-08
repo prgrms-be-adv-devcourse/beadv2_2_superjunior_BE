@@ -14,34 +14,28 @@ public record GroupPurchaseInfo(
         int maxQuantity,
         String title,
         String description,
-        int discountedPrice,
-        int participantCount,
+        GroupPurchaseStatus status,
         LocalDateTime startDate,
         LocalDate endDate,
         UUID sellerId,
         UUID productId,
-        String originalUrl,
-        int price,
-        GroupPurchaseStatus status,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
-    public static GroupPurchaseInfo from(GroupPurchase groupPurchase, int participantCount, String originalUrl, int price) {
+    public static GroupPurchaseInfo from(GroupPurchase groupPurchase) {
         return new GroupPurchaseInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
                 groupPurchase.getTitle(),
                 groupPurchase.getDescription(),
-                groupPurchase.getDiscountedPrice(),
-                participantCount,
+                groupPurchase.getStatus(),
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),
                 groupPurchase.getSellerId(),
                 groupPurchase.getProductId(),
-                originalUrl,
-                price,
-                groupPurchase.getStatus(),
-                groupPurchase.getCreatedAt()
+                groupPurchase.getCreatedAt(),
+                groupPurchase.getUpdatedAt()
         );
     }
 }

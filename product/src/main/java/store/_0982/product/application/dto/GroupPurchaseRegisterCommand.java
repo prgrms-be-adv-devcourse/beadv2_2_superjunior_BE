@@ -6,13 +6,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record PurchaseRegisterCommand(
+public record GroupPurchaseRegisterCommand(
         int minQuantity,
         int maxQuantity,
         String title,
         String description,
         int discountedPrice,
-        GroupPurchaseStatus stats,
         LocalDateTime startDate,
         LocalDate endDate,
         UUID productId

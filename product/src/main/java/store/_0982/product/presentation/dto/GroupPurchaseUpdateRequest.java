@@ -2,14 +2,13 @@ package store._0982.product.presentation.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
-import store._0982.product.application.dto.PurchaseUpdateCommand;
-import store._0982.product.domain.GroupPurchaseStatus;
+import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record PurchaseUpdateRequest(
+public record GroupPurchaseUpdateRequest(
         @JsonProperty("minQuantity")
         @NotNull(message = "최소 수량은 필수입니다")
         @Min(value = 1, message = "최소 수량은 1 이상이어야 합니다")
@@ -47,8 +46,8 @@ public record PurchaseUpdateRequest(
         UUID productId
 
 ) {
-    public PurchaseUpdateCommand toCommand(){
-        return new PurchaseUpdateCommand(minQuantity, maxQuantity, title, description, discountedPrice, startDate, endDate, productId);
+    public GroupPurchaseUpdateCommand toCommand(){
+        return new GroupPurchaseUpdateCommand(minQuantity, maxQuantity, title, description, discountedPrice, startDate, endDate, productId);
     }
 
 }

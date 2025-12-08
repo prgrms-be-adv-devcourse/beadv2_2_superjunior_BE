@@ -5,11 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.application.dto.GroupPurchaseDetailInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
-import store._0982.product.application.dto.PurchaseRegisterCommand;
-import store._0982.product.application.dto.PurchaseDetailInfo;
-import store._0982.product.application.dto.PurchaseUpdateCommand;
+import store._0982.product.application.dto.GroupPurchaseRegisterCommand;
+import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
@@ -21,18 +21,18 @@ import java.util.UUID;
 @Transactional
 @Service
 @RequiredArgsConstructor
-public class PurchaseService {
+public class GroupPurchaseService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
 
-        /**
+    /**
      * 공동 구매 생성
      * @param memberId 로그인 유저
      * @param memberRole 로그인 유저 권한
      * @param command 생성할 command 데이터
      * @return PurchaseRegisterInfo
      */
-    public PurchaseDetailInfo createGroupPurchase(UUID memberId, String memberRole, PurchaseRegisterCommand command) {
+    public GroupPurchaseInfo createGroupPurchase(UUID memberId, String memberRole, GroupPurchaseRegisterCommand command) {
         // 권한 확인
         if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
             throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
@@ -69,11 +69,11 @@ public class PurchaseService {
 
         GroupPurchase saved = groupPurchaseRepository.save(groupPurchase);
 
-        return PurchaseDetailInfo.from(saved);
+        return GroupPurchaseInfo.from(saved);
     }
 
     @Transactional(readOnly = true)
-    public GroupPurchaseInfo getGroupPurchaseById(UUID purchaseId) {
+    public GroupPurchaseDetailInfo getGroupPurchaseById(UUID purchaseId) {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
@@ -82,7 +82,7 @@ public class PurchaseService {
 
         // TODO : 참가자 수 집계 기능
         int participantCount = 0;
-        return GroupPurchaseInfo.from(findGroupPurchase, participantCount, findProduct.getOriginalUrl(), findProduct.getPrice());
+        return GroupPurchaseDetailInfo.from(findGroupPurchase, participantCount, findProduct.getOriginalUrl(), findProduct.getPrice());
     }
 
     @Transactional(readOnly = true)
@@ -131,7 +131,7 @@ public class PurchaseService {
      * @param purchaseId 공동구매 Id
      * @return PurchaseDetailInfo
      */
-    public PurchaseDetailInfo updateGroupPurchase(UUID memberId, String memberRole, UUID purchaseId, PurchaseUpdateCommand command) {
+    public GroupPurchaseInfo updateGroupPurchase(UUID memberId, String memberRole, UUID purchaseId, GroupPurchaseUpdateCommand command) {
         // 권한 확인
         if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
             throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
@@ -165,6 +165,6 @@ public class PurchaseService {
 
         GroupPurchase saved =  groupPurchaseRepository.save(findGroupPurchase);
 
-        return PurchaseDetailInfo.from(saved);
+        return GroupPurchaseInfo.from(saved);
     }
 }

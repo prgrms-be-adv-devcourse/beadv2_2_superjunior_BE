@@ -8,14 +8,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.product.application.PurchaseService;
-import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.application.GroupPurchaseService;
+import store._0982.product.application.dto.GroupPurchaseDetailInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
-import store._0982.product.application.dto.PurchaseDetailInfo;
+import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.dto.ResponseDto;
-import store._0982.product.presentation.dto.PurchaseRegisterRequest;
-import store._0982.product.presentation.dto.PurchaseUpdateRequest;
+import store._0982.product.presentation.dto.GroupPurchaseRegisterRequest;
+import store._0982.product.presentation.dto.GroupPurchaseUpdateRequest;
 
 import java.util.UUID;
 
@@ -24,26 +24,26 @@ import java.util.UUID;
 @RequestMapping("/api/purchases")
 @RequiredArgsConstructor
 public class GroupPurchaseController {
-    private final PurchaseService purchaseService;
+    private final GroupPurchaseService purchaseService;
 
     @Operation(summary="공동 구매 생성", description = "공동 구매를 생성합니다.")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<PurchaseDetailInfo> createGroupPurchase(
+    public ResponseDto<GroupPurchaseInfo> createGroupPurchase(
             @RequestHeader("X-Member-Id") UUID memberId,
             @RequestHeader("X-Member-Role") String memberRole,
-            @Valid @RequestBody PurchaseRegisterRequest request
+            @Valid @RequestBody GroupPurchaseRegisterRequest request
     ){
-        PurchaseDetailInfo response = purchaseService.createGroupPurchase(memberId, memberRole, request.toCommand());
+        GroupPurchaseInfo response = purchaseService.createGroupPurchase(memberId, memberRole, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, response, "공동 구매가 생성 되었습니다.");
     }
 
     @Operation(summary = "공동구매 상세 조회", description = "공동구매를 상세 조회한다.")
     @GetMapping("/{purchaseId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<GroupPurchaseInfo> getGroupPurchaseById(
+    public ResponseDto<GroupPurchaseDetailInfo> getGroupPurchaseById(
             @PathVariable UUID purchaseId) {
-        GroupPurchaseInfo info = purchaseService.getGroupPurchaseById(purchaseId);
+        GroupPurchaseDetailInfo info = purchaseService.getGroupPurchaseById(purchaseId);
         return new ResponseDto<>(HttpStatus.OK, info, "공동구매가 상세 조회되었습니다.");
     }
 
@@ -79,12 +79,12 @@ public class GroupPurchaseController {
     @Operation(summary = "공동구매 수정", description = "공동구매 정보를 수정한다.")
     @PatchMapping("/{purchaseId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<PurchaseDetailInfo> updateGroupPurchase(
+    public ResponseDto<GroupPurchaseInfo> updateGroupPurchase(
             @PathVariable UUID purchaseId,
             @RequestHeader("X-Member-Role") String memberRole,
             @RequestHeader("X-Member-Id") UUID memberId,
-            @Valid @RequestBody PurchaseUpdateRequest request) {
-        PurchaseDetailInfo response = purchaseService.updateGroupPurchase(memberId,  memberRole, purchaseId, request.toCommand());
+            @Valid @RequestBody GroupPurchaseUpdateRequest request) {
+        GroupPurchaseInfo response = purchaseService.updateGroupPurchase(memberId,  memberRole, purchaseId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, response, "공동구매 정보가 수정되었습니다.");
     }
 
