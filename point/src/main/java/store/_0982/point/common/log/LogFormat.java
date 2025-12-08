@@ -3,9 +3,9 @@ package store._0982.point.common.log;
 import org.springframework.http.HttpStatus;
 
 public final class LogFormat {
-    private static final String REQUEST_WITHOUT_MEMBER = "[REQUEST] [%s] %s";
+    private static final String REQUEST_WITHOUT_MEMBER = "[REQUEST] [%s %s]";
     private static final String REQUEST_WITH_MEMBER = REQUEST_WITHOUT_MEMBER + " by %s";
-    private static final String RESPONSE_WITHOUT_MEMBER = "[RESPONSE] [%s] %s - %dms";
+    private static final String RESPONSE_WITHOUT_MEMBER = "[RESPONSE] [%s %s] - %dms";
     private static final String RESPONSE_WITH_MEMBER = RESPONSE_WITHOUT_MEMBER + " to %s";
     private static final String ERROR = "[ERROR] [%s] %s";
 
