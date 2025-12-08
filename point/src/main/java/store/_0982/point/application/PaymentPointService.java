@@ -12,6 +12,7 @@ import store._0982.point.common.exception.CustomErrorCode;
 import store._0982.point.common.exception.CustomException;
 import store._0982.point.domain.*;
 import store._0982.point.presentation.dto.PointMinusRequest;
+import store._0982.point.presentation.dto.PointReturnRequest;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -125,6 +126,14 @@ public class PaymentPointService {
         paymentPoint.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
         memberPoint.refund(paymentPoint.getAmount());
         return PointRefundInfo.from(paymentPoint);
+    }
+
+    public MemberPointInfo returnPoints(UUID memberId, PointReturnRequest request) {
+        MemberPoint memberPoint = memberPointRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        memberPoint.addPoints(request.amount());
+        return MemberPointInfo.from(memberPoint);
     }
 
     // TODO: 환불 조건에 대해 더 고민해 봐야 할 것 같다.
