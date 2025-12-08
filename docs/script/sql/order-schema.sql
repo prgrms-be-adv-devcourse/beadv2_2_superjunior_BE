@@ -124,3 +124,61 @@ comment on column order_schema.settlement.updated_at is '수정일';
 
 alter table order_schema.settlement
     owner to postgres;
+
+create table order_schema.seller_balance
+(
+    balance_id         uuid                                       not null
+        constraint seller_balance_pk primary key,
+    member_id          uuid                                       not null
+        constraint seller_balance_member_unique unique,
+    settlement_balance integer                     default 0      not null,
+    created_at         timestamp with time zone    default now()  not null,
+    updated_at         timestamp with time zone
+);
+
+comment on table order_schema.seller_balance is '판매자 정산 잔액';
+
+comment on column order_schema.seller_balance.balance_id is 'balance id';
+
+comment on column order_schema.seller_balance.member_id is '멤버 id';
+
+comment on column order_schema.seller_balance.settlement_balance is '정산 잔금';
+
+comment on column order_schema.seller_balance.created_at is '생성일';
+
+comment on column order_schema.seller_balance.updated_at is '수정일';
+
+alter table order_schema.seller_balance
+    owner to postgres;
+
+create table order_schema.seller_balance_history
+(
+    history_id         uuid                                       not null
+        constraint seller_balance_history_pk primary key,
+    member_id          uuid                                       not null,
+    settlement_id
+    amount             integer                                    not null,
+    created_at         timestamp with time zone    default now()  not null,
+    status             varchar(10)                                not null
+        constraint seller_balance_history_status_check
+            check ((status)::text = ANY
+        (ARRAY[
+        ('credit'::character varying)::text,
+        ('debit'::character varying)::text
+        ]))
+);
+
+comment on table order_schema.seller_balance_history is '판매자 정산 잔액 변경 내역';
+
+comment on column order_schema.seller_balance_history.history_id is 'history id';
+
+comment on column order_schema.seller_balance_history.member_id is '멤버 id';
+
+comment on column order_schema.seller_balance_history.amount is '증감된 금액';
+
+comment on column order_schema.seller_balance_history.status is '상태 (credit: 입금/증가, debit: 출금/감소)';
+
+comment on column order_schema.seller_balance_history.created_at is '생성일';
+
+alter table order_schema.seller_balance_history
+    owner to postgres;
