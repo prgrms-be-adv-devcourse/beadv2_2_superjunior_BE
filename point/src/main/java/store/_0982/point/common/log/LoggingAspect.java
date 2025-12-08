@@ -16,15 +16,16 @@ import store._0982.point.common.HeaderName;
 
 import java.util.Objects;
 
+// TODO: 민감한 정보 동적 마킹 구현 필요 (커스텀 어노테이션 생성)
 @Aspect
 @Component
-// TODO: 민감한 정보 동적 마킹 구현 필요 (커스텀 어노테이션 생성)
 public class LoggingAspect {
-    @Pointcut("@annotation(ControllerLog)")
+    @Pointcut("@annotation(ControllerLog) && (@within(org.springframework.stereotype.Controller) " +
+            "|| @within(org.springframework.web.bind.annotation.RestController))")
     public void controller() {
     }
 
-    @Pointcut("@annotation(ServiceLog))")
+    @Pointcut("@annotation(ServiceLog) && @within(org.springframework.stereotype.Service)")
     public void service() {
     }
 
