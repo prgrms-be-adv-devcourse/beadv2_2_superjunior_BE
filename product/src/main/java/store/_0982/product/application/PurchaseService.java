@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.common.dto.PageResponseDto;
@@ -16,6 +17,7 @@ import store._0982.product.domain.ProductRepository;
 
 import java.util.UUID;
 
+@Transactional
 @Service
 @RequiredArgsConstructor
 public class PurchaseService {
@@ -23,6 +25,7 @@ public class PurchaseService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
 
+    @Transactional(readOnly = true)
     public GroupPurchaseInfo getGroupPurchaseById(UUID purchaseId) {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
@@ -35,6 +38,7 @@ public class PurchaseService {
         return GroupPurchaseInfo.from(findGroupPurchase, participantCount, findProduct.getOriginalUrl(), findProduct.getPrice());
     }
 
+    @Transactional(readOnly = true)
     public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchase(Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
@@ -48,6 +52,7 @@ public class PurchaseService {
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
 
+    @Transactional(readOnly = true)
     public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
