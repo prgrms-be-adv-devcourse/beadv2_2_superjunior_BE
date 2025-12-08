@@ -70,7 +70,6 @@ public class GroupPurchase {
                          UUID productId){
         this.groupPurchaseId = UUID.randomUUID();
         this.minQuantity = mintQuantity;
-
         this.maxQuantity = maxQuantity;
         this.title = title;
         this.description = description;
@@ -80,6 +79,24 @@ public class GroupPurchase {
         this.endDate = endDate;
         this.sellerId = sellerId;
         this.productId = productId;
+    }
+
+    public void updateGroupPurchase(int mintQuantity,
+                                    int maxQuantity,
+                                    String title,
+                                    String description,
+                                    int discountedPrice,
+                                    LocalDateTime startDate,
+                                    LocalDate endDate,
+                                    UUID productId){
+        this.minQuantity = mintQuantity;
+        this.maxQuantity = maxQuantity;
+        this.title = title;
+        this.description = description;
+        this.discountedPrice = discountedPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.sellerId = productId;
     }
 
 }

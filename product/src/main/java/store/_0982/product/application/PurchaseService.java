@@ -8,16 +8,14 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.application.dto.PurchaseRegisterCommand;
-import store._0982.product.application.dto.PurchaseRegisterInfo;
+import store._0982.product.application.dto.PurchaseDetailInfo;
+import store._0982.product.application.dto.PurchaseUpdateCommand;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseRepository;
-import store._0982.product.domain.Product;
-import store._0982.product.domain.ProductRepository;
-import store._0982.product.presentation.dto.PurchaseRegisterRequest;
+import store._0982.product.domain.*;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Transactional
@@ -34,7 +32,7 @@ public class PurchaseService {
      * @param command 생성할 command 데이터
      * @return PurchaseRegisterInfo
      */
-    public PurchaseRegisterInfo createGroupPurchase(UUID memberId, String memberRole, PurchaseRegisterCommand command) {
+    public PurchaseDetailInfo createGroupPurchase(UUID memberId, String memberRole, PurchaseRegisterCommand command) {
         // 권한 확인
         if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
             throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
@@ -71,7 +69,7 @@ public class PurchaseService {
 
         GroupPurchase saved = groupPurchaseRepository.save(groupPurchase);
 
-        return PurchaseRegisterInfo.from(saved);
+        return PurchaseDetailInfo.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -126,4 +124,47 @@ public class PurchaseService {
         groupPurchaseRepository.delete(findGroupPurchase);
     }
 
+    /**
+     * 공동 구매 업데이트
+     * @param memberId 로그인 유저
+     * @param memberRole 로그인 유저 권한
+     * @param purchaseId 공동구매 Id
+     * @return PurchaseDetailInfo
+     */
+    public PurchaseDetailInfo updateGroupPurchase(UUID memberId, String memberRole, UUID purchaseId, PurchaseUpdateCommand command) {
+        // 권한 확인
+        if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
+            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+        }
+
+        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (!findGroupPurchase.getSellerId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
+        }
+
+        // 공동 구매가 OPEN 상태일 때 일부 필드 변경 불가
+        if(findGroupPurchase.getStatus().equals(GroupPurchaseStatus.OPEN) 
+        && (!Objects.equals(findGroupPurchase.getMaxQuantity(), command.maxQuantity())||
+            !Objects.equals(findGroupPurchase.getDiscountedPrice(), command.discountedPrice())||
+            !Objects.equals(findGroupPurchase.getProductId(), command.productId()))){
+                throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
+            }
+
+        findGroupPurchase.updateGroupPurchase(
+                command.minQuantity(),
+                command.maxQuantity(),
+                command.title(),
+                command.description(),
+                command.discountedPrice(),
+                command.startDate(),
+                command.endDate(),
+                command.productId()
+        );
+
+        GroupPurchase saved =  groupPurchaseRepository.save(findGroupPurchase);
+
+        return PurchaseDetailInfo.from(saved);
+    }
 }

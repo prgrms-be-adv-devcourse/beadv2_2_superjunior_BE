@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.product.application.PurchaseService;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
-import store._0982.product.application.dto.PurchaseRegisterInfo;
+import store._0982.product.application.dto.PurchaseDetailInfo;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.dto.ResponseDto;
 import store._0982.product.presentation.dto.PurchaseRegisterRequest;
+import store._0982.product.presentation.dto.PurchaseUpdateRequest;
 
 import java.util.UUID;
 
@@ -28,12 +29,12 @@ public class GroupPurchaseController {
     @Operation(summary="공동 구매 생성", description = "공동 구매를 생성합니다.")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<PurchaseRegisterInfo> createGroupPurchase(
+    public ResponseDto<PurchaseDetailInfo> createGroupPurchase(
             @RequestHeader("X-Member-Id") UUID memberId,
             @RequestHeader("X-Member-Role") String memberRole,
             @Valid @RequestBody PurchaseRegisterRequest request
     ){
-        PurchaseRegisterInfo response = purchaseService.createGroupPurchase(memberId, memberRole, request.toCommand());
+        PurchaseDetailInfo response = purchaseService.createGroupPurchase(memberId, memberRole, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, response, "공동 구매가 생성 되었습니다.");
     }
 
@@ -73,6 +74,18 @@ public class GroupPurchaseController {
             @RequestHeader("X-Member-Id") UUID memberId) {
         purchaseService.deleteGroupPurchase(purchaseId, memberId);
         return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 삭제되었습니다");
+    }
+
+    @Operation(summary = "공동구매 수정", description = "공동구매 정보를 수정한다.")
+    @PatchMapping("/{purchaseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PurchaseDetailInfo> updateGroupPurchase(
+            @PathVariable UUID purchaseId,
+            @RequestHeader("X-Member-Role") String memberRole,
+            @RequestHeader("X-Member-Id") UUID memberId,
+            @Valid @RequestBody PurchaseUpdateRequest request) {
+        PurchaseDetailInfo response = purchaseService.updateGroupPurchase(memberId,  memberRole, purchaseId, request.toCommand());
+        return new ResponseDto<>(HttpStatus.OK, response, "공동구매 정보가 수정되었습니다.");
     }
 
 }

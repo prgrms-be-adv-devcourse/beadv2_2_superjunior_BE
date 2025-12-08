@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record PurchaseRegisterInfo(
+public record PurchaseDetailInfo(
         UUID groupPurchaseId,
         int minQuantity,
         int maxQuantity,
@@ -22,8 +22,8 @@ public record PurchaseRegisterInfo(
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
 ) {
-    public static PurchaseRegisterInfo from(GroupPurchase groupPurchase) {
-        return new PurchaseRegisterInfo(
+    public static PurchaseDetailInfo from(GroupPurchase groupPurchase) {
+        return new PurchaseDetailInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
