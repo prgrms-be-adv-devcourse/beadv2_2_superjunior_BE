@@ -115,10 +115,10 @@ public class PaymentPointService {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
         }
 
+        validateRefundTerms(paymentPoint);
         MemberPoint memberPoint = memberPointRepository.findById(paymentPoint.getMemberId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        validateRefundTerms(paymentPoint, memberPoint);
         TossPaymentResponse response = tossPaymentService.cancelPayment(paymentPoint, command);
         TossPaymentResponse.CancelInfo cancelInfo = response.cancels().get(0);
 
@@ -128,16 +128,14 @@ public class PaymentPointService {
     }
 
     // TODO: 환불 조건에 대해 더 고민해 봐야 할 것 같다.
-    private static void validateRefundTerms(PaymentPoint paymentPoint, MemberPoint memberPoint) {
+    private static void validateRefundTerms(PaymentPoint paymentPoint) {
         OffsetDateTime paymentAt = paymentPoint.getApprovedAt();
         if (paymentAt == null) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
 
-        OffsetDateTime lastUsedAt = memberPoint.getLastUsedAt();
-        // 결제 이후 포인트를 이용한 적이 없고, 결제일이 7일 이내일 경우 환불 가능
-        if ((lastUsedAt != null && lastUsedAt.isAfter(paymentAt))
-                || Duration.between(paymentAt, OffsetDateTime.now()).toDays() > REFUND_PERIOD_DAYS) {
+        // 결제일이 7일 이내일 경우 환불 가능
+        if (Duration.between(paymentAt, OffsetDateTime.now()).toDays() > REFUND_PERIOD_DAYS) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
     }
