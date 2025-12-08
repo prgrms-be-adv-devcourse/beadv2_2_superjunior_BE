@@ -1,5 +1,13 @@
 dependencies {
-    // 필요한 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    //elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 bootJar {
