@@ -89,6 +89,11 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - cluster.name=group-purchase-cluster
       - node.name=group-purchase-node
+    command: >
+      bash -c "
+      elasticsearch-plugin install analysis-nori &&
+      elasticsearch
+      "
     ports:
       - "9200:9200"
       - "9300:9300"
