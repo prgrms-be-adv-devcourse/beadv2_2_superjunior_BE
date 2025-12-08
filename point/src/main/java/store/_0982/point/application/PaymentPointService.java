@@ -142,7 +142,6 @@ public class PaymentPointService {
         return MemberPointInfo.from(memberPoint);
     }
 
-    // TODO: 환불 조건에 대해 더 고민해 봐야 할 것 같다.
     private static void validateRefundTerms(PaymentPoint paymentPoint) {
         OffsetDateTime paymentAt = paymentPoint.getApprovedAt();
         if (paymentAt == null) {
