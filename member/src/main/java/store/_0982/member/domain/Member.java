@@ -88,5 +88,10 @@ public class Member {           //TODO: Addresses 필드에 넣기 관계의 주
         this.deletedAt = OffsetDateTime.now();
         this.updatedAt = OffsetDateTime.now();
     }
+
+    public void registerSeller() {
+        this.role = Role.SELLER;
+        this.updatedAt = OffsetDateTime.now();
+    }
 }
 

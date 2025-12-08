@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.application.dto.MemberLoginCommand;
 import store._0982.member.common.exception.CustomErrorCode;
@@ -17,19 +18,18 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class AuthService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
-
+    @Transactional
     public LoginTokens login(MemberLoginCommand memberLoginCommand) {
         Member member = memberRepository.findByEmail(memberLoginCommand.email())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
 
-        if (!passwordEncoder.matches(member.getSaltKey() + memberLoginCommand.password(), member.getPassword())) {
-            throw new CustomException(CustomErrorCode.BAD_REQUEST);
-        }
+        checkPassword(member, memberLoginCommand.password());
 
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
@@ -50,6 +50,12 @@ public class AuthService {
             return jwtProvider.generateAccessToken(member);
         }catch (RuntimeException e){
             throw new CustomException(CustomErrorCode.BAD_REQUEST);
+        }
+    }
+
+    private void checkPassword(Member member, String password){
+        if (!passwordEncoder.matches(member.getSaltKey() + password, member.getPassword())) {
+            throw new CustomException(CustomErrorCode.FAILED_LOGIN);
         }
     }
 }

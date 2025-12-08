@@ -26,6 +26,9 @@ public class Address {
     @Column(name = "address_id", nullable = false)
     private UUID addressId;
 
+    @Column(name = "member_id", insertable = false, updatable = false)
+    private UUID memberId; //단순 조회용
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

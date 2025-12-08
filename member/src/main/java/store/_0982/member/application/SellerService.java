@@ -2,6 +2,7 @@ package store._0982.member.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.common.exception.CustomException;
@@ -9,10 +10,12 @@ import store._0982.member.domain.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SellerService {
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
 
+    @Transactional
     public SellerRegisterInfo registerSeller(SellerRegisterCommand command) {
         checkCustomerRole(command.role());
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
@@ -29,12 +32,7 @@ public class SellerService {
         return sellerInfo;
     }
 
-    public SellerBalanceInfo getSellerBalance(BalanceCommand command) {
-        checkSellerRole(command.role());
-        Seller seller = sellerRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
-        return SellerBalanceInfo.from(seller);
-    }
-
+    @Transactional
     public SellerRegisterInfo updateSeller(SellerRegisterCommand command) {
         checkSellerRole(command.role());
         Seller seller = sellerRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));

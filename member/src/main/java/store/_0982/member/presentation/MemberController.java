@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.member.application.MemberService;
 import store._0982.member.application.SellerService;
 import store._0982.member.application.dto.*;
+import store._0982.member.common.dto.PageResponseDto;
 import store._0982.member.common.dto.ResponseDto;
 import store._0982.member.domain.Role;
 import store._0982.member.presentation.dto.*;
@@ -99,12 +100,6 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, sellerService.getSeller(command), "판매자 정보");
     }
 
-    @Operation(summary = "판매자 정산 잔액 조회", description = "판매자 정산 잔액을 조회합니다.")
-    @GetMapping("balance")
-    public ResponseDto<SellerBalanceInfo> getSellerBalance(@RequestHeader(value = "X-Member-Id", required = false) UUID memberId, @RequestHeader(value = "X-Member-Role", required = false) Role role) {
-        return new ResponseDto<>(HttpStatus.OK, sellerService.getSellerBalance(new BalanceCommand(memberId, role)), "판매자 정산 잔금");
-    }
-
     @PutMapping("/seller")
     public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
@@ -117,5 +112,18 @@ public class MemberController {
     public ResponseDto<AddressInfo> addAddress(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @Valid @RequestBody AddressAddRequest addressAddRequest) {
         AddressAddCommand command = addressAddRequest.toCommand(memberId);
         return new ResponseDto<>(HttpStatus.CREATED,memberService.addAddress(command), "주소 등록이 완료되었습니다.");
+    }
+
+    @GetMapping("/addresses")
+    public ResponseDto<PageResponseDto<AddressInfo>> getAddresses(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId,
+                                                                  org.springframework.data.domain.Pageable pageable) {
+        return new ResponseDto<>(HttpStatus.OK, memberService.getAddresses(pageable, memberId), "사용자의 주소 리스트");
+    }
+
+    @DeleteMapping("/address/{addressId}")
+    public ResponseDto<Void> addAddress(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @PathVariable UUID addressId) {
+        AddressDeleteCommand command = new AddressDeleteCommand(memberId, addressId);
+        memberService.deleteAddress(command);
+        return new ResponseDto<>(HttpStatus.OK, null, "주소 삭제가 완료되었습니다.");
     }
 }

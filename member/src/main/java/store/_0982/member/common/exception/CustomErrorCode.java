@@ -26,11 +26,12 @@ public enum CustomErrorCode {
     INVALID_ADDRESS_DETAIL(HttpStatus.BAD_REQUEST, "상세 주소는 100자 이하로 입력해야 합니다."),
     INVALID_POSTAL_CODE(HttpStatus.BAD_REQUEST, "우편번호는 5자리 숫자만 입력 가능합니다."),
     INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "수령인 이름은 100자 이하의 한글과 영어만 입력 가능합니다."),
+    UNVERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "인증되지 않은 메일입니다."),
 
 
     // 409 Conflict
-    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 사용중인 이메일입니다."),
-    DUPLICATED_NAME(HttpStatus.BAD_REQUEST, "이미 사용중인 이름입니다."),
+    DUPLICATED_EMAIL(HttpStatus.CONFLICT, "이미 사용중인 이메일입니다."),
+    DUPLICATED_NAME(HttpStatus.CONFLICT, "이미 사용중인 이름입니다."),
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
@@ -42,15 +43,18 @@ public enum CustomErrorCode {
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
     NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
     NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
+    FAILED_LOGIN(HttpStatus.UNAUTHORIZED, "로그인 인증에 실패했습니다."),
 
     //403 비밀번호 틀림
     WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다."),
     NOT_CUSTOMER(HttpStatus.FORBIDDEN, "CUSTOMER가 아닙니다."),
     NOT_SELLER(HttpStatus.FORBIDDEN, "SELLER가 아닙니다."),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
     //404
     NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
-    NOT_EXIST_SELLER(HttpStatus.NOT_FOUND, "존재하지 않는 판매자입니다.");
+    NOT_EXIST_SELLER(HttpStatus.NOT_FOUND, "존재하지 않는 판매자입니다."),
+    NOT_EXIST_ADDRESS(HttpStatus.NOT_FOUND, "존재하지 않는 주소 정보입니다." );
 
     private final HttpStatus httpStatus;
     private final String message;

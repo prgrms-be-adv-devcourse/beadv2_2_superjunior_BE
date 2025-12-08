@@ -24,9 +24,6 @@ public class Seller {
     @JoinColumn(name = "seller_id")
     private Member member;
 
-    @Column(name = "settlement_balance", nullable = false)
-    private int settlementBalance = 0;
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
@@ -49,6 +46,7 @@ public class Seller {
     public static Seller create(Member member, String bankCode, String accountNumber, String accountHolder, String businessRegistrationNumber) {
         Seller seller = new Seller();
         seller.member = member;
+        seller.member.registerSeller();
         seller.sellerId = member.getMemberId();
         seller.createdAt = OffsetDateTime.now();
         seller.bankCode = bankCode;

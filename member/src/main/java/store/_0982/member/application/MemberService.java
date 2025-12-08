@@ -1,10 +1,13 @@
 package store._0982.member.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.member.application.dto.*;
+import store._0982.member.common.dto.PageResponseDto;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.common.exception.CustomException;
 import store._0982.member.domain.Address;
@@ -76,7 +79,7 @@ public class MemberService {
     public void checkNameDuplication(String name) {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
-
+    @Transactional
     //여기 아래로는 Address 관련 메소드
     public AddressInfo addAddress(AddressAddCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
@@ -84,4 +87,20 @@ public class MemberService {
         return AddressInfo.from(addressRepository.save(address));
     }
 
+    public PageResponseDto<AddressInfo> getAddresses(Pageable pageable, UUID memberId) {
+        Page<Address> addresses = addressRepository.findAllByMemberId(pageable, memberId);
+        Page<AddressInfo> infoPage = addresses.map(AddressInfo::from);
+        return PageResponseDto.from(infoPage);
+    }
+    @Transactional
+    public void deleteAddress(AddressDeleteCommand command) {
+        Address address = addressRepository.findById(command.addressId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_ADDRESS));
+        checkAddressOwner(address, command.memberId());
+        addressRepository.deleteById(command.addressId());
+    }
+
+    private void checkAddressOwner(Address address, UUID memberId) {
+        if(!address.getMember().getMemberId().equals(memberId))
+            throw new CustomException(CustomErrorCode.FORBIDDEN);
+    }
 }

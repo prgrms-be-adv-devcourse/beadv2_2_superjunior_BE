@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
@@ -22,7 +23,7 @@ public class AuthController {
     @PostMapping("/login")
     //TODO: .setSecure, setAge
     //setDomain은 필요 없음, 브라우저 입장에서는 발급받은 곳도 localhost:8000 쓰는 곳도 localhost:8000
-
+    //TODO: 소프트딜리트 확인, 로그인, refresh도
     public ResponseDto<Void> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());

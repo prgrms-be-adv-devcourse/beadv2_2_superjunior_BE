@@ -38,8 +38,6 @@ comment on column member_schema.member.role is '멤버 역할';
 
 comment on column member_schema.member.salt_key is '비밀번호용 키';
 
-comment on column member_schema.member.point_balance is '보유 포인트';
-
 comment on column member_schema.member.image_url is '프로필 이미지 URL';
 
 comment on column member_schema.member.created_at is '등록일';
@@ -60,7 +58,6 @@ create table member_schema.seller
             primary key
         constraint seller_member_id_fk
             references member_schema.member,
-    settlement_balance           integer     not null,
     created_at    timestamp with time zone default now()                         not null,
     updated_at                   timestamp with time zone,
     account_number               varchar(20) not null
@@ -76,8 +73,6 @@ create table member_schema.seller
 comment on table member_schema.seller is '판매자';
 
 comment on column member_schema.seller.seller_id is '판매자 ID';
-
-comment on column member_schema.seller.settlement_balance is '정산 잔금';
 
 comment on column member_schema.seller.created_at is '판매자 등록일';
 

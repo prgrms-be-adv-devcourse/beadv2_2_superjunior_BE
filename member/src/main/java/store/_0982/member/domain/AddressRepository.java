@@ -1,7 +1,17 @@
 package store._0982.member.domain;
 
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public interface AddressRepository {
-    public Address save(Address address);
+    Address save(Address address);
+
+    Page<Address> findAllByMemberId(Pageable pageable, UUID memberId);
+
+    Optional<Address> findById(UUID addressId);
+
+    void deleteById(UUID addressId);
 }
