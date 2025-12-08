@@ -113,12 +113,18 @@ public class PaymentPointService {
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-
-        if (paymentPoint.getStatus() != PaymentPointStatus.COMPLETED) {
-            throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
-        }
         if (!paymentPoint.getMemberId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
+
+        switch (paymentPoint.getStatus()) {
+            case COMPLETED -> {
+                // 정상 상태
+            }
+            case REQUESTED, FAILED -> throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
+            case REFUNDED -> {
+                return PointRefundInfo.from(paymentPoint);
+            }
         }
 
         validateRefundTerms(paymentPoint);
@@ -133,6 +139,7 @@ public class PaymentPointService {
         return PointRefundInfo.from(paymentPoint);
     }
 
+    // TODO: 포인트 차감 / 반환 시 정상적인 요청이 맞는지 검증이 필요할 것 같다.
     @ServiceLog
     public MemberPointInfo returnPoints(UUID memberId, PointReturnRequest request) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
