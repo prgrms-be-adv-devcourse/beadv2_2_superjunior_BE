@@ -38,8 +38,8 @@ public class PaymentPointController {
     @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
-    @PostMapping("/confirm")
-    public ResponseDto<PointChargeConfirmInfo> confirmPayment(@RequestBody @Valid PointChargeConfirmRequest request) {
+    @GetMapping("/confirm")
+    public ResponseDto<PointChargeConfirmInfo> confirmPayment(@ModelAttribute @Valid PointChargeConfirmRequest request) {
         PointChargeConfirmInfo info = paymentPointService.confirmPayment(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "결제 및 포인트 충전 성공");
     }
@@ -47,8 +47,8 @@ public class PaymentPointController {
     @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
-    @PostMapping("/fail")
-    public ResponseDto<PointChargeFailInfo> handlePaymentFailure(@RequestBody @Valid PointChargeFailRequest request) {
+    @GetMapping("/fail")
+    public ResponseDto<PointChargeFailInfo> handlePaymentFailure(@ModelAttribute @Valid PointChargeFailRequest request) {
         PointChargeFailInfo info = paymentPointService.handlePaymentFailure(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "결제 실패 정보 저장 완료");
     }

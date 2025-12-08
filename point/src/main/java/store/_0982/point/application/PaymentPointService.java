@@ -30,8 +30,8 @@ public class PaymentPointService {
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
 
-    @ServiceLog
     // TODO: 같은 orderId로 주문 생성이 동시에 여러 번 요청되었을 때, 낙관적 락이나 비관적 락을 이용할 것인가?
+    @ServiceLog
     public PaymentPointCreateInfo createPaymentPoint(PaymentPointCommand command, UUID memberId) {
         return paymentPointRepository.findByOrderId(command.orderId())
                 .map(PaymentPointCreateInfo::from)
