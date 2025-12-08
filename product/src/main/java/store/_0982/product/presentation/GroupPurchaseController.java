@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.product.application.PurchaseService;
 import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.dto.ResponseDto;
 
@@ -32,19 +33,19 @@ public class GroupPurchaseController {
     @Operation(summary = "공동구매 목록 조회", description = "공동구매 목록을 페이징하여 조회한다.")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<PageResponseDto<GroupPurchaseInfo>> getGroupPurchase(
+    public ResponseDto<PageResponseDto<GroupPurchaseThumbnailInfo>> getGroupPurchase(
             @PageableDefault(size = 10) Pageable pageable) {
-        PageResponseDto<GroupPurchaseInfo> pageResponse = purchaseService.getGroupPurchase(pageable);
+        PageResponseDto<GroupPurchaseThumbnailInfo> pageResponse = purchaseService.getGroupPurchase(pageable);
         return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 목록 조회되었습니다.");
     }
 
     @Operation(summary = "공동구매 판매자별 목록 조회", description = "공동구매 판매자별 목록을 페이징하여 조회한다.")
     @GetMapping("/seller/{sellerId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<PageResponseDto<GroupPurchaseInfo>> getGroupPurchasesBySeller(
+    public ResponseDto<PageResponseDto<GroupPurchaseThumbnailInfo>> getGroupPurchasesBySeller(
             @PathVariable UUID sellerId,
             @PageableDefault(size = 10) Pageable pageable) {
-        PageResponseDto<GroupPurchaseInfo> pageResponse = purchaseService.getGroupPurchasesBySeller(sellerId, pageable);
+        PageResponseDto<GroupPurchaseThumbnailInfo> pageResponse = purchaseService.getGroupPurchasesBySeller(sellerId, pageable);
         return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 판매자별 목록 조회되었습니다");
     }
 
