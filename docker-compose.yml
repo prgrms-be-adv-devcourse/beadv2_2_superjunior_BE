@@ -81,7 +81,9 @@ services:
       retries: 5
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: group-purchase-elasticsearch
     environment:
       - discovery.type=single-node
