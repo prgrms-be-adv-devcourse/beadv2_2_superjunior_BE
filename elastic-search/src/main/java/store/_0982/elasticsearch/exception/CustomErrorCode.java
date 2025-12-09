@@ -1,15 +1,16 @@
-package store._0982.elasticsearch.common.exception;
+package store._0982.elasticsearch.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import store._0982.common.exception.ErrorCode;
 
 @Getter
 @RequiredArgsConstructor
-public enum CustomErrorCode {
+public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
-
+    INVALID_PURCHASEID(HttpStatus.BAD_REQUEST, "공동구매 id가 잘못되었습니다."),
 
     // 401 Unauthorized
 

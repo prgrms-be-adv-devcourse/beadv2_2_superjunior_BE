@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.common.exception;
+package store._0982.elasticsearch.exception;
 
 import lombok.Getter;
 
