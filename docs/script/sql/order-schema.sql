@@ -163,8 +163,8 @@ create table order_schema.seller_balance_history
         constraint seller_balance_history_status_check
             check ((status)::text = ANY
         (ARRAY[
-        ('credit'::character varying)::text,
-        ('debit'::character varying)::text
+        ('CREDIT'::character varying)::text,
+        ('DEBIT'::character varying)::text
         ]))
 );
 
