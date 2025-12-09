@@ -1,4 +1,4 @@
-package store._0982.point.common;
+package store._0982.common;
 
 public final class HeaderName {
     public static final String ID = "X-Member-Id";

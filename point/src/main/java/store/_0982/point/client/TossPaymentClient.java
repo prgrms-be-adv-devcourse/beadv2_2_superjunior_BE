@@ -10,12 +10,12 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import store._0982.common.exception.CustomException;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.common.exception.CustomErrorCode;
-import store._0982.point.common.exception.CustomException;
-import store._0982.point.common.exception.PaymentClientException;
+import store._0982.point.exception.CustomErrorCode;
+import store._0982.point.exception.PaymentClientException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

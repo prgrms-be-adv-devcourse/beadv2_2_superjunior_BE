@@ -1,4 +1,4 @@
-package store._0982.point.common.log;
+package store._0982.common.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import store._0982.point.common.HeaderName;
+import store._0982.common.HeaderName;
 
 import java.util.Objects;
 
