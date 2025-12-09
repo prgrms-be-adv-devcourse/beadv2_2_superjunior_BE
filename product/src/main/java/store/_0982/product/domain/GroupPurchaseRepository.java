@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface GroupPurchaseRepository {
 
+    void save(GroupPurchase groupPurchase);
+
     Optional<GroupPurchase> findById(UUID purchaseId);
 
     Page<GroupPurchase> findAll(Pageable pageable);

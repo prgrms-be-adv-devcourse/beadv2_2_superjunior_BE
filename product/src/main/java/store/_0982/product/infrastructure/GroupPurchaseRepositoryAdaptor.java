@@ -17,6 +17,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     private final GroupPurchaseJpaRepository groupPurchaseJpaRepository;
 
     @Override
+    public void save(GroupPurchase groupPurchase) {
+        groupPurchaseJpaRepository.save(groupPurchase);
+    }
+
+    @Override
     public Optional<GroupPurchase> findById(UUID groupPurchaseId) {
         return groupPurchaseJpaRepository.findById(groupPurchaseId);
     }

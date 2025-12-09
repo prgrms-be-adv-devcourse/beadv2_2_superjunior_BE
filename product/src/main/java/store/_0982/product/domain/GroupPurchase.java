@@ -89,4 +89,30 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
+    public boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
+    }
+
+    public int getRemainingQuantity() {
+        return this.maxQuantity - this.currentQuantity;
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (this.currentQuantity + quantity > this.maxQuantity) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    private void checkAndUpdateStatusIfMaxReached() {
+        if (this.currentQuantity == this.maxQuantity) {
+            this.status = GroupPurchaseStatus.SUCCESS;
+        }
+    }
+
 }

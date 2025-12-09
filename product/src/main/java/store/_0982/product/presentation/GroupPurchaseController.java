@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.product.application.ParticipateService;
 import store._0982.product.application.PurchaseService;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class GroupPurchaseController {
 
     private final PurchaseService purchaseService;
+    private final ParticipateService participateService;
 
     @Operation(summary = "공동구매 상세 조회", description = "공동구매를 상세 조회한다.")
     @GetMapping("/{purchaseId}")
@@ -71,7 +73,7 @@ public class GroupPurchaseController {
             @PathVariable UUID purchaseId,
             @Valid @RequestBody ParticipateRequest request) {
 
-        ParticipateInfo result = null;
+        ParticipateInfo result = participateService.participate(purchaseId, request.quantity());
 
         if (result.success()) {
             return new ResponseDto<>(HttpStatus.OK, result, "참여 성공했습니다.");
