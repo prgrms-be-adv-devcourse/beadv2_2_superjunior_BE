@@ -9,7 +9,6 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import store._0982.common.HeaderName;
@@ -18,7 +17,6 @@ import java.util.Objects;
 
 // TODO: 민감한 정보 동적 마킹 구현 필요 (커스텀 어노테이션 생성)
 @Aspect
-@Component
 public class LoggingAspect {
     @Pointcut("@annotation(ControllerLog) && (@within(org.springframework.stereotype.Controller) " +
             "|| @within(org.springframework.web.bind.annotation.RestController))")
