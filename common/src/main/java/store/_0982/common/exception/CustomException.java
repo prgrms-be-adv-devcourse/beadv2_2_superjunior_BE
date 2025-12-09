@@ -1,12 +1,13 @@
-package store._0982.point.common.exception;
+package store._0982.common.exception;
 
 import lombok.Getter;
 
 @Getter
+@SuppressWarnings("java:S1948")
 public class CustomException extends RuntimeException {
-    private final CustomErrorCode errorCode;
+    private final ErrorCode errorCode;
 
-    public CustomException(CustomErrorCode errorCode) {
+    public CustomException(ErrorCode errorCode) {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }

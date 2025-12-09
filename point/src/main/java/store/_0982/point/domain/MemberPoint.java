@@ -5,8 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
-import store._0982.point.common.exception.CustomErrorCode;
-import store._0982.point.common.exception.CustomException;
+import store._0982.common.exception.CustomException;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
