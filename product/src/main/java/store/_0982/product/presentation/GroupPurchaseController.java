@@ -1,7 +1,9 @@
 package store._0982.product.presentation;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalApi;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.product.application.PurchaseService;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
+import store._0982.product.application.dto.ParticipateInfo;
+import store._0982.product.presentation.dto.ParticipateRequest;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.dto.ResponseDto;
 
@@ -57,6 +61,23 @@ public class GroupPurchaseController {
             @RequestHeader("X-Member-Id") UUID memberId) {
         purchaseService.deleteGroupPurchase(purchaseId, memberId);
         return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 삭제되었습니다");
+    }
+
+    @InternalApi
+    @Operation(summary = "공동구매 참여", description = "공동구매에 참여하여 참여자 수를 증가시킵니다. (Order 서비스 호출용)")
+    @PostMapping("/{purchaseId}/participate")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<ParticipateInfo> participate(
+            @PathVariable UUID purchaseId,
+            @Valid @RequestBody ParticipateRequest request) {
+
+        ParticipateInfo result = null;
+
+        if (result.success()) {
+            return new ResponseDto<>(HttpStatus.OK, result, "참여 성공했습니다.");
+        } else {
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST, result, "참여 불가능합니다. (마감 또는 수량 초과)");
+        }
     }
 
 }
