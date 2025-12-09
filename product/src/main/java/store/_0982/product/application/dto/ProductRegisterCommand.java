@@ -11,7 +11,6 @@ public record ProductRegisterCommand(
         String description,
         int stock,
         String originalUrl,
-        UUID sellerId,
-        String memberRole
+        UUID sellerId
 ) {
 }

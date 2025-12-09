@@ -25,9 +25,6 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        if (!command.memberRole().equals("SELLER") && !command.memberRole().equals("ADMIN")) {
-            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
-        }
         Product product = new Product(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
