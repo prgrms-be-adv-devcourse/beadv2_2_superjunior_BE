@@ -1,4 +1,4 @@
-package store._0982.point.common.log;
+package store._0982.common.log;
 
 import org.springframework.http.HttpStatus;
 

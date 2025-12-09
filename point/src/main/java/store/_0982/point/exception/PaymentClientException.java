@@ -1,4 +1,4 @@
-package store._0982.point.common.exception;
+package store._0982.point.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

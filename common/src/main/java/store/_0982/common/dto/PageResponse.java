@@ -1,4 +1,4 @@
-package store._0982.point.common.dto;
+package store._0982.common.dto;
 
 import org.springframework.data.domain.Page;
 

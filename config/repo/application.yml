@@ -17,10 +17,5 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-spring:
-  mvc:
-    favicon:
-      enabled: false
-
 gateway:
   host: http://localhost:8000
