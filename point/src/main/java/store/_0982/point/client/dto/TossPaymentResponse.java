@@ -19,10 +19,11 @@ public record TossPaymentResponse(
         OffsetDateTime approvedAt,
         List<CancelInfo> cancels
 ) {
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public record CancelInfo(
-                int cancelAmount,
-                String cancelReason,
-                OffsetDateTime canceledAt
-        ) {}
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CancelInfo(
+            int cancelAmount,
+            String cancelReason,
+            OffsetDateTime canceledAt
+    ) {
+    }
 }

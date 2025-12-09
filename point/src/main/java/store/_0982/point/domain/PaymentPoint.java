@@ -24,7 +24,7 @@ public class PaymentPoint {
     private UUID memberId;
 
     @Column(name = "pg_order_id", nullable = false, unique = true)
-    private UUID orderId;
+    private UUID pgOrderId;
 
     @Column(name = "payment_method", nullable = false, length = 30)
     private String paymentMethod;
@@ -33,7 +33,7 @@ public class PaymentPoint {
     private String paymentKey;
 
     @Column(nullable = false)
-    private Integer amount;
+    private int amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -62,10 +62,10 @@ public class PaymentPoint {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private PaymentPoint(UUID memberId, UUID orderId, int amount){
+    private PaymentPoint(UUID memberId, UUID pgOrderId, int amount){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
-        this.orderId = orderId;
+        this.pgOrderId = pgOrderId;
         this.amount = amount;
         this.requestedAt = OffsetDateTime.now();
         this.status = PaymentPointStatus.REQUESTED;

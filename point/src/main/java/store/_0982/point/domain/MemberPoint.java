@@ -29,9 +29,9 @@ public class MemberPoint {
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
 
-    public MemberPoint(UUID memberId, Integer pointBalance) {
+    public MemberPoint(UUID memberId) {
         this.memberId = memberId;
-        this.pointBalance = pointBalance;
+        this.pointBalance = 0;
     }
 
     public void addPoints(int pointBalance) {
