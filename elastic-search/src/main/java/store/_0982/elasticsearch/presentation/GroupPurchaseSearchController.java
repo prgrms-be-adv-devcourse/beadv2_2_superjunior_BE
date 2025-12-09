@@ -14,7 +14,6 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
-import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.presentation.dto.GroupPurchaseDocumentRequest;
 
 import java.util.UUID;
@@ -50,7 +49,7 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
     @PostMapping
-    public ResponseDto<GroupPurchaseDocument> saveGroupPurchaseDocument(
+    public ResponseDto<GroupPurchaseDocumentInfo> saveGroupPurchaseDocument(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "공동구매 색인 요청",
                     required = true,
@@ -78,11 +77,11 @@ public class GroupPurchaseSearchController {
             )
             @org.springframework.web.bind.annotation.RequestBody GroupPurchaseDocumentRequest request
     ) {
-        GroupPurchaseDocument saved = groupPurchaseSearchService.saveGroupPurchaseDocument(request.toCommand());
+        GroupPurchaseDocumentInfo saved = groupPurchaseSearchService.saveGroupPurchaseDocument(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, saved, "공동구매 문서 생성 완료");
     }
 
-    @Operation(summary = "공동구매 문서 검색", description = "키워드 + 상태 기준으로 공동구매를 검색합니다.")
+    @Operation(summary = "공동구매 문서 검색", description = "키워드(제목, 설명) + 상태 기준으로 공동구매를 검색합니다.")
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @GetMapping("/search")
@@ -100,7 +99,7 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @DeleteMapping("{groupPurchaseId}")
-    public ResponseDto<Void> deleteGroupPurchaseDocument(@PathVariable UUID groupPurchaseId){
+    public ResponseDto<Void> deleteGroupPurchaseDocument(@PathVariable UUID groupPurchaseId) {
         groupPurchaseSearchService.deleteGroupPurchaseDocument(groupPurchaseId);
         return new ResponseDto<>(HttpStatus.OK, null, "공동구매 문서 삭제 완료.");
     }

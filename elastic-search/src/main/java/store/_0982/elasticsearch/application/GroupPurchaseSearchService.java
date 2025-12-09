@@ -49,8 +49,8 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public GroupPurchaseDocument saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
-        return groupPurchaseRepository.save(command.toDocument());
+    public GroupPurchaseDocumentInfo saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
+        return GroupPurchaseDocumentInfo.from(groupPurchaseRepository.save(command.toDocument()));
     }
 
     @ServiceLog

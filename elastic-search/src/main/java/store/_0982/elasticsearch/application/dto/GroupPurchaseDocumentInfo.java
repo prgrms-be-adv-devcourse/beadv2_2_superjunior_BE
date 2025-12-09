@@ -19,7 +19,7 @@ public record GroupPurchaseDocumentInfo(
         Instant updatedAt,
         Integer participants
 ) {
-    public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument){
+    public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
         return new GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getGroupPurchaseId(),
                 groupPurchaseDocument.getProductId(),
