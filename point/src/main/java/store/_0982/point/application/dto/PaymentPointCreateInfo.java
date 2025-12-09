@@ -19,7 +19,7 @@ public record PaymentPointCreateInfo(
         return new PaymentPointCreateInfo(
                 requested.getId(),
                 requested.getMemberId(),
-                requested.getOrderId(),
+                requested.getPgOrderId(),
                 requested.getAmount(),
                 requested.getStatus(),
                 requested.getCreatedAt(),

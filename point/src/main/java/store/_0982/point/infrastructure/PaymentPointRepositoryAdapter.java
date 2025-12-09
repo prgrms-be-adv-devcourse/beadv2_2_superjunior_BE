@@ -23,7 +23,7 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
 
     @Override
     public Optional<PaymentPoint> findByOrderId(UUID orderId) {
-        return paymentPointJpaRepository.findByOrderId(orderId);
+        return paymentPointJpaRepository.findByPgOrderId(orderId);
     }
 
     @Override

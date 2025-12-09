@@ -1,27 +1,22 @@
-package store._0982.point.common.exception;
+package store._0982.point.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import store._0982.common.exception.ErrorCode;
 
 @Getter
 @RequiredArgsConstructor
-// TODO: 에러 메시지 수정 필요
-public enum CustomErrorCode {
+public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 금액입니다."),
-    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "적절하지 않은 요청 값이 존재합니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
     ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
-    LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
-    REFUND_AFTER_ORDER(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않습니다."),
 
-    // 401 Unauthorized
-    NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
-    NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
-    NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
+    LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않아 환불이 불가합니다."),
 
     // 403 Forbidden
     PAYMENT_OWNER_MISMATCH(HttpStatus.FORBIDDEN, "해당 결제의 유저가 아닙니다."),

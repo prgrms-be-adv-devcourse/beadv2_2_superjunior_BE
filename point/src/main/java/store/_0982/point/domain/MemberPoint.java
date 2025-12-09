@@ -5,8 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
-import store._0982.point.common.exception.CustomErrorCode;
-import store._0982.point.common.exception.CustomException;
+import store._0982.common.exception.CustomException;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -29,9 +29,9 @@ public class MemberPoint {
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
 
-    public MemberPoint(UUID memberId, Integer pointBalance) {
+    public MemberPoint(UUID memberId) {
         this.memberId = memberId;
-        this.pointBalance = pointBalance;
+        this.pointBalance = 0;
     }
 
     public void addPoints(int pointBalance) {

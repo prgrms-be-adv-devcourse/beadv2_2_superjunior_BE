@@ -2,74 +2,72 @@ package store._0982.point.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.point.application.dto.PointChargeConfirmCommand;
+import store._0982.common.exception.CustomException;
+import store._0982.point.client.dto.TossPaymentCancelRequest;
+import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.exception.CustomErrorCode;
+import store._0982.point.exception.PaymentClientException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.function.Supplier;
 
+/**
+ * 실제로 토스 API를 호출하는 클래스입니다.
+ * <p>API 호출 메서드를 정의할 때는 client.dto 패키지에서 정의된 클래스만 파라미터로 이용해 주세요.</p>
+ *
+ * @author Minhyung Kim
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class TossPaymentClient {
-
-    private static final String CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
+    private static final String BASE_URL = "https://api.tosspayments.com/v1/payments";
 
     private final RestTemplate restTemplate;
     private final TossPaymentProperties properties;
 
-    public TossPaymentResponse confirm(PointChargeConfirmCommand command) {
-        if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
-            throw new IllegalStateException("Toss secret key is not configured");
-        }
+    public TossPaymentResponse confirm(TossPaymentConfirmRequest request) {
         HttpHeaders headers = createHeaders();
 
         Map<String, Object> body = new HashMap<>();
-        body.put("paymentKey", command.paymentKey());
-        body.put("orderId", command.orderId());
-        body.put("amount", command.amount());
+        body.put("paymentKey", request.paymentKey());
+        body.put("orderId", request.orderId());
+        body.put("amount", request.amount());
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
-        try {
-            TossPaymentResponse tossPaymentResponse = restTemplate.postForObject(CONFIRM_URL, entity, TossPaymentResponse.class);
-            log.debug(Objects.requireNonNull(tossPaymentResponse).toString());
-            return tossPaymentResponse;
-        } catch (HttpStatusCodeException ex) {
-            HttpStatusCode statusCode = ex.getStatusCode();
-            String responseBody = ex.getResponseBodyAsString();
-            throw new IllegalStateException("Toss confirm failed (" + statusCode + "): " + responseBody, ex);
-        }
+        return handlePaymentApiErrorAndGet(
+                () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentResponse.class));
     }
 
-    public TossPaymentResponse cancel(String paymentKey, String reason, int cancelAmount) {
-        String url = "https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel";
-
-        if (properties.getSecretKey() == null || properties.getSecretKey().isBlank()) {
-            throw new IllegalStateException("Toss secret key is not configured");
-        }
+    public TossPaymentResponse cancel(TossPaymentCancelRequest request) {
         HttpHeaders headers = createHeaders();
 
-        //멱등키
-        headers.set("Idempotency-Key", UUID.randomUUID().toString());
+        // paymentKey, amount, reason을 조합해 해시값을 생성 후 멱등키로 이용
+        // 기본 sha256 메서드는 하나에 8비트로 변환되기 때문에 byte[]로 반환되고,
+        // sha256Hex 메서드는 하나에 16진수(4비트)로 변환되기 때문에 문자열로 표현 가능하므로 String으로 반환됨
+        String idempotencyKey = DigestUtils.sha256Hex(request.paymentKey() + request.amount() + request.reason());
+        headers.set("Idempotency-Key", idempotencyKey);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("cancelReason", reason);
-        body.put("cancelAmount", cancelAmount);
+        body.put("cancelReason", request.reason());
+        body.put("cancelAmount", request.amount());
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
-        return restTemplate.postForObject(url, entity, TossPaymentResponse.class);
+        String url = BASE_URL + "/" + request.paymentKey() + "/cancel";
+        return handlePaymentApiErrorAndGet(
+                () -> restTemplate.postForObject(url, entity, TossPaymentResponse.class));
     }
 
     private HttpHeaders createHeaders() {
@@ -79,5 +77,24 @@ public class TossPaymentClient {
         String encoded = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         headers.set(HttpHeaders.AUTHORIZATION, "Basic " + encoded);
         return headers;
+    }
+
+    private TossPaymentResponse handlePaymentApiErrorAndGet(Supplier<TossPaymentResponse> apiCall) {
+        try {
+            TossPaymentResponse response = apiCall.get();
+            log.debug(String.valueOf(response));
+            return response;
+        } catch (HttpStatusCodeException e) {
+            log.debug(e.getResponseBodyAsString());
+            HttpStatus httpStatus = HttpStatus.resolve(e.getStatusCode().value());
+            TossPaymentErrorResponse response = e.getResponseBodyAs(TossPaymentErrorResponse.class);
+            if (response == null) {
+                throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
+            }
+            throw new PaymentClientException(httpStatus, response.code(), response.message());
+        }
+    }
+
+    private record TossPaymentErrorResponse(String code, String message) {
     }
 }
