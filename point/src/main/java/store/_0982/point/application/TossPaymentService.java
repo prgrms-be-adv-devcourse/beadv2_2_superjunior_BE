@@ -3,19 +3,20 @@ package store._0982.point.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.LogFormat;
+import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.PointChargeConfirmCommand;
 import store._0982.point.application.dto.PointRefundCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.domain.PaymentPoint;
 import store._0982.point.exception.CustomErrorCode;
 import store._0982.point.exception.PaymentClientException;
-import store._0982.point.domain.PaymentPoint;
 
 import java.util.function.Supplier;
 
@@ -26,11 +27,12 @@ import java.util.function.Supplier;
  * @author Minhyung Kim
  */
 @Slf4j
-@Component
+@Service
 @RequiredArgsConstructor
 public class TossPaymentService {
     private final TossPaymentClient tossPaymentClient;
 
+    @ServiceLog
     public TossPaymentResponse confirmPayment(PaymentPoint paymentPoint, PointChargeConfirmCommand command) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.from(command);
         TossPaymentResponse tossPaymentResponse = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
@@ -41,6 +43,7 @@ public class TossPaymentService {
         return tossPaymentResponse;
     }
 
+    @ServiceLog
     public TossPaymentResponse cancelPayment(PaymentPoint paymentPoint, PointRefundCommand command) {
         TossPaymentCancelRequest request = TossPaymentCancelRequest.from(paymentPoint, command);
         return executeWithExceptionHandling(() -> tossPaymentClient.cancel(request));

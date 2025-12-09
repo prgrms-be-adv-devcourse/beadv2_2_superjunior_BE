@@ -58,6 +58,7 @@ public abstract class BaseExceptionHandler {
         return handleCustomException(ex);
     }
 
+    // TODO: 커스텀 에러로 변환해서 메시지를 유저 친화적이게 구성할까?
     @ExceptionHandler(SecurityException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseDto<String> handleSecurityException(SecurityException e) {
