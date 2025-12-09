@@ -89,7 +89,7 @@ create table order_schema.settlement
     seller_id         uuid                                   not null,
     period_start      timestamp with time zone               not null,
     period_end        timestamp with time zone               not null,
-    total_amount      integer                                not null,
+    total_amount      bigint                                 not null,
     service_fee       numeric(12, 2)                         not null,
     settlement_amount numeric(12, 2)                         not null,
     status            varchar(20)                            not null,
@@ -131,7 +131,7 @@ create table order_schema.seller_balance
         constraint seller_balance_pk primary key,
     member_id          uuid                                       not null
         constraint seller_balance_member_unique unique,
-    settlement_balance integer                     default 0      not null,
+    settlement_balance bigint                      default 0      not null,
     created_at         timestamp with time zone    default now()  not null,
     updated_at         timestamp with time zone
 );
@@ -156,8 +156,8 @@ create table order_schema.seller_balance_history
     history_id         uuid                                       not null
         constraint seller_balance_history_pk primary key,
     member_id          uuid                                       not null,
-    settlement_id
-    amount             integer                                    not null,
+    settlement_id      uuid                                       not null,
+    amount             bigint                                     not null,
     created_at         timestamp with time zone    default now()  not null,
     status             varchar(10)                                not null
         constraint seller_balance_history_status_check
