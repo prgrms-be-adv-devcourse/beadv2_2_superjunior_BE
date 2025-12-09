@@ -29,7 +29,7 @@ public class RoleCheckAspect {
 
         Role memberRole;
         try {
-            memberRole = Role.valueOf(memberRoleHeader);
+            memberRole = Role.valueOf(memberRoleHeader.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new CustomException(DefaultErrorCode.NO_ROLE_INFO);
         }
