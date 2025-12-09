@@ -50,7 +50,6 @@ spring:
               predicates:
                 - Path=/api/product/**
               filters:
-                - JwtAuth
                 - RewritePath=/api/product/(?<segment>.*), /${segment}
 
           discovery:
