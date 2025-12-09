@@ -1,19 +1,25 @@
-package store._0982.elasticsearch.purchase.presentation;
+package store._0982.elasticsearch.presentation;
 
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.elasticsearch.application.GroupPurchaseSearchService;
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
+import store._0982.elasticsearch.common.dto.PageResponse;
 import store._0982.elasticsearch.common.dto.ResponseDto;
-import store._0982.elasticsearch.purchase.application.GroupPurchaseSearchService;
-import store._0982.elasticsearch.purchase.domain.GroupPurchaseDocument;
-import store._0982.elasticsearch.purchase.presentation.dto.GroupPurchaseIndexRequest;
+import store._0982.elasticsearch.domain.GroupPurchaseDocument;
+import store._0982.elasticsearch.presentation.dto.GroupPurchaseDocumentRequest;
 
-//todo: pageresponse 적용, 각종 exception적용, command, info, 띄어쓰기 등 입력값 처리
+import java.util.UUID;
+
+//todo: doc 관련 api 호출 방식을 kafka 이벤트 처리 방식으로 변경
+@Tag(name = "Group Purchase Search API", description = "공동구매 검색 및 색인 API")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/searches")
@@ -25,27 +31,23 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping("/index/purchase")
     public ResponseDto<Void> createGroupPurchaseIndex() {
-        boolean created = groupPurchaseSearchService.createGroupPurchaseIndex();
-        return created
-                ? new ResponseDto<>(HttpStatus.CREATED, null, "인덱스 생성 완료")
-                : new ResponseDto<>(HttpStatus.OK, null, "매핑 업데이트 완료");
+        groupPurchaseSearchService.createGroupPurchaseIndex();
+        return new ResponseDto<>(HttpStatus.CREATED, null, "인덱스 생성 완료");
     }
 
     @Operation(summary = "공동구매 인덱스 삭제", description = "공동구매의 인덱스를 삭제한다.")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/index/purchase")
     public ResponseDto<Void> deleteGroupPurchaseIndex() {
-        boolean deleted = groupPurchaseSearchService.deleteGroupPurchaseIndex();
-        return deleted
-                ? new ResponseDto<>(HttpStatus.OK, null, "인덱스 삭제 완료")
-                : new ResponseDto<>(HttpStatus.NOT_FOUND, null, "삭제할 인덱스가 존재하지 않습니다.");
+        groupPurchaseSearchService.deleteGroupPurchaseIndex();
+        return new ResponseDto<>(HttpStatus.OK, null, "인덱스 삭제 완료");
 
     }
 
     @Operation(summary = "공동구매 문서 추가", description = "공동구매 Elasticsearch 인덱스에 검색용 문서를 추가한다.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/purchase")
-    public ResponseDto<GroupPurchaseDocument> indexGroupPurchase(
+    public ResponseDto<GroupPurchaseDocument> saveGroupPurchaseDocument(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "공동구매 색인 요청",
                     required = true,
@@ -71,25 +73,30 @@ public class GroupPurchaseSearchController {
                             )
                     )
             )
-            @org.springframework.web.bind.annotation.RequestBody GroupPurchaseIndexRequest request
+            @org.springframework.web.bind.annotation.RequestBody GroupPurchaseDocumentRequest request
     ) {
-        GroupPurchaseDocument saved = groupPurchaseSearchService.index(request.toDocument());
+        GroupPurchaseDocument saved = groupPurchaseSearchService.saveGroupPurchaseDocument(request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, saved, "공동구매 문서 생성 완료");
     }
 
-    @Operation(summary = "공동구매 검색", description = "키워드 + 상태 + 정렬 기준으로 공동구매를 검색합니다.")
+    @Operation(summary = "공동구매 문서 검색", description = "키워드 + 상태 기준으로 공동구매를 검색합니다.")
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/search")
-    public ResponseDto<Page<GroupPurchaseDocument>> searchGroupPurchase(
-            @RequestParam String keyword,
-            @RequestParam String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "latest") String sort
+    @GetMapping("/purchase/search")
+    public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocument(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "OPEN") String status,
+            Pageable pageable
     ) {
-        Page<GroupPurchaseDocument> result =
-                groupPurchaseSearchService.search(keyword, status, page, size, sort);
+        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
+    }
+
+    @Operation(summary = "공동구매 문서 삭제", description = "id 기준으로 공동구매 문서를 삭제합니다.")
+    @ResponseStatus(HttpStatus.OK)
+    @DeleteMapping("/purchase/{groupPurchaseId}")
+    public ResponseDto<Void> deleteGroupPurchaseDocument(@PathVariable UUID groupPurchaseId){
+        groupPurchaseSearchService.deleteGroupPurchaseDocument(groupPurchaseId);
+        return new ResponseDto<>(HttpStatus.OK, null, "공동구매 문서 삭제 완료.");
     }
 }

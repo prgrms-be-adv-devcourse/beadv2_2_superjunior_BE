@@ -1,11 +1,10 @@
-package store._0982.elasticsearch.purchase.presentation.dto;
+package store._0982.elasticsearch.presentation.dto;
 
-import store._0982.elasticsearch.purchase.domain.GroupPurchaseDocument;
-
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 
 import java.time.Instant;
 
-public record GroupPurchaseIndexRequest(
+public record GroupPurchaseDocumentRequest(
         String groupPurchaseId,
         String productId,
         Integer minQuantity,
@@ -21,8 +20,8 @@ public record GroupPurchaseIndexRequest(
         Integer participants
 ) {
 
-    public GroupPurchaseDocument toDocument() {
-        return new GroupPurchaseDocument(
+    public GroupPurchaseDocumentCommand toCommand() {
+        return new GroupPurchaseDocumentCommand(
                 groupPurchaseId,
                 productId,
                 minQuantity,

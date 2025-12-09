@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.purchase.domain;
+package store._0982.elasticsearch.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
