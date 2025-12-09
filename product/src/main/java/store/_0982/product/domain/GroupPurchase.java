@@ -51,6 +51,13 @@ public class GroupPurchase {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Column(name = "current_quantity", nullable = false)
+    private int currentQuantity = 0;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -79,6 +86,7 @@ public class GroupPurchase {
         this.endDate = endDate;
         this.sellerId = sellerId;
         this.productId = productId;
+        this.currentQuantity = 0;
     }
 
 }
