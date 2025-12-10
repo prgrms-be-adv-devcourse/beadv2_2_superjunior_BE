@@ -15,4 +15,6 @@ public interface NotificationRepository {
     Page<Notification> findByMemberId(UUID memberId, Pageable pageable);
 
     Page<Notification> findByMemberIdAndStatus(UUID memberId, NotificationStatus status, Pageable pageable);
+
+    void save(Notification notification);
 }

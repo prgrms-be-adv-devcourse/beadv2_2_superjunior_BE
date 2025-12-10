@@ -1,8 +1,7 @@
 package store._0982.notification.constant;
 
 public final class KafkaGroupIds {
-    public static final String ORDER_CREATED_NOTIFICATION = "order-created-notification";
-    public static final String ORDER_CHANGED_NOTIFICATION = "order-changed-notification";
+    public static final String ORDER_NOTIFICATION = "order-notification";
 
     public static final String POINT_RECHARGED_NOTIFICATION = "point-recharged-notification";
     public static final String POINT_CHANGED_NOTIFICATION = "point-changed-notification";

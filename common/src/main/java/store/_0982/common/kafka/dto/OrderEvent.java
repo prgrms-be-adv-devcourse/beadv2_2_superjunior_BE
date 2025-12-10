@@ -11,23 +11,14 @@ import java.util.UUID;
 public class OrderEvent extends BaseEvent {
     private final UUID id;
     private final UUID memberId;
-    private final long price;
-    private final int quantity;
-    private final String address;
-    private final String addressDetail;
-    private final String postalCode;
-    private final String status;    // Order의 status
+    private final String status;
+    private final String productName;
 
-    public OrderEvent(Clock clock, UUID id, UUID memberId, long price, int quantity, String address,
-                      String addressDetail, String postalCode, String status) {
+    public OrderEvent(Clock clock, UUID id, UUID memberId, String status, String productName) {
         super(clock);
         this.id = id;
         this.memberId = memberId;
-        this.price = price;
-        this.quantity = quantity;
-        this.address = address;
-        this.addressDetail = addressDetail;
-        this.postalCode = postalCode;
         this.status = status;
+        this.productName = productName;
     }
 }

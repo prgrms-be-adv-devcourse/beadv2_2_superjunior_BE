@@ -3,6 +3,7 @@ package store._0982.notification.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
@@ -12,19 +13,15 @@ import store._0982.common.kafka.dto.PointEvent;
 import store._0982.common.kafka.dto.SettlementEvent;
 import store._0982.notification.constant.KafkaGroupIds;
 
+@EnableKafka
 @Configuration
 public class KafkaConfig {
     @Value("${kafka.server}")
     private String bootStrapServer;
 
     @Bean
-    public ConsumerFactory<String, OrderEvent> orderCreatedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.ORDER_CREATED_NOTIFICATION);
-    }
-
-    @Bean
-    public ConsumerFactory<String, OrderEvent> orderChangedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.ORDER_CHANGED_NOTIFICATION);
+    public ConsumerFactory<String, OrderEvent> orderEventConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.ORDER_NOTIFICATION);
     }
 
     @Bean
@@ -63,13 +60,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderEvent> orderCreatedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderCreatedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderEvent> orderChangedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderChangedEventConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, OrderEvent> orderListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderEventConsumerFactory());
     }
 
     @Bean
