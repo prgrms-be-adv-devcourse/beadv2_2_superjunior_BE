@@ -8,6 +8,7 @@ import java.util.UUID;
 
 /**
  * Kafka에서 이벤트를 발송할 때 사용되는 기본 이벤트 DTO입니다.
+ * <p>이벤트를 발송할 때 해당 클래스를 상속시킨 클래스를 전달해 주세요.</p>
  * <pre>
  * {@code
  * @Getter
@@ -22,14 +23,13 @@ import java.util.UUID;
  */
 @Getter
 public abstract class BaseEvent {
-    private final UUID eventId;
+    private final UUID eventId = UUID.randomUUID();
     private final OffsetDateTime occurredAt;
 
     /**
      * 기본 이벤트 DTO 생성자입니다.
      */
     protected BaseEvent() {
-        this.eventId = UUID.randomUUID();
         this.occurredAt = OffsetDateTime.now();
     }
 
@@ -39,7 +39,6 @@ public abstract class BaseEvent {
      * @param clock 테스트용으로 생성한 시간
      */
     protected BaseEvent(Clock clock) {
-        this.eventId = UUID.randomUUID();
         this.occurredAt = OffsetDateTime.now(clock);
     }
 
