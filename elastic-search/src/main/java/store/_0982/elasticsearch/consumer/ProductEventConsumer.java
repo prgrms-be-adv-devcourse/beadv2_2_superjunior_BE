@@ -16,13 +16,13 @@ public class ProductEventConsumer {
 
     private final ProductSearchService productSearchService;
 
-    @KafkaListener(topics = KafkaTopics.PRODUCT_UPSERTED, groupId = "search-service-group", containerFactory = "productUpsertKafkaListenerFactory")
+    @KafkaListener(topics = KafkaTopics.PRODUCT_UPSERTED, groupId = "search-service-group", containerFactory = "upsertProductKafkaListenerFactory")
     public void upsert(ProductEvent event) {
         ProductDocumentCommand command = ProductDocumentCommand.from(event);
         productSearchService.saveProductDocument(command);
     }
 
-    @KafkaListener(topics = KafkaTopics.PRODUCT_DELETED, groupId = "search-service-group", containerFactory = "productDeleteKafkaListenerFactory")
+    @KafkaListener(topics = KafkaTopics.PRODUCT_DELETED, groupId = "search-service-group", containerFactory = "deleteProductKafkaListenerFactory")
     public void delete(UUID id) {
         productSearchService.deleteProductDocument(id);
     }

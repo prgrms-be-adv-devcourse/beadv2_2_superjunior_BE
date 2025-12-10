@@ -17,22 +17,22 @@ public class ProductKafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, ProductEvent> productUpsertConsumerFactory(){
+    public ConsumerFactory<String, ProductEvent> upsertProductConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ProductEvent> productUpsertKafkaListenerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(productUpsertConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, ProductEvent> upsertProductKafkaListenerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(upsertProductConsumerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, UUID> productDeleteConsumerFactory(){
+    public ConsumerFactory<String, UUID> deleteProductConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UUID> productDeleteKafkaListenerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(productDeleteConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, UUID> deleteProductKafkaListenerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(deleteProductConsumerFactory());
     }
 }

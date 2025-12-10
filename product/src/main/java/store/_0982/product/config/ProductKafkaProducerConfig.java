@@ -19,33 +19,33 @@ public class ProductKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ProductEvent> productUpsertedProducerFactory() {
+    public ProducerFactory<String, ProductEvent> upsertProductProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, ProductEvent> productUpsertedKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(productUpsertedProducerFactory());
+    public KafkaTemplate<String, ProductEvent> upsertProductKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(upsertProductProducerFactory());
     }
 
     @Bean
-    public NewTopic productUpsertedTopic() {
+    public NewTopic upsertProductTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_UPSERTED);
     }
 
     @Bean
-    public ProducerFactory<String, UUID> productDeletedProducerFactory() {
+    public ProducerFactory<String, UUID> deleteProductProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     /** KafkaTemplate */
     @Bean
-    public KafkaTemplate<String, UUID> productDeletedKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(productDeletedProducerFactory());
+    public KafkaTemplate<String, UUID> deleteProductKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(deleteProductProducerFactory());
     }
 
     @Bean
-    public NewTopic productDeletedTopic() {
+    public NewTopic deleteProductTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_DELETED);
     }
 }
