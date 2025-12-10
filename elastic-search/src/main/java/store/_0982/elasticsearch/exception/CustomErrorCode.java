@@ -10,7 +10,6 @@ import store._0982.common.exception.ErrorCode;
 public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
-    INVALID_PURCHASEID(HttpStatus.BAD_REQUEST, "공동구매 id가 잘못되었습니다."),
 
     // 401 Unauthorized
 

@@ -11,6 +11,7 @@ import java.time.Instant;
 @Builder
 @Getter
 @Document(indexName = "group-purchase-index", createIndex = false)
+// kafka 형식 맞춰서 수정 필요
 public class GroupPurchaseDocument {
 
     @Id
