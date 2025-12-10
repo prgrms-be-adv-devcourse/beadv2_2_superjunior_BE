@@ -7,11 +7,8 @@ import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.OrderEvent;
-import store._0982.common.kafka.dto.PointEvent;
-import store._0982.common.kafka.dto.SettlementEvent;
-import store._0982.notification.constant.KafkaGroupIds;
+import store._0982.common.kafka.dto.BaseEvent;
+import store._0982.notification.common.KafkaGroupIds;
 
 @EnableKafka
 @Configuration
@@ -20,82 +17,32 @@ public class KafkaConfig {
     private String bootStrapServer;
 
     @Bean
-    public ConsumerFactory<String, OrderEvent> orderEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.ORDER_NOTIFICATION);
+    public ConsumerFactory<String, BaseEvent> kakaoConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.KAKAO);
     }
 
     @Bean
-    public ConsumerFactory<String, GroupPurchaseEvent> groupPurchaseChangedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.GROUP_PURCHASE_CHANGED_NOTIFICATION);
+    public ConsumerFactory<String, BaseEvent> emailConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.EMAIL);
     }
 
     @Bean
-    public ConsumerFactory<String, PointEvent> pointChangedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.POINT_CHANGED_NOTIFICATION);
+    public ConsumerFactory<String, BaseEvent> inAppConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.IN_APP);
     }
 
     @Bean
-    public ConsumerFactory<String, PointEvent> pointRechargedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.POINT_RECHARGED_NOTIFICATION);
+    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> kakaoListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(kakaoConsumerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, SettlementEvent> dailySettlementCompletedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.SETTLEMENT_DAILY_COMPLETED_NOTIFICATION);
+    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> emailListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(emailConsumerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, SettlementEvent> dailySettlementFailedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.SETTLEMENT_DAILY_FAILED_NOTIFICATION);
-    }
-
-    @Bean
-    public ConsumerFactory<String, SettlementEvent> monthlySettlementCompletedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.SETTLEMENT_MONTHLY_COMPLETED_NOTIFICATION);
-    }
-
-    @Bean
-    public ConsumerFactory<String, SettlementEvent> monthlySettlementFailedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.SETTLEMENT_MONTHLY_FAILED_NOTIFICATION);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderEvent> orderListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseEvent> groupPurchaseChangedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(groupPurchaseChangedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PointEvent> pointChangedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(pointChangedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, PointEvent> pointRechargedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(pointRechargedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SettlementEvent> dailySettlementCompletedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(dailySettlementCompletedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SettlementEvent> dailySettlementFailedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(dailySettlementFailedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SettlementEvent> monthlySettlementCompletedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(monthlySettlementCompletedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, SettlementEvent> monthlySettlementFailedListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(monthlySettlementFailedEventConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> inAppListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(inAppConsumerFactory());
     }
 }

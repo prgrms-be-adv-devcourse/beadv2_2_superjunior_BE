@@ -22,7 +22,7 @@ import java.util.UUID;
  * @author Minhyung Kim
  */
 @Getter
-abstract class BaseEvent {
+public abstract class BaseEvent {
     private final UUID eventId = UUID.randomUUID();
     private final OffsetDateTime occurredAt;
 

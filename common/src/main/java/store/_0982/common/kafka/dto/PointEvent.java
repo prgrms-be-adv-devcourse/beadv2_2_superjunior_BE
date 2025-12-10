@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
@@ -13,20 +12,21 @@ public class PointEvent extends BaseEvent {
     private final UUID id;
     private final UUID memberId;
     private final long amount;
-    private final String status;
+    private final Status status;
     private final String paymentMethod;
-    private final OffsetDateTime requestedAt;
-    private final OffsetDateTime approvedAt;
 
-    public PointEvent(Clock clock, UUID id, UUID memberId, long amount, String status, String paymentMethod,
-                      OffsetDateTime requestedAt, OffsetDateTime approvedAt) {
+    public PointEvent(Clock clock, UUID id, UUID memberId, long amount, Status status, String paymentMethod) {
         super(clock);
         this.id = id;
         this.memberId = memberId;
         this.amount = amount;
         this.status = status;
         this.paymentMethod = paymentMethod;
-        this.requestedAt = requestedAt;
-        this.approvedAt = approvedAt;
+    }
+
+    public enum Status {
+        DEDUCTED,
+        RETURNED,
+        RECHARGED
     }
 }
