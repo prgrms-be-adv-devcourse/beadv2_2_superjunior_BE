@@ -14,7 +14,10 @@ public enum DefaultErrorCode implements ErrorCode {
     // 401 Unauthorized
     NO_LOGIN_INFO(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다."),
     NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
-    NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다.");
+    NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
+
+    // 403 Forbidden
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

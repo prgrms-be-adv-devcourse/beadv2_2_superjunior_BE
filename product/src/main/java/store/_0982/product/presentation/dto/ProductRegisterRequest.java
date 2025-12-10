@@ -14,7 +14,7 @@ public record ProductRegisterRequest(
         String originalUrl
 ) {
 
-    public ProductRegisterCommand toCommand(UUID sellerId, String memberRole) {
-        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, sellerId, memberRole);
+    public ProductRegisterCommand toCommand(UUID sellerId) {
+        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, sellerId);
     }
 }

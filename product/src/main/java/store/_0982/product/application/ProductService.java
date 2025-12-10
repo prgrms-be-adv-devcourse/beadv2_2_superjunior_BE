@@ -1,10 +1,10 @@
 package store._0982.product.application;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.event.ProductEvent;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
@@ -28,9 +28,6 @@ public class ProductService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        if (!command.memberRole().equals("SELLER") && !command.memberRole().equals("ADMIN")) {
-            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
-        }
         Product product = new Product(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
@@ -64,6 +61,7 @@ public class ProductService {
      * @param productId 상품 id
      * @return ProductDetailInfo
      */
+    @Transactional(readOnly = true)
     public ProductDetailInfo getProductInfo(UUID  productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));

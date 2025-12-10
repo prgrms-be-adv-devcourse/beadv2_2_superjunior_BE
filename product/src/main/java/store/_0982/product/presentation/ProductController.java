@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.auth.RequireRole;
+import store._0982.common.auth.Role;
 import store._0982.product.application.ProductService;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
@@ -25,12 +27,12 @@ public class ProductController {
 
     @Operation(summary = "상품 등록", description = "판매자가 새로운 상품을 등록한다.")
     @PostMapping
+    @RequireRole({Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ProductRegisterInfo> createProduct(
             @RequestHeader("X-Member-Id") UUID memberId,
-            @RequestHeader("X-Member-Role") String memberRole,
             @RequestBody ProductRegisterRequest request) {
-        ProductRegisterInfo info = productService.createProduct(request.toCommand(memberId, memberRole));
+        ProductRegisterInfo info = productService.createProduct(request.toCommand(memberId));
         return new ResponseDto<>(HttpStatus.CREATED, info, "상품이 등록되었습니다.");
     }
 

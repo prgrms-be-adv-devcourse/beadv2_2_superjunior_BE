@@ -1,7 +1,5 @@
 dependencies {
     // 필요한 의존성 추가
-    implementation project(':common')
-
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
     //DB
@@ -9,6 +7,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    // Spring Retry
+    implementation 'org.springframework.retry:spring-retry'
+    implementation 'org.springframework:spring-aspects'
 
     implementation 'org.springframework.kafka:spring-kafka'
 
