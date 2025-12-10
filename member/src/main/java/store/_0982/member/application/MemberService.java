@@ -10,10 +10,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
-import store._0982.member.domain.Address;
-import store._0982.member.domain.AddressRepository;
-import store._0982.member.domain.Member;
-import store._0982.member.domain.MemberRepository;
+import store._0982.member.domain.*;
 
 import java.util.UUID;
 
@@ -25,13 +22,16 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     private final AddressRepository addressRepository;
+    private final EmailTokenRepository emailTokenRepository;
 
+    private final SmtpService smtpService;
     //TODO: 이메일 검증 SMTP
+    //TODO: 만료된 토큰 하루 단위로 삭제 스케쥴링
     @Transactional
     public MemberSignUpInfo createMember(MemberSignUpCommand command) {
         checkEmailDuplication(command.email());
+        checkEmailVerification(command.email());
         checkNameDuplication(command.name());
-        //TODO: 메일 인증 여부 체크
         Member member = Member.create(command.email(), command.name(), command.password(), command.phoneNumber());
         member.encodePassword(passwordEncoder.encode(member.getSaltKey() + member.getPassword()));
         return MemberSignUpInfo.from(memberRepository.save(member));
@@ -79,8 +79,30 @@ public class MemberService {
     public void checkNameDuplication(String name) {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
+
     @Transactional
+    public void sendVerificationEmail(String email) {
+        checkEmailDuplication(email);
+        EmailToken emailToken = emailTokenRepository.findByEmail(email).map(EmailToken::refresh).orElse(EmailToken.create(email));
+        emailTokenRepository.save(emailToken);
+        smtpService.sendEmail(email, "0909 이메일 인증 요청 메일입니다.", "http://localhost:8000/api/members/email/verification/" + emailToken.getToken());
+    }
+
+    @Transactional
+    public void verifyEmail(String token) {
+        EmailToken emailToken = emailTokenRepository.findByToken(token).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
+        if(emailToken.isExpired()) throw new CustomException(CustomErrorCode.TIME_OUT);
+        emailToken.verify();
+    }
+
+    private void checkEmailVerification(String email) {
+        EmailToken emailToken = emailTokenRepository.findByEmail(email).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
+        if(!emailToken.isVerified())
+            throw new CustomException(CustomErrorCode.NOT_VERIFIED_EMAIL);
+    }
+
     //여기 아래로는 Address 관련 메소드
+    @Transactional
     public AddressInfo addAddress(AddressAddCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         Address address = Address.create(member, command.address(), command.addressDetail(), command.postalCode(), command.receiverName(), command.phoneNumber());
@@ -92,6 +114,7 @@ public class MemberService {
         Page<AddressInfo> infoPage = addresses.map(AddressInfo::from);
         return PageResponse.from(infoPage);
     }
+
     @Transactional
     public void deleteAddress(AddressDeleteCommand command) {
         Address address = addressRepository.findById(command.addressId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_ADDRESS));
@@ -103,4 +126,5 @@ public class MemberService {
         if(!address.getMember().getMemberId().equals(memberId))
             throw new CustomException(CustomErrorCode.FORBIDDEN);
     }
+
 }

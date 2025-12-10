@@ -17,6 +17,7 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_NAME(HttpStatus.BAD_REQUEST, "이름은 영문, 한글, 숫자로 구성되고, 2자 이상 50자 이하이어야 합니다."),
     INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "전화번호는 9~15자리의 숫자와 '-'만 입력 가능합니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
+    NOT_VERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "인증되지 않은 이메일입니다."),
     // Seller
     INVALID_SELLER_ACCOUNT_NUMBER(HttpStatus.BAD_REQUEST, "계좌번호는 숫자만 입력 가능합니다."),
     INVALID_SELLER_BANK_CODE(HttpStatus.BAD_REQUEST, "은행 코드는 숫자만 입력 가능합니다."),
@@ -29,6 +30,8 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "수령인 이름은 100자 이하의 한글과 영어만 입력 가능합니다."),
     UNVERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "인증되지 않은 메일입니다."),
 
+    // 408 Time-out
+    TIME_OUT(HttpStatus.REQUEST_TIMEOUT, "시간 초과입니다."),
 
     // 409 Conflict
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "이미 사용중인 이메일입니다."),
@@ -55,7 +58,8 @@ public enum CustomErrorCode implements ErrorCode {
     //404
     NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     NOT_EXIST_SELLER(HttpStatus.NOT_FOUND, "존재하지 않는 판매자입니다."),
-    NOT_EXIST_ADDRESS(HttpStatus.NOT_FOUND, "존재하지 않는 주소 정보입니다." );
+    NOT_EXIST_ADDRESS(HttpStatus.NOT_FOUND, "존재하지 않는 주소 정보입니다." ),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "없는 리소스입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

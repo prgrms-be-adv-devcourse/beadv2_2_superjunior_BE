@@ -1,5 +1,7 @@
 create schema member_schema;
 
+set search_path to member_schema;
+
 create table member_schema.member
 (
     member_id     uuid                                                           not null
@@ -123,4 +125,38 @@ comment on column member_schema.address.member_id is '멤버 ID';
 comment on column member_schema.address.updated_at is '수정일';
 
 alter table member_schema.address
+    owner to postgres;
+
+create table member_schema.email_token
+(
+    email_token_id uuid                         not null
+        constraint email_token_pk
+            primary key,
+    email          varchar(100)                 not null,
+    token          varchar(100)                 not null
+        constraint email_token_token_uk
+            unique,
+    is_verified       boolean                      not null,
+    expired_at     timestamp with time zone     not null,
+    created_at     timestamp with time zone default now() not null,
+    updated_at     timestamp with time zone
+);
+
+comment on table member_schema.email_token is '이메일 인증 토큰';
+
+  comment on column member_schema.email_token.email_token_id is '이메일 토큰 ID';
+
+  comment on column member_schema.email_token.email is '이메일 주소';
+
+  comment on column member_schema.email_token.token is '토큰 값';
+
+  comment on column member_schema.email_token.is_verified is '유효 여부';
+
+  comment on column member_schema.email_token.expired_at is '만료 시각';
+
+  comment on column member_schema.email_token.created_at is '생성 시각';
+
+  comment on column member_schema.email_token.updated_at is '수정 시각';
+
+alter table member_schema.email_token
     owner to postgres;
