@@ -96,11 +96,7 @@ public class GroupPurchaseController {
             GroupPurchase groupPurchase = participateService.findGroupPurchaseById(purchaseId);
             ParticipateInfo result = participateService.participate(groupPurchase, request.quantity());
 
-            if (result.success()) {
-                return new ResponseDto<>(HttpStatus.OK, result, result.message());
-            } else {
-                return new ResponseDto<>(HttpStatus.OK, result, result.message());
-            }
+            return new ResponseDto<>(HttpStatus.OK, result, result.message());
         } catch (CustomException e) {
             ParticipateInfo errorResult = ParticipateInfo.failure(e.getErrorCode().name(), 0, e.getMessage());
             return new ResponseDto<>(HttpStatus.OK, errorResult, e.getMessage());
