@@ -5,6 +5,9 @@ dependencies {
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
+    //kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
     //elasticsearch
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 

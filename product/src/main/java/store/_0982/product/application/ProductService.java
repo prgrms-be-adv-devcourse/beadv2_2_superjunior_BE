@@ -3,7 +3,9 @@ package store._0982.product.application;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import store._0982.common.dto.event.ProductEvent;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         if (!command.memberRole().equals("SELLER") && !command.memberRole().equals("ADMIN")) {
@@ -33,7 +36,12 @@ public class ProductService {
                 command.description(), command.stock(),
                 command.originalUrl(), command.sellerId());
 
-        Product savedProduct = productRepository.save(product);
+        Product savedProduct = productRepository.saveAndFlush(product);
+
+        //kafka
+        ProductEvent event = savedProduct.toEvent();
+        kafkaTemplate.send("product.upsert",event.productId().toString(), event);
+
         return ProductRegisterInfo.from(savedProduct);
     }
 
@@ -46,6 +54,9 @@ public class ProductService {
         }
 
         productRepository.delete(findProduct);
+
+        //kafka
+        kafkaTemplate.send("product.delete",findProduct.getProductId().toString(), findProduct.getProductId());
     }
 
     /**
@@ -77,6 +88,11 @@ public class ProductService {
                 command.description(),
                 command.stock(),
                 command.originalLink());
+
+        //kafka
+        Product updatedProduct = productRepository.saveAndFlush(product);
+        ProductEvent event = updatedProduct.toEvent();
+        kafkaTemplate.send("product.upsert",event.productId().toString(), event);
 
         return ProductUpdateInfo.from(product);
     }

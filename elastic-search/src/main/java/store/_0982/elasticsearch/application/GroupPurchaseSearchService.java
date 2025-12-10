@@ -13,7 +13,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.CustomErrorCode;
-import store._0982.elasticsearch.exception.CustomException;
+import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 

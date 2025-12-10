@@ -19,7 +19,7 @@ public class OpenApiConfig {
     private String host;
 
     @Bean
-    public OpenAPI openAPI(){
+    public OpenAPI openAPI() {
         Server server = new Server();
         server.url(host);
 

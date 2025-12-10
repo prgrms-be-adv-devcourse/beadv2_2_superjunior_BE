@@ -8,8 +8,7 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Getter
 @Builder
@@ -42,10 +41,10 @@ public class ProductDocument {
     private String sellerId;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    private OffsetDateTime createdAt;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant updatedAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    private OffsetDateTime updatedAt;
 }

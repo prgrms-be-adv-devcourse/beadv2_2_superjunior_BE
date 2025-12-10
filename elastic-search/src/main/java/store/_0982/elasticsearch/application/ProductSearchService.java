@@ -14,7 +14,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.exception.CustomErrorCode;
-import store._0982.elasticsearch.exception.CustomException;
+import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.ProductDocument;
 import store._0982.elasticsearch.infrastructure.ProductRepository;
 
@@ -57,6 +57,7 @@ public class ProductSearchService {
     @ServiceLog
     public PageResponse<ProductDocumentInfo> searchProductDocument(String keyword,
                                                                    UUID sellerId,
+                                                                   String category,
                                                                    Pageable pageable) {
         NativeQuery query;
         // keyword 입력이 없으면 전체 문서 검색
@@ -69,6 +70,12 @@ public class ProductSearchService {
                                             .term(t -> t
                                                     .field("sellerId")
                                                     .value(sellerId.toString())
+                                            )
+                                    )
+                                    .filter(f -> f
+                                            .term(t -> t
+                                                    .field("category")
+                                                    .value(category)
                                             )
                                     )
                             )
@@ -86,6 +93,12 @@ public class ProductSearchService {
                                                     .query(keyword)
                                                     .fields("name", "description")
                                                     .type(TextQueryType.BestFields)
+                                            )
+                                    )
+                                    .filter(f -> f
+                                            .term(t -> t
+                                                    .field("category")
+                                                    .value(category)
                                             )
                                     )
                                     .filter(f -> f

@@ -2,7 +2,7 @@ package store._0982.elasticsearch.application.dto;
 
 import store._0982.elasticsearch.domain.ProductDocument;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record ProductDocumentInfo(
         String productId,
@@ -13,8 +13,8 @@ public record ProductDocumentInfo(
         Integer stock,
         String originalUrl,
         String sellerId,
-        Instant createdAt,
-        Instant updatedAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
     public static ProductDocumentInfo from(ProductDocument doc) {
         return new ProductDocumentInfo(

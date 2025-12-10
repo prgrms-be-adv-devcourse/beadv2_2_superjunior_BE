@@ -59,6 +59,7 @@ public class GroupPurchaseSearchController {
                                             {
                                               "groupPurchaseId": "6d8f6a1b-1c4e-4b87-9d78-b3e1c9a21a11",
                                               "productId": "c3b42ab9-8d20-4d5c-a0b2-3a91bcbcd111",
+                                              "sellerName": "홍길동",
                                               "minQuantity": 10,
                                               "maxQuantity": 100,
                                               "title": "아이폰 15 공동구매",

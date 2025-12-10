@@ -7,6 +7,7 @@ import java.time.Instant;
 public record GroupPurchaseDocumentRequest(
         String groupPurchaseId,
         String productId,
+        String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
         String title,
@@ -24,6 +25,7 @@ public record GroupPurchaseDocumentRequest(
         return new GroupPurchaseDocumentCommand(
                 groupPurchaseId,
                 productId,
+                sellerName,
                 minQuantity,
                 maxQuantity,
                 title,

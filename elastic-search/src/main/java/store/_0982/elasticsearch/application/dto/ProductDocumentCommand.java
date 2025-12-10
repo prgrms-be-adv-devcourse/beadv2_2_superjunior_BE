@@ -1,8 +1,9 @@
 package store._0982.elasticsearch.application.dto;
 
+import store._0982.common.dto.event.ProductEvent;
 import store._0982.elasticsearch.domain.ProductDocument;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record ProductDocumentCommand(
         String productId,
@@ -13,9 +14,24 @@ public record ProductDocumentCommand(
         Integer stock,
         String originalUrl,
         String sellerId,
-        Instant createdAt,
-        Instant updatedAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
+    public static ProductDocumentCommand from(ProductEvent event) {
+        return new ProductDocumentCommand(
+                event.productId().toString(),
+                event.name(),
+                event.price(),
+                event.category(),
+                event.description(),
+                event.stock(),
+                event.originalUrl(),
+                event.sellerId().toString(),
+                OffsetDateTime.parse(event.createdAt()),
+                OffsetDateTime.parse(event.updatedAt())
+        );
+    }
+
     public ProductDocument toDocument() {
         return ProductDocument.builder()
                 .productId(productId)

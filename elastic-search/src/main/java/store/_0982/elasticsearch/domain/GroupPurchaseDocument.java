@@ -20,6 +20,9 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Keyword)
     private String productId;
 
+    @Field(type = FieldType.Text)
+    private String sellerName;
+
     @Field(type = FieldType.Integer)
     private Integer minQuantity;
 
