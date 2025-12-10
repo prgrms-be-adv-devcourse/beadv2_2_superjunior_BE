@@ -26,6 +26,7 @@ public class PaymentPointService {
     private static final int REFUND_PERIOD_DAYS = 7;
 
     private final TossPaymentService tossPaymentService;
+    private final PointEventPublisher pointEventPublisher;
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
@@ -76,6 +77,7 @@ public class PaymentPointService {
                 .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
 
         memberPoint.addPoints(paymentPoint.getAmount());
+        pointEventPublisher.publishPointRechargedEvent(paymentPoint);
         return new PointChargeConfirmInfo(
                 PaymentPointInfo.from(paymentPoint), MemberPointInfo.from(memberPoint));
     }

@@ -31,6 +31,7 @@ import java.util.Map;
  *
  * @author Minhyung Kim
  */
+@SuppressWarnings("unused")
 public final class KafkaCommonConfigs {
     /**
      * {@link ProducerFactory}를 빈에 등록할 때 사용하는 메서드입니다.

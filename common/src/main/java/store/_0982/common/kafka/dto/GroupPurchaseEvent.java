@@ -1,24 +1,27 @@
 package store._0982.common.kafka.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings({"unused", "java:S107"})
 public class GroupPurchaseEvent extends BaseEvent {
-    private final UUID id;
-    private final int minQuantity;
-    private final Integer maxQuantity;
-    private final String title;
-    private final String description;
-    private final long discountedPrice;
-    private final String status;
-    private final OffsetDateTime startDate;
-    private final OffsetDateTime endDate;
+    private UUID id;
+    private int minQuantity;
+    private Integer maxQuantity;
+    private String title;
+    private String description;
+    private long discountedPrice;
+    private String status;
+    private OffsetDateTime startDate;
+    private OffsetDateTime endDate;
 
     public GroupPurchaseEvent(Clock clock, UUID id, int minQuantity, Integer maxQuantity, String title, String description,
                               long discountedPrice, String status, OffsetDateTime startDate, OffsetDateTime endDate) {

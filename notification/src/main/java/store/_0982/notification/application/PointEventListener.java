@@ -17,7 +17,7 @@ import store._0982.notification.domain.NotificationType;
 
 @Service
 @RequiredArgsConstructor
-public class PointEventService {
+public class PointEventListener {
     private final NotificationRepository notificationRepository;
 
     @ServiceLog
@@ -25,7 +25,7 @@ public class PointEventService {
     @KafkaListener(
             topics = {KafkaTopics.POINT_CHANGED, KafkaTopics.POINT_RECHARGED},
             groupId = KafkaGroupIds.IN_APP,
-            containerFactory = "inAppConsumerFactory"
+            containerFactory = "inAppListenerContainerFactory"
     )
     public void handlePointChangedEvent(PointEvent event) {
         MDC.put("eventId", String.valueOf(event.getEventId()));

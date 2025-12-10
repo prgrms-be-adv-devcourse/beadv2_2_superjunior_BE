@@ -1,19 +1,22 @@
 package store._0982.common.kafka.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.Clock;
 import java.util.UUID;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings("unused")
 public class PointEvent extends BaseEvent {
-    private final UUID id;
-    private final UUID memberId;
-    private final long amount;
-    private final Status status;
-    private final String paymentMethod;
+    private UUID id;
+    private UUID memberId;
+    private long amount;
+    private Status status;
+    private String paymentMethod;
 
     public PointEvent(Clock clock, UUID id, UUID memberId, long amount, Status status, String paymentMethod) {
         super(clock);

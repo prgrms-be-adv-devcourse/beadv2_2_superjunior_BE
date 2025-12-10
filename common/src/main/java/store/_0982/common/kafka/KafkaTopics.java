@@ -1,5 +1,6 @@
 package store._0982.common.kafka;
 
+@SuppressWarnings("unused")
 public final class KafkaTopics {
     public static final String ORDER_CREATED = "order.created";
     public static final String ORDER_STATUS_CHANGED = "order.changed";

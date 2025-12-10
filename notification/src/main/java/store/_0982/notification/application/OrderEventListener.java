@@ -19,7 +19,7 @@ import store._0982.notification.exception.KafkaErrorCode;
 
 @Service
 @RequiredArgsConstructor
-public class OrderEventService {
+public class OrderEventListener {
     private final NotificationRepository notificationRepository;
 
     // TODO: 주문의 상태를 어떤 단어로 정의했는지 확인해야 함
@@ -28,7 +28,7 @@ public class OrderEventService {
     @KafkaListener(
             topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_STATUS_CHANGED},
             groupId = KafkaGroupIds.IN_APP,
-            containerFactory = "inAppConsumerFactory"
+            containerFactory = "inAppListenerContainerFactory"
     )
     public void handleOrderEvent(OrderEvent event) {
         MDC.put("eventId", String.valueOf(event.getEventId()));
