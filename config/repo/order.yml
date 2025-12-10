@@ -15,3 +15,7 @@ spring:
         format_sql: true
         jdbc:
           time_zone: Asia/Seoul
+
+feign:
+  product:
+    url: http://localhost:8087

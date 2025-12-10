@@ -3,10 +3,8 @@ package store._0982.order.application.settlement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.order.infrastructure.client.dto.GroupPurchaseInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,9 +16,11 @@ import java.util.stream.Collectors;
 public class DailySettlementService {
 
     private final ProductSettlementClient productSettlementClient;
-    private final SellerBalanceService sellerBalanceService;
+    private final SellerSettlementProcessor sellerSettlementProcessor;
 
-    @Transactional
+    /**
+     * 데일리 정산 메인 프로세스
+     */
     public void processDailySettlement() {
 
         try {
@@ -30,56 +30,24 @@ public class DailySettlementService {
                 return;
             }
 
-            Map<UUID, Long> unsettledAmountBySeller = groupBySeller(unsettledGroupPurchases);
+            Map<UUID, List<GroupPurchaseInfo>> groupPurchasesBySeller = unsettledGroupPurchases.stream()
+                    .collect(Collectors.groupingBy(GroupPurchaseInfo::sellerId));
 
-            List<UUID> successGroupPurchaseIds = processSellerBalances(
-                    unsettledGroupPurchases,
-                    unsettledAmountBySeller
-            );
+            for (Map.Entry<UUID, List<GroupPurchaseInfo>> entry : groupPurchasesBySeller.entrySet()) {
+                UUID sellerId = entry.getKey();
+                List<GroupPurchaseInfo> sellerGroupPurchases = entry.getValue();
 
-            productSettlementClient.markAsSettledBatch(successGroupPurchaseIds);
-
-            log.info("데일리 정산 완료 - 총 {}건 처리", successGroupPurchaseIds.size());
+                try {
+                    sellerSettlementProcessor.processSellerSettlement(sellerId, sellerGroupPurchases);
+                    log.info("판매자 {} 정산 성공", sellerId);
+                } catch (Exception e) {
+                    log.error("판매자 {} 정산 실패", sellerId, e);
+                }
+            }
 
         } catch (Exception e) {
             log.error("데일리 정산 중 오류 발생", e);
             throw e;
         }
-    }
-
-    /**
-     * 판매자별 총액 계산
-     */
-    private Map<UUID, Long> groupBySeller(List<GroupPurchaseInfo> groupPurchases) {
-        return groupPurchases.stream()
-                .collect(Collectors.groupingBy(
-                        GroupPurchaseInfo::sellerId,
-                        Collectors.summingLong(GroupPurchaseInfo::getTotalAmount)
-                ));
-    }
-
-    /**
-     * 판매자별 balance 업데이트 처리
-     */
-    private List<UUID> processSellerBalances(
-            List<GroupPurchaseInfo> groupPurchases,
-            Map<UUID, Long> amountBySeller
-    ) {
-        List<UUID> successGroupPurchaseIds = new ArrayList<>();
-
-        amountBySeller.forEach((sellerId, totalAmount) -> {
-            try {
-                sellerBalanceService.increaseBalance(sellerId, totalAmount);
-                groupPurchases.stream()
-                        .filter(gp -> gp.sellerId().equals(sellerId))
-                        .map(GroupPurchaseInfo::groupPurchaseId)
-                        .forEach(successGroupPurchaseIds::add);
-
-            } catch (Exception e) {
-                log.error("판매자 {} 정산 중 오류 발생", sellerId, e);
-            }
-        });
-
-        return successGroupPurchaseIds;
     }
 }

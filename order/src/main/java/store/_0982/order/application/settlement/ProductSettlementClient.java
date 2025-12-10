@@ -24,15 +24,10 @@ public class ProductSettlementClient {
     }
 
     /**
-     * 여러 공동구매 정산 완료 표시 (실패해도 계속 진행)
+     * 공동구매 정산 완료 표시 (단건)
      */
-    public void markAsSettledBatch(List<UUID> groupPurchaseIds) {
-        groupPurchaseIds.forEach(groupPurchaseId -> {
-            try {
-                productFeignClient.markAsSettled(groupPurchaseId);
-            } catch (Exception e) {
-                log.error("공동구매 정산 완료 표시 ",e);
-            }
-        });
+    public void markAsSettled(UUID groupPurchaseId) {
+        productFeignClient.markAsSettled(groupPurchaseId);
     }
+
 }
