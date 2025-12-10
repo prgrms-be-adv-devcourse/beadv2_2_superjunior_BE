@@ -1,0 +1,13 @@
+package store._0982.notification.domain;
+
+public enum NotificationType {
+    PURCHASE_COMPLETED,
+    PURCHASE_FAILED,
+    SHIPMENT_DEPARTURE,
+    SHIPMENT_ARRIVAL,
+    POINT_RECHARGED,
+    POINT_DEDUCTED,
+    POINT_RETURNED,
+    SETTLEMENT_COMPLETED,
+    SETTLEMENT_FAILED
+}

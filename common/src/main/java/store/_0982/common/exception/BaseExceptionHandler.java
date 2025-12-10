@@ -39,7 +39,10 @@ public abstract class BaseExceptionHandler {
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
 
-    // @Valid 어노테이션에 의한 검증 에러 핸들러
+    /**
+     * &#064;Valid  어노테이션에 의한 검증 에러 핸들러입니다.
+     * <p>필요한 경우 오버라이드해 사용하세요.</p>
+     */
     @SuppressWarnings("unused")
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto<String>> handleInvalidArgumentException(MethodArgumentNotValidException e) {
