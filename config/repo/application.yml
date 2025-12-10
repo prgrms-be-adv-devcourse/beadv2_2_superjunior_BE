@@ -17,5 +17,8 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
+kafka:
+  server: ${KAFKA_SERVER:http://localhost:9092}
+
 gateway:
   host: http://localhost:8000

@@ -10,8 +10,6 @@ public final class KafkaTopics {
     public static final String PRODUCT_UPSERTED = "product.upserted";
     public static final String PRODUCT_DELETED = "product.deleted";
 
-    public static final String LOG_PUBLISHED = "log.published";
-
     public static final String GROUP_PURCHASE_ADDED = "group-purchase.added";
     public static final String GROUP_PURCHASE_STATUS_CHANGED = "group-purchase.changed";
 
