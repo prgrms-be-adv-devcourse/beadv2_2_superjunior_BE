@@ -115,4 +115,22 @@ public class GroupPurchase {
         }
     }
 
+    public void updateGroupPurchase(int mintQuantity,
+                                    int maxQuantity,
+                                    String title,
+                                    String description,
+                                    int discountedPrice,
+                                    LocalDateTime startDate,
+                                    LocalDate endDate,
+                                    UUID productId){
+        this.minQuantity = mintQuantity;
+        this.maxQuantity = maxQuantity;
+        this.title = title;
+        this.description = description;
+        this.discountedPrice = discountedPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.sellerId = productId;
+    }
+
 }

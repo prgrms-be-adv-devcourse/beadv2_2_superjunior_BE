@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface GroupPurchaseRepository {
+	GroupPurchase save(GroupPurchase groupPurchase);
 
     void save(GroupPurchase groupPurchase);
 
