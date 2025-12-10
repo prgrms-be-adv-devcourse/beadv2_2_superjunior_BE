@@ -51,6 +51,13 @@ public class GroupPurchase {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Column(name = "current_quantity", nullable = false)
+    private int currentQuantity = 0;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -79,6 +86,33 @@ public class GroupPurchase {
         this.endDate = endDate;
         this.sellerId = sellerId;
         this.productId = productId;
+        this.currentQuantity = 0;
+    }
+
+    public boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
+    }
+
+    public int getRemainingQuantity() {
+        return this.maxQuantity - this.currentQuantity;
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (this.currentQuantity + quantity > this.maxQuantity) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    private void checkAndUpdateStatusIfMaxReached() {
+        if (this.currentQuantity == this.maxQuantity) {
+            this.status = GroupPurchaseStatus.SUCCESS;
+        }
     }
 
     public void updateGroupPurchase(int mintQuantity,
