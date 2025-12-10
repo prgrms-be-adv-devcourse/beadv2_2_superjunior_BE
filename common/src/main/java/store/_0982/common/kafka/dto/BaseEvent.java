@@ -1,4 +1,4 @@
-package store._0982.common.kafka;
+package store._0982.common.kafka.dto;
 
 import lombok.Getter;
 
@@ -22,7 +22,7 @@ import java.util.UUID;
  * @author Minhyung Kim
  */
 @Getter
-public abstract class BaseEvent {
+abstract class BaseEvent {
     private final UUID eventId = UUID.randomUUID();
     private final OffsetDateTime occurredAt;
 
