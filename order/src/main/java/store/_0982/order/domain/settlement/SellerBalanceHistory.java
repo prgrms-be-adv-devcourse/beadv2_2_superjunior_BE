@@ -36,4 +36,17 @@ public class SellerBalanceHistory {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    public SellerBalanceHistory(
+            UUID memberId,
+            UUID settlementId,
+            Long amount,
+            BalanceHistoryStatus status
+    ) {
+        this.historyId = UUID.randomUUID();
+        this.memberId = memberId;
+        this.settlementId = settlementId;
+        this.amount = amount;
+        this.status = status;
+    }
+
 }

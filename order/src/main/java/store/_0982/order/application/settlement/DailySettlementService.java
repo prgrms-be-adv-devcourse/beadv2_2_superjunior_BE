@@ -4,8 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.order.domain.settlement.SellerBalance;
-import store._0982.order.domain.settlement.SellerBalanceRepository;
+import store._0982.order.domain.settlement.*;
 import store._0982.order.infrastructure.client.ProductFeignClient;
 import store._0982.order.infrastructure.client.dto.GroupPurchaseInfo;
 
@@ -22,6 +21,7 @@ public class DailySettlementService {
 
     private final ProductFeignClient productFeignClient;
     private final SellerBalanceRepository sellerBalanceRepository;
+    private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
 
     @Transactional
     public void processDailySettlement() {
@@ -47,6 +47,9 @@ public class DailySettlementService {
 
                     sellerBalance.increaseBalance(totalAmount);
                     sellerBalanceRepository.save(sellerBalance);
+                    sellerBalanceHistoryRepository.save(
+                            new SellerBalanceHistory(sellerId, null, totalAmount, BalanceHistoryStatus.CREDIT)
+                    );
 
                     unSettledGroupPurchase.stream()
                             .filter(gp -> gp.sellerId().equals(sellerId))
