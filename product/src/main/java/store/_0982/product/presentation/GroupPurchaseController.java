@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.product.application.ParticipateService;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.application.dto.ParticipateInfo;
+import store._0982.product.common.exception.CustomException;
+import store._0982.product.domain.GroupPurchase;
 import store._0982.product.presentation.dto.ParticipateRequest;
 import store._0982.product.application.GroupPurchaseService;
 import store._0982.product.application.dto.GroupPurchaseDetailInfo;
@@ -90,12 +92,18 @@ public class GroupPurchaseController {
             @PathVariable UUID purchaseId,
             @Valid @RequestBody ParticipateRequest request) {
 
-        ParticipateInfo result = participateService.participate(purchaseId, request.quantity());
+        try {
+            GroupPurchase groupPurchase = participateService.findGroupPurchaseById(purchaseId);
+            ParticipateInfo result = participateService.participate(groupPurchase, request.quantity());
 
-        if (result.success()) {
-            return new ResponseDto<>(HttpStatus.OK, result, result.message());
-        } else {
-            return new ResponseDto<>(HttpStatus.BAD_REQUEST, result, result.message());
+            if (result.success()) {
+                return new ResponseDto<>(HttpStatus.OK, result, result.message());
+            } else {
+                return new ResponseDto<>(HttpStatus.OK, result, result.message());
+            }
+        } catch (CustomException e) {
+            ParticipateInfo errorResult = ParticipateInfo.failure(e.getErrorCode().name(), 0, e.getMessage());
+            return new ResponseDto<>(HttpStatus.OK, errorResult, e.getMessage());
         }
     }
 
