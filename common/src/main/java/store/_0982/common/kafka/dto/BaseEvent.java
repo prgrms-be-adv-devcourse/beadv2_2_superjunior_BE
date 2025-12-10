@@ -22,10 +22,10 @@ import java.util.UUID;
  * @author Minhyung Kim
  */
 @Getter
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "FieldMayBeFinal"})
 public abstract class BaseEvent {
-    private final UUID eventId = UUID.randomUUID();
-    private final OffsetDateTime occurredAt;
+    private UUID eventId = UUID.randomUUID();
+    private OffsetDateTime occurredAt;
 
     /**
      * 기본 이벤트 DTO 생성자입니다.
