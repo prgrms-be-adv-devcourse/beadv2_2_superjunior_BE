@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.order.domain.settlement.*;
-import store._0982.order.infrastructure.client.ProductFeignClient;
 import store._0982.order.infrastructure.client.dto.GroupPurchaseInfo;
 
 import java.util.ArrayList;
@@ -19,56 +17,27 @@ import java.util.stream.Collectors;
 @Service
 public class DailySettlementService {
 
-    private final ProductFeignClient productFeignClient;
-    private final SellerBalanceRepository sellerBalanceRepository;
-    private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
+    private final ProductSettlementClient productSettlementClient;
+    private final SellerBalanceService sellerBalanceService;
 
     @Transactional
     public void processDailySettlement() {
 
         try {
-            List<GroupPurchaseInfo> unSettledGroupPurchase = productFeignClient.getUnSettledGroupPurchase();
-            if (unSettledGroupPurchase.isEmpty()) {
+            List<GroupPurchaseInfo> unsettledGroupPurchases = productSettlementClient.getUnsettledGroupPurchases();
+            if (unsettledGroupPurchases.isEmpty()) {
                 log.info("정산 대상이 없습니다.");
                 return;
             }
 
-            Map<UUID, Long> unsettledAmountBySeller = unSettledGroupPurchase.stream().collect(
-                    Collectors.groupingBy(
-                            GroupPurchaseInfo::sellerId,
-                            Collectors.summingLong(GroupPurchaseInfo::getTotalAmount)
-                    ));
+            Map<UUID, Long> unsettledAmountBySeller = groupBySeller(unsettledGroupPurchases);
 
-            List<UUID> successGroupPurchaseIds = new ArrayList<>();
-            unsettledAmountBySeller.forEach((sellerId, totalAmount) -> {
-                try {
-                    SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
-                            .orElseGet(() -> new SellerBalance(sellerId));
+            List<UUID> successGroupPurchaseIds = processSellerBalances(
+                    unsettledGroupPurchases,
+                    unsettledAmountBySeller
+            );
 
-                    sellerBalance.increaseBalance(totalAmount);
-                    sellerBalanceRepository.save(sellerBalance);
-                    sellerBalanceHistoryRepository.save(
-                            new SellerBalanceHistory(sellerId, null, totalAmount, BalanceHistoryStatus.CREDIT)
-                    );
-
-                    unSettledGroupPurchase.stream()
-                            .filter(gp -> gp.sellerId().equals(sellerId))
-                            .map(GroupPurchaseInfo::groupPurchaseId)
-                            .forEach(successGroupPurchaseIds::add);
-
-                    log.info("판매자 {} 정산 완료 - 금액: {}", sellerId, totalAmount);
-                } catch (Exception e) {
-                    log.error("판매자 {} 정산 중 오류 발생", sellerId, e);
-                }
-            });
-
-            successGroupPurchaseIds.forEach(gpId -> {
-                try {
-                    productFeignClient.markAsSettled(gpId);
-                } catch (Exception e) {
-                    log.error("공동구매 {} 정산 완료 표시 실패", gpId, e);
-                }
-            });
+            productSettlementClient.markAsSettledBatch(successGroupPurchaseIds);
 
             log.info("데일리 정산 완료 - 총 {}건 처리", successGroupPurchaseIds.size());
 
@@ -76,5 +45,41 @@ public class DailySettlementService {
             log.error("데일리 정산 중 오류 발생", e);
             throw e;
         }
+    }
+
+    /**
+     * 판매자별 총액 계산
+     */
+    private Map<UUID, Long> groupBySeller(List<GroupPurchaseInfo> groupPurchases) {
+        return groupPurchases.stream()
+                .collect(Collectors.groupingBy(
+                        GroupPurchaseInfo::sellerId,
+                        Collectors.summingLong(GroupPurchaseInfo::getTotalAmount)
+                ));
+    }
+
+    /**
+     * 판매자별 balance 업데이트 처리
+     */
+    private List<UUID> processSellerBalances(
+            List<GroupPurchaseInfo> groupPurchases,
+            Map<UUID, Long> amountBySeller
+    ) {
+        List<UUID> successGroupPurchaseIds = new ArrayList<>();
+
+        amountBySeller.forEach((sellerId, totalAmount) -> {
+            try {
+                sellerBalanceService.increaseBalance(sellerId, totalAmount);
+                groupPurchases.stream()
+                        .filter(gp -> gp.sellerId().equals(sellerId))
+                        .map(GroupPurchaseInfo::groupPurchaseId)
+                        .forEach(successGroupPurchaseIds::add);
+
+            } catch (Exception e) {
+                log.error("판매자 {} 정산 중 오류 발생", sellerId, e);
+            }
+        });
+
+        return successGroupPurchaseIds;
     }
 }
