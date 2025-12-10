@@ -8,4 +8,7 @@ public record GroupPurchaseInfo(
         int discountedPrice,
         int currentQuantity
 ) {
+    public Long getTotalAmount() {
+        return ((long) discountedPrice * currentQuantity);
+    }
 }
