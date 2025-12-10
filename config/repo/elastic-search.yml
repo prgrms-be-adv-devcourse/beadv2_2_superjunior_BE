@@ -6,3 +6,5 @@ spring:
 #    추후 xpack.security.enabled=false 변경 시
 #    username: elastic
 #    password: your_password
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

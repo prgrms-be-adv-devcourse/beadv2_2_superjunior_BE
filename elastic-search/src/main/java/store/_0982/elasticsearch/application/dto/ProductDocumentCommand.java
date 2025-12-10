@@ -1,6 +1,6 @@
 package store._0982.elasticsearch.application.dto;
 
-import store._0982.common.dto.event.ProductEvent;
+import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.ProductDocument;
 
 import java.time.OffsetDateTime;
@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 public record ProductDocumentCommand(
         String productId,
         String name,
-        Integer price,
+        Long price,
         String category,
         String description,
         Integer stock,
@@ -19,16 +19,16 @@ public record ProductDocumentCommand(
 ) {
     public static ProductDocumentCommand from(ProductEvent event) {
         return new ProductDocumentCommand(
-                event.productId().toString(),
-                event.name(),
-                event.price(),
-                event.category(),
-                event.description(),
-                event.stock(),
-                event.originalUrl(),
-                event.sellerId().toString(),
-                OffsetDateTime.parse(event.createdAt()),
-                OffsetDateTime.parse(event.updatedAt())
+                event.getId().toString(),
+                event.getName(),
+                event.getPrice(),
+                event.getCategory(),
+                event.getDescription(),
+                event.getStock(),
+                event.getOriginalUrl(),
+                event.getSellerId().toString(),
+                OffsetDateTime.parse(event.getCreatedAt()),
+                OffsetDateTime.parse(event.getUpdatedAt())
         );
     }
 

@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 public record ProductDocumentRequset(
         String productId,
         String name,
-        Integer price,
+        Long price,
         String category,
         String description,
         Integer stock,

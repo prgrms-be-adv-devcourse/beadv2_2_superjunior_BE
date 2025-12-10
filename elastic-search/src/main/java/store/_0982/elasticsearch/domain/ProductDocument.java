@@ -23,7 +23,7 @@ public class ProductDocument {
     private String name;
 
     @Field(type = FieldType.Integer)
-    private Integer price;
+    private Long price;
 
     @Field(type = FieldType.Keyword)
     private String category;
