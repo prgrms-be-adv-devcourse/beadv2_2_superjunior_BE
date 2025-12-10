@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import store._0982.order.infrastructure.client.ProductFeignClient;
-import store._0982.order.infrastructure.client.dto.GroupPurchaseInfo;
+import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +19,7 @@ public class ProductSettlementClient {
     /**
      * 정산되지 않은 공동구매 목록 조회
      */
-    public List<GroupPurchaseInfo> getUnsettledGroupPurchases() {
+    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
         return productFeignClient.getUnSettledGroupPurchase();
     }
 

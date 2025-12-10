@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.order.infrastructure.client.dto.GroupPurchaseInfo;
+import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,15 +18,15 @@ public class SellerSettlementProcessor {
     private final ProductSettlementClient productSettlementClient;
 
     @Transactional
-    public void processSellerSettlement(UUID sellerId, List<GroupPurchaseInfo> groupPurchases) {
+    public void processSellerSettlement(UUID sellerId, List<GroupPurchaseInternalInfo> groupPurchases) {
 
         Long totalAmount = groupPurchases.stream()
-                .mapToLong(GroupPurchaseInfo::getTotalAmount)
+                .mapToLong(GroupPurchaseInternalInfo::amount)
                 .sum();
 
         sellerBalanceService.increaseBalance(sellerId, totalAmount);
 
-        for (GroupPurchaseInfo gp : groupPurchases) {
+        for (GroupPurchaseInternalInfo gp : groupPurchases) {
             productSettlementClient.markAsSettled(gp.groupPurchaseId());
         }
     }
