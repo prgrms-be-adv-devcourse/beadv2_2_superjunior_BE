@@ -17,7 +17,7 @@ create table order_schema."order"
     postal_code    varchar(50)                                                     not null,
     receiver_name  varchar(100),
     seller_id      uuid                                                            not null,
-    product_id     uuid                                                            not null,
+    group_purchase_id     uuid                                                     not null,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
     deleted_at     timestamp with time zone
@@ -45,7 +45,7 @@ comment on column order_schema."order".receiver_name is '수신자 이름';
 
 comment on column order_schema."order".seller_id is '판매자 ID';
 
-comment on column order_schema."order".product_id is '상품 ID';
+comment on column order_schema."order".group_purchase_id is '공동 구매 ID';
 
 comment on column order_schema."order".created_at is '등록일';
 
