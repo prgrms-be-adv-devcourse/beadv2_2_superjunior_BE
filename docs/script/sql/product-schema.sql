@@ -13,7 +13,7 @@ create table product_schema.product
                    (ARRAY [('HOME'::character varying)::text, ('FOOD'::character varying)::text, ('HEALTH'::character varying)::text, ('BEAUTY'::character varying)::text, ('FASHION'::character varying)::text, ('ELECTRONICS'::character varying)::text, ('KIDS'::character varying)::text, ('HOBBY'::character varying)::text, ('PET'::character varying)::text])),
     description  text                                   not null,
     stock        integer                  default 0     not null,
-    original_url varchar(255)                           not null,
+    original_url varchar(255)                           null,
     seller_id    uuid                                   not null,
     created_at   timestamp with time zone default now() not null,
     updated_at   timestamp with time zone
@@ -64,6 +64,8 @@ create table product_schema.group_purchase
     product_id        uuid                                                            not null
         constraint group_purchase_product_product_id_fk
             references product_schema.product,
+    current_quantity  integer                  default 0                              not null,
+    version           bigint                   default 0,
     created_at        timestamp with time zone default now()                          not null,
     updated_at        timestamp with time zone
 );
@@ -91,6 +93,10 @@ comment on column product_schema.group_purchase.end_date is '공구 종료 시�
 comment on column product_schema.group_purchase.seller_id is '판매자 ID';
 
 comment on column product_schema.group_purchase.product_id is '상품 ID';
+
+comment on column product_schema.group_purchase.current_quantity is '현재 주문 수량';
+
+comment on column product_schema.group_purchase.version is '낙관적 락 버전';
 
 comment on column product_schema.group_purchase.created_at is '등록일';
 

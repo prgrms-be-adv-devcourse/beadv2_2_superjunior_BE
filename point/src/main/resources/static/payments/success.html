@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>결제 성공</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        code { background: #f4f4f4; padding: 0.2rem 0.4rem; }
+    </style>
+</head>
+<body>
+<h1>결제가 완료되었습니다.</h1>
+<p>아래 결제 정보가 자동으로 서버에 전달되어 승인됩니다.</p>
+<pre id="payload"></pre>
+<pre id="result"></pre>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const payload = {
+        paymentKey: params.get('paymentKey'),
+        orderId: params.get('orderId'),
+        amount: Number(params.get('amount'))
+    };
+    document.getElementById('payload').textContent = JSON.stringify(payload, null, 2);
+
+    async function confirmPayment() {
+        try {
+            const response = await fetch('/api/points/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            document.getElementById('result').textContent = '결제 승인 요청 실패: ' + error;
+        }
+    }
+
+    confirmPayment();
+</script>
+</body>
+</html>

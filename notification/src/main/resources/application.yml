@@ -5,5 +5,10 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+  default-flat-param-object: true
+
 server:
   port: 8084

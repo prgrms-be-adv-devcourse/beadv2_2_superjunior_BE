@@ -3,15 +3,54 @@ package store._0982.product.common.exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import store._0982.product.common.dto.ResponseDto;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final String ERROR_LOG_FORMAT = "[{}] {}";
+
+
+    // @Valid 검증 실패 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseDto<Map<String, String>> handleValidationException(
+            MethodArgumentNotValidException e) {
+
+        Map<String, String> errors = new HashMap<>();
+        e.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        log.error("[{}] Validation failed: {}", HttpStatus.BAD_REQUEST, errors, e);
+        return new ResponseDto<>(HttpStatus.BAD_REQUEST, errors, "입력값 검증 실패");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
+    }
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
+        log.error(ERROR_LOG_FORMAT, HttpStatus.NOT_FOUND, e.getMessage(), e);
+        return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
+    }
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {
@@ -34,4 +73,5 @@ public class GlobalExceptionHandler {
         log.error(ERROR_LOG_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
+  
 }
