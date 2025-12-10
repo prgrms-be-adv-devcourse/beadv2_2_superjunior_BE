@@ -8,34 +8,30 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record GroupPurchaseInfo(
+public record GroupPurchaseThumbnailInfo(
         UUID groupPurchaseId,
         int minQuantity,
         int maxQuantity,
         String title,
-        String description,
-        GroupPurchaseStatus status,
+        int discountedPrice,
+        int participantCount,
         LocalDateTime startDate,
         LocalDate endDate,
-        UUID sellerId,
-        UUID productId,
-        OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        GroupPurchaseStatus status,
+        OffsetDateTime createdAt
 ) {
-    public static GroupPurchaseInfo from(GroupPurchase groupPurchase) {
-        return new GroupPurchaseInfo(
+    public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase, int participantCount) {
+        return new GroupPurchaseThumbnailInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
                 groupPurchase.getTitle(),
-                groupPurchase.getDescription(),
-                groupPurchase.getStatus(),
+                groupPurchase.getDiscountedPrice(),
+                participantCount,
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),
-                groupPurchase.getSellerId(),
-                groupPurchase.getProductId(),
-                groupPurchase.getCreatedAt(),
-                groupPurchase.getUpdatedAt()
+                groupPurchase.getStatus(),
+                groupPurchase.getCreatedAt()
         );
     }
 }

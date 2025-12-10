@@ -1,9 +1,9 @@
 package store._0982.product.application;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
@@ -50,6 +50,7 @@ public class ProductService {
      * @param productId 상품 id
      * @return ProductDetailInfo
      */
+    @Transactional(readOnly = true)
     public ProductDetailInfo getProductInfo(UUID  productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
