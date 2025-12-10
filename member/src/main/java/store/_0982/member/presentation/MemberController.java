@@ -102,6 +102,7 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, sellerService.getSeller(command), "판매자 정보");
     }
 
+    @Operation(summary = "판매자 정보 수정", description = "판매자 정보를 수정합니다.")
     @PutMapping("/seller")
     @RequireRole(Role.SELLER)
     public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
@@ -110,6 +111,7 @@ public class MemberController {
     }
 
     //이 아래로는 Address endpoint
+    @Operation(summary = "주소 등록", description = "회원의 주소를 추가합니다.")
     @PostMapping("/address")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<AddressInfo> addAddress(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @Valid @RequestBody AddressAddRequest addressAddRequest) {
@@ -117,12 +119,14 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.CREATED,memberService.addAddress(command), "주소 등록이 완료되었습니다.");
     }
 
+    @Operation(summary = "주소 목록 조회", description = "회원의 주소 목록을 페이지네이션하여 조회합니다.")
     @GetMapping("/addresses")
     public ResponseDto<PageResponse<AddressInfo>> getAddresses(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId,
                                                                org.springframework.data.domain.Pageable pageable) {
         return new ResponseDto<>(HttpStatus.OK, memberService.getAddresses(pageable, memberId), "사용자의 주소 리스트");
     }
 
+    @Operation(summary = "주소 삭제", description = "회원의 주소를 삭제합니다.")
     @DeleteMapping("/address/{addressId}")
     public ResponseDto<Void> addAddress(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @PathVariable UUID addressId) {
         AddressDeleteCommand command = new AddressDeleteCommand(memberId, addressId);
