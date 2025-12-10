@@ -93,9 +93,9 @@ public class GroupPurchaseController {
         ParticipateInfo result = participateService.participate(purchaseId, request.quantity());
 
         if (result.success()) {
-            return new ResponseDto<>(HttpStatus.OK, result, "참여 성공했습니다.");
+            return new ResponseDto<>(HttpStatus.OK, result, result.message());
         } else {
-            return new ResponseDto<>(HttpStatus.BAD_REQUEST, result, "참여 불가능합니다. (마감 또는 수량 초과)");
+            return new ResponseDto<>(HttpStatus.BAD_REQUEST, result, result.message());
         }
     }
 
