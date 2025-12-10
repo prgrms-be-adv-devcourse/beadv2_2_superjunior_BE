@@ -15,13 +15,13 @@ public class GroupPurchaseEvent extends BaseEvent {
     private final Integer maxQuantity;
     private final String title;
     private final String description;
-    private final int discountedPrice;
+    private final long discountedPrice;
     private final String status;
     private final OffsetDateTime startDate;
     private final OffsetDateTime endDate;
 
     public GroupPurchaseEvent(Clock clock, UUID id, int minQuantity, Integer maxQuantity, String title, String description,
-                              int discountedPrice, String status, OffsetDateTime startDate, OffsetDateTime endDate) {
+                              long discountedPrice, String status, OffsetDateTime startDate, OffsetDateTime endDate) {
         super(clock);
         this.id = id;
         this.minQuantity = minQuantity;

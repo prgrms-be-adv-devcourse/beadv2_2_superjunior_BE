@@ -11,13 +11,13 @@ import java.util.UUID;
 public class ProductEvent extends BaseEvent {
     private final UUID id;
     private final String name;
-    private final int price;
+    private final long price;
     private final String category;
     private final String description;
     private final String originalUrl;
     private final UUID sellerId;
 
-    public ProductEvent(Clock clock, UUID id, String name, int price, String category,
+    public ProductEvent(Clock clock, UUID id, String name, long price, String category,
                         String description, String originalUrl, UUID sellerId) {
         super(clock);
         this.id = id;

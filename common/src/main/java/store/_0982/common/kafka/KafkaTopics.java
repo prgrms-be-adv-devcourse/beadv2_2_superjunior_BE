@@ -7,7 +7,8 @@ public final class KafkaTopics {
     public static final String POINT_RECHARGED = "point.recharged";
     public static final String POINT_CHANGED = "point.changed";
 
-    public static final String PRODUCT_ADDED = "product.added";
+    public static final String PRODUCT_UPSERTED = "product.upserted";
+    public static final String PRODUCT_DELETED = "product.deleted";
 
     public static final String LOG_PUBLISHED = "log.published";
 

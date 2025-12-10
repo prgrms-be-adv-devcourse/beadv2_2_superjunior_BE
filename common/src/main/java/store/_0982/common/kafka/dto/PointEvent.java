@@ -12,13 +12,13 @@ import java.util.UUID;
 public class PointEvent extends BaseEvent {
     private final UUID id;
     private final UUID memberId;
-    private final int amount;
+    private final long amount;
     private final String status;
     private final String paymentMethod;
     private final OffsetDateTime requestedAt;
     private final OffsetDateTime approvedAt;
 
-    public PointEvent(Clock clock, UUID id, UUID memberId, int amount, String status, String paymentMethod,
+    public PointEvent(Clock clock, UUID id, UUID memberId, long amount, String status, String paymentMethod,
                       OffsetDateTime requestedAt, OffsetDateTime approvedAt) {
         super(clock);
         this.id = id;
