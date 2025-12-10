@@ -16,14 +16,6 @@ import store._0982.common.log.LogFormat;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends BaseExceptionHandler {
-    @ExceptionHandler(OrderClientException.class)
-    public ResponseEntity<ResponseDto<Void>> handlePaymentClientException(OrderClientException e) {
-        HttpStatus httpStatus = e.getStatus();
-        log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
-        return ResponseEntity.status(httpStatus)
-                .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
-    }
-
     // @Valid 어노테이션에 의한 검증 에러 핸들러
     @Override
     @ExceptionHandler(MethodArgumentNotValidException.class)
