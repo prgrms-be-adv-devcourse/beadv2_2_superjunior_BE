@@ -65,6 +65,9 @@ public class GroupPurchase {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
+
+    @Column(name = "settled_at")
+    private OffsetDateTime settledAt;
     
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
@@ -131,6 +134,14 @@ public class GroupPurchase {
         this.startDate = startDate;
         this.endDate = endDate;
         this.sellerId = productId;
+    }
+
+    public void markAsSettled() {
+        this.settledAt = OffsetDateTime.now();
+    }
+
+    public boolean isSettled() {
+        return this.settledAt != null;
     }
 
 }
