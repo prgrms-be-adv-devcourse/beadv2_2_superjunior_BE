@@ -15,7 +15,6 @@ import store._0982.product.application.dto.ParticipateInfo;
 import store._0982.product.presentation.dto.ParticipateRequest;
 import store._0982.product.application.GroupPurchaseService;
 import store._0982.product.application.dto.GroupPurchaseDetailInfo;
-import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.application.dto.GroupPurchaseInfo;
 
 import store._0982.product.common.dto.PageResponseDto;
@@ -98,6 +97,7 @@ public class GroupPurchaseController {
         } else {
             return new ResponseDto<>(HttpStatus.BAD_REQUEST, result, "참여 불가능합니다. (마감 또는 수량 초과)");
         }
+    }
 
     @Operation(summary = "공동구매 수정", description = "공동구매 정보를 수정한다.")
     @PatchMapping("/{purchaseId}")

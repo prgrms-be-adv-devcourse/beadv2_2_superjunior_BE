@@ -9,8 +9,6 @@ import java.util.UUID;
 public interface GroupPurchaseRepository {
 	GroupPurchase save(GroupPurchase groupPurchase);
 
-    void save(GroupPurchase groupPurchase);
-
     Optional<GroupPurchase> findById(UUID purchaseId);
 
     Page<GroupPurchase> findAll(Pageable pageable);
