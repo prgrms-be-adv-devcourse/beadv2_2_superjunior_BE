@@ -6,10 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.member.application.dto.*;
-import store._0982.member.common.dto.PageResponseDto;
 import store._0982.member.common.exception.CustomErrorCode;
-import store._0982.member.common.exception.CustomException;
 import store._0982.member.domain.Address;
 import store._0982.member.domain.AddressRepository;
 import store._0982.member.domain.Member;
@@ -87,10 +87,10 @@ public class MemberService {
         return AddressInfo.from(addressRepository.save(address));
     }
 
-    public PageResponseDto<AddressInfo> getAddresses(Pageable pageable, UUID memberId) {
+    public PageResponse<AddressInfo> getAddresses(Pageable pageable, UUID memberId) {
         Page<Address> addresses = addressRepository.findAllByMemberId(pageable, memberId);
         Page<AddressInfo> infoPage = addresses.map(AddressInfo::from);
-        return PageResponseDto.from(infoPage);
+        return PageResponse.from(infoPage);
     }
     @Transactional
     public void deleteAddress(AddressDeleteCommand command) {

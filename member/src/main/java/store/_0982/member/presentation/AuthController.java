@@ -8,9 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
-import store._0982.member.common.dto.ResponseDto;
 import store._0982.member.presentation.dto.MemberLoginRequest;
 
 @RestController

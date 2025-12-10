@@ -6,11 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.MemberService;
 import store._0982.member.application.SellerService;
 import store._0982.member.application.dto.*;
-import store._0982.member.common.dto.PageResponseDto;
-import store._0982.member.common.dto.ResponseDto;
 import store._0982.member.domain.Role;
 import store._0982.member.presentation.dto.*;
 
@@ -115,8 +115,8 @@ public class MemberController {
     }
 
     @GetMapping("/addresses")
-    public ResponseDto<PageResponseDto<AddressInfo>> getAddresses(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId,
-                                                                  org.springframework.data.domain.Pageable pageable) {
+    public ResponseDto<PageResponse<AddressInfo>> getAddresses(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId,
+                                                               org.springframework.data.domain.Pageable pageable) {
         return new ResponseDto<>(HttpStatus.OK, memberService.getAddresses(pageable, memberId), "사용자의 주소 리스트");
     }
 

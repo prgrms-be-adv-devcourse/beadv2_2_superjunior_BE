@@ -22,6 +22,9 @@ dependencies {
 
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    //common 모듈
+    implementation project(':common')
 }
 
 bootJar {
