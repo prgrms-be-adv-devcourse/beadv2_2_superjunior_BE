@@ -61,7 +61,6 @@ public class ParticipateService {
 
     @Recover
     public ParticipateInfo recover(OptimisticLockingFailureException e, GroupPurchase groupPurchase, int quantity) {
-        log.info("여기들어옴");
         return ParticipateInfo.failure(
                 groupPurchase.getStatus().name(),
                 groupPurchase.getRemainingQuantity(),
