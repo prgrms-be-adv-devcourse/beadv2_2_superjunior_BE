@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.hibernate.validator.constraints.Length;
 import store._0982.member.application.dto.SellerRegisterCommand;
-import store._0982.member.domain.Role;
 
 import java.util.UUID;
 
@@ -29,7 +28,7 @@ public record SellerRegisterRequest(
     )
     String businessRegistrationNumber
 ) {
-    public SellerRegisterCommand toCommand(UUID memberId, Role role) {
-        return new SellerRegisterCommand(memberId, role, accountNumber, bankCode, accountHolder, businessRegistrationNumber);
+    public SellerRegisterCommand toCommand(UUID memberId) {
+        return new SellerRegisterCommand(memberId, accountNumber, bankCode, accountHolder, businessRegistrationNumber);
     }
 }

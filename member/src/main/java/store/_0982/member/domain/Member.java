@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.auth.Role;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,7 +37,7 @@ public class Member {           //TODO: Addresses 필드에 넣기 관계의 주
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20, nullable = false)
-    private Role role = Role.CUSTOMER;
+    private Role role = Role.CONSUMER;
 
     @Column(name = "salt_key", length = 32, nullable = false)
     private String saltKey;

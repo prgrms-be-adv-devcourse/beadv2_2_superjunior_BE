@@ -6,13 +6,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.auth.RequireRole;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.MemberService;
 import store._0982.member.application.SellerService;
 import store._0982.member.application.dto.*;
-import store._0982.member.domain.Role;
 import store._0982.member.presentation.dto.*;
+import store._0982.common.auth.Role;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,9 +88,10 @@ public class MemberController {
     //아래는 Seller 관련 endpoint
     @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
+    @RequireRole(Role.CONSUMER)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
+        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
         return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
     }
 
@@ -101,8 +103,9 @@ public class MemberController {
     }
 
     @PutMapping("/seller")
+    @RequireRole(Role.SELLER)
     public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = "X-Member-Id", required = true) UUID memberId, @RequestHeader(value = "X-Member-Role", required = true) Role role, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId, role);
+        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
         return new ResponseDto<>(HttpStatus.CREATED, sellerService.updateSeller(command), "판매자 정보 수정이 완료되었습니다.");
     }
 
