@@ -1,37 +1,32 @@
 package store._0982.common.kafka.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.Clock;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings({"unused", "java:S107"})
 public class ProductEvent extends BaseEvent {
+    private UUID id;
+    private String name;
+    private long price;
+    private String category;
+    private String description;
+    private Integer stock;
+    private String originalUrl;
+    private UUID sellerId;
+    private String createdAt;
+    private String updatedAt;
 
-    private final UUID id;
-    private final String name;
-    private final long price;
-    private final String category;
-    private final String description;
-    private final Integer stock;
-    private final String originalUrl;
-    private final UUID sellerId;
-    private final String createdAt;
-    private final String updatedAt;
 
-    @JsonCreator
-    public ProductEvent(
-            @JsonProperty("id") UUID id,
-            @JsonProperty("name") String name,
-            @JsonProperty("price") long price,
-            @JsonProperty("category") String category,
-            @JsonProperty("description") String description,
-            @JsonProperty("stock") Integer stock,
-            @JsonProperty("originalUrl") String originalUrl,
-            @JsonProperty("sellerId") UUID sellerId,
-            @JsonProperty("createdAt") String createdAt,
-            @JsonProperty("updatedAt") String updatedAt
-    ) {
+    public ProductEvent(Clock clock, UUID id, String name, long price, String category, String description,
+                        Integer stock, String originalUrl, UUID sellerId, String createdAt, String updatedAt) {
+        super(clock);
         this.id = id;
         this.name = name;
         this.price = price;
