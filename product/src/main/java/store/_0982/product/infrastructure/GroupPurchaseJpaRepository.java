@@ -4,10 +4,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.product.domain.GroupPurchase;
+import store._0982.product.domain.GroupPurchaseStatus;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase, UUID> {
 
     Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
+
+    List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
 }

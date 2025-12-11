@@ -5,16 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.product.application.dto.GroupPurchaseDetailInfo;
-import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
-import store._0982.product.application.dto.GroupPurchaseRegisterCommand;
-import store._0982.product.application.dto.GroupPurchaseInfo;
-import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
+import store._0982.product.application.dto.*;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
 import store._0982.product.domain.*;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -80,9 +77,7 @@ public class GroupPurchaseService {
         Product findProduct = productRepository.findById(findGroupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
-        // TODO : 참가자 수 집계 기능
-        int participantCount = 0;
-        return GroupPurchaseDetailInfo.from(findGroupPurchase, participantCount, findProduct.getOriginalUrl(), findProduct.getPrice());
+        return GroupPurchaseDetailInfo.from(findGroupPurchase, findProduct.getOriginalUrl(), findProduct.getPrice());
     }
 
     @Transactional(readOnly = true)
@@ -90,11 +85,7 @@ public class GroupPurchaseService {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                groupPurchase -> {
-                    // TODO : 참가자 수 집계 기능
-                    int participantCount = 0;
-                    return GroupPurchaseThumbnailInfo.from(groupPurchase, participantCount);
-                });
+                GroupPurchaseThumbnailInfo::from);
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
@@ -104,11 +95,7 @@ public class GroupPurchaseService {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                groupPurchase -> {
-                    // TODO : 참가자 수 집계 기능
-                    int participantCount = 0;
-                    return GroupPurchaseThumbnailInfo.from(groupPurchase, participantCount);
-                });
+                GroupPurchaseThumbnailInfo::from);
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
@@ -167,4 +154,27 @@ public class GroupPurchaseService {
 
         return GroupPurchaseInfo.from(saved);
     }
+
+    @Transactional(readOnly = true)
+    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
+        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
+                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
+
+        return unsettledGroupPurchases.stream()
+                .map(GroupPurchaseInternalInfo::from)
+                .toList();
+    }
+
+    public void markAsSettled(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (groupPurchase.isSettled()) {
+            return;
+        }
+
+        groupPurchase.markAsSettled();
+        groupPurchaseRepository.save(groupPurchase);
+    }
+
 }

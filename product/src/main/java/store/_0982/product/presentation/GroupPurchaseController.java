@@ -10,20 +10,18 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.product.application.ParticipateService;
-import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
-import store._0982.product.application.dto.ParticipateInfo;
+import store._0982.product.application.dto.*;
 import store._0982.product.common.exception.CustomException;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.presentation.dto.ParticipateRequest;
 import store._0982.product.application.GroupPurchaseService;
-import store._0982.product.application.dto.GroupPurchaseDetailInfo;
-import store._0982.product.application.dto.GroupPurchaseInfo;
 
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.dto.ResponseDto;
 import store._0982.product.presentation.dto.GroupPurchaseRegisterRequest;
 import store._0982.product.presentation.dto.GroupPurchaseUpdateRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name="GroupPurchase", description = "")
@@ -113,6 +111,20 @@ public class GroupPurchaseController {
             @Valid @RequestBody GroupPurchaseUpdateRequest request) {
         GroupPurchaseInfo response = purchaseService.updateGroupPurchase(memberId,  memberRole, purchaseId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, response, "공동구매 정보가 수정되었습니다.");
+    }
+
+    @InternalApi
+    @GetMapping("/unsettled")
+    @ResponseStatus(HttpStatus.OK)
+    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
+        return purchaseService.getUnsettledGroupPurchases();
+    }
+
+    @InternalApi
+    @PutMapping("/{groupPurchaseId}/settle")
+    @ResponseStatus(HttpStatus.OK)
+    public void markAsSettled(@PathVariable UUID groupPurchaseId) {
+        purchaseService.markAsSettled(groupPurchaseId);
     }
 
 }
