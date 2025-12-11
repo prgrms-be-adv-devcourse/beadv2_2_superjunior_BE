@@ -1,7 +1,6 @@
 package store._0982.order.application.settlement;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.infrastructure.client.ProductFeignClient;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class DailySettlementService {
