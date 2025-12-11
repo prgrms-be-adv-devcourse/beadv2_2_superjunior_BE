@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.order.domain.settlement.SellerBalance;
 import store._0982.order.domain.settlement.SellerBalanceRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,11 @@ public class SellerBalanceRepositoryAdapter implements SellerBalanceRepository {
     @Override
     public void save(SellerBalance sellerBalance) {
         sellerBalanceJpaRepository.save(sellerBalance);
+    }
+
+    @Override
+    public List<SellerBalance> findAll() {
+        return sellerBalanceJpaRepository.findAll();
     }
 
 }

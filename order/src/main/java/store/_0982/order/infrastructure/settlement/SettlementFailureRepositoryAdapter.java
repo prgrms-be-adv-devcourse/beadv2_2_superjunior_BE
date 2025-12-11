@@ -1,13 +1,19 @@
 package store._0982.order.infrastructure.settlement;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.order.domain.settlement.SettlementFailure;
+import store._0982.order.domain.settlement.SettlementFailureRepository;
 
 @RequiredArgsConstructor
 @Repository
-public class SettlementFailureRepositoryAdapter {
+public class SettlementFailureRepositoryAdapter implements SettlementFailureRepository {
 
-    private final SettlementJpaRepository settlementJpaRepository;
+    private final SettlementFailureJpaRepository settlementFailureJpaRepository;
+
+    @Override
+    public SettlementFailure save(SettlementFailure settlementFailure) {
+        return settlementFailureJpaRepository.save(settlementFailure);
+    }
 
 }
