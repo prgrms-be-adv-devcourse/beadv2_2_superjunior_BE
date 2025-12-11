@@ -5,6 +5,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointEvent;
+import store._0982.point.domain.MemberPointHistory;
 import store._0982.point.domain.PaymentPoint;
 
 @Service
@@ -13,27 +14,37 @@ public class PointEventPublisher {
     private final KafkaTemplate<String, PointEvent> kafkaTemplate;
 
     public void publishPointRechargedEvent(PaymentPoint paymentPoint) {
-        PointEvent event = createEvent(paymentPoint, PointEvent.Status.RECHARGED);
+        PointEvent event = createPointRechargedEvent(paymentPoint);
         kafkaTemplate.send(KafkaTopics.POINT_RECHARGED, paymentPoint.getMemberId().toString(), event);
     }
 
-    public void publishPointDeductedEvent(PaymentPoint paymentPoint) {
-        PointEvent event = createEvent(paymentPoint, PointEvent.Status.DEDUCTED);
-        kafkaTemplate.send(KafkaTopics.POINT_CHANGED, paymentPoint.getMemberId().toString(), event);
+    public void publishPointDeductedEvent(MemberPointHistory history) {
+        PointEvent event = createPointChangedEvent(history, PointEvent.Status.DEDUCTED);
+        kafkaTemplate.send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    public void publishPointReturnedEvent(PaymentPoint paymentPoint) {
-        PointEvent event = createEvent(paymentPoint, PointEvent.Status.RETURNED);
-        kafkaTemplate.send(KafkaTopics.POINT_CHANGED, paymentPoint.getMemberId().toString(), event);
+    public void publishPointReturnedEvent(MemberPointHistory history) {
+        PointEvent event = createPointChangedEvent(history, PointEvent.Status.RETURNED);
+        kafkaTemplate.send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    private static PointEvent createEvent(PaymentPoint paymentPoint, PointEvent.Status status) {
+    private static PointEvent createPointRechargedEvent(PaymentPoint paymentPoint) {
         return new PointEvent(
                 paymentPoint.getId(),
                 paymentPoint.getMemberId(),
                 paymentPoint.getAmount(),
-                status,
+                PointEvent.Status.RECHARGED,
                 paymentPoint.getPaymentMethod()
+        );
+    }
+
+    private static PointEvent createPointChangedEvent(MemberPointHistory history, PointEvent.Status status) {
+        return new PointEvent(
+                history.getId(),
+                history.getMemberId(),
+                history.getAmount(),
+                status,
+                null
         );
     }
 }
