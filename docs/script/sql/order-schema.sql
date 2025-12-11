@@ -65,7 +65,9 @@ create table order_schema.shopping_cart
         constraint shopping_cart_pk_2
             unique,
     group_purchase_id uuid              not null,
-    quantity          integer default 1 not null
+    quantity          integer default 1 not null,
+    created_at     timestamp with time zone default now()                          not null,
+    updated_at     timestamp with time zone,
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
@@ -77,6 +79,12 @@ comment on column order_schema.shopping_cart.member_id is '멤버 ID';
 comment on column order_schema.shopping_cart.group_purchase_id is '공동 구매 ID';
 
 comment on column order_schema.shopping_cart.quantity is '수량';
+
+comment on column order_schema."order".created_at is '등록 시각';
+
+comment on column order_schema."order".updated_at is '수정 시각';
+
+comment on column order_schema."order".deleted_at is '삭제 시각';
 
 alter table order_schema.shopping_cart
     owner to postgres;
