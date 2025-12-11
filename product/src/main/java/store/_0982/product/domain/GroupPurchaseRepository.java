@@ -3,10 +3,12 @@ package store._0982.product.domain;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface GroupPurchaseRepository {
+	GroupPurchase save(GroupPurchase groupPurchase);
 
     Optional<GroupPurchase> findById(UUID purchaseId);
 
@@ -15,5 +17,7 @@ public interface GroupPurchaseRepository {
     Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
 
     void delete(GroupPurchase groupPurchase);
+
+    List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
 
 }

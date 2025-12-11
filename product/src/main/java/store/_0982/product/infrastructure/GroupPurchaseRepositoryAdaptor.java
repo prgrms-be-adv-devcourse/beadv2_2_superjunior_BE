@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
+import store._0982.product.domain.GroupPurchaseStatus;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +17,11 @@ import java.util.UUID;
 public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
 
     private final GroupPurchaseJpaRepository groupPurchaseJpaRepository;
+
+    @Override
+    public GroupPurchase save(GroupPurchase groupPurchase) {
+        return groupPurchaseJpaRepository.save(groupPurchase);
+    }
 
     @Override
     public Optional<GroupPurchase> findById(UUID groupPurchaseId) {
@@ -34,6 +41,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     @Override
     public void delete(GroupPurchase groupPurchase) {
         groupPurchaseJpaRepository.delete(groupPurchase);
+    }
+
+    @Override
+    public List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status) {
+        return groupPurchaseJpaRepository.findByStatusAndSettledAtIsNull(status);
     }
 
 }

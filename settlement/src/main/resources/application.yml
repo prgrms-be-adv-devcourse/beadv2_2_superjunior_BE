@@ -1,9 +1,0 @@
-spring:
-  application:
-    name: settlement
-
-  config:
-    import: optional:configserver:http://localhost:8888
-
-server:
-  port: 8088

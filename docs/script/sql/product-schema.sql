@@ -64,8 +64,11 @@ create table product_schema.group_purchase
     product_id        uuid                                                            not null
         constraint group_purchase_product_product_id_fk
             references product_schema.product,
+    current_quantity  integer                  default 0                              not null,
+    version           bigint                   default 0,
     created_at        timestamp with time zone default now()                          not null,
-    updated_at        timestamp with time zone
+    updated_at        timestamp with time zone,
+    settled_at        timestamp with time zone
 );
 
 comment on table product_schema.group_purchase is '공동 구매';
@@ -92,9 +95,15 @@ comment on column product_schema.group_purchase.seller_id is '판매자 ID';
 
 comment on column product_schema.group_purchase.product_id is '상품 ID';
 
+comment on column product_schema.group_purchase.current_quantity is '현재 주문 수량';
+
+comment on column product_schema.group_purchase.version is '낙관적 락 버전';
+
 comment on column product_schema.group_purchase.created_at is '등록일';
 
 comment on column product_schema.group_purchase.updated_at is '수정일';
+
+comment on column product_schema.group_purchase.settled_at is '정산 완료일';
 
 alter table product_schema.group_purchase
     owner to postgres;
