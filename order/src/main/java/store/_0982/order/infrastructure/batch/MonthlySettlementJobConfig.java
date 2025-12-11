@@ -83,7 +83,7 @@ public class MonthlySettlementJobConfig {
             OffsetDateTime periodEnd = lastMonth.atEndOfMonth().atTime(23, 59, 59)
                     .atOffset(OffsetDateTime.now().getOffset());
 
-            Settlement settlement = new Settlement(
+            return new Settlement(
                     sellerBalance.getMemberId(),
                     periodStart,
                     periodEnd,
@@ -91,42 +91,40 @@ public class MonthlySettlementJobConfig {
                     BigDecimal.valueOf(serviceFee),
                     BigDecimal.valueOf(transferAmount)
             );
-
-            try {
-                log.info("[BATCH] [Seller:{}] 송금 시도", sellerBalance.getMemberId());
-                // TODO: 은행 송금 로직
-
-                settlement.markAsCompleted();
-                sellerBalance.resetBalance();
-                sellerBalanceRepository.save(sellerBalance);
-
-                log.info("[BATCH] [Seller:{}] 송금 성공", sellerBalance.getMemberId());
-
-            } catch (Exception e) {
-                log.error("[BATCH] [Seller:{}] 송금 실패", sellerBalance.getMemberId());
-
-                settlement.markAsFailed();
-
-                SettlementFailure failure = new SettlementFailure(
-                        sellerBalance.getMemberId(),
-                        periodStart,
-                        periodEnd,
-                        e.getMessage(),
-                        0,
-                        settlement.getSettlementId()
-                );
-                settlementFailureRepository.save(failure);
-            }
-
-            return settlement;
         };
     }
 
     @Bean
     public ItemWriter<Settlement> monthlySettlementWriter() {
-        return items -> {
-            for (Settlement settlement : items) {
-                settlementRepository.save(settlement);
+        return settlements -> {
+            for (Settlement settlement : settlements) {
+                try {
+                    // TODO : 송금 로직
+
+                    settlement.markAsCompleted();
+                    settlementRepository.save(settlement);
+
+                    SellerBalance balance = sellerBalanceRepository
+                            .findByMemberId(settlement.getSellerId())
+                            .orElseThrow();
+
+                    balance.resetBalance();
+                    sellerBalanceRepository.save(balance);
+
+                } catch (Exception e) {
+                    settlement.markAsFailed();
+                    settlementRepository.save(settlement);
+
+                    SettlementFailure failure = new SettlementFailure(
+                            settlement.getSellerId(),
+                            settlement.getPeriodStart(),
+                            settlement.getPeriodEnd(),
+                            e.getMessage(),
+                            0,
+                            settlement.getSettlementId()
+                    );
+                    settlementFailureRepository.save(failure);
+                }
             }
         };
     }
