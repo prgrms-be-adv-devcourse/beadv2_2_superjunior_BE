@@ -15,6 +15,7 @@ import store._0982.notification.exception.CustomErrorCode;
 
 import java.util.UUID;
 
+// TODO: Type이 IN_APP인 알림만 보여지게 수정해야 한다.
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
