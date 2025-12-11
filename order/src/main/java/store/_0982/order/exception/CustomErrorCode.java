@@ -19,9 +19,13 @@ public enum CustomErrorCode implements ErrorCode {
     GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
     INVALID_SETTLEMENT_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 정산 금액입니다."),
 
+    //403
+    NOT_CART_OWNER(HttpStatus.FORBIDDEN, "카트에 대한 권한이 없습니다."),
+
     // 404 Not Found
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
-    GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다.");
+    GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다."),
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 공동구매를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -22,7 +22,7 @@ public class Cart {
     @Column(name = "shopping_cart_id", nullable = false)
     private UUID cartId;
 
-    @Column(name = "member_id", nullable = false, unique = true)
+    @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
     @Column(name = "group_purchase_id", nullable = false)
@@ -53,7 +53,11 @@ public class Cart {
     }
 
     public void add(Integer n) {
-        if(n == null) n = 1;
+        if(n == null) {
+            add();
+            updatedAt = OffsetDateTime.now();
+            return;
+        }
         this.quantity += n;
         updatedAt = OffsetDateTime.now();
     }

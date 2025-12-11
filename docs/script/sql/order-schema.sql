@@ -61,13 +61,12 @@ create table order_schema.shopping_cart
     shopping_cart_id  uuid              not null
         constraint shopping_cart_pk
             primary key,
-    member_id         uuid              not null
-        constraint shopping_cart_pk_2
-            unique,
+    member_id         uuid              not null,
     group_purchase_id uuid              not null,
     quantity          integer default 1 not null,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
+    deleted_at     timestamp with time zone,
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
