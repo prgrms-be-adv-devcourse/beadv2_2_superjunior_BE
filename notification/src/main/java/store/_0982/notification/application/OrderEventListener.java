@@ -14,7 +14,6 @@ import store._0982.notification.domain.NotificationChannel;
 import store._0982.notification.domain.NotificationRepository;
 import store._0982.notification.domain.NotificationType;
 import store._0982.notification.exception.CustomKafkaException;
-import store._0982.notification.exception.KafkaErrorCode;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +32,7 @@ public class OrderEventListener {
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,
-                content.type(),
-                content.title(),
-                content.message(),
+                content,
                 NotificationChannel.IN_APP
         );
         notificationRepository.save(notification);
@@ -43,23 +40,22 @@ public class OrderEventListener {
 
     private NotificationContent createNotificationContent(OrderEvent event) {
         String productName = event.getProductName();
-        return switch (event.getStatus().toUpperCase()) {
-            case "OPEN" -> new NotificationContent(
-                    NotificationType.POINT_RECHARGED,
+        return switch (event.getStatus()) {
+            case CREATED -> new NotificationContent(
+                    NotificationType.ORDER_SCHEDULED,
                     productName + " 공동 구매 신청 완료",
                     productName + " 상품의 공동 구매 신청이 완료되었습니다."
             );
-            case "SUCCESS" -> new NotificationContent(
-                    NotificationType.POINT_DEDUCTED,
+            case SUCCESS -> new NotificationContent(
+                    NotificationType.ORDER_COMPLETED,
                     productName + " 공동 구매 성공",
                     productName + " 상품의 공동 구매가 확정되어 곧 배송이 시작됩니다."
             );
-            case "FAILED" -> new NotificationContent(
-                    NotificationType.POINT_RETURNED,
+            case FAILED -> new NotificationContent(
+                    NotificationType.ORDER_FAILED,
                     productName + " 공동 구매 실패",
                     productName + " 상품의 공동 구매가 취소되어 곧 포인트가 반환됩니다."
             );
-            default -> throw new CustomKafkaException(KafkaErrorCode.KAFKA_INVALID_EVENT);
         };
     }
 }

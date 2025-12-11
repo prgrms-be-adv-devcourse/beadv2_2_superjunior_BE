@@ -12,7 +12,7 @@ import store._0982.common.kafka.dto.PointEvent;
 
 @Configuration
 public class KafkaConfig {
-    @Value("${kafka.server}")
+    @Value("${kafka.bootstrap-servers}")
     private String bootStrapServer;
 
     @Bean
