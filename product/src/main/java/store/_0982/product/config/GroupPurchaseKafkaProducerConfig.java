@@ -17,18 +17,23 @@ public class GroupPurchaseKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, GroupPurchaseEvent> upsertGroupPurchaseProducerFactory() {
+    public ProducerFactory<String, GroupPurchaseEvent> groupPurchaseProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, GroupPurchaseEvent> upsertGroupPurchaseKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(upsertGroupPurchaseProducerFactory());
+    public KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseProducerFactory());
     }
 
     @Bean
-    public NewTopic upsertGroupPurchaseTopic() {
+    public NewTopic createGroupPurchaseTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_ADDED);
+    }
+
+    @Bean
+    public NewTopic updateGroupPurchaseTopic() {
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED);
     }
 
 //    @Bean

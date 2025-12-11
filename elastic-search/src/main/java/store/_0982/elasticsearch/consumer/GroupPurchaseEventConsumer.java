@@ -2,6 +2,7 @@ package store._0982.elasticsearch.consumer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
@@ -15,8 +16,16 @@ public class GroupPurchaseEventConsumer {
 
     private final GroupPurchaseSearchService groupPurchaseSearchService;
 
+    @RetryableTopic
     @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_ADDED, groupId = "search-service-group", containerFactory = "createGroupPurchaseKafkaListenerFactory")
     public void create(GroupPurchaseEvent event) {
+        GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);
+        groupPurchaseSearchService.saveGroupPurchaseDocument(command);
+    }
+
+
+    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, groupId = "search-service-group", containerFactory = "updateGroupPurchaseKafkaListenerFactory")
+    public void update(GroupPurchaseEvent event) {
         GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);
         groupPurchaseSearchService.saveGroupPurchaseDocument(command);
     }

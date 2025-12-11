@@ -3,17 +3,19 @@ package store._0982.product.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.product.application.dto.ParticipateInfo;
+import store._0982.product.client.MemberClient;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseRepository;
-import store._0982.product.domain.GroupPurchaseStatus;
+import store._0982.product.domain.*;
 
 import java.util.UUID;
 
@@ -23,6 +25,10 @@ import java.util.UUID;
 public class ParticipateService {
 
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ProductRepository productRepository;
+
+    private final KafkaTemplate<String, GroupPurchaseEvent> createKafkaTemplate;
+    private final MemberClient memberClient;
 
     public GroupPurchase findGroupPurchaseById(UUID groupPurchaseId) {
         return groupPurchaseRepository.findById(groupPurchaseId)
@@ -46,11 +52,18 @@ public class ParticipateService {
             );
         }
 
-        groupPurchaseRepository.save(groupPurchase);
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         if (groupPurchase.getStatus() == GroupPurchaseStatus.SUCCESS) {
             // TODO : 판매자에게 공동구매 성공 알림 전송
         }
+
+        //search kafka
+        Product product = productRepository.findById(groupPurchase.getProductId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
+        GroupPurchaseEvent event = groupPurchase.toEvent(product.getName(), sellerName);
+        createKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(
                 groupPurchase.getStatus().name(),

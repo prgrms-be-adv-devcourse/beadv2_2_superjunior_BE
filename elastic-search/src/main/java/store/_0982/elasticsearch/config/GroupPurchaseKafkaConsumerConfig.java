@@ -25,6 +25,16 @@ public class GroupPurchaseKafkaConsumerConfig {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(createGroupPurchaseConsumerFactory());
     }
 
+    @Bean
+    public ConsumerFactory<String, GroupPurchaseEvent> updateGroupPurchaseConsumerFactory(){
+        return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseEvent> updateGroupPurchaseKafkaListenerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(updateGroupPurchaseConsumerFactory());
+    }
+
 //    @Bean
 //    public ConsumerFactory<String, UUID> deleteProductConsumerFactory(){
 //        return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
