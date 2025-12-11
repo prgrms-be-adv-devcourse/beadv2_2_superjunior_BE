@@ -20,7 +20,7 @@ public class SellerSettlementProcessor {
     public void processSellerSettlement(UUID sellerId, List<GroupPurchaseInternalInfo> groupPurchases) {
 
         Long totalAmount = groupPurchases.stream()
-                .mapToLong(GroupPurchaseInternalInfo::amount)
+                .mapToLong(gp -> gp.totalAmount() != null ? gp.totalAmount() : 0L)
                 .sum();
 
         sellerBalanceService.increaseBalance(sellerId, totalAmount);

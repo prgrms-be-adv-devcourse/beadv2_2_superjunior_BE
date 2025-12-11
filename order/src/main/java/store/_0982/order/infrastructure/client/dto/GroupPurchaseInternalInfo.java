@@ -5,6 +5,6 @@ import java.util.UUID;
 public record GroupPurchaseInternalInfo(
         UUID groupPurchaseId,
         UUID sellerId,
-        Long amount
+        Long totalAmount
 ) {
 }

@@ -156,16 +156,10 @@ create table order_schema.seller_balance_history
     history_id         uuid                                       not null
         constraint seller_balance_history_pk primary key,
     member_id          uuid                                       not null,
-    settlement_id      uuid                                       not null,
+    settlement_id      uuid                                               ,
     amount             bigint                                     not null,
     created_at         timestamp with time zone    default now()  not null,
     status             varchar(10)                                not null
-        constraint seller_balance_history_status_check
-            check ((status)::text = ANY
-        (ARRAY[
-        ('CREDIT'::character varying)::text,
-        ('DEBIT'::character varying)::text
-        ]))
 );
 
 comment on table order_schema.seller_balance_history is '판매자 정산 잔액 변경 내역';
