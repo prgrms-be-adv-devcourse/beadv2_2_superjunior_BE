@@ -8,31 +8,27 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
+
 
 @Configuration
-public class ProductKafkaProducerConfig {
+public class GroupPurchaseKafkaProducerConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ProductEvent> productProducerFactory() {
+    public ProducerFactory<String, GroupPurchaseEvent> groupPurchaseProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, ProductEvent> productKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(productProducerFactory());
+    public KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseProducerFactory());
     }
 
     @Bean
-    public NewTopic upsertProductTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_UPSERTED);
-    }
-
-    @Bean
-    public NewTopic deleteProductTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_DELETED);
+    public NewTopic groupPurchaseTopic() {
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_ADDED);
     }
 }

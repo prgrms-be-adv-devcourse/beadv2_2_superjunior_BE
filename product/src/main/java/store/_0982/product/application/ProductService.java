@@ -26,8 +26,7 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final KafkaTemplate<String, ProductEvent> upsertKafkaTemplate;
-    private final KafkaTemplate<String, UUID> deleteKafkaTemplate;
+    private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         Product product = new Product(command.name(),
@@ -39,7 +38,7 @@ public class ProductService {
 
         //kafka
         ProductEvent event = savedProduct.toEvent();
-        upsertKafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED,event.getId().toString(), event);
+        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED,event.getId().toString(), event);
 
         return ProductRegisterInfo.from(savedProduct);
     }
@@ -55,7 +54,7 @@ public class ProductService {
         productRepository.delete(findProduct);
 
         //kafka
-        deleteKafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.getProductId());
+        kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.toEvent());
     }
 
     /**
@@ -92,7 +91,7 @@ public class ProductService {
         //kafka
         Product updatedProduct = productRepository.saveAndFlush(product);
         ProductEvent event = updatedProduct.toEvent();
-        upsertKafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
+        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
 
         return ProductUpdateInfo.from(product);
     }

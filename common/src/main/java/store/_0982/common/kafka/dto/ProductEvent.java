@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Clock;
 import java.util.UUID;
 
 @Getter
@@ -22,20 +21,4 @@ public class ProductEvent extends BaseEvent {
     private UUID sellerId;
     private String createdAt;
     private String updatedAt;
-
-
-    public ProductEvent(Clock clock, UUID id, String name, long price, String category, String description,
-                        Integer stock, String originalUrl, UUID sellerId, String createdAt, String updatedAt) {
-        super(clock);
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.description = description;
-        this.stock = stock;
-        this.originalUrl = originalUrl;
-        this.sellerId = sellerId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
 }

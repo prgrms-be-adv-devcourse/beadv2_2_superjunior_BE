@@ -3,8 +3,17 @@ package store._0982.product.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.product.application.dto.GroupPurchaseDetailInfo;
+import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
+import store._0982.product.application.dto.GroupPurchaseRegisterCommand;
+import store._0982.product.application.dto.GroupPurchaseInfo;
+import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
+import store._0982.product.client.MemberClient;
 import store._0982.product.application.dto.*;
 import store._0982.product.common.dto.PageResponseDto;
 import store._0982.product.common.exception.CustomErrorCode;
@@ -21,6 +30,10 @@ import java.util.UUID;
 public class GroupPurchaseService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
+
+
+    private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
+    private final MemberClient memberClient;
 
     /**
      * 공동 구매 생성
@@ -64,7 +77,13 @@ public class GroupPurchaseService {
                 command.productId()
         );
 
-        GroupPurchase saved = groupPurchaseRepository.save(groupPurchase);
+        GroupPurchase saved = groupPurchaseRepository.saveAndFlush(groupPurchase);
+
+        //kafka
+        String productName = product.getName();
+        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
+        GroupPurchaseEvent event = groupPurchase.toEvent(productName, sellerName, GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_ADDED,event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
     }
@@ -107,8 +126,11 @@ public class GroupPurchaseService {
         if (!findGroupPurchase.getSellerId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
         }
-
         groupPurchaseRepository.delete(findGroupPurchase);
+
+        //search kafka
+        GroupPurchaseEvent event = findGroupPurchase.toEvent("", "", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED,event.getId().toString(), event);
     }
 
     /**
@@ -150,7 +172,14 @@ public class GroupPurchaseService {
                 command.productId()
         );
 
-        GroupPurchase saved =  groupPurchaseRepository.save(findGroupPurchase);
+        GroupPurchase saved =  groupPurchaseRepository.saveAndFlush(findGroupPurchase);
+
+        //search kafka
+        Product product = productRepository.findById(saved.getProductId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
+        GroupPurchaseEvent event = saved.toEvent(product.getName(), sellerName, GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
     }
