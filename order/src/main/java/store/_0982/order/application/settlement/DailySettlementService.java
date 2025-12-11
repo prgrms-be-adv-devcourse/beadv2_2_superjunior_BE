@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
-import store._0982.order.infrastructure.client.ProductFeignClient;
-import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
+import store._0982.order.client.ProductFeignClient;
+import store._0982.order.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
 import java.util.Map;

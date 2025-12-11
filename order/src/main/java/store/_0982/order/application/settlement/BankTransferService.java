@@ -2,7 +2,7 @@ package store._0982.order.application.settlement;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import store._0982.order.infrastructure.client.dto.SellerAccountInfo;
+import store._0982.order.client.dto.SellerAccountInfo;
 
 @Slf4j
 @Service

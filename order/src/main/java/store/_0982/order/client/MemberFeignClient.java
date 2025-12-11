@@ -1,9 +1,9 @@
-package store._0982.order.infrastructure.client;
+package store._0982.order.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import store._0982.order.infrastructure.client.dto.SellerAccountInfo;
+import store._0982.order.client.dto.SellerAccountInfo;
 
 import java.util.List;
 import java.util.UUID;

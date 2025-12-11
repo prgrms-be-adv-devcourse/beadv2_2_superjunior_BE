@@ -1,4 +1,4 @@
-package store._0982.order.infrastructure.batch;
+package store._0982.order.batch;
 
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.order.application.settlement.BankTransferService;
 import store._0982.order.domain.settlement.*;
-import store._0982.order.infrastructure.client.MemberFeignClient;
-import store._0982.order.infrastructure.client.dto.SellerAccountInfo;
+import store._0982.order.client.MemberFeignClient;
+import store._0982.order.client.dto.SellerAccountInfo;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

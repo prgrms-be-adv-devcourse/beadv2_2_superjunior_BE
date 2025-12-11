@@ -1,10 +1,10 @@
-package store._0982.order.infrastructure.client;
+package store._0982.order.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
-import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
+import store._0982.order.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
 import java.util.UUID;
