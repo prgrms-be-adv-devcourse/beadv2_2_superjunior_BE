@@ -15,17 +15,17 @@ public class CartRepositoryAdapter implements CartRepository {
     private final CartJpaRepository cartJpaRepository;
 
     @Override
-    public Optional<Cart> save(Cart cart) {
-        return Optional.empty();
+    public Cart save(Cart cart) {
+        return Optional.of(cartJpaRepository.save(cart));
     }
 
     @Override
     public void deleteAllZeroQuantity() {
-
+        cartJpaRepository.deleteAllZeroQuantity();
     }
 
     @Override
     public Optional<Cart> findByMemberIdAndGroupPurchaseId(UUID memberId, UUID groupPurchaseId) {
-        return Optional.empty();
+        return cartJpaRepository.findByMemberIdAndGroupPurchaseId(memberId, groupPurchaseId);
     }
 }

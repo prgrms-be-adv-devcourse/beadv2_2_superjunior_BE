@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -21,7 +20,7 @@ public class Cart {
 
     @Id
     @Column(name = "shopping_cart_id", nullable = false)
-    private UUID shoppingCartId;
+    private UUID cartId;
 
     @Column(name = "member_id", nullable = false, unique = true)
     private UUID memberId;
@@ -39,11 +38,24 @@ public class Cart {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public static Cart create(Integer quantity){
+    public static Cart create(UUID memberId, UUID groupPurchaseId){
         Cart cart = new Cart();
-        cart.shoppingCartId = UUID.randomUUID();
-        cart.quantity = Objects.requireNonNullElse(quantity, 1);
+        cart.cartId = UUID.randomUUID();
+        cart.memberId = memberId;
+        cart.groupPurchaseId = groupPurchaseId;
+        cart.quantity = 0;
         return cart;
+    }
+
+    public void add() {
+        this.quantity += 1;
+        updatedAt = OffsetDateTime.now();
+    }
+
+    public void add(Integer n) {
+        if(n == null) n = 1;
+        this.quantity += n;
+        updatedAt = OffsetDateTime.now();
     }
 
     public void delete(){
