@@ -8,8 +8,8 @@ public interface SellerBalanceRepository {
 
     Optional<SellerBalance> findByMemberId(UUID sellerId);
 
-    void save(SellerBalance sellerBalance);
+    List<SellerBalance> findAllByMemberIdIn(List<UUID> memberIds);
 
-    List<SellerBalance> findAll();
+    void save(SellerBalance sellerBalance);
 
 }

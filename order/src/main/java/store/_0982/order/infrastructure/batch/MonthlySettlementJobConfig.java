@@ -15,13 +15,21 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.order.application.settlement.BankTransferService;
 import store._0982.order.domain.settlement.*;
+import store._0982.order.infrastructure.client.MemberFeignClient;
+import store._0982.order.infrastructure.client.dto.SellerAccountInfo;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +44,8 @@ public class MonthlySettlementJobConfig {
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SettlementRepository settlementRepository;
     private final SettlementFailureRepository settlementFailureRepository;
+    private final MemberFeignClient memberFeignClient;
+    private final BankTransferService bankTransferService;
 
     @Bean
     public Job monthlySettlementJob(Step monthlySettlementStep) {
@@ -105,17 +115,32 @@ public class MonthlySettlementJobConfig {
     @Bean
     public ItemWriter<Settlement> monthlySettlementWriter() {
         return settlements -> {
-            for (Settlement settlement : settlements) {
+
+            List<Settlement> settlementList = new ArrayList<>(settlements.getItems());
+            List<UUID> sellerIds = settlementList.stream()
+                    .map(Settlement::getSellerId)
+                    .toList();
+
+            List<SellerAccountInfo> accountInfos = memberFeignClient.getSellerAccountInfos(sellerIds);
+            Map<UUID, SellerAccountInfo> accountMap = accountInfos.stream()
+                    .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
+
+            Map<UUID, SellerBalance> balanceMap = sellerBalanceRepository
+                    .findAllByMemberIdIn(sellerIds)
+                    .stream()
+                    .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
+
+            for (Settlement settlement : settlementList) {
                 try {
-                    // TODO : 송금 로직
+                    SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
+
+                    long transferAmount = settlement.getSettlementAmount().longValue();
+                    bankTransferService.transfer(accountInfo, transferAmount);
 
                     settlement.markAsCompleted();
                     settlementRepository.save(settlement);
 
-                    SellerBalance balance = sellerBalanceRepository
-                            .findByMemberId(settlement.getSellerId())
-                            .orElseThrow();
-
+                    SellerBalance balance = balanceMap.get(settlement.getSellerId());
                     balance.resetBalance();
                     sellerBalanceRepository.save(balance);
 

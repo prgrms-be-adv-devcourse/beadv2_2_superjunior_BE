@@ -21,13 +21,13 @@ public class SellerBalanceRepositoryAdapter implements SellerBalanceRepository {
     }
 
     @Override
-    public void save(SellerBalance sellerBalance) {
-        sellerBalanceJpaRepository.save(sellerBalance);
+    public List<SellerBalance> findAllByMemberIdIn(List<UUID> memberIds) {
+        return sellerBalanceJpaRepository.findAllByMemberIdIn(memberIds);
     }
 
     @Override
-    public List<SellerBalance> findAll() {
-        return sellerBalanceJpaRepository.findAll();
+    public void save(SellerBalance sellerBalance) {
+        sellerBalanceJpaRepository.save(sellerBalance);
     }
 
 }
