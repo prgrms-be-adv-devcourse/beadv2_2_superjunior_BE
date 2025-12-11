@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 
 @Configuration
@@ -18,12 +18,12 @@ public class GroupPurchaseKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, GroupPurchaseSearchEvent> groupPurchaseProducerFactory() {
+    public ProducerFactory<String, GroupPurchaseEvent> groupPurchaseProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, GroupPurchaseSearchEvent> groupPurchaseKafkaTemplate() {
+    public KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseProducerFactory());
     }
 

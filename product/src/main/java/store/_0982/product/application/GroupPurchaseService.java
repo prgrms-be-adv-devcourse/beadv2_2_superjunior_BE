@@ -7,7 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.SearchKafkaStatus;
 import store._0982.product.application.dto.GroupPurchaseDetailInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
@@ -31,7 +31,7 @@ public class GroupPurchaseService {
     private final ProductRepository productRepository;
 
 
-    private final KafkaTemplate<String, GroupPurchaseSearchEvent> upsertKafkaTemplate;
+    private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
     private final MemberClient memberClient;
 
     /**
@@ -81,7 +81,7 @@ public class GroupPurchaseService {
         //kafka
         String productName = product.getName();
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseSearchEvent event = groupPurchase.toEvent(productName, sellerName, SearchKafkaStatus.CREATE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = groupPurchase.toEvent(productName, sellerName, SearchKafkaStatus.CREATE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_ADDED,event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
@@ -138,7 +138,7 @@ public class GroupPurchaseService {
         groupPurchaseRepository.delete(findGroupPurchase);
 
         //search kafka
-        GroupPurchaseSearchEvent event = findGroupPurchase.toEvent("", "", SearchKafkaStatus.DELETE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = findGroupPurchase.toEvent("", "", SearchKafkaStatus.DELETE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED,event.getId().toString(), event);
     }
 
@@ -187,7 +187,7 @@ public class GroupPurchaseService {
         Product product = productRepository.findById(saved.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseSearchEvent event = saved.toEvent(product.getName(), sellerName, SearchKafkaStatus.UPDATE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = saved.toEvent(product.getName(), sellerName, SearchKafkaStatus.UPDATE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);

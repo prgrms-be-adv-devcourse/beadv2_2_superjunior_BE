@@ -10,7 +10,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.SearchKafkaStatus;
 import store._0982.product.application.dto.ParticipateInfo;
 import store._0982.product.client.MemberClient;
@@ -28,7 +28,7 @@ public class ParticipateService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
 
-    private final KafkaTemplate<String, GroupPurchaseSearchEvent> upsertKafkaTemplate;
+    private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
     private final MemberClient memberClient;
 
     public GroupPurchase findGroupPurchaseById(UUID groupPurchaseId) {
@@ -63,7 +63,7 @@ public class ParticipateService {
         Product product = productRepository.findById(groupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseSearchEvent event = groupPurchase.toEvent(product.getName(), sellerName, SearchKafkaStatus.INCREASE_PARTICIPATE);
+        GroupPurchaseEvent event = groupPurchase.toEvent(product.getName(), sellerName, SearchKafkaStatus.INCREASE_PARTICIPATE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(

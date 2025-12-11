@@ -3,6 +3,7 @@ package store._0982.product.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import store._0982.common.HeaderName;
 import store._0982.product.client.dto.ProfileInfo;
 import store._0982.product.common.dto.ResponseDto;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 )
 public interface MemberClient {
 
+
     @GetMapping("/api/members/profile")
-    ResponseDto<ProfileInfo> getMember(@RequestHeader(value = "X-Member-Id", required = false) UUID memberId);
+    ResponseDto<ProfileInfo> getMember(@RequestHeader(value = HeaderName.ID, required = false) UUID memberId);
 }
