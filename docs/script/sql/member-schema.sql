@@ -1,5 +1,7 @@
 create schema member_schema;
 
+set search_path to member_schema;
+
 create table member_schema.member
 (
     member_id     uuid                                                           not null
@@ -8,7 +10,8 @@ create table member_schema.member
     email         varchar(100)                                                   not null
         constraint member_pk_2
             unique,
-    name          varchar(100)                                                   not null,
+    name          varchar(100)                                                   not null
+            unique,
     password      varchar(60)                                                    not null,
     role          varchar(20)              default 'CUSTOMER'::character varying not null
         constraint role_check
@@ -16,7 +19,6 @@ create table member_schema.member
                    (ARRAY [('CUSTOMER'::character varying)::text, ('SELLER'::character varying)::text,
                        ('ADMIN'::character varying)::text])),
     salt_key      varchar(32)                                                    not null,
-    point_balance integer                  default 0                             not null,
     image_url     varchar(2048),
     created_at    timestamp with time zone default now()                         not null,
     updated_at    timestamp with time zone,
@@ -38,8 +40,6 @@ comment on column member_schema.member.role is '멤버 역할';
 
 comment on column member_schema.member.salt_key is '비밀번호용 키';
 
-comment on column member_schema.member.point_balance is '보유 포인트';
-
 comment on column member_schema.member.image_url is '프로필 이미지 URL';
 
 comment on column member_schema.member.created_at is '등록일';
@@ -60,7 +60,6 @@ create table member_schema.seller
             primary key
         constraint seller_member_id_fk
             references member_schema.member,
-    settlement_balance           integer     not null,
     created_at    timestamp with time zone default now()                         not null,
     updated_at                   timestamp with time zone,
     account_number               varchar(20) not null
@@ -76,8 +75,6 @@ create table member_schema.seller
 comment on table member_schema.seller is '판매자';
 
 comment on column member_schema.seller.seller_id is '판매자 ID';
-
-comment on column member_schema.seller.settlement_balance is '정산 잔금';
 
 comment on column member_schema.seller.created_at is '판매자 등록일';
 
@@ -101,8 +98,9 @@ create table member_schema.address
             primary key,
     address        varchar(100) not null,
     address_detail varchar(100) not null,
-    postal_code    varchar(50)  not null,
+    postal_code    varchar(5)  not null,
     receiver_name  varchar(100),
+    phone_number  varchar(20),
     member_id      uuid         not null
         constraint address_member_id_fk
             references member_schema.member,
@@ -127,4 +125,38 @@ comment on column member_schema.address.member_id is '멤버 ID';
 comment on column member_schema.address.updated_at is '수정일';
 
 alter table member_schema.address
+    owner to postgres;
+
+create table member_schema.email_token
+(
+    email_token_id uuid                         not null
+        constraint email_token_pk
+            primary key,
+    email          varchar(100)                 not null,
+    token          varchar(100)                 not null
+        constraint email_token_token_uk
+            unique,
+    is_verified       boolean                      not null,
+    expired_at     timestamp with time zone     not null,
+    created_at     timestamp with time zone default now() not null,
+    updated_at     timestamp with time zone
+);
+
+comment on table member_schema.email_token is '이메일 인증 토큰';
+
+  comment on column member_schema.email_token.email_token_id is '이메일 토큰 ID';
+
+  comment on column member_schema.email_token.email is '이메일 주소';
+
+  comment on column member_schema.email_token.token is '토큰 값';
+
+  comment on column member_schema.email_token.is_verified is '유효 여부';
+
+  comment on column member_schema.email_token.expired_at is '만료 시각';
+
+  comment on column member_schema.email_token.created_at is '생성 시각';
+
+  comment on column member_schema.email_token.updated_at is '수정 시각';
+
+alter table member_schema.email_token
     owner to postgres;
