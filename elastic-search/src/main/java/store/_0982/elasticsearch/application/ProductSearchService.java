@@ -123,10 +123,6 @@ public class ProductSearchService {
     }
 
     public void deleteProductDocument(UUID productId) {
-        boolean exist = productRepository.existsById(productId.toString());
-        if (!exist) {
-            throw new CustomException(CustomErrorCode.DONOT_EXIST_DOC);
-        }
         productRepository.deleteById(productId.toString());
     }
 }

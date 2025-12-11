@@ -38,7 +38,6 @@ public class ProductKafkaProducerConfig {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
-    /** KafkaTemplate */
     @Bean
     public KafkaTemplate<String, UUID> deleteProductKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(deleteProductProducerFactory());

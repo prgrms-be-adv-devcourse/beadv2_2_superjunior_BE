@@ -111,10 +111,6 @@ public class GroupPurchaseSearchService {
     }
 
     public void deleteGroupPurchaseDocument(UUID groupPurchaseId) {
-        boolean exist = groupPurchaseRepository.existsById(groupPurchaseId.toString());
-        if (!exist) {
-            throw new CustomException(CustomErrorCode.DONOT_EXIST_DOC);
-        }
         groupPurchaseRepository.deleteById(groupPurchaseId.toString());
     }
 }
