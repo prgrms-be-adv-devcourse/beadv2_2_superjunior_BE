@@ -48,7 +48,6 @@ public final class KafkaCommonConfigs {
         config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
         config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRY_ATTEMPTS);
         config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
-        config.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaInterCeptors.TracingProducerInterceptor.class.getName());
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(config);
@@ -61,7 +60,9 @@ public final class KafkaCommonConfigs {
      * @return 기본 설정대로 생성된 {@link KafkaTemplate}
      */
     public static <V extends BaseEvent> KafkaTemplate<String, V> defaultKafkaTemplate(ProducerFactory<String, V> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+        KafkaTemplate<String, V> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        kafkaTemplate.setObservationEnabled(true);
+        return kafkaTemplate;
     }
 
     /**
@@ -79,7 +80,6 @@ public final class KafkaCommonConfigs {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, KafkaProperties.DEFAULT_AUTO_OFFSET_RESET);
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, KafkaProperties.DEFAULT_ENABLE_AUTO_COMMIT);
-        config.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaInterCeptors.TracingConsumerInterceptor.class.getName());
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(config);
     }
@@ -96,7 +96,7 @@ public final class KafkaCommonConfigs {
         ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(KafkaProperties.DEFAULT_CONSUMER_CONCURRENCY);
-        factory.getContainerProperties().setObservationEnabled(false);
+        factory.getContainerProperties().setObservationEnabled(true);
         return factory;
     }
 
