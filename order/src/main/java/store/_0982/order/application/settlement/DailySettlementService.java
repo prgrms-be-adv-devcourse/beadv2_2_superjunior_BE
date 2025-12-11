@@ -3,6 +3,7 @@ package store._0982.order.application.settlement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import store._0982.order.infrastructure.client.ProductFeignClient;
 import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class DailySettlementService {
 
-    private final ProductSettlementClient productSettlementClient;
+    private final ProductFeignClient productFeignClient;
     private final SellerSettlementProcessor sellerSettlementProcessor;
 
     /**
@@ -24,7 +25,7 @@ public class DailySettlementService {
     public void processDailySettlement() {
 
         try {
-            List<GroupPurchaseInternalInfo> unsettledGroupPurchases = productSettlementClient.getUnsettledGroupPurchases();
+            List<GroupPurchaseInternalInfo> unsettledGroupPurchases = productFeignClient.getUnSettledGroupPurchase();
             if (unsettledGroupPurchases.isEmpty()) {
                 log.info("정산 대상이 없습니다.");
                 return;
