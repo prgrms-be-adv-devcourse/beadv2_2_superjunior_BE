@@ -11,6 +11,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.*;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.*;
+import store._0982.point.domain.constant.PaymentPointStatus;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;

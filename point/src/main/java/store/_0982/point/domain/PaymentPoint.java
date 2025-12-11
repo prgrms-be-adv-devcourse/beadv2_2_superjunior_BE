@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.point.domain.constant.PaymentPointStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
