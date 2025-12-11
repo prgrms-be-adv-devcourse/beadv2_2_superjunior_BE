@@ -30,9 +30,7 @@ public class PointEventListener {
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,
-                content.type(),
-                content.title(),
-                content.message(),
+                content,
                 NotificationChannel.IN_APP
         );
         notificationRepository.save(notification);

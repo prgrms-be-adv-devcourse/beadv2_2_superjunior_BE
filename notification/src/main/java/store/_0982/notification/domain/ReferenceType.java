@@ -2,7 +2,7 @@ package store._0982.notification.domain;
 
 public enum ReferenceType {
     ORDER,
-    PURCHASE,
+    GROUP_PURCHASE,
     POINT,
     SETTLEMENT
 }
