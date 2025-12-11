@@ -47,7 +47,7 @@ public class SellerBalance {
 
     public void increaseBalance(Long amount) {
         if (amount < 0)
-            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
         this.settlementBalance += amount;
     }
 
