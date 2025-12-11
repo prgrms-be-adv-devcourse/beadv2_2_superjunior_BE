@@ -152,7 +152,7 @@ public class GroupPurchase {
                 this.maxQuantity,
                 this.title,
                 this.description,
-                this.discountedPrice,
+                (long)this.discountedPrice,
                 this.status.name(),
                 sellerName,
                 productName,

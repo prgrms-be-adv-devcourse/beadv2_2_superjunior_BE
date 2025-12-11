@@ -13,7 +13,7 @@ import store._0982.common.kafka.dto.ProductEvent;
 @Configuration
 public class ProductKafkaProducerConfig {
 
-    @Value("${kafka.server}")
+    @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean

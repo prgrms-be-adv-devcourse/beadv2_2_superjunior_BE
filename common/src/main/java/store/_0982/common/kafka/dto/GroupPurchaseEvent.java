@@ -17,7 +17,7 @@ public class GroupPurchaseEvent extends BaseEvent {
     private Integer maxQuantity;
     private String title;
     private String description;
-    private Integer discountedPrice;
+    private Long discountedPrice;
     private String status;
     private String sellerName;
     private String productName;
@@ -35,7 +35,7 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.maxQuantity = maxQuantity;
         this.title = title;
         this.description = description;
-        this.discountedPrice = discountedPrice;
+        this.discountedPrice = (long) discountedPrice;
         this.status = status;
         this.sellerName = sellerName;
         this.productName = productName;
