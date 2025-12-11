@@ -3,13 +3,13 @@ package store._0982.member.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
-import store._0982.member.application.dto.SellerCommand;
-import store._0982.member.application.dto.SellerInfo;
-import store._0982.member.application.dto.SellerRegisterCommand;
-import store._0982.member.application.dto.SellerRegisterInfo;
+import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.domain.*;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,4 +41,9 @@ public class SellerService {
         return SellerRegisterInfo.from(seller);
     }
 
+    //internal 엔드포인트 로직
+    public SellerAccountInfo getSellerAccountInfo(UUID sellerId) {
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_SELLER));
+        return SellerAccountInfo.from(seller);
+    }
 }

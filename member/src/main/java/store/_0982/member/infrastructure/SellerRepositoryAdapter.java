@@ -11,7 +11,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class SellerRepositoryAdapter implements SellerRepository {
-    private SellerJpaRepository sellerJpaRepository;
+    private final SellerJpaRepository sellerJpaRepository;
     @Override
     public Seller save(Seller seller) {
         return sellerJpaRepository.save(seller);
