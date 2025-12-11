@@ -77,9 +77,7 @@ public class GroupPurchaseService {
         Product findProduct = productRepository.findById(findGroupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
-        // TODO : 참가자 수 집계 기능
-        int participantCount = 0;
-        return GroupPurchaseDetailInfo.from(findGroupPurchase, participantCount, findProduct.getOriginalUrl(), findProduct.getPrice());
+        return GroupPurchaseDetailInfo.from(findGroupPurchase, findProduct.getOriginalUrl(), findProduct.getPrice());
     }
 
     @Transactional(readOnly = true)
@@ -87,11 +85,7 @@ public class GroupPurchaseService {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                groupPurchase -> {
-                    // TODO : 참가자 수 집계 기능
-                    int participantCount = 0;
-                    return GroupPurchaseThumbnailInfo.from(groupPurchase, participantCount);
-                });
+                GroupPurchaseThumbnailInfo::from);
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
@@ -101,11 +95,7 @@ public class GroupPurchaseService {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                groupPurchase -> {
-                    // TODO : 참가자 수 집계 기능
-                    int participantCount = 0;
-                    return GroupPurchaseThumbnailInfo.from(groupPurchase, participantCount);
-                });
+                GroupPurchaseThumbnailInfo::from);
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }

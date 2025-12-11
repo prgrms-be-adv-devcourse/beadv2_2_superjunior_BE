@@ -14,20 +14,20 @@ public record GroupPurchaseThumbnailInfo(
         int maxQuantity,
         String title,
         int discountedPrice,
-        int participantCount,
+        int currentQuantity,
         LocalDateTime startDate,
         LocalDate endDate,
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
 ) {
-    public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase, int participantCount) {
+    public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase) {
         return new GroupPurchaseThumbnailInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
                 groupPurchase.getTitle(),
                 groupPurchase.getDiscountedPrice(),
-                participantCount,
+                groupPurchase.getCurrentQuantity(),
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),
                 groupPurchase.getStatus(),
