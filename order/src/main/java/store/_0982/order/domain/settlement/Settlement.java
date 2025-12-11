@@ -53,4 +53,31 @@ public class Settlement {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    public Settlement(
+            UUID sellerId,
+            OffsetDateTime periodStart,
+            OffsetDateTime periodEnd,
+            Long totalAmount,
+            BigDecimal serviceFee,
+            BigDecimal settlementAmount
+    ) {
+        this.settlementId = UUID.randomUUID();
+        this.sellerId = sellerId;
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+        this.totalAmount = totalAmount;
+        this.serviceFee = serviceFee;
+        this.settlementAmount = settlementAmount;
+        this.status = SettlementStatus.PENDING;
+    }
+
+    public void markAsCompleted() {
+        this.status = SettlementStatus.COMPLETED;
+        this.settledAt = OffsetDateTime.now();
+    }
+
+    public void markAsFailed() {
+        this.status = SettlementStatus.FAILED;
+    }
+
 }
