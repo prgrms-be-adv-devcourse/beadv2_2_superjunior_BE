@@ -20,6 +20,7 @@ import store._0982.order.domain.settlement.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.Map;
 
 @Slf4j
@@ -77,11 +78,18 @@ public class MonthlySettlementJobConfig {
             long serviceFee = currentBalance / SERVICE_FEE_RATE;
             long transferAmount = currentBalance - serviceFee;
 
-            YearMonth lastMonth = YearMonth.now().minusMonths(1);
-            OffsetDateTime periodStart = lastMonth.atDay(1).atStartOfDay()
-                    .atOffset(OffsetDateTime.now().getOffset());
-            OffsetDateTime periodEnd = lastMonth.atEndOfMonth().atTime(23, 59, 59)
-                    .atOffset(OffsetDateTime.now().getOffset());
+            ZoneId zone = ZoneId.of("Asia/Seoul");
+            YearMonth lastMonth = YearMonth.now(zone).minusMonths(1);
+            OffsetDateTime periodStart = lastMonth
+                    .atDay(1)
+                    .atStartOfDay(zone)
+                    .toOffsetDateTime();
+
+            OffsetDateTime periodEnd = lastMonth
+                    .atEndOfMonth()
+                    .atTime(23, 59, 59)
+                    .atZone(zone)
+                    .toOffsetDateTime();
 
             return new Settlement(
                     sellerBalance.getMemberId(),
