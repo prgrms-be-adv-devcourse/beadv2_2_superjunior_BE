@@ -33,6 +33,8 @@ spec:
         app: kafka
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
