@@ -15,6 +15,12 @@ spring:
         format_sql: true
         jdbc:
           time_zone: Asia/Seoul
+  batch:
+    jdbc:
+      table-prefix: batch_schema.batch_
+      initialize-schema: never
+    job:
+      enabled: false
 
 feign:
   product:
