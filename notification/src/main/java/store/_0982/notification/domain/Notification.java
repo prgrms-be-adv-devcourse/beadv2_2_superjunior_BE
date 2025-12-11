@@ -1,9 +1,7 @@
 package store._0982.notification.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
@@ -14,7 +12,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "notification", schema = "notification_schema")
 public class Notification {
     @Id
@@ -38,8 +38,9 @@ public class Notification {
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "reference_type", nullable = false, length = 30)
-    private String referenceType;
+    private ReferenceType referenceType;
 
     @Column(name = "failure_message", columnDefinition = "TEXT")
     private String failureMessage;
