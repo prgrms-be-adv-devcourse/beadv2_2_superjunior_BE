@@ -15,7 +15,7 @@ public record GroupPurchaseDetailInfo(
         String title,
         String description,
         int discountedPrice,
-        int participantCount,
+        int currentQuantity,
         LocalDateTime startDate,
         LocalDate endDate,
         UUID sellerId,
@@ -25,7 +25,7 @@ public record GroupPurchaseDetailInfo(
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
 ) {
-    public static GroupPurchaseDetailInfo from(GroupPurchase groupPurchase, int participantCount, String originalUrl, int price) {
+    public static GroupPurchaseDetailInfo from(GroupPurchase groupPurchase, String originalUrl, int price) {
         return new GroupPurchaseDetailInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
@@ -33,7 +33,7 @@ public record GroupPurchaseDetailInfo(
                 groupPurchase.getTitle(),
                 groupPurchase.getDescription(),
                 groupPurchase.getDiscountedPrice(),
-                participantCount,
+                groupPurchase.getCurrentQuantity(),
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),
                 groupPurchase.getSellerId(),
