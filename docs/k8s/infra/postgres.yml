@@ -30,6 +30,8 @@ spec:
         app: postgres
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: postgres
           image: postgres:15-alpine
