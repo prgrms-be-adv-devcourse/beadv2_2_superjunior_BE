@@ -11,6 +11,9 @@ dependencies {
 
     //Batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // Feign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 }
 
 bootJar {

@@ -93,7 +93,7 @@ create table order_schema.settlement
     service_fee       numeric(12, 2)                         not null,
     settlement_amount numeric(12, 2)                         not null,
     status            varchar(20)                            not null,
-    settled_at        timestamp with time zone default now() not null,
+    settled_at        timestamp with time zone               not null,
     created_at        timestamp with time zone default now() not null,
     updated_at        timestamp with time zone
 );
@@ -163,8 +163,8 @@ create table order_schema.seller_balance_history
         constraint seller_balance_history_status_check
             check ((status)::text = ANY
         (ARRAY[
-        ('credit'::character varying)::text,
-        ('debit'::character varying)::text
+        ('CREDIT'::character varying)::text,
+        ('DEBIT'::character varying)::text
         ]))
 );
 

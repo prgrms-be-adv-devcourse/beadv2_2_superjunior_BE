@@ -17,6 +17,7 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "잘못된 수신자 이름입니다."),
     SELLER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "SellerId 값이 없습니다."),
     GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
+    INVALID_SETTLEMENT_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 정산 금액입니다."),
 
     // 404 Not Found
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
