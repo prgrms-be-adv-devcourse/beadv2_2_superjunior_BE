@@ -12,7 +12,7 @@ public record GroupPurchaseDocumentInfo(
         Integer maxQuantity,
         String title,
         String description,
-        Integer discountedPrice,
+        Long discountedPrice,
         String status,
         Instant startAt,
         Instant endAt,

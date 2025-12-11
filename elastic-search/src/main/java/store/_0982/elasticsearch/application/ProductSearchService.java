@@ -31,14 +31,13 @@ public class ProductSearchService {
         IndexOperations ops = operations.indexOps(ProductDocument.class);
 
         if (!ops.exists()) {
-            Document settings = Document.create();
-            settings.put("index.number_of_shards", 1);
-            settings.put("index.number_of_replicas", 0);
-            ops.create(settings);
-            ops.putMapping(ops.createMapping(ProductDocument.class));
-        } else {
             throw new CustomException(CustomErrorCode.ALREADY_EXIST_INDEX);
         }
+        Document settings = Document.create();
+        settings.put("index.number_of_shards", 1);
+        settings.put("index.number_of_replicas", 0);
+        ops.create(settings);
+        ops.putMapping(ops.createMapping(ProductDocument.class));
     }
 
     public void deleteProductIndex() {

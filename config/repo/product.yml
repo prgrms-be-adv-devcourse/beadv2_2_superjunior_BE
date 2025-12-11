@@ -18,6 +18,3 @@ spring:
   batch:
     jdbc:
       initialize-schema: never
-
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

@@ -22,7 +22,7 @@ public class ProductDocument {
     @Field(type = FieldType.Text, analyzer = "nori")
     private String name;
 
-    @Field(type = FieldType.Integer)
+    @Field(type = FieldType.Long)
     private Long price;
 
     @Field(type = FieldType.Keyword)

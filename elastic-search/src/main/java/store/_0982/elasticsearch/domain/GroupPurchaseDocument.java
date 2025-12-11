@@ -36,8 +36,8 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Text, analyzer = "nori")
     private String description;
 
-    @Field(type = FieldType.Integer)
-    private Integer discountedPrice;
+    @Field(type = FieldType.Long)
+    private Long discountedPrice;
 
     @Field(type = FieldType.Keyword)
     private String status;
