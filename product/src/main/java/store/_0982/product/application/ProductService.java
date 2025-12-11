@@ -2,8 +2,11 @@ package store._0982.product.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
@@ -23,6 +26,8 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final KafkaTemplate<String, ProductEvent> upsertKafkaTemplate;
+    private final KafkaTemplate<String, UUID> deleteKafkaTemplate;
 
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         Product product = new Product(command.name(),
@@ -30,7 +35,12 @@ public class ProductService {
                 command.description(), command.stock(),
                 command.originalUrl(), command.sellerId());
 
-        Product savedProduct = productRepository.save(product);
+        Product savedProduct = productRepository.saveAndFlush(product);
+
+        //kafka
+        ProductEvent event = savedProduct.toEvent();
+        upsertKafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED,event.getId().toString(), event);
+
         return ProductRegisterInfo.from(savedProduct);
     }
 
@@ -43,6 +53,9 @@ public class ProductService {
         }
 
         productRepository.delete(findProduct);
+
+        //kafka
+        deleteKafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.getProductId());
     }
 
     /**
@@ -75,6 +88,11 @@ public class ProductService {
                 command.description(),
                 command.stock(),
                 command.originalLink());
+
+        //kafka
+        Product updatedProduct = productRepository.saveAndFlush(product);
+        ProductEvent event = updatedProduct.toEvent();
+        upsertKafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
 
         return ProductUpdateInfo.from(product);
     }
