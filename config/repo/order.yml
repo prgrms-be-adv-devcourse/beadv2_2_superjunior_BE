@@ -21,7 +21,3 @@ spring:
       initialize-schema: never
     job:
       enabled: false
-
-feign:
-  product:
-    url: http://localhost:8087

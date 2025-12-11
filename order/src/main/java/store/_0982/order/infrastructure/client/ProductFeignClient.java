@@ -9,7 +9,7 @@ import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "product-service", url = "${feign.product.url}")
+@FeignClient(name = "product-service", url = "${gateway.url}")
 public interface ProductFeignClient {
 
     @GetMapping("/api/purchases/unsettled")
