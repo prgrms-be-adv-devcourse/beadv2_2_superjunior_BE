@@ -62,7 +62,7 @@ spring:
             - id: point-api
               uri: lb://point
               predicates:
-                - Path=/api/points/**,/api/payments/**
+                - Path=/api/points/**, /api/payments/**
 
             - id: notification-api
               uri: lb://notification
