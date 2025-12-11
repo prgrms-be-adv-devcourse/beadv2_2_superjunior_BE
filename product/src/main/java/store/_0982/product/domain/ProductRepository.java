@@ -15,5 +15,6 @@ public interface ProductRepository {
     void delete(Product product);
 
     Page<Product> findAll(Pageable pageable);
-  
+
+    Product saveAndFlush(Product product);
 }

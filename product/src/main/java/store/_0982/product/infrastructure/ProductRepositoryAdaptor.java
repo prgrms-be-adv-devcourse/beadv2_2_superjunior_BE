@@ -27,6 +27,11 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     }
 
     @Override
+    public Product saveAndFlush(Product product) {
+        return productJpaRepository.saveAndFlush(product);
+    }
+
+    @Override
     public Optional<Product> findById(UUID productId) {
         return productJpaRepository.findById(productId);
     }

@@ -19,3 +19,6 @@ management:
 
 gateway:
   host: http://localhost:8000
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}

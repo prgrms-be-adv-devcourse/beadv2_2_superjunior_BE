@@ -52,6 +52,13 @@ spring:
               filters:
                 - RewritePath=/api/product/(?<segment>.*), /${segment}
 
+            - id: elastic-search-api
+              uri: lb://elastic-search
+              predicates:
+                - Path=/api/searches/**
+              filters:
+                - RewritePath=/api/searches/(?<segment>.*), /api/searches/${segment}
+
           discovery:
             locator:
               enabled: true
@@ -65,6 +72,8 @@ springdoc:
         url: /v3/api-docs/member
       - name: order-service
         url: /v3/api-docs/order
+      - name: elastic-search-service
+        url: /v3/api-docs/elastic-search
     # 필요하면 경로도 커스터마이징 가능 (옵션)
     # path: /swagger-ui.html
 
