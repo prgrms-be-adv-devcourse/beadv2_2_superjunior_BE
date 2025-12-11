@@ -5,34 +5,33 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
+import store._0982.common.kafka.dto.SearchKafkaStatus;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 
 
 @Component
 @RequiredArgsConstructor
-public class GroupPurchaseEventConsumer {
+public class GroupPurchaseSearchEventConsumer {
 
     private final GroupPurchaseSearchService groupPurchaseSearchService;
 
     @RetryableTopic
     @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_ADDED, groupId = "search-service-group", containerFactory = "createGroupPurchaseKafkaListenerFactory")
-    public void create(GroupPurchaseEvent event) {
+    public void create(GroupPurchaseSearchEvent event) {
         GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);
         groupPurchaseSearchService.saveGroupPurchaseDocument(command);
     }
 
-
-    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, groupId = "search-service-group", containerFactory = "updateGroupPurchaseKafkaListenerFactory")
-    public void update(GroupPurchaseEvent event) {
-        GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);
-        groupPurchaseSearchService.saveGroupPurchaseDocument(command);
+    @RetryableTopic
+    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, groupId = "search-service-group", containerFactory = "changeGroupPurchaseKafkaListenerFactory")
+    public void changed(GroupPurchaseSearchEvent event) {
+        if(event.getKafkaStatus().equals(SearchKafkaStatus.DELETE_GROUP_PURCHASE.name())){
+            groupPurchaseSearchService.deleteGroupPurchaseDocument(event.getId());
+        }else{
+            GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);
+            groupPurchaseSearchService.saveGroupPurchaseDocument(command);
+        }
     }
-
-//    @RetryableTopic
-//    @KafkaListener(topics = KafkaTopics.PRODUCT_DELETED, groupId = "search-service-group", containerFactory = "deleteProductKafkaListenerFactory")
-//    public void delete(UUID id) {
-//        groupPurchaseSearchService.deleteGroupPurchaseDocument(id);
-//    }
 }

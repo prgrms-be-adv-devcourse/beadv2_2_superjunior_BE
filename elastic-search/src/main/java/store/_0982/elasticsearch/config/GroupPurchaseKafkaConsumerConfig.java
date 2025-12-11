@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
 
 
 @Configuration
@@ -16,32 +16,22 @@ public class GroupPurchaseKafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, GroupPurchaseEvent> createGroupPurchaseConsumerFactory(){
+    public ConsumerFactory<String, GroupPurchaseSearchEvent> createGroupPurchaseConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseEvent> createGroupPurchaseKafkaListenerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseSearchEvent> createGroupPurchaseKafkaListenerFactory() {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(createGroupPurchaseConsumerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, GroupPurchaseEvent> updateGroupPurchaseConsumerFactory(){
+    public ConsumerFactory<String, GroupPurchaseSearchEvent> changeGroupPurchaseConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseEvent> updateGroupPurchaseKafkaListenerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(updateGroupPurchaseConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseSearchEvent> changeGroupPurchaseKafkaListenerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(changeGroupPurchaseConsumerFactory());
     }
-
-//    @Bean
-//    public ConsumerFactory<String, UUID> deleteProductConsumerFactory(){
-//        return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
-//    }
-//
-//    @Bean
-//    public ConcurrentKafkaListenerContainerFactory<String, UUID> deleteProductKafkaListenerFactory() {
-//        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(deleteProductConsumerFactory());
-//    }
 }

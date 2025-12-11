@@ -1,6 +1,6 @@
 package store._0982.elasticsearch.application.dto;
 
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.GroupPurchaseSearchEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import java.time.OffsetDateTime;
 
@@ -20,7 +20,7 @@ public record GroupPurchaseDocumentCommand(
         OffsetDateTime updatedAt,
         Integer currentQuantity
 ) {
-    public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
+    public static GroupPurchaseDocumentCommand from(GroupPurchaseSearchEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
                 event.getProductName(),
