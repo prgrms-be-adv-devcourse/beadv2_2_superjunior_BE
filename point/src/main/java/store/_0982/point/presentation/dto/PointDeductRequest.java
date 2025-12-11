@@ -2,15 +2,15 @@ package store._0982.point.presentation.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import store._0982.point.application.dto.PointReturnCommand;
+import store._0982.point.application.dto.PointDeductCommand;
 
 import java.util.UUID;
 
-public record PointReturnRequest(
+public record PointDeductRequest(
         @NotNull UUID idempotencyKey,
         @Positive int amount
 ) {
-    public PointReturnCommand toCommand() {
-        return new PointReturnCommand(idempotencyKey, amount);
+    public PointDeductCommand toCommand() {
+        return new PointDeductCommand(idempotencyKey, amount);
     }
 }

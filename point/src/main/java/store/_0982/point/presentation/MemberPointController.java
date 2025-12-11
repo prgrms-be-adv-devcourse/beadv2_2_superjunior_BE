@@ -10,7 +10,7 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.MemberPointService;
 import store._0982.point.application.dto.MemberPointInfo;
-import store._0982.point.presentation.dto.PointMinusRequest;
+import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
 
 import java.util.UUID;
@@ -35,9 +35,9 @@ public class MemberPointController {
     @PatchMapping("/deduct")
     public ResponseDto<MemberPointInfo> deductPoints(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody @Valid PointMinusRequest request
+            @RequestBody @Valid PointDeductRequest request
     ) {
-        MemberPointInfo info = memberPointService.deductPoints(memberId, request);
+        MemberPointInfo info = memberPointService.deductPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 차감 완료");
     }
 
@@ -49,7 +49,7 @@ public class MemberPointController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody @Valid PointReturnRequest request
     ) {
-        MemberPointInfo info = memberPointService.returnPoints(memberId, request);
+        MemberPointInfo info = memberPointService.returnPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 반환 완료");
     }
 }

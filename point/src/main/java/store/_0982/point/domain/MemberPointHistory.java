@@ -40,7 +40,10 @@ public class MemberPointHistory {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public static MemberPointHistory used(UUID memberId, long amount) {
+    @Column(name = "idempotency_key", nullable = false)
+    private UUID idempotencyKey;
+
+    public static MemberPointHistory used(UUID memberId, UUID idempotencyKey, long amount) {
         return MemberPointHistory.builder()
                 .memberId(memberId)
                 .status(MemberPointHistoryStatus.USED)
@@ -48,14 +51,11 @@ public class MemberPointHistory {
                 .build();
     }
 
-    public void markReturned() {
-        this.status = MemberPointHistoryStatus.RETURNED;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
+    public static MemberPointHistory returned(UUID memberId, UUID idempotencyKey, long amount) {
+        return MemberPointHistory.builder()
+                .memberId(memberId)
+                .status(MemberPointHistoryStatus.RETURNED)
+                .amount(amount)
+                .build();
     }
 }
