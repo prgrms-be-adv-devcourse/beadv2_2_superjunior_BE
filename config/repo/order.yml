@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: ${ORDER_SPRING_DATASOURCE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${ORDER_SPRING_DATASOURCE_USERNAME}
+    password: ${ORDER_SPRING_DATASOURCE_PASSWORD}
+  jackson:
+    time-zone: Asia/Seoul
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+
+feign:
+  product:
+    url: http://localhost:8087
