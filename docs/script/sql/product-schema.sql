@@ -67,7 +67,8 @@ create table product_schema.group_purchase
     current_quantity  integer                  default 0                              not null,
     version           bigint                   default 0,
     created_at        timestamp with time zone default now()                          not null,
-    updated_at        timestamp with time zone
+    updated_at        timestamp with time zone,
+    settled_at        timestamp with time zone
 );
 
 comment on table product_schema.group_purchase is '공동 구매';
@@ -101,6 +102,8 @@ comment on column product_schema.group_purchase.version is '낙관적 락 버전
 comment on column product_schema.group_purchase.created_at is '등록일';
 
 comment on column product_schema.group_purchase.updated_at is '수정일';
+
+comment on column product_schema.group_purchase.settled_at is '정산 완료일';
 
 alter table product_schema.group_purchase
     owner to postgres;
