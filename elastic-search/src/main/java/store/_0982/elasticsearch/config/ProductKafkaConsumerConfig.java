@@ -8,12 +8,10 @@ import org.springframework.kafka.core.ConsumerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.dto.ProductEvent;
 
-import java.util.UUID;
-
 @Configuration
 public class ProductKafkaConsumerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${kafka.server}")
     private String bootstrapServers;
 
     @Bean
@@ -27,12 +25,12 @@ public class ProductKafkaConsumerConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, UUID> deleteProductConsumerFactory(){
+    public ConsumerFactory<String, ProductEvent> deleteProductConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UUID> deleteProductKafkaListenerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ProductEvent> deleteProductKafkaListenerFactory() {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(deleteProductConsumerFactory());
     }
 }

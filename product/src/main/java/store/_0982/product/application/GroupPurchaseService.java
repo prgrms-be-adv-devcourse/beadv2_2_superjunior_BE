@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.SearchKafkaStatus;
 import store._0982.product.application.dto.GroupPurchaseDetailInfo;
 import store._0982.product.application.dto.GroupPurchaseThumbnailInfo;
 import store._0982.product.application.dto.GroupPurchaseRegisterCommand;
@@ -83,7 +82,7 @@ public class GroupPurchaseService {
         //kafka
         String productName = product.getName();
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseEvent event = groupPurchase.toEvent(productName, sellerName, SearchKafkaStatus.CREATE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = groupPurchase.toEvent(productName, sellerName, GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_ADDED,event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
@@ -130,7 +129,7 @@ public class GroupPurchaseService {
         groupPurchaseRepository.delete(findGroupPurchase);
 
         //search kafka
-        GroupPurchaseEvent event = findGroupPurchase.toEvent("", "", SearchKafkaStatus.DELETE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = findGroupPurchase.toEvent("", "", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED,event.getId().toString(), event);
     }
 
@@ -179,7 +178,7 @@ public class GroupPurchaseService {
         Product product = productRepository.findById(saved.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseEvent event = saved.toEvent(product.getName(), sellerName, SearchKafkaStatus.UPDATE_GROUP_PURCHASE);
+        GroupPurchaseEvent event = saved.toEvent(product.getName(), sellerName, GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE);
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);

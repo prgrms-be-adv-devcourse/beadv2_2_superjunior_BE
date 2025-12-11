@@ -6,7 +6,6 @@ import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.SearchKafkaStatus;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 
@@ -27,7 +26,7 @@ public class GroupPurchaseSearchEventConsumer {
     @RetryableTopic
     @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, groupId = "search-service-group", containerFactory = "changeGroupPurchaseKafkaListenerFactory")
     public void changed(GroupPurchaseEvent event) {
-        if(event.getKafkaStatus().equals(SearchKafkaStatus.DELETE_GROUP_PURCHASE.name())){
+        if(event.getKafkaStatus() == GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE){
             groupPurchaseSearchService.deleteGroupPurchaseDocument(event.getId());
         }else{
             GroupPurchaseDocumentCommand command = GroupPurchaseDocumentCommand.from(event);

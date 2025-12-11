@@ -10,37 +10,25 @@ import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
 
-import java.util.UUID;
-
 @Configuration
 public class ProductKafkaProducerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${kafka.server}")
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ProductEvent> upsertProductProducerFactory() {
+    public ProducerFactory<String, ProductEvent> productProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, ProductEvent> upsertProductKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(upsertProductProducerFactory());
+    public KafkaTemplate<String, ProductEvent> productKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(productProducerFactory());
     }
 
     @Bean
     public NewTopic upsertProductTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_UPSERTED);
-    }
-
-    @Bean
-    public ProducerFactory<String, UUID> deleteProductProducerFactory() {
-        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
-    }
-
-    @Bean
-    public KafkaTemplate<String, UUID> deleteProductKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(deleteProductProducerFactory());
     }
 
     @Bean

@@ -14,7 +14,7 @@ import store._0982.common.kafka.dto.GroupPurchaseEvent;
 @Configuration
 public class GroupPurchaseKafkaProducerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${kafka.server}")
     private String bootstrapServers;
 
     @Bean

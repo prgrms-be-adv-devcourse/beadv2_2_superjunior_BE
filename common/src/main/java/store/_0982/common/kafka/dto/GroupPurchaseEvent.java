@@ -26,9 +26,9 @@ public class GroupPurchaseEvent extends BaseEvent {
     private String createdAt;
     private String updatedAt;
     private Integer currentQuantity;
-    private String kafkaStatus;
+    private SearchKafkaStatus kafkaStatus;
 
-    public GroupPurchaseEvent(Clock clock, UUID id, Integer minQuantity, Integer maxQuantity, String title, String description, Integer discountedPrice, String status, String sellerName, String productName, String startDate, String endDate, String createdAt, String updatedAt, Integer currentQuantity, String kafkaStatus) {
+    public GroupPurchaseEvent(Clock clock, UUID id, Integer minQuantity, Integer maxQuantity, String title, String description, Integer discountedPrice, String status, String sellerName, String productName, String startDate, String endDate, String createdAt, String updatedAt, Integer currentQuantity, SearchKafkaStatus kafkaStatus) {
         super(clock);
         this.id = id;
         this.minQuantity = minQuantity;
@@ -45,6 +45,13 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.updatedAt = updatedAt;
         this.currentQuantity = currentQuantity;
         this.kafkaStatus = kafkaStatus;
+    }
+
+    public enum SearchKafkaStatus {
+        DELETE_GROUP_PURCHASE,
+        INCREASE_PARTICIPATE,
+        UPDATE_GROUP_PURCHASE,
+        CREATE_GROUP_PURCHASE
     }
 }
 
