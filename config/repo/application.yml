@@ -23,11 +23,8 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-kafka:
-  server: ${KAFKA_SERVER:http://localhost:9092}
-
 gateway:
   host: http://localhost:8000
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}

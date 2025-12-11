@@ -11,22 +11,23 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings("unused")
-public class OrderEvent extends BaseEvent {
+public class GroupPurchaseChangedEvent extends BaseEvent {
     private UUID id;
-    private UUID memberId;
+    private UUID sellerId;
+    private String title;
     private Status status;
-    private String productName;
+    private Long totalAmount;
 
-    public OrderEvent(Clock clock, UUID id, UUID memberId, Status status, String productName) {
+    public GroupPurchaseChangedEvent(Clock clock, UUID id, UUID sellerId, String title, Status status, Long totalAmount) {
         super(clock);
         this.id = id;
-        this.memberId = memberId;
+        this.sellerId = sellerId;
+        this.title = title;
         this.status = status;
-        this.productName = productName;
+        this.totalAmount = totalAmount;
     }
 
     public enum Status {
-        CREATED,
         SUCCESS,
         FAILED
     }

@@ -13,22 +13,22 @@ import store._0982.notification.common.KafkaGroupIds;
 @EnableKafka
 @Configuration
 public class KafkaConfig {
-    @Value("${kafka.server}")
-    private String bootStrapServer;
+    @Value("${kafka.bootstrap-servers}")
+    private String bootStrapServers;
 
     @Bean
     public ConsumerFactory<String, BaseEvent> kakaoConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.KAKAO);
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.KAKAO);
     }
 
     @Bean
     public ConsumerFactory<String, BaseEvent> emailConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.EMAIL);
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.EMAIL);
     }
 
     @Bean
     public ConsumerFactory<String, BaseEvent> inAppConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.IN_APP);
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.IN_APP);
     }
 
     @Bean
