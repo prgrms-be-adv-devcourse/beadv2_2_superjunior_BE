@@ -1,5 +1,6 @@
 package store._0982.order.infrastructure.batch;
 
+import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -9,7 +10,8 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.support.ListItemReader;
+import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -18,6 +20,7 @@ import store._0982.order.domain.settlement.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,27 +37,37 @@ public class MonthlySettlementJobConfig {
     private final SettlementFailureRepository settlementFailureRepository;
 
     @Bean
-    public Job monthlySettlementJob() {
+    public Job monthlySettlementJob(Step monthlySettlementStep) {
         return new JobBuilder("monthlySettlementJob", jobRepository)
-                .start(monthlySettlementStep())
+                .start(monthlySettlementStep)
                 .build();
     }
 
     @Bean
-    public Step monthlySettlementStep() {
+    public Step monthlySettlementStep(EntityManagerFactory entityManagerFactory) {
         return new StepBuilder("monthlySettlementStep", jobRepository)
                 .<SellerBalance, Settlement>chunk(10, transactionManager)
-                .reader(monthlySettlementReader())
+                .reader(monthlySettlementReader(entityManagerFactory))
                 .processor(monthlySettlementProcessor())
                 .writer(monthlySettlementWriter())
                 .build();
     }
 
     @Bean
-    public ListItemReader<SellerBalance> monthlySettlementReader() {
-        return new ListItemReader<>(sellerBalanceRepository.findAll().stream()
-                .filter(balance -> balance.getSettlementBalance() >= MINIMUM_TRANSFER_AMOUNT)
-                .toList());
+    public JpaPagingItemReader<SellerBalance> monthlySettlementReader(
+            EntityManagerFactory entityManagerFactory) {
+        return new JpaPagingItemReaderBuilder<SellerBalance>()
+                .name("monthlySettlementReader")
+                .entityManagerFactory(entityManagerFactory)
+                .pageSize(10)
+                .queryString("""
+                        SELECT s
+                        FROM SellerBalance s
+                        WHERE s.settlementBalance >= :amount
+                        ORDER BY s.balanceId ASC
+                        """)
+                .parameterValues(Map.of("amount", MINIMUM_TRANSFER_AMOUNT))
+                .build();
     }
 
     @Bean
