@@ -1,7 +1,6 @@
 package store._0982.notification.application;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,6 @@ public class OrderEventListener {
             containerFactory = "inAppListenerContainerFactory"
     )
     public void handleOrderEvent(OrderEvent event) {
-        MDC.put("eventId", String.valueOf(event.getEventId()));
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,

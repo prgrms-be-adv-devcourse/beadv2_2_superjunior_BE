@@ -17,6 +17,12 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c  # 또는 b3
+
 kafka:
   server: ${KAFKA_SERVER:http://localhost:9092}
 

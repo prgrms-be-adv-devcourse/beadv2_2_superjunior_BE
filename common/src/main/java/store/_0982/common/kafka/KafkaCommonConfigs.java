@@ -10,6 +10,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import store._0982.common.kafka.dto.BaseEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ public final class KafkaCommonConfigs {
      * @param bootStrapServers 브로커의 서버 주소
      * @return 기본 설정대로 생성된 {@link ProducerFactory}
      */
-    public static <V> ProducerFactory<String, V> defaultProducerFactory(String bootStrapServers) {
+    public static <V extends BaseEvent> ProducerFactory<String, V> defaultProducerFactory(String bootStrapServers) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -47,6 +48,7 @@ public final class KafkaCommonConfigs {
         config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
         config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRY_ATTEMPTS);
         config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
+        config.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaInterCeptors.TracingProducerInterceptor.class.getName());
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(config);
@@ -58,7 +60,7 @@ public final class KafkaCommonConfigs {
      * @param producerFactory 생성한 프로듀서 팩토리
      * @return 기본 설정대로 생성된 {@link KafkaTemplate}
      */
-    public static <V> KafkaTemplate<String, V> defaultKafkaTemplate(ProducerFactory<String, V> producerFactory) {
+    public static <V extends BaseEvent> KafkaTemplate<String, V> defaultKafkaTemplate(ProducerFactory<String, V> producerFactory) {
         return new KafkaTemplate<>(producerFactory);
     }
 
@@ -69,7 +71,7 @@ public final class KafkaCommonConfigs {
      * @param groupId          컨슈머의 그룹 ID
      * @return 기본 설정대로 생성된 {@link ConsumerFactory}
      */
-    public static <V> ConsumerFactory<String, V> defaultConsumerFactory(String bootStrapServers, String groupId) {
+    public static <V extends BaseEvent> ConsumerFactory<String, V> defaultConsumerFactory(String bootStrapServers, String groupId) {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -77,6 +79,7 @@ public final class KafkaCommonConfigs {
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, KafkaProperties.DEFAULT_AUTO_OFFSET_RESET);
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, KafkaProperties.DEFAULT_ENABLE_AUTO_COMMIT);
+        config.put(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG, KafkaInterCeptors.TracingConsumerInterceptor.class.getName());
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(config);
     }
@@ -87,13 +90,13 @@ public final class KafkaCommonConfigs {
      * @param consumerFactory 생성한 컨슈머 팩토리
      * @return 기본 설정대로 생성된 {@link ConcurrentKafkaListenerContainerFactory}
      */
-    public static <V> ConcurrentKafkaListenerContainerFactory<String, V> defaultConcurrentKafkaListenerContainerFactory(
+    public static <V extends BaseEvent> ConcurrentKafkaListenerContainerFactory<String, V> defaultConcurrentKafkaListenerContainerFactory(
             ConsumerFactory<String, V> consumerFactory
     ) {
         ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(KafkaProperties.DEFAULT_CONSUMER_CONCURRENCY);
-        factory.getContainerProperties().setObservationEnabled(true);
+        factory.getContainerProperties().setObservationEnabled(false);
         return factory;
     }
 
