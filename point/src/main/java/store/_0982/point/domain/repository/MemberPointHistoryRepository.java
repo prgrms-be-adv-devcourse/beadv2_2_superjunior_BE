@@ -1,11 +1,12 @@
-package store._0982.point.domain;
+package store._0982.point.domain.repository;
 
+import store._0982.point.domain.entity.MemberPointHistory;
 import store._0982.point.domain.constant.MemberPointHistoryStatus;
 
 import java.util.UUID;
 
 public interface MemberPointHistoryRepository {
-    void save(MemberPointHistory memberPointHistory);
+    MemberPointHistory save(MemberPointHistory memberPointHistory);
 
     boolean existsByIdempotencyKeyAndStatus(UUID idempotencyKey, MemberPointHistoryStatus status);
 }

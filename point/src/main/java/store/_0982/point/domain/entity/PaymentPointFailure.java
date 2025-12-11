@@ -1,4 +1,4 @@
-package store._0982.point.domain;
+package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

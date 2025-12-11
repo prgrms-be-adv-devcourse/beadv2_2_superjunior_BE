@@ -10,8 +10,13 @@ import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.*;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.*;
 import store._0982.point.domain.constant.PaymentPointStatus;
+import store._0982.point.domain.entity.MemberPoint;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPointFailure;
+import store._0982.point.domain.repository.MemberPointRepository;
+import store._0982.point.domain.repository.PaymentPointFailureRepository;
+import store._0982.point.domain.repository.PaymentPointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;

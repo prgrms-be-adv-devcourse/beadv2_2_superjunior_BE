@@ -1,6 +1,6 @@
 package store._0982.point.application.dto;
 
-import store._0982.point.domain.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPoint;
 import store._0982.point.domain.constant.PaymentPointStatus;
 
 import java.time.OffsetDateTime;

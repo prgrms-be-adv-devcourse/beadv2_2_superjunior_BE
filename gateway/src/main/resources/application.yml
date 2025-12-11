@@ -59,6 +59,12 @@ spring:
               filters:
                 - RewritePath=/api/searches/(?<segment>.*), /api/searches/${segment}
 
+            - id: point-api
+              uri: lb://point
+              predicates:
+                - Path=/api/points/**
+                - Path=/api/payments/**
+
           discovery:
             locator:
               enabled: true

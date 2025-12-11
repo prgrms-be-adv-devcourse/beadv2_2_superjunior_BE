@@ -8,9 +8,10 @@ import java.util.UUID;
 
 public record PointDeductRequest(
         @NotNull UUID idempotencyKey,
+        @NotNull UUID orderId,
         @Positive int amount
 ) {
     public PointDeductCommand toCommand() {
-        return new PointDeductCommand(idempotencyKey, amount);
+        return new PointDeductCommand(idempotencyKey, orderId, amount);
     }
 }

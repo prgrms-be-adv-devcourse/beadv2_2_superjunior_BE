@@ -7,10 +7,10 @@ import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.PointRefundCommand;
 import store._0982.point.application.dto.PointRefundInfo;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.MemberPoint;
-import store._0982.point.domain.MemberPointRepository;
-import store._0982.point.domain.PaymentPoint;
-import store._0982.point.domain.PaymentPointRepository;
+import store._0982.point.domain.entity.MemberPoint;
+import store._0982.point.domain.repository.MemberPointRepository;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.repository.PaymentPointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.time.Duration;

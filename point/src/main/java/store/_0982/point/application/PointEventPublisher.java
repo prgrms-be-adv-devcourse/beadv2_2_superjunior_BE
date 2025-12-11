@@ -5,8 +5,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointEvent;
-import store._0982.point.domain.MemberPointHistory;
-import store._0982.point.domain.PaymentPoint;
+import store._0982.point.domain.entity.MemberPointHistory;
+import store._0982.point.domain.entity.PaymentPoint;
 
 @Service
 @RequiredArgsConstructor

@@ -37,6 +37,7 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
             case "amount" -> new CustomException(CustomErrorCode.INVALID_AMOUNT);
             case "orderId" -> new CustomException(CustomErrorCode.ORDER_ID_IS_NULL);
             case "paymentKey" -> new CustomException(CustomErrorCode.PAYMENT_KEY_IS_NULL);
+            case "idempotencyKey" -> new CustomException(CustomErrorCode.IDEMPOTENCY_KEY_IS_NULL);
             default -> new CustomException(DefaultErrorCode.INVALID_PARAMETER);
         };
         return handleCustomException(ex);
