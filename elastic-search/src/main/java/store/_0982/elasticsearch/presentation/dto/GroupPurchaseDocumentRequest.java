@@ -2,11 +2,12 @@ package store._0982.elasticsearch.presentation.dto;
 
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 
-import java.time.Instant;
+
+import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentRequest(
         String groupPurchaseId,
-        String productId,
+        String productName,
         String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
@@ -14,17 +15,17 @@ public record GroupPurchaseDocumentRequest(
         String description,
         Long discountedPrice,
         String status,
-        Instant startAt,
-        Instant endAt,
-        Instant createdAt,
-        Instant updatedAt,
-        Integer participants
+        String startDate,
+        String endDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        Integer currentQuantity
 ) {
 
     public GroupPurchaseDocumentCommand toCommand() {
         return new GroupPurchaseDocumentCommand(
                 groupPurchaseId,
-                productId,
+                productName,
                 sellerName,
                 minQuantity,
                 maxQuantity,
@@ -32,11 +33,11 @@ public record GroupPurchaseDocumentRequest(
                 description,
                 discountedPrice,
                 status,
-                startAt,
-                endAt,
+                startDate,
+                endDate,
                 createdAt,
                 updatedAt,
-                participants
+                currentQuantity
         );
     }
 }

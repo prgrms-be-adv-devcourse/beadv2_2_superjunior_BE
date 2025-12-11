@@ -1,12 +1,12 @@
 package store._0982.elasticsearch.application.dto;
 
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
         String groupPurchaseId,
-        String productId,
+        String productName,
         String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
@@ -14,16 +14,35 @@ public record GroupPurchaseDocumentCommand(
         String description,
         Long discountedPrice,
         String status,
-        Instant startAt,
-        Instant endAt,
-        Instant createdAt,
-        Instant updatedAt,
-        Integer participants
+        String startDate,
+        String endDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        Integer currentQuantity
 ) {
+    public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
+        return new GroupPurchaseDocumentCommand(
+                event.getId().toString(),
+                event.getProductName(),
+                event.getSellerName(),
+                event.getMinQuantity(),
+                event.getMaxQuantity(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDiscountedPrice(),
+                event.getStatus(),
+                event.getStartDate(),
+                event.getEndDate(),
+                OffsetDateTime.parse(event.getCreatedAt()),
+                OffsetDateTime.parse(event.getUpdatedAt()),
+                event.getCurrentQuantity()
+        );
+    }
+
     public GroupPurchaseDocument toDocument() {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(groupPurchaseId)
-                .productId(productId)
+                .productName(productName)
                 .sellerName(sellerName)
                 .minQuantity(minQuantity)
                 .maxQuantity(maxQuantity)
@@ -31,11 +50,11 @@ public record GroupPurchaseDocumentCommand(
                 .description(description)
                 .discountedPrice(discountedPrice)
                 .status(status)
-                .startAt(startAt)
-                .endAt(endAt)
+                .startDate(startDate)
+                .endDate(endDate)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
-                .participants(participants)
+                .currentQuantity(currentQuantity)
                 .build();
     }
 }

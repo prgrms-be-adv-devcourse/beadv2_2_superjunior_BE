@@ -17,4 +17,5 @@ public interface GroupPurchaseRepository {
 
     void delete(GroupPurchase groupPurchase);
 
+    GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
 }

@@ -29,6 +29,7 @@ public class GroupPurchaseService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
 
+
     private final KafkaTemplate<String, GroupPurchaseEvent> createKafkaTemplate;
     private final MemberClient memberClient;
 

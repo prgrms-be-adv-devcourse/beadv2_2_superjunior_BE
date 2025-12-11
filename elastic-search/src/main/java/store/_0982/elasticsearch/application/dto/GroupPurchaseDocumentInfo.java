@@ -1,12 +1,11 @@
 package store._0982.elasticsearch.application.dto;
 
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentInfo(
         String groupPurchaseId,
-        String productId,
+        String productName,
         String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
@@ -14,16 +13,16 @@ public record GroupPurchaseDocumentInfo(
         String description,
         Long discountedPrice,
         String status,
-        Instant startAt,
-        Instant endAt,
-        Instant createdAt,
-        Instant updatedAt,
-        Integer participants
+        String startDate,
+        String endDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        Integer currentQuantity
 ) {
     public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
         return new GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getGroupPurchaseId(),
-                groupPurchaseDocument.getProductId(),
+                groupPurchaseDocument.getProductName(),
                 groupPurchaseDocument.getSellerName(),
                 groupPurchaseDocument.getMinQuantity(),
                 groupPurchaseDocument.getMaxQuantity(),
@@ -31,11 +30,11 @@ public record GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getDescription(),
                 groupPurchaseDocument.getDiscountedPrice(),
                 groupPurchaseDocument.getStatus(),
-                groupPurchaseDocument.getStartAt(),
-                groupPurchaseDocument.getEndAt(),
+                groupPurchaseDocument.getStartDate(),
+                groupPurchaseDocument.getEndDate(),
                 groupPurchaseDocument.getCreatedAt(),
                 groupPurchaseDocument.getUpdatedAt(),
-                groupPurchaseDocument.getParticipants()
+                groupPurchaseDocument.getCurrentQuantity()
         );
     }
 }
