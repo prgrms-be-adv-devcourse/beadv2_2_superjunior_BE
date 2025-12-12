@@ -5,7 +5,7 @@ eureka:
       register-with-eureka: true
       fetch-registry: true
       service-url:
-        defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
+        defaultZone: http://admin:admin@discovery-service:8761/eureka
     instance:
       prefer-ip-address: true
       instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
@@ -24,7 +24,7 @@ management:
       type: w3c  # 또는 b3
 
 gateway:
-  host: http://localhost:8000
+  host: http://gateway-service:8000
 
 kafka:
-  bootstrap-servers: http://localhost:9092
+  bootstrap-servers: http://kafka-service:9092

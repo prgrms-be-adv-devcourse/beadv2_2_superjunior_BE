@@ -1,0 +1,47 @@
+#file: noinspection KubernetesUnknownValues
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config-server
+  template:
+    metadata:
+      labels:
+        app: config-server
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
+      automountServiceAccountToken: false
+      containers:
+        - name: config-server
+          image: 0909-store/config-server:1.0.0
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
+          ports:
+            - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-server
+spec:
+  selector:
+    app: config-server
+  ports:
+    - port: 8888
+      targetPort: 8888
+  type: ClusterIP

@@ -1,0 +1,92 @@
+name: Config Repo Update
+on:
+  push:
+    branches:
+      - feature/ci-cd   # 테스트용
+    paths:
+      - 'config/repo/*-prod.yml'
+
+jobs:
+  update-configmap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*\.yml' || echo "")
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed files:"
+          echo "$CHANGED"
+
+      # SSH를 사용한 ConfigMap 업데이트
+      - name: Update ConfigMap via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p /tmp/config-repo
+
+      - name: Copy config files to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "config/repo/*-prod.yml"
+          target: "/tmp/config-repo"
+          strip_components: 1
+
+      - name: Apply ConfigMap and Restart Services
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+            kubectl create configmap config-repo \
+              --from-file=/tmp/config-repo/repo/ \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            echo "ConfigMap updated successfully"
+
+            kubectl rollout restart deployment/config-server
+            echo "Waiting for config-server to be ready..."
+            kubectl rollout status deployment/config-server --timeout=3m
+
+            CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
+
+            if echo "$CHANGED_FILES" | grep -q "application-prod.yml"; then
+              echo "Common config changed, restarting all services..."
+              kubectl rollout restart deployment/member
+              kubectl rollout restart deployment/product
+              kubectl rollout restart deployment/order
+              kubectl rollout restart deployment/point
+              kubectl rollout restart deployment/notification
+              kubectl rollout restart deployment/eureka
+              kubectl rollout restart deployment/gateway
+            else
+              echo "Restarting affected services only..."
+              echo "$CHANGED_FILES" | grep -q "member-prod.yml" && kubectl rollout restart deployment/member && echo "Member restarted" || true
+              echo "$CHANGED_FILES" | grep -q "product-prod.yml" && kubectl rollout restart deployment/product && echo "Product restarted" || true
+              echo "$CHANGED_FILES" | grep -q "order-prod.yml" && kubectl rollout restart deployment/order && echo "Order restarted" || true
+              echo "$CHANGED_FILES" | grep -q "point-prod.yml" && kubectl rollout restart deployment/point && echo "Point restarted" || true
+              echo "$CHANGED_FILES" | grep -q "notification-prod.yml" && kubectl rollout restart deployment/notification && echo "Notification restarted" || true
+              echo "$CHANGED_FILES" | grep -q "elastic-search-prod.yml" && kubectl rollout restart deployment/elastic-search && echo "ElasticSearch restarted" || true
+            fi
+
+            rm -rf /tmp/config-repo
+
+            echo "Config update completed!"
