@@ -156,16 +156,10 @@ create table order_schema.seller_balance_history
     history_id         uuid                                       not null
         constraint seller_balance_history_pk primary key,
     member_id          uuid                                       not null,
-    settlement_id      uuid                                       not null,
+    settlement_id      uuid                                               ,
     amount             bigint                                     not null,
     created_at         timestamp with time zone    default now()  not null,
     status             varchar(10)                                not null
-        constraint seller_balance_history_status_check
-            check ((status)::text = ANY
-        (ARRAY[
-        ('CREDIT'::character varying)::text,
-        ('DEBIT'::character varying)::text
-        ]))
 );
 
 comment on table order_schema.seller_balance_history is '판매자 정산 잔액 변경 내역';
@@ -181,4 +175,38 @@ comment on column order_schema.seller_balance_history.status is '상태 (credit:
 comment on column order_schema.seller_balance_history.created_at is '생성일';
 
 alter table order_schema.seller_balance_history
+    owner to postgres;
+
+create table order_schema.settlement_failure
+(
+    failure_id     uuid                                   not null
+        constraint settlement_failure_pk primary key,
+    seller_id      uuid                                   not null,
+    period_start   timestamp with time zone               not null,
+    period_end     timestamp with time zone               not null,
+    failure_reason varchar(500)                           not null,
+    retry_count    integer                  default 0     not null,
+    settlement_id  uuid                                   not null,
+    created_at     timestamp with time zone default now() not null
+);
+
+comment on table order_schema.settlement_failure is '정산 실패 이력';
+
+comment on column order_schema.settlement_failure.failure_id is '실패 ID';
+
+comment on column order_schema.settlement_failure.seller_id is '판매자 ID';
+
+comment on column order_schema.settlement_failure.period_start is '정산 시작일';
+
+comment on column order_schema.settlement_failure.period_end is '정산 종료일';
+
+comment on column order_schema.settlement_failure.failure_reason is '실패 사유';
+
+comment on column order_schema.settlement_failure.retry_count is '재시도 횟수';
+
+comment on column order_schema.settlement_failure.settlement_id is '연결된 정산 ID';
+
+comment on column order_schema.settlement_failure.created_at is '생성일';
+
+alter table order_schema.settlement_failure
     owner to postgres;
