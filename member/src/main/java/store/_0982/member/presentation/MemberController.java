@@ -24,7 +24,6 @@ import java.util.UUID;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 @Slf4j
-//TODO: log 달기
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
