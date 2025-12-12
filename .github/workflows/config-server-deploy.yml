@@ -57,13 +57,18 @@ jobs:
           proxy_key: ${{ secrets.BASTION_SSH_KEY }}
           proxy_port: 22
 
-      - name: SSH로 인스턴스 접속 및 배포
+      - name: SSH로 프라이빗 인스턴스 접속 및 배포 (Bastion 경유)
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
           port: 22
+          # Bastion 설정
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
           script: |
             echo "Loading Docker image..."
             gunzip -c /tmp/config-server.tar.gz | sudo k3s ctr images import -
@@ -73,11 +78,9 @@ jobs:
             echo "Updating deployment..."
             sudo kubectl set image deployment/config-server \
               config-server=minbros/config-server:${{ steps.version.outputs.tag }} \
-              --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
             sudo kubectl rollout status deployment/config-server \
-              --timeout=3m \
-              --kubeconfig=/etc/rancher/k3s/k3s.yaml
+              --timeout=3m
 
             echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"
