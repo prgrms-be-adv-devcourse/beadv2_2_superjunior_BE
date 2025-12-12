@@ -32,3 +32,4 @@ kafka:
 token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+

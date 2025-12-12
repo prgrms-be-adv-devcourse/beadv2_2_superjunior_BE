@@ -24,8 +24,6 @@ import java.util.UUID;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 @Slf4j
-//TODO: log 달기
-
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
@@ -146,13 +144,6 @@ public class MemberController {
         headers.put(HeaderName.ROLE, role);
 
         return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");
-    }
-
-    @Operation(summary = "판매자 계좌 조회 (내부용)", description = "internal 통신용으로 판매자의 정산 계좌 정보를 조회합니다.") //TODO: 판매자 수만큼 호출은 N+1 문제, -> 리스트 요청, 리스트 응답으로 변경 필요
-    @GetMapping("/internal/seller-account/{sellerId}")
-    public ResponseDto<SellerAccountInfo> getSellerAccountInfo(@PathVariable UUID sellerId){
-        SellerAccountInfo sellerAccountInfo = sellerService.getSellerAccountInfo(sellerId);
-        return new ResponseDto<>(HttpStatus.OK, sellerAccountInfo, "판매자 계좌 정보");
     }
 
 }

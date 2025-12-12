@@ -3,8 +3,8 @@ package store._0982.order.application.settlement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.order.infrastructure.client.ProductFeignClient;
-import store._0982.order.infrastructure.client.dto.GroupPurchaseInternalInfo;
+import store._0982.order.client.ProductFeignClient;
+import store._0982.order.client.dto.GroupPurchaseInternalInfo;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +20,7 @@ public class SellerSettlementProcessor {
     public void processSellerSettlement(UUID sellerId, List<GroupPurchaseInternalInfo> groupPurchases) {
 
         Long totalAmount = groupPurchases.stream()
-                .mapToLong(GroupPurchaseInternalInfo::amount)
+                .mapToLong(gp -> gp.totalAmount() != null ? gp.totalAmount() : 0L)
                 .sum();
 
         sellerBalanceService.increaseBalance(sellerId, totalAmount);

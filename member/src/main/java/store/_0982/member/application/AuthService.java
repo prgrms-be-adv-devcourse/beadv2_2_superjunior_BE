@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.application.dto.MemberLoginCommand;
 import store._0982.member.common.exception.CustomErrorCode;
@@ -25,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
+    @ServiceLog
     public LoginTokens login(MemberLoginCommand memberLoginCommand) {
         Member member = memberRepository.findByEmail(memberLoginCommand.email())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
@@ -34,14 +36,15 @@ public class AuthService {
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
 
-        //todo //redis에 등록해야함.
+        //TODO: //redis에 등록해야함.
 
         return new LoginTokens(accessToken, refreshToken);
     }
 
+    @ServiceLog
     public String refreshAccessToken(String refreshToken) {
         if (refreshToken == null) {
-            throw new CustomException(CustomErrorCode.BAD_REQUEST);
+            throw new CustomException(CustomErrorCode.NO_REFRESH_TOKEN);
         }
         try{
             UUID memberId = jwtProvider.getMemberIdFromToken(refreshToken);

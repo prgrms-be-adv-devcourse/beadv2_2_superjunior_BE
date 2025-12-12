@@ -48,6 +48,7 @@ public enum CustomErrorCode implements ErrorCode {
     NO_EMAIL_INFO(HttpStatus.UNAUTHORIZED, "이메일 정보가 없습니다."),
     NO_ROLE_INFO(HttpStatus.UNAUTHORIZED, "유저 역할 정보가 없습니다."),
     FAILED_LOGIN(HttpStatus.UNAUTHORIZED, "로그인 인증에 실패했습니다."),
+    NO_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "REFRESH_TOKEN 정보가 없습니다."),
 
     //403 비밀번호 틀림
     WRONG_PASSWORD(HttpStatus.FORBIDDEN, "틀린 비밀번호입니다."),
