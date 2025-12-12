@@ -1,7 +1,7 @@
 package store._0982.product.presentation;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ import store._0982.product.presentation.dto.ParticipateRequest;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name="GroupPurchase", description = "")
+@Hidden
 @RestController
 @RequestMapping("/internal/purchases")
 @RequiredArgsConstructor
