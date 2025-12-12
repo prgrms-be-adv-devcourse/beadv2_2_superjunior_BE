@@ -16,9 +16,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.kafka.core.KafkaTemplate;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementEvent;
 import store._0982.order.application.settlement.BankTransferService;
+import store._0982.order.client.dto.SellerAccountListRequest;
 import store._0982.order.domain.SettlementLogFormat;
 import store._0982.order.domain.settlement.*;
 import store._0982.order.client.MemberFeignClient;
@@ -117,9 +119,11 @@ public class MonthlySettlementJobConfig {
                     .map(Settlement::getSellerId)
                     .toList();
 
-//            List<SellerAccountInfo> accountInfos = memberFeignClient.getSellerAccountInfos(sellerIds);
-//            Map<UUID, SellerAccountInfo> accountMap = accountInfos.stream()
-//                    .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
+            SellerAccountListRequest request = new SellerAccountListRequest(sellerIds);
+            ResponseDto<List<SellerAccountInfo>> response = memberFeignClient.getSellerAccountInfos(request);
+            List<SellerAccountInfo> accountInfos = response.data();
+            Map<UUID, SellerAccountInfo> accountMap = accountInfos.stream()
+                    .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
 
             Map<UUID, SellerBalance> balanceMap = sellerBalanceRepository
                     .findAllByMemberIdIn(sellerIds)
@@ -127,15 +131,14 @@ public class MonthlySettlementJobConfig {
                     .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
 
             for (Settlement settlement : settlementList) {
-//                SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
-//
-//                if (accountInfo == null || accountInfo.accountNumber() == null || accountInfo.accountNumber().isBlank()) {
-//                    handleNoAccountInfo(settlement);
-//                    continue;
-//                }
-//
-//                processTransfer(settlement, accountInfo, balanceMap);
-                processTransfer(settlement, balanceMap);
+                SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
+
+                if (accountInfo == null || accountInfo.accountNumber() == null || accountInfo.accountNumber().isBlank()) {
+                    handleNoAccountInfo(settlement);
+                    continue;
+                }
+
+                processoressTransfer(settlement, accountInfo, balanceMap);
             }
         };
     }
@@ -156,10 +159,10 @@ public class MonthlySettlementJobConfig {
         publishFailedEvent(settlement);
     }
 
-    private void processTransfer(Settlement settlement, Map<UUID, SellerBalance> balanceMap) {
+    private void processoressTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
         try {
             long transferAmount = settlement.getSettlementAmount().longValue();
-//            bankTransferService.transfer(accountInfo, transferAmount);
+            bankTransferService.transfer(accountInfo, transferAmount);
 
             settlement.markAsCompleted();
             settlementRepository.save(settlement);
