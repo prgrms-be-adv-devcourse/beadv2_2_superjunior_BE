@@ -18,16 +18,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: JDK 17 설정
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle 빌드
         run: |
           cd config
           chmod +x ./gradlew 
           ./gradlew clean build -x test
-
-      - name: Gradle 빌드
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: clean build -x test
-          build-root-directory: ./config
 
       - name: Docker Hub 로그인
         uses: docker/login-action@v2
