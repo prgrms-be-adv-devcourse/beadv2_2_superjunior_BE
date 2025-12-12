@@ -81,6 +81,7 @@ jobs:
           username: ${{ secrets.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
+          script: |
             echo "Updating deployment..."
             sudo kubectl set image deployment/config-server \
               config-server=minbros/config-server:${{ steps.version.outputs.tag }} \
