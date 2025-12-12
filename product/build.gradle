@@ -16,6 +16,12 @@ dependencies {
 
     implementation 'org.springframework.kafka:spring-kafka'
 
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // Spring Cloud OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     //JWT
     //  implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     //  runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'

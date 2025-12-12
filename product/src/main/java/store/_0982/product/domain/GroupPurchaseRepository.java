@@ -3,6 +3,7 @@ package store._0982.product.domain;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,5 +20,9 @@ public interface GroupPurchaseRepository {
     void delete(GroupPurchase groupPurchase);
 
     List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
+
+    List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
+
+    int openReadyGroupPurchases(OffsetDateTime now);
 
 }
