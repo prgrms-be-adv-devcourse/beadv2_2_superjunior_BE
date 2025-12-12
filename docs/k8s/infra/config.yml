@@ -34,6 +34,14 @@ spec:
               ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8888
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config-repo
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: config-repo
 ---
 apiVersion: v1
 kind: Service

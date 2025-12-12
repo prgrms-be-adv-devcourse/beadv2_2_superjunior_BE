@@ -9,6 +9,7 @@ on:
       - 'config/src/**'
       - 'config/build.gradle'
       - '.github/workflows/config-server-deploy.yml'
+      - 'docs/k8s/infra/config.yml'
 
 jobs:
   deploy-config-server:

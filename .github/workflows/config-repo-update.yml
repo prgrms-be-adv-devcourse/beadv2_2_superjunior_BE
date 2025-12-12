@@ -35,6 +35,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
           script: |
+            sudo rm -rf /tmp/config-repo
             mkdir -p /tmp/config-repo
 
       - name: 변경된 설정 파일을 EC2 인스턴스로 복사
