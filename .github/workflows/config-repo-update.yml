@@ -7,19 +7,19 @@ on:
       - feature/ci-cd   # 테스트용
     paths:
       - 'config/repo/*-prod.yml'
-#      - '.github/workflows/config-repo-update.yml'  # 테스트용
+      - '.github/workflows/config-repo-update.yml'  # 테스트용
 
 jobs:
   update-configmap:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Get changed files
+      - name: 변경된 파일 탐색
         id: changed-files
         run: |
           CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*-prod\.yml$' || echo "")
@@ -27,7 +27,17 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED"
 
-      - name: Copy config files to EC2
+      - name: 설정 파일을 전달 받을 폴더 생성
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          script: |
+            mkdir -p /tmp/config-repo
+
+      - name: 변경된 설정 파일을 EC2 인스턴스로 복사
         if: steps.changed-files.outputs.files != ''
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -39,29 +49,7 @@ jobs:
           target: "/tmp/config-repo"
           strip_components: 2
 
-      # SSH를 사용한 ConfigMap 업데이트
-      - name: Update ConfigMap via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          script: |
-            mkdir -p /tmp/config-repo
-
-      - name: Copy config files to EC2
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "config/repo/*-prod.yml"
-          target: "/tmp/config-repo"
-          strip_components: 1
-
-      - name: Apply ConfigMap and Restart Services
+      - name: ConfigMap 적용 후 필요한 Pod 재시작
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
