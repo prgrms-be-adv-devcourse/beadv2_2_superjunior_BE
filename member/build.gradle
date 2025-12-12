@@ -26,6 +26,9 @@ dependencies {
     //smtp
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+    // Logstash Logback encoder (LOGSTASH appender용)
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
     //common 모듈
     implementation project(':common')
 }
