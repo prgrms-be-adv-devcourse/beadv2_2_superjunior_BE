@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds">
+    <!--  환경 변수화 필요  -->
     <property name="SERVICE_NAME" value="member-service"/>
-    <!--  logstash 주소 변경 필요  -->
     <property name="LOGSTASH_HOST" value="localhost"/>
     <property name="LOGSTASH_PORT" value="5000"/>
 
