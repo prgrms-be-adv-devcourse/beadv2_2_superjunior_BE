@@ -22,7 +22,7 @@ create table batch_product_schema.batch_job_execution
     version          bigint,
     job_instance_id  bigint    not null
         constraint job_inst_exec_fk
-            references batch_schema.batch_job_instance,
+            references batch_product_schema.batch_job_instance,
     create_time      timestamp not null,
     start_time       timestamp default null,
     end_time         timestamp default null,
@@ -39,7 +39,7 @@ create table batch_product_schema.batch_job_execution_params
 (
     job_execution_id bigint       not null
         constraint job_exec_params_fk
-            references batch_schema.batch_job_execution,
+            references batch_product_schema.batch_job_execution,
     parameter_name   varchar(100) not null,
     parameter_type   varchar(100) not null,
     parameter_value  varchar(2500),
@@ -58,7 +58,7 @@ create table batch_product_schema.batch_step_execution
     step_name          varchar(100) not null,
     job_execution_id   bigint       not null
         constraint job_exec_step_fk
-            references batch_schema.batch_job_execution,
+            references batch_product_schema.batch_job_execution,
     create_time        timestamp    not null,
     start_time         timestamp default null,
     end_time           timestamp default null,
@@ -79,13 +79,13 @@ create table batch_product_schema.batch_step_execution
 alter table batch_product_schema.batch_step_execution
     owner to postgres;
 
-create table batch_schema.batch_step_execution_context
+create table batch_product_schema.batch_step_execution_context
 (
     step_execution_id  bigint        not null
         constraint batch_step_execution_context_pk
             primary key
         constraint step_exec_ctx_fk
-            references batch_schema.batch_step_execution,
+            references batch_product_schema.batch_step_execution,
     short_context      varchar(2500) not null,
     serialized_context text
 );
@@ -99,7 +99,7 @@ create table batch_product_schema.batch_job_execution_context
         constraint batch_job_execution_context_pk
             primary key
         constraint job_exec_ctx_fk
-            references batch_schema.batch_job_execution,
+            references batch_product_schema.batch_job_execution,
     short_context      varchar(2500) not null,
     serialized_context text
 );
