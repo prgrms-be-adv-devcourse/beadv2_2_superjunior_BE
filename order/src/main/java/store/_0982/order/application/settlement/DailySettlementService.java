@@ -53,7 +53,7 @@ public class DailySettlementService {
 
             try {
                 log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_START, sellerId, sellerGroupPurchases.size()));
-                processSellerDailySettlement(sellerId, sellerGroupPurchases);
+                sellerSettlementProcessor.processSellerSettlement(sellerId, sellerGroupPurchases);
                 log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_COMPLETE, sellerId));
             } catch (Exception e) {
                 log.error(String.format(SettlementLogFormat.DAILY_SETTLEMENT_FAIL, sellerId, e.getMessage()), e);
@@ -61,7 +61,4 @@ public class DailySettlementService {
         }
     }
 
-    private void processSellerDailySettlement(UUID sellerId, List<GroupPurchaseInternalInfo> groupPurchases) {
-        sellerSettlementProcessor.processSellerSettlement(sellerId, groupPurchases);
-    }
 }
