@@ -27,7 +27,6 @@ import store._0982.order.client.MemberFeignClient;
 import store._0982.order.client.dto.SellerAccountInfo;
 
 import java.math.BigDecimal;
-import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -166,10 +165,10 @@ public class MonthlySettlementJobConfig {
             sellerBalanceRepository.save(balance);
 
             publishCompletedEvent(settlement);
-            log.info(String.format(SettlementLogFormat.MONTHLY_SETTLEMENT_COMPLETE, settlement.getSellerId()));
+            log.info(SettlementLogFormat.MONTHLY_SETTLEMENT_COMPLETE, settlement.getSellerId());
 
         } catch (Exception e) {
-            log.error(String.format(SettlementLogFormat.MONTHLY_SETTLEMENT_FAIL, settlement.getSellerId(), e.getMessage()), e);
+            log.error(SettlementLogFormat.MONTHLY_SETTLEMENT_FAIL, settlement.getSellerId(), e.getMessage(), e);
             handleSettlementFailure(settlement, e.getMessage());
         }
     }
