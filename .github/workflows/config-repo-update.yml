@@ -19,6 +19,14 @@ jobs:
         with:
           fetch-depth: 2
 
+      - name: 변경된 파일 탐색
+        id: changed-files
+        run: |
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*-prod\.yml$' || echo "")
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed files:"
+          echo "$CHANGED"
+
       - name: 설정 파일을 전달 받을 폴더 생성
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -30,7 +38,8 @@ jobs:
             sudo rm -rf /tmp/config-repo
             mkdir -p /tmp/config-repo
 
-      - name: 설정 파일을 EC2 인스턴스로 복사
+      - name: 변경된 설정 파일을 EC2 인스턴스로 복사
+        if: steps.changed-files.outputs.files != ''
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
