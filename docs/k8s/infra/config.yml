@@ -22,7 +22,7 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: prod
+              value: prod,native
           resources:
             requests:
               cpu: "200m"

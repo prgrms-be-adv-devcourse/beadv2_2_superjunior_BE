@@ -3,6 +3,7 @@ name: Config Server Deploy
 on:
   push:
     branches:
+      - main
       - feature/ci-cd
     paths:
       - 'config/src/**'
