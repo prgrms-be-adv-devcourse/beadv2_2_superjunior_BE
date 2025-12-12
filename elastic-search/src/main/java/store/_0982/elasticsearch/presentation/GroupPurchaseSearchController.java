@@ -46,7 +46,7 @@ public class GroupPurchaseSearchController {
     @GetMapping("/search")
     public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocument(
             @RequestParam(defaultValue = "") String keyword,
-            @RequestParam(defaultValue = "OPEN") String status,
+            @RequestParam(required = false) String status,
             Pageable pageable
     ) {
         PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, pageable);

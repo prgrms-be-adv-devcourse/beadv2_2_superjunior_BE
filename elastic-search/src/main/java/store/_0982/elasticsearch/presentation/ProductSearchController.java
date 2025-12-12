@@ -48,7 +48,7 @@ public class ProductSearchController {
     public ResponseDto<PageResponse<ProductDocumentInfo>> searchProductDocument(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam UUID sellerId,
-            @RequestParam String category,
+            @RequestParam(required = false) String category,
             Pageable pageable
     ) {
         PageResponse<ProductDocumentInfo> result = productSearchService.searchProductDocument(keyword, sellerId, category, pageable);
