@@ -7,7 +7,7 @@ on:
       - feature/ci-cd   # 테스트용
     paths:
       - 'config/repo/*-prod.yml'
-      - '.github/workflows/config-repo-update.yml'  # 테스트용
+#      - '.github/workflows/config-repo-update.yml'  # 테스트용
 
 jobs:
   update-configmap:
@@ -22,10 +22,22 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
-          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*\.yml' || echo "")
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*-prod\.yml$' || echo "")
           echo "files=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"
+
+      - name: Copy config files to EC2
+        if: steps.changed-files.outputs.files != ''
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: ${{ steps.changed-files.outputs.files }}
+          target: "/tmp/config-repo"
+          strip_components: 2
 
       # SSH를 사용한 ConfigMap 업데이트
       - name: Update ConfigMap via SSH
@@ -60,7 +72,7 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
             sudo kubectl create configmap config-repo \
-              --from-file=/tmp/config-repo/repo/ \
+              --from-file=/tmp/config-repo/ \
               --dry-run=client -o yaml | kubectl apply -f -
 
             echo "ConfigMap updated successfully"
