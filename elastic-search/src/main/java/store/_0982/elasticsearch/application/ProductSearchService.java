@@ -11,12 +11,10 @@ import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
-import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.ProductDocument;
-import store._0982.elasticsearch.infrastructure.ProductRepository;
 
 import java.util.UUID;
 
@@ -25,7 +23,6 @@ import java.util.UUID;
 public class ProductSearchService {
 
     private final ElasticsearchOperations operations;
-    private final ProductRepository productRepository;
 
     public void createProductIndex() {
         IndexOperations ops = operations.indexOps(ProductDocument.class);
@@ -46,11 +43,6 @@ public class ProductSearchService {
             throw new CustomException(CustomErrorCode.DONOT_EXIST_INDEX);
         }
         ops.delete();
-    }
-
-    @ServiceLog
-    public ProductDocumentInfo saveProductDocument(ProductDocumentCommand command) {
-        return ProductDocumentInfo.from(productRepository.save(command.toDocument()));
     }
 
     @ServiceLog
@@ -119,9 +111,5 @@ public class ProductSearchService {
                 .map(hit -> ProductDocumentInfo.from(hit.getContent()));
 
         return PageResponse.from(mappedPage);
-    }
-
-    public void deleteProductDocument(UUID productId) {
-        productRepository.deleteById(productId.toString());
     }
 }

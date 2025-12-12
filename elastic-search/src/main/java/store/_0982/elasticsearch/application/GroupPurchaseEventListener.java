@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.consumer;
+package store._0982.elasticsearch.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
-import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
@@ -15,9 +14,8 @@ import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
 @Service
 @RequiredArgsConstructor
-public class GroupPurchaseSearchEventConsumer {
+public class GroupPurchaseEventListener {
 
-    private final GroupPurchaseSearchService groupPurchaseSearchService;
     private final GroupPurchaseRepository groupPurchaseRepository;
 
     @RetryableTopic

@@ -14,7 +14,6 @@ import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
 
 @RequiredArgsConstructor
@@ -22,7 +21,6 @@ import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 public class GroupPurchaseSearchService {
 
     private final ElasticsearchOperations operations;
-    private final GroupPurchaseRepository groupPurchaseRepository;
 
     public void createGroupPurchaseIndex() {
         IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
