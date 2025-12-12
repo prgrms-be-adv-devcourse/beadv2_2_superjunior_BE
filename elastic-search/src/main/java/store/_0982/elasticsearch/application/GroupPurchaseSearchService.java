@@ -10,14 +10,12 @@ import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
-import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
@@ -45,11 +43,6 @@ public class GroupPurchaseSearchService {
             throw new CustomException(CustomErrorCode.DONOT_EXIST_INDEX);
         }
         ops.delete();
-    }
-
-    @ServiceLog
-    public GroupPurchaseDocumentInfo saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
-        return GroupPurchaseDocumentInfo.from(groupPurchaseRepository.save(command.toDocument()));
     }
 
     @ServiceLog
@@ -107,9 +100,5 @@ public class GroupPurchaseSearchService {
                 .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
 
         return PageResponse.from(mappedPage);
-    }
-
-    public void deleteGroupPurchaseDocument(UUID groupPurchaseId) {
-        groupPurchaseRepository.deleteById(groupPurchaseId.toString());
     }
 }
