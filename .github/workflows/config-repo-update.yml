@@ -60,8 +60,6 @@ jobs:
           port: 22
           command_timeout: '5m'
           script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
             sudo kubectl create configmap config-repo \
               --from-file=/tmp/config-repo/ \
               --dry-run=client -o yaml | kubectl apply -f -
