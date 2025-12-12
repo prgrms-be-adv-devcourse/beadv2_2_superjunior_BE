@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.domain.Member;
@@ -20,6 +21,7 @@ public class SellerService {
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
 
+    @ServiceLog
     @Transactional
     public SellerRegisterInfo registerSeller(SellerRegisterCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
@@ -36,6 +38,7 @@ public class SellerService {
         return sellerInfo;
     }
 
+    @ServiceLog
     @Transactional
     public SellerRegisterInfo updateSeller(SellerRegisterCommand command) {
         Seller seller = sellerRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
