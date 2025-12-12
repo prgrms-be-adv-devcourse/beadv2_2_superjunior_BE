@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Builder
 @Getter
@@ -18,10 +18,10 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Keyword)
     private String groupPurchaseId;
 
-    @Field(type = FieldType.Keyword)
-    private String productId;
+    @Field(type = FieldType.Text, analyzer = "nori")
+    private String productName;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String sellerName;
 
     @Field(type = FieldType.Integer)
@@ -37,27 +37,25 @@ public class GroupPurchaseDocument {
     private String description;
 
     @Field(type = FieldType.Long)
-    private Long discountedPrice;
+    private Integer discountedPrice;
 
     @Field(type = FieldType.Keyword)
     private String status;
 
-    @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant startAt;
+    @Field(type = FieldType.Keyword)
+    private String startDate;
+
+    @Field(type = FieldType.Keyword)
+    private String endDate;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant endAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    private OffsetDateTime createdAt;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant createdAt;
-
-    @Field(type = FieldType.Date, format = DateFormat.date_time)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "UTC")
-    private Instant updatedAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    private OffsetDateTime updatedAt;
 
     @Field(type = FieldType.Integer)
-    private Integer participants;
+    private Integer currentQuantity;
 }

@@ -18,13 +18,13 @@ public class SettlementEvent extends BaseEvent {
     private UUID sellerId;
     private OffsetDateTime start;
     private OffsetDateTime end;
-    private String status;
+    private Status status;
     private long totalAmount;
     private BigDecimal serviceFee;
     private BigDecimal settlementAmount;
 
     public SettlementEvent(Clock clock, UUID id, UUID sellerId, OffsetDateTime start, OffsetDateTime end,
-                           String status, long totalAmount, BigDecimal serviceFee, BigDecimal settlementAmount) {
+                           Status status, long totalAmount, BigDecimal serviceFee, BigDecimal settlementAmount) {
         super(clock);
         this.id = id;
         this.sellerId = sellerId;
@@ -34,5 +34,10 @@ public class SettlementEvent extends BaseEvent {
         this.totalAmount = totalAmount;
         this.serviceFee = serviceFee;
         this.settlementAmount = settlementAmount;
+    }
+
+    public enum Status {
+        SUCCESS,
+        FAILED
     }
 }

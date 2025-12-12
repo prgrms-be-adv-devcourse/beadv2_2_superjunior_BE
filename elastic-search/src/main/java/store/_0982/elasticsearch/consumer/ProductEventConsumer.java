@@ -9,8 +9,6 @@ import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.application.ProductSearchService;
 import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class ProductEventConsumer {
@@ -26,7 +24,7 @@ public class ProductEventConsumer {
 
     @RetryableTopic
     @KafkaListener(topics = KafkaTopics.PRODUCT_DELETED, groupId = "search-service-group", containerFactory = "deleteProductKafkaListenerFactory")
-    public void delete(UUID id) {
-        productSearchService.deleteProductDocument(id);
+    public void delete(ProductEvent event) {
+        productSearchService.deleteProductDocument(event.getId());
     }
 }

@@ -1,31 +1,57 @@
 package store._0982.notification.application;
 
-import store._0982.common.kafka.dto.OrderEvent;
-import store._0982.common.kafka.dto.PointEvent;
+import store._0982.common.kafka.dto.*;
+import store._0982.notification.common.NotificationContent;
 import store._0982.notification.domain.*;
 
 public final class NotificationCreator {
-    public static Notification create(OrderEvent event, NotificationType type, String title, String message, NotificationChannel channel) {
+    public static Notification create(OrderEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getMemberId())
-                .type(type)
+                .type(content.type())
                 .channel(channel)
-                .title(title)
-                .message(message)
+                .title(content.title())
+                .message(content.message())
                 .referenceType(ReferenceType.ORDER)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getId())
                 .build();
     }
 
-    public static Notification create(PointEvent event, NotificationType type, String title, String message, NotificationChannel channel) {
+    public static Notification create(PointEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getMemberId())
-                .type(type)
+                .type(content.type())
                 .channel(channel)
-                .title(title)
-                .message(message)
+                .title(content.title())
+                .message(content.message())
                 .referenceType(ReferenceType.POINT)
+                .status(NotificationStatus.SENT)
+                .referenceId(event.getId())
+                .build();
+    }
+
+    public static Notification create(SettlementEvent event, NotificationContent content, NotificationChannel channel) {
+        return Notification.builder()
+                .memberId(event.getSellerId())
+                .type(content.type())
+                .channel(channel)
+                .title(content.title())
+                .message(content.message())
+                .referenceType(ReferenceType.SETTLEMENT)
+                .status(NotificationStatus.SENT)
+                .referenceId(event.getId())
+                .build();
+    }
+
+    public static Notification create(GroupPurchaseChangedEvent event, NotificationContent content, NotificationChannel channel) {
+        return Notification.builder()
+                .memberId(event.getSellerId())
+                .type(content.type())
+                .channel(channel)
+                .title(content.title())
+                .message(content.message())
+                .referenceType(ReferenceType.GROUP_PURCHASE)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getId())
                 .build();

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -146,7 +147,7 @@ public class GroupPurchase {
     public boolean isSettled() {
         return this.settledAt != null;
     }
-
+  
     public void updateStatus(GroupPurchaseStatus status){
         this.status = status;
     }
@@ -160,5 +161,25 @@ public class GroupPurchase {
 
     public boolean isReturned() {
         return this.returnedAt != null;
+    }
+
+    public GroupPurchaseEvent toEvent(String productName, String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus) {
+        return new GroupPurchaseEvent(
+                this.groupPurchaseId,
+                this.minQuantity,
+                this.maxQuantity,
+                this.title,
+                this.description,
+                (long)this.discountedPrice,
+                this.status.name(),
+                sellerName,
+                productName,
+                this.startDate.toString(),
+                this.endDate.toString(),
+                this.createdAt.toString(),
+                this.updatedAt.toString(),
+                this.currentQuantity,
+                searchKafkaStatus
+        );
     }
 }

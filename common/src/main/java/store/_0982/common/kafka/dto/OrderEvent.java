@@ -14,14 +14,20 @@ import java.util.UUID;
 public class OrderEvent extends BaseEvent {
     private UUID id;
     private UUID memberId;
-    private String status;
+    private Status status;
     private String productName;
 
-    public OrderEvent(Clock clock, UUID id, UUID memberId, String status, String productName) {
+    public OrderEvent(Clock clock, UUID id, UUID memberId, Status status, String productName) {
         super(clock);
         this.id = id;
         this.memberId = memberId;
         this.status = status;
         this.productName = productName;
+    }
+
+    public enum Status {
+        CREATED,
+        SUCCESS,
+        FAILED
     }
 }
