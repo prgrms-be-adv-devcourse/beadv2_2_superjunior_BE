@@ -33,29 +33,56 @@ jobs:
           echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
           echo "Image tag: $SHORT_SHA"
 
-      - name: Jib로 Docker 이미지 빌드 및 푸시
-        env:
-          DOCKER_USERNAME: minbros
-          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Jib로 Docker 이미지 빌드 (로컬)
         run: |
-          ./gradlew :config:jib \
-            -Djib.to.auth.username=$DOCKER_USERNAME \
-            -Djib.to.auth.password=$DOCKER_PASSWORD \
+          ./gradlew :config:jibDockerBuild \
             -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
-      - name: SSH로 EC2 접속 및 배포
+      - name: Docker 이미지를 tar 파일로 저장
+        run: |
+          docker save minbros/config-server:${{ steps.version.outputs.tag }} | gzip > config-server.tar.gz
+          ls -lh config-server.tar.gz
+
+      - name: 이미지 파일을 프라이빗 인스턴스로 전송 (Bastion 경유)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          source: "config-server.tar.gz"
+          target: "/tmp"
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+
+      - name: SSH로 프라이빗 인스턴스 접속 및 배포 (Bastion 경유)
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
           port: 22
+          # Bastion 설정
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
           script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            echo "Loading Docker image..."
+            gunzip -c /tmp/config-server.tar.gz | sudo k3s ctr images import -
 
+            rm -f /tmp/config-server.tar.gz
+
+            echo "Updating deployment..."
             sudo kubectl set image deployment/config-server \
-              config-server=minbros/config-server:${{ steps.version.outputs.tag }}
+              config-server=minbros/config-server:${{ steps.version.outputs.tag }} \
+              --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
-            sudo kubectl rollout status deployment/config-server --timeout=3m
+            echo "Waiting for rollout..."
+            sudo kubectl rollout status deployment/config-server \
+              --timeout=3m \
+              --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"
