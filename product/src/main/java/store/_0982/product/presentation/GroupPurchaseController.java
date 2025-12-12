@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.log.ControllerLog;
 import store._0982.product.application.ParticipateService;
 import store._0982.product.application.dto.*;
 import store._0982.product.common.exception.CustomException;
@@ -72,6 +73,7 @@ public class GroupPurchaseController {
         return new ResponseDto<>(HttpStatus.OK, pageResponse, "공동구매 판매자별 목록 조회되었습니다");
     }
 
+    @ControllerLog
     @Operation(summary = "공동구매 삭제", description = "공동구매 삭제한다.")
     @DeleteMapping("/{purchaseId}")
     @ResponseStatus(HttpStatus.OK)
