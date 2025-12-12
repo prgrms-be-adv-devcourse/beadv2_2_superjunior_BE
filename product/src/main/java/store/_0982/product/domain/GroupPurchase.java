@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.LocalDate;
@@ -162,6 +163,16 @@ public class GroupPurchase {
                 this.updatedAt.toString(),
                 this.currentQuantity,
                 searchKafkaStatus
+        );
+    }
+
+    public GroupPurchaseChangedEvent toChangedEvent(GroupPurchaseChangedEvent.Status status, long totalAmount) {
+        return new GroupPurchaseChangedEvent(
+                this.groupPurchaseId,
+                this.sellerId,
+                this.title,
+                status,
+                totalAmount
         );
     }
 }
