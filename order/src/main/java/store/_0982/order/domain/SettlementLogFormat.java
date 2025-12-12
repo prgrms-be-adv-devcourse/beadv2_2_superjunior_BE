@@ -10,5 +10,8 @@ public class SettlementLogFormat {
     public static final String DAILY_SETTLEMENT_COMPLETE = "[DAILY_SETTLEMENT] [Seller:%s] completed";
     public static final String DAILY_SETTLEMENT_FAIL = "[DAILY_SETTLEMENT] [Seller:%s] failed - %s";
 
+    public static final String MONTHLY_SETTLEMENT_COMPLETE = "[MONTHLY_SETTLEMENT] [Seller:%s] completed";
+    public static final String MONTHLY_SETTLEMENT_FAIL = "[MONTHLY_SETTLEMENT] [Seller:%s] failed - %s";
+
     private SettlementLogFormat() {}
 }

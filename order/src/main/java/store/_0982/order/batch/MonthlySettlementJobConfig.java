@@ -19,6 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementEvent;
 import store._0982.order.application.settlement.BankTransferService;
+import store._0982.order.domain.SettlementLogFormat;
 import store._0982.order.domain.settlement.*;
 import store._0982.order.client.MemberFeignClient;
 import store._0982.order.client.dto.SellerAccountInfo;
@@ -176,11 +177,10 @@ public class MonthlySettlementJobConfig {
             sellerBalanceRepository.save(balance);
 
             publishCompletedEvent(settlement);
-            log.info("[MONTHLY_SETTLEMENT] 송금 성공 - 판매자: {}, 금액: {}", settlement.getSellerId(), transferAmount);
+            log.info(String.format(SettlementLogFormat.MONTHLY_SETTLEMENT_COMPLETE, settlement.getSellerId()));
 
         } catch (Exception e) {
-            log.error("[MONTHLY_SETTLEMENT] 송금 실패 - 판매자: {}, 오류: {}", settlement.getSellerId(), e.getMessage());
-
+            log.error(String.format(SettlementLogFormat.MONTHLY_SETTLEMENT_FAIL, settlement.getSellerId(), e.getMessage()), e);
             settlement.markAsFailed();
             settlementRepository.save(settlement);
 
