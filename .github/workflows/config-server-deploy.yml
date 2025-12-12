@@ -1,55 +1,61 @@
+#file: noinspection SpellCheckingInspection
 name: Config Server Deploy
 on:
   push:
     branches:
       - feature/ci-cd
-    # 나중에 경로 추가
-  workflow_run:
-    workflows:
-      - "Config Repo Update"
-    types:
-      - completed
+    paths:
+      - 'config/src/**'
+      - 'config/build.gradle'
+      - '.github/workflows/config-server-deploy.yml'
 
 jobs:
   deploy-config-server:
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 버전 태그 생성
+        id: version
         run: |
-          cd config
-          chmod +x ./gradlew 
-          ./gradlew clean build -x test
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "Image tag: $SHORT_SHA"
 
-      - name: Gradle 빌드
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: clean build -x test
-          build-root-directory: ./config
-
-      - name: Docker Hub 로그인
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Docker 이미지 빌드 및 푸시
-        uses: docker/build-push-action@v4
-        with:
-          context: ./config
-          push: true
-          tags: 0909-store/config-server:${{ github.sha }}
+      - name: Jib로 Docker 이미지 빌드 및 푸시
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          ./gradlew :config:jib \
+            -Djib.to.auth.username=$DOCKER_USERNAME \
+            -Djib.to.auth.password=$DOCKER_PASSWORD \
+            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
       - name: SSH로 EC2 접속 및 배포
-        # noinspection SpellCheckingInspection
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
             sudo kubectl set image deployment/config-server \
-              config-server=0909-store/config-server:${{ github.sha }}
-            sudo kubectl rollout status deployment/config-server
+              config-server=0909-store/config-server:${{ steps.version.outputs.tag }}
+
+            sudo kubectl rollout status deployment/config-server --timeout=3m
+
+            echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"

@@ -6,3 +6,17 @@ dependencies {
 bootJar {
     enabled = true
 }
+
+jib {
+    from {
+        image = 'openjdk:17-jdk-slim'
+    }
+    to {
+        image = '0909-store/config-server'
+        // 태그는 GitHub Actions에서 동적으로 설정
+    }
+    container {
+        ports = ['8888']
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+    }
+}
