@@ -24,7 +24,7 @@ management:
       type: w3c
 
 test:
-  field: test2334
+  field: test2
 
 gateway:
   host: http://gateway-service:8000
