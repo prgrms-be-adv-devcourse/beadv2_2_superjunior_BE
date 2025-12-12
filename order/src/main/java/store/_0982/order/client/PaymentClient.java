@@ -9,6 +9,7 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.order.client.dto.MemberPointInfo;
 import store._0982.order.client.dto.PointMinusRequest;
+import store._0982.order.client.dto.PointReturnRequest;
 
 import java.util.UUID;
 
@@ -25,4 +26,14 @@ public interface PaymentClient {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody PointMinusRequest request
     );
+
+    /**
+     * 포인트 환불
+     */
+    @PostMapping("/api/points/internal/return")
+    ResponseDto<MemberPointInfo> returnPointsInternal(
+            @RequestHeader(HeaderName.ID) UUID memberId,
+            @RequestBody PointReturnRequest request
+    );
+
 }

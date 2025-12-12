@@ -22,9 +22,11 @@ import store._0982.order.client.ProductClient;
 import store._0982.order.client.dto.*;
 import store._0982.order.domain.Order;
 import store._0982.order.domain.OrderRepository;
+import store._0982.order.domain.OrderStatus;
 import store._0982.order.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -183,6 +185,59 @@ public class OrderService {
 
         Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
         return PageResponse.from(orderInfos);
+    }
+
+    /**
+     * 주문 상태 변경
+     * @param groupPurchaseId 공동구매 id
+     * @param orderStatus 주문 상태
+     */
+    @Transactional
+    public void updateOrderStatus(UUID groupPurchaseId, OrderStatus orderStatus) {
+        List<Order> orders = orderRepository.findByGroupPurchaseIdAndDeletedAtIsNull(groupPurchaseId);
+
+        log.info("orderStatus : {}",orderStatus);
+
+        for(Order order : orders){
+
+            log.info("orderId : {}",order.getOrderId());
+            order.updateStatus(orderStatus);
+        }
+
+        orderRepository.saveAll(orders);
+    }
+
+    /**
+     * 주문 환불
+     * @param groupPurchaseId
+     */
+    @Transactional
+    public void returnOrder(UUID groupPurchaseId){
+        List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
+        log.info("환불주문");
+        int success = 0;
+        int fail = 0;
+        for(Order order : orders){
+
+            if(order.isReturned()){
+                log.info("이미 환불된 주문 : {}", order.getOrderId());
+                continue;
+            }
+            int amount = order.getPrice() * order.getQuantity();
+
+            try{
+                paymentClient.returnPointsInternal(
+                        order.getMemberId(),
+                        new PointReturnRequest(amount)
+                );
+                order.markReturned();
+                success++;
+                log.info("환불 완료 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
+            }catch(Exception e){
+                fail++;
+                // TODO : 환불 실패 처리 필요(재시도 큐? 관리자 알람?)
+            }
+        }
     }
 
 

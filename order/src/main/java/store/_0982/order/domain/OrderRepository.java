@@ -23,4 +23,8 @@ public interface OrderRepository {
     Page<Order> findByMemberIdAndDeletedIsNull(UUID memberId, Pageable pageable);
 
     Page<Order> findBySellerIdAndDeletedIsNull(UUID memberId, Pageable pageable);
+
+    List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
+
+    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
 }

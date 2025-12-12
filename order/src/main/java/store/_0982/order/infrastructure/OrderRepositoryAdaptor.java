@@ -57,4 +57,17 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public Page<Order> findBySellerIdAndDeletedIsNull(UUID sellerId, Pageable pageable) {
         return orderJpaRepository.findBySellerIdAndDeletedAtIsNull(sellerId, pageable);
     }
+
+    @Override
+    public List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId) {
+        return orderJpaRepository.findByGroupPurchaseIdAndDeletedAtIsNull(groupPurchaseId);
+    }
+
+    @Override
+    public List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(
+            UUID groupPurchaseId, OrderStatus status) {
+        return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(
+                groupPurchaseId, status
+        );
+    }
 }

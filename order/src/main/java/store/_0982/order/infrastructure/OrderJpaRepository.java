@@ -17,4 +17,8 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     Page<Order> findBySellerIdAndDeletedAtIsNull(UUID sellerId, Pageable pageable);
 
     Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId);
+
+    List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
+
+    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
 }

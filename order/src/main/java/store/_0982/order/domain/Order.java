@@ -104,4 +104,41 @@ public class Order {
         );
     }
 
+    // 상태 변경
+    public void updateStatus(OrderStatus newStatus){
+        validateStatus(this.status, newStatus );
+        this.status = newStatus;
+    }
+
+    // 상태 전환 검증
+    private void validateStatus(OrderStatus current, OrderStatus target) {
+        if (current == target) {
+            return;
+        }
+
+        switch (current) {
+            case IN_PROGRESS -> {
+                if (target != OrderStatus.SUCCESS && target != OrderStatus.FAILED) {
+                    throw new IllegalStateException("SUCCESS, FAILED로만 변경 가능");
+                }
+            }
+            case SUCCESS, FAILED ->
+                throw new IllegalStateException("현재 상태 " + current + " 변경 불가능");
+
+        }
+    }
+
+    // 환불 완료
+    public void markReturned(){
+        if(this.returnedAt != null){
+            throw new IllegalStateException("이미 환불된 건입니다.");
+        }
+        this.returnedAt = OffsetDateTime.now();
+    }
+
+    // 환불 여부
+    public boolean isReturned(){
+        return this.returnedAt != null;
+    }
+
 }
