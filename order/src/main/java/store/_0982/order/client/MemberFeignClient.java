@@ -11,7 +11,7 @@ import java.util.UUID;
 @FeignClient(name = "member-service", url = "${gateway.host}")
 public interface MemberFeignClient {
 
-    @GetMapping("/api/members/internal/seller-accounts")
+    @GetMapping("/internal/members/seller-accounts")
     List<SellerAccountInfo> getSellerAccountInfos(@RequestBody List<UUID> sellerIds);
 
 }
