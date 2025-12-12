@@ -35,7 +35,7 @@ jobs:
 
       - name: Jib로 Docker 이미지 빌드 및 푸시
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_USERNAME: minbros
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           ./gradlew :config:jib \
@@ -54,7 +54,7 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
             sudo kubectl set image deployment/config-server \
-              config-server=0909-store/config-server:${{ steps.version.outputs.tag }}
+              config-server=minbros/config-server:${{ steps.version.outputs.tag }}
 
             sudo kubectl rollout status deployment/config-server --timeout=3m
 

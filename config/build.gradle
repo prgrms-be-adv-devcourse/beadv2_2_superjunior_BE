@@ -9,11 +9,10 @@ bootJar {
 
 jib {
     from {
-        image = 'eclipse-temurin:17-jre'  // OpenJDK 대신 Eclipse Temurin 사용
+        image = 'eclipse-temurin:17-jre'
     }
     to {
-        image = '0909-store/config-server'
-        // 태그는 GitHub Actions에서 동적으로 설정
+        image = 'minbros/config-server'
     }
     container {
         ports = ['8888']

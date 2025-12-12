@@ -18,7 +18,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: config-server
-          image: 0909-store/config-server:1.0.0
+          image: minbros/config-server:1.0.0
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
