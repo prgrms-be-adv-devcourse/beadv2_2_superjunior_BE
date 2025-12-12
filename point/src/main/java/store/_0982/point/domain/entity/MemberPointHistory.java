@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import store._0982.point.application.dto.PointDeductCommand;
+import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.domain.constant.MemberPointHistoryStatus;
 
 import java.time.OffsetDateTime;
@@ -19,8 +21,8 @@ import java.util.UUID;
         schema = "point_schema",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "member_point_history_pk_2",
-                        columnNames = {"idempotency_key", "status"}
+                        name = "member_point_history_pk_3",
+                        columnNames = {"order_id", "status"}
                 )
         }
 )
@@ -44,27 +46,29 @@ public class MemberPointHistory {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "idempotency_key", nullable = false, updatable = false)
+    @Column(name = "idempotency_key", nullable = false, updatable = false, unique = true)
     private UUID idempotencyKey;
 
-    @Column(name = "order_id", nullable = false, unique = true)
+    @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    public static MemberPointHistory used(UUID memberId, UUID idempotencyKey, long amount) {
+    public static MemberPointHistory used(UUID memberId, PointDeductCommand command) {
         return MemberPointHistory.builder()
                 .memberId(memberId)
-                .idempotencyKey(idempotencyKey)
+                .idempotencyKey(command.idempotencyKey())
                 .status(MemberPointHistoryStatus.USED)
-                .amount(amount)
+                .amount(command.amount())
+                .orderId(command.orderId())
                 .build();
     }
 
-    public static MemberPointHistory returned(UUID memberId, UUID idempotencyKey, long amount) {
+    public static MemberPointHistory returned(UUID memberId, PointReturnCommand command) {
         return MemberPointHistory.builder()
                 .memberId(memberId)
-                .idempotencyKey(idempotencyKey)
+                .idempotencyKey(command.idempotencyKey())
                 .status(MemberPointHistoryStatus.RETURNED)
-                .amount(amount)
+                .amount(command.amount())
+                .orderId(command.orderId())
                 .build();
     }
 

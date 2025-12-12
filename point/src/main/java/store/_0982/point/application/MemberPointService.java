@@ -44,8 +44,7 @@ public class MemberPointService {
 
         int amount = command.amount();
         memberPoint.deductPoints(amount);
-        MemberPointHistory history = memberPointHistoryRepository.save(
-                MemberPointHistory.used(memberId, idempotencyKey, amount));
+        MemberPointHistory history = memberPointHistoryRepository.save(MemberPointHistory.used(memberId, command));
         pointEventPublisher.publishPointDeductedEvent(history);
         return MemberPointInfo.from(memberPoint);
     }
@@ -69,8 +68,7 @@ public class MemberPointService {
 
         int amount = command.amount();
         memberPoint.addPoints(amount);
-        MemberPointHistory history = memberPointHistoryRepository.save(
-                MemberPointHistory.returned(memberId, idempotencyKey, amount));
+        MemberPointHistory history = memberPointHistoryRepository.save(MemberPointHistory.returned(memberId, command));
         pointEventPublisher.publishPointReturnedEvent(history);
         return MemberPointInfo.from(memberPoint);
     }
