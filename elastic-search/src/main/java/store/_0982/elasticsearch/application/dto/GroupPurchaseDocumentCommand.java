@@ -1,29 +1,29 @@
 package store._0982.elasticsearch.application.dto;
 
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
         String groupPurchaseId,
-        String productName,
         String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
         String title,
         String description,
-        Integer discountedPrice,
+        Long discountedPrice,
         String status,
         String startDate,
         String endDate,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
-        Integer currentQuantity
+        Integer currentQuantity,
+        ProductEvent productEvent
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
-                event.getProductName(),
                 event.getSellerName(),
                 event.getMinQuantity(),
                 event.getMaxQuantity(),
@@ -35,14 +35,14 @@ public record GroupPurchaseDocumentCommand(
                 event.getEndDate(),
                 OffsetDateTime.parse(event.getCreatedAt()),
                 OffsetDateTime.parse(event.getUpdatedAt()),
-                event.getCurrentQuantity()
+                event.getCurrentQuantity(),
+                event.getProductEvent()
         );
     }
 
     public GroupPurchaseDocument toDocument() {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(groupPurchaseId)
-                .productName(productName)
                 .sellerName(sellerName)
                 .minQuantity(minQuantity)
                 .maxQuantity(maxQuantity)
@@ -55,6 +55,7 @@ public record GroupPurchaseDocumentCommand(
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .currentQuantity(currentQuantity)
+                .productEvent(productEvent)
                 .build();
     }
 }
