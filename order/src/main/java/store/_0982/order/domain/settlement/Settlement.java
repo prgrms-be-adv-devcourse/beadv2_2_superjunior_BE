@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.SettlementEvent;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -78,6 +79,45 @@ public class Settlement {
 
     public void markAsFailed() {
         this.status = SettlementStatus.FAILED;
+    }
+
+    public SettlementEvent toCompletedEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.SUCCESS,
+                this.totalAmount,
+                this.serviceFee,
+                this.settlementAmount
+        );
+    }
+
+    public SettlementEvent toFailedEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.FAILED,
+                this.totalAmount,
+                this.serviceFee,
+                this.settlementAmount
+        );
+    }
+
+    public SettlementEvent toDeferredEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.FAILED,
+                this.totalAmount,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO
+        );
     }
 
 }

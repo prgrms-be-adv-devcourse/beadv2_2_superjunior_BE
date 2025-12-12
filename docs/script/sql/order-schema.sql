@@ -93,7 +93,7 @@ create table order_schema.settlement
     service_fee       numeric(12, 2)                         not null,
     settlement_amount numeric(12, 2)                         not null,
     status            varchar(20)                            not null,
-    settled_at        timestamp with time zone               not null,
+    settled_at        timestamp with time zone                       ,
     created_at        timestamp with time zone default now() not null,
     updated_at        timestamp with time zone
 );
