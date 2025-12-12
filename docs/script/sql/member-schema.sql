@@ -13,11 +13,7 @@ create table member_schema.member
     name          varchar(100)                                                   not null
             unique,
     password      varchar(60)                                                    not null,
-    role          varchar(20)              default 'CUSTOMER'::character varying not null
-        constraint role_check
-            check ((role)::text = ANY
-                   (ARRAY [('CUSTOMER'::character varying)::text, ('SELLER'::character varying)::text,
-                       ('ADMIN'::character varying)::text])),
+    role          varchar(20)                                                    not null,
     salt_key      varchar(32)                                                    not null,
     image_url     varchar(2048),
     created_at    timestamp with time zone default now()                         not null,

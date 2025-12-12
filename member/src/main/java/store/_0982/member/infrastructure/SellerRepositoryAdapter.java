@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.member.domain.Seller;
 import store._0982.member.domain.SellerRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,5 +21,10 @@ public class SellerRepositoryAdapter implements SellerRepository {
     @Override
     public Optional<Seller> findById(UUID sellerId) {
         return sellerJpaRepository.findById(sellerId);
+    }
+
+    @Override
+    public List<Seller> findAllById(List<UUID> sellerIds) {
+        return sellerJpaRepository.findAllById(sellerIds);
     }
 }
