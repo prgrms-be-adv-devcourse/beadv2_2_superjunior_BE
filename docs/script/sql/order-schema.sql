@@ -20,7 +20,8 @@ create table order_schema."order"
     group_purchase_id     uuid                                                     not null,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
-    deleted_at     timestamp with time zone
+    deleted_at     timestamp with time zone,
+    returned_at    timestamp with time zone
 );
 
 comment on table order_schema."order" is '주문';
@@ -52,6 +53,8 @@ comment on column order_schema."order".created_at is '등록일';
 comment on column order_schema."order".updated_at is '수정일';
 
 comment on column order_schema."order".deleted_at is '주문 취소일';
+
+comment on column order_schema."order".returned_at is '환불 처리일';
 
 alter table order_schema."order"
     owner to postgres;
