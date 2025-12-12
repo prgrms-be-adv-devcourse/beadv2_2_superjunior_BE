@@ -18,10 +18,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: JDK 17 설정
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+        run: |
+          cd config
+          chmod +x ./gradlew 
+          ./gradlew clean build -x test
 
       - name: Gradle 빌드
         uses: gradle/gradle-build-action@v2
