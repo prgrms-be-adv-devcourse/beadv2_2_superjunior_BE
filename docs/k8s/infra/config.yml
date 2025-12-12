@@ -19,7 +19,7 @@ spec:
       containers:
         - name: config-server
           image: minbros/config-server
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
