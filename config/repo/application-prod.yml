@@ -23,6 +23,9 @@ management:
     propagation:
       type: w3c
 
+test:
+  field: test
+
 gateway:
   host: http://gateway-service:8000
 

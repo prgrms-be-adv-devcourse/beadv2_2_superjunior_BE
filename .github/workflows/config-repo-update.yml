@@ -39,7 +39,7 @@ jobs:
             mkdir -p /tmp/config-repo
 
       - name: Copy config files to EC2
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
           username: ${{ secrets.BASTION_USER }}
@@ -73,21 +73,24 @@ jobs:
 
             if echo "$CHANGED_FILES" | grep -q "application-prod.yml"; then
               echo "Common config changed, restarting all services..."
+              sudo kubectl rollout restart deployment/eureka
+              sudo kubectl rollout restart deployment/gateway
               sudo kubectl rollout restart deployment/member
               sudo kubectl rollout restart deployment/product
               sudo kubectl rollout restart deployment/order
               sudo kubectl rollout restart deployment/point
               sudo kubectl rollout restart deployment/notification
-              sudo kubectl rollout restart deployment/eureka
-              sudo kubectl rollout restart deployment/gateway
+              sudo kubectl rollout restart deployment/search
             else
               echo "Restarting affected services only..."
+              echo "$CHANGED_FILES" | grep -q "eureka-prod.yml" && sudo kubectl rollout restart deployment/search && echo "Search restarted" || true
+              echo "$CHANGED_FILES" | grep -q "gateway-prod.yml" && sudo kubectl rollout restart deployment/search && echo "Search restarted" || true
               echo "$CHANGED_FILES" | grep -q "member-prod.yml" && sudo kubectl rollout restart deployment/member && echo "Member restarted" || true
               echo "$CHANGED_FILES" | grep -q "product-prod.yml" && sudo kubectl rollout restart deployment/product && echo "Product restarted" || true
               echo "$CHANGED_FILES" | grep -q "order-prod.yml" && sudo kubectl rollout restart deployment/order && echo "Order restarted" || true
               echo "$CHANGED_FILES" | grep -q "point-prod.yml" && sudo kubectl rollout restart deployment/point && echo "Point restarted" || true
               echo "$CHANGED_FILES" | grep -q "notification-prod.yml" && sudo kubectl rollout restart deployment/notification && echo "Notification restarted" || true
-              echo "$CHANGED_FILES" | grep -q "elastic-search-prod.yml" && sudo kubectl rollout restart deployment/elastic-search && echo "ElasticSearch restarted" || true
+              echo "$CHANGED_FILES" | grep -q "search-prod.yml" && sudo kubectl rollout restart deployment/search && echo "Search restarted" || true
             fi
 
             rm -rf /tmp/config-repo
