@@ -28,7 +28,22 @@ public class GroupPurchaseEvent extends BaseEvent {
     private ProductEvent productEvent;
     private SearchKafkaStatus kafkaStatus;
 
-    public GroupPurchaseEvent(Clock clock, UUID id, Integer minQuantity, Integer maxQuantity, String title, String description, Integer discountedPrice, String status, String sellerName, String startDate, String endDate, String createdAt, String updatedAt, Integer currentQuantity,ProductEvent productEvent, SearchKafkaStatus kafkaStatus) {
+    public GroupPurchaseEvent(Clock clock,
+                              UUID id,
+                              Integer minQuantity,
+                              Integer maxQuantity,
+                              String title,
+                              String description,
+                              Integer discountedPrice,
+                              String status,
+                              String sellerName,
+                              String startDate,
+                              String endDate,
+                              String createdAt,
+                              String updatedAt,
+                              Integer currentQuantity,
+                              ProductEvent productEvent,
+                              SearchKafkaStatus kafkaStatus) {
         super(clock);
         this.id = id;
         this.minQuantity = minQuantity;

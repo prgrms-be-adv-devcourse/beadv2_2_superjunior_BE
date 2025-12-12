@@ -8,7 +8,6 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
-import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.infrastructure.ProductRepository;
 
 @Service
@@ -30,10 +29,6 @@ public class ProductEventListener {
     @KafkaListener(topics = KafkaTopics.PRODUCT_DELETED, groupId = "search-service-group", containerFactory = "deleteProductKafkaListenerFactory")
     public void delete(ProductEvent event) {
         productRepository.deleteById(event.getId().toString());
-    }
-
-    public ProductDocumentInfo saveProductDocument(ProductDocumentCommand command) {
-        return ProductDocumentInfo.from(productRepository.save(command.toDocument()));
     }
 
 }

@@ -16,7 +16,7 @@ public class GroupPurchaseSearchQueryFactory {
     ) {
         boolean noKeyword = (keyword == null || keyword.isBlank());
 
-        // 🔹 1) keyword 없음 → 전체 문서 + status 필터만
+        // keyword 없음 → 전체 문서 + status 필터만
         if (noKeyword) {
             return NativeQuery.builder()
                     .withQuery(q -> q.bool(b -> {
@@ -38,7 +38,7 @@ public class GroupPurchaseSearchQueryFactory {
                     .build();
         }
 
-        // 🔹 2) keyword 있음 → phrase + prefix + fuzzy + match
+        // keyword 있음 → phrase + prefix + fuzzy + match
         return NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> {
 
@@ -55,7 +55,7 @@ public class GroupPurchaseSearchQueryFactory {
                             .boost(2.0f)
                     ));
 
-                    // 2. prefix (자동완성 느낌)
+                    // 2. prefix (앞글자 확인)
                     b.should(s -> s.matchPhrasePrefix(mpp -> mpp
                             .field("title")
                             .query(keyword)
@@ -77,7 +77,7 @@ public class GroupPurchaseSearchQueryFactory {
                             .boost(1.0f)
                     ));
 
-                    // 🔥 status 필터 (선택)
+                    // 5. status 필터 (선택)
                     if (status != null && !status.isBlank()) {
                         b.filter(f -> f.term(t -> t
                                 .field("status")

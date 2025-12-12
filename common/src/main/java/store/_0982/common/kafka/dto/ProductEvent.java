@@ -23,7 +23,17 @@ public class ProductEvent extends BaseEvent {
     private String createdAt;
     private String updatedAt;
 
-    public ProductEvent(Clock clock, UUID id, String name, long price, String category, String description, Integer stock, String originalUrl, UUID sellerId, String createdAt, String updatedAt) {
+    public ProductEvent(Clock clock,
+                        UUID id,
+                        String name,
+                        long price,
+                        String category,
+                        String description,
+                        Integer stock,
+                        String originalUrl,
+                        UUID sellerId,
+                        String createdAt,
+                        String updatedAt) {
         super(clock);
         this.id = id;
         this.name = name;
