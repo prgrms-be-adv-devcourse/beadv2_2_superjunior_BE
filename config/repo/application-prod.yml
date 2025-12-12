@@ -21,7 +21,7 @@ management:
     sampling:
       probability: 1.0
     propagation:
-      type: w3c  # 또는 b3
+      type: w3c
 
 gateway:
   host: http://gateway-service:8000
