@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 
@@ -28,7 +29,22 @@ public class GroupPurchaseKafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, GroupPurchaseChangedEvent> groupPurchaseChangedProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean
+    public KafkaTemplate<String, GroupPurchaseChangedEvent> groupPurchaseChangedKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseChangedProducerFactory());
+    }
+
+    @Bean
     public NewTopic groupPurchaseTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_ADDED);
+    }
+
+    @Bean
+    public NewTopic groupPurchaseChangedTopic() {
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED);
     }
 }
