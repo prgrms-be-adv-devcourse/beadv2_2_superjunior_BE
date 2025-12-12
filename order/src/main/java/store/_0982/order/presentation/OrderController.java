@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
@@ -14,9 +15,10 @@ import store._0982.order.presentation.dto.OrderRegisterRequest;
 
 import java.util.UUID;
 
-@Tag(name="Order", description = "주문 관련 정보")
+@Tag(name = "Order", description = "주문 관련 정보")
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/orders")
 public class OrderController {
 
@@ -31,5 +33,4 @@ public class OrderController {
         OrderRegisterInfo response = orderService.createOrder(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, response, "주문이 생성되었습니다.");
     }
-    
 }
