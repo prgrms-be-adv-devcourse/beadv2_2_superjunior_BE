@@ -138,7 +138,7 @@ public class MonthlySettlementJobConfig {
                     continue;
                 }
 
-                processoressTransfer(settlement, accountInfo, balanceMap);
+                processTransfer(settlement, accountInfo, balanceMap);
             }
         };
     }
@@ -159,7 +159,7 @@ public class MonthlySettlementJobConfig {
         publishFailedEvent(settlement);
     }
 
-    private void processoressTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
+    private void processTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
         try {
             long transferAmount = settlement.getSettlementAmount().longValue();
             bankTransferService.transfer(accountInfo, transferAmount);
