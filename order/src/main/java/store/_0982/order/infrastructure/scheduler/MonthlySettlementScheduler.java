@@ -2,25 +2,44 @@ package store._0982.order.infrastructure.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class MonthlySettlementScheduler {
 
-    // private final MonthlySettlementService monthlySettlementService;
+    private final JobLauncher jobLauncher;
+    private final Job monthlySettlementJob;
+
+    private static final String SCHEDULER_START = "[SCHEDULER] [%s] started";
+    private static final String SCHEDULER_COMPLETE = "[SCHEDULER] [%s] completed";
+    private static final String SCHEDULER_FAIL = "[SCHEDULER] [%s] failed";
 
     /**
-     * 매월 1일 02:00에 데일리 정산 실행
+     * 매월 1일 02:00에 월별 정산 배치 실행
      */
     @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() {
+        String schedulerName = "MonthlySettlement";
+        log.info(String.format(SCHEDULER_START, schedulerName));
+
         try {
-           // monthlySettlementService.processMonthlySettlement();
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addLocalDateTime("executionTime", LocalDateTime.now())
+                    .toJobParameters();
+
+            jobLauncher.run(monthlySettlementJob, jobParameters);
+            log.info(String.format(SCHEDULER_COMPLETE, schedulerName));
         } catch (Exception e) {
-            log.error("먼슬리 정산 스케줄러 실패", e);
+            log.error(String.format(SCHEDULER_FAIL, schedulerName), e);
         }
     }
 }
