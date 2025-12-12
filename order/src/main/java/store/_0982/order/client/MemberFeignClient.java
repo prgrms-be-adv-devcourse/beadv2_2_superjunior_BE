@@ -8,7 +8,7 @@ import store._0982.order.client.dto.SellerAccountInfo;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "member-service", url = "${gateway.url}")
+@FeignClient(name = "member-service", url = "${gateway.host}")
 public interface MemberFeignClient {
 
     @GetMapping("/api/members/internal/seller-accounts")
