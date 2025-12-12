@@ -15,6 +15,6 @@ import java.util.UUID;
 )
 public interface MemberClient {
     //todo: internal로 변경
-    @GetMapping("/api/members/profile")
+    @GetMapping("/internal/members/profile")
     ResponseDto<ProfileInfo> getMember(@RequestHeader(value = HeaderName.ID, required = false) UUID memberId);
 }
