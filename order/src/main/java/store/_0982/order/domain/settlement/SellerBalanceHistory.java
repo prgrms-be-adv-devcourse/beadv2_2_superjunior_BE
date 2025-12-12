@@ -22,7 +22,7 @@ public class SellerBalanceHistory {
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
-    @Column(name = "settlement_id", nullable = false)
+    @Column(name = "settlement_id")
     private UUID settlementId;
 
     @Column(name = "amount", nullable = false)

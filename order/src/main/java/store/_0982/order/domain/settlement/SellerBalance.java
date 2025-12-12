@@ -51,4 +51,8 @@ public class SellerBalance {
         this.settlementBalance += amount;
     }
 
+    public void resetBalance() {
+        this.settlementBalance = 0L;
+    }
+
 }
