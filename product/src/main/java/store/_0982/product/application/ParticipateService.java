@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.log.ServiceLog;
 import store._0982.product.application.dto.ParticipateInfo;
 import store._0982.product.client.MemberClient;
 import store._0982.product.common.exception.CustomErrorCode;
@@ -37,6 +38,7 @@ public class ParticipateService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
     }
 
+    @ServiceLog
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,
             maxAttempts = 3,
@@ -62,11 +64,11 @@ public class ParticipateService {
         }
 
 //        search kafka
-//        Product product = productRepository.findById(groupPurchase.getProductId())
-//                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-//        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-//        GroupPurchaseEvent event = groupPurchase.toEvent(product.getName(), "sellerName", GroupPurchaseEvent.SearchKafkaStatus.INCREASE_PARTICIPATE);
-//        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
+        Product product = productRepository.findById(groupPurchase.getProductId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
+        GroupPurchaseEvent event = groupPurchase.toEvent(product.getName(), "sellerName", GroupPurchaseEvent.SearchKafkaStatus.INCREASE_PARTICIPATE);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(
                 groupPurchase.getStatus().name(),

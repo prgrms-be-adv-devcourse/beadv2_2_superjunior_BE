@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.log.ControllerLog;
 import store._0982.product.application.GroupPurchaseService;
 import store._0982.product.application.ParticipateService;
 import store._0982.product.application.dto.*;
@@ -26,6 +27,7 @@ public class GroupPurchaseInternalController {
     private final GroupPurchaseService purchaseService;
     private final ParticipateService participateService;
 
+    @ControllerLog
     @Operation(summary = "공동구매 참여", description = "공동구매에 참여하여 참여자 수를 증가시킵니다. (Order 서비스 호출용)")
     @PostMapping("/{purchaseId}/participate")
     @ResponseStatus(HttpStatus.OK)
