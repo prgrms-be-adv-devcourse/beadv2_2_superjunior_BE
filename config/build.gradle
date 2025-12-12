@@ -9,7 +9,7 @@ bootJar {
 
 jib {
     from {
-        image = 'openjdk:17-jdk-slim'
+        image = 'eclipse-temurin:17-jre'  // OpenJDK 대신 Eclipse Temurin 사용
     }
     to {
         image = '0909-store/config-server'
