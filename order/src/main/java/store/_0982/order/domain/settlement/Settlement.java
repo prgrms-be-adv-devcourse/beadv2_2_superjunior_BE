@@ -113,7 +113,7 @@ public class Settlement {
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementEvent.Status.FAILED,
+                SettlementEvent.Status.DEFERRED,
                 this.totalAmount,
                 BigDecimal.ZERO,
                 BigDecimal.ZERO

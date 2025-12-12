@@ -278,7 +278,7 @@ public class MonthlySettlementJobConfig {
     private void publishDeferredEvent(Settlement settlement) {
         SettlementEvent event = settlement.toDeferredEvent();
         settlementKafkaTemplate.send(
-                KafkaTopics.MONTHLY_SETTLEMENT_FAILED,
+                KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED,
                 settlement.getSellerId().toString(),
                 event
         );
