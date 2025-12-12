@@ -3,10 +3,17 @@ package store._0982.order.application;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
+import store._0982.order.application.dto.OrderDetailInfo;
+import store._0982.order.application.dto.OrderInfo;
 import store._0982.order.application.dto.OrderRegisterCommand;
 import store._0982.order.application.dto.OrderRegisterInfo;
 import store._0982.order.client.MemberClient;
@@ -127,5 +134,56 @@ public class OrderService {
             // TODO: 포인트 차감 실패 시 공동 구매 참여 롤백
         }
     }
+
+    /**
+     * 주문 상세 조회
+     * @param requesterID 요청자
+     * @param orderId 주문 id
+     * @return OrderDetailInfo
+     */
+    public OrderDetailInfo getOrderById(UUID requesterID, UUID orderId) {
+        Order order = orderRepository.findByOrderIdAndDeletedAtIsNull(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if(!order.getMemberId().equals(requesterID)
+                && !order.getSellerId().equals(requesterID)){
+            throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
+        }
+
+        return OrderDetailInfo.from(order);
+    }
+
+    /**
+     * 판매자별 주문 목록 조회
+     * @param sellerId 판매자 id
+     * @param pageable pageable
+     * @return OrderInfo
+     */
+    public PageResponse<OrderInfo> getOrdersBySeller(UUID sellerId, Pageable pageable) {
+
+        Pageable sortPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.ASC, "createdAt"));
+
+        Page<Order> orders = orderRepository.findBySellerIdAndDeletedIsNull(sellerId,sortPageable);
+
+        Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
+        return PageResponse.from(orderInfos);
+    }
+
+    /**
+     * 판매자별 주문 목록 조회
+     * @param memberId 구매자 id
+     * @param pageable pageable
+     * @return OrderInfo
+     */
+    public PageResponse<OrderInfo> getOrdersByConsumer(UUID memberId, Pageable pageable) {
+        Page<Order> orders = orderRepository.findByMemberIdAndDeletedIsNull(memberId,pageable);
+
+        Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
+        return PageResponse.from(orderInfos);
+    }
+
 
 }

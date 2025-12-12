@@ -23,6 +23,10 @@ public enum CustomErrorCode implements ErrorCode {
     GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
     ORDER_NOT_CANCELLABLE(HttpStatus.BAD_REQUEST, "취소할 수 없습니다. 공동 구매가 시작되었습니다."),
 
+    // 403 Forbidden
+    ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN,"본인의 주문내역만 조회할 수 있습니다."),
+
+
     // 404 Not Found
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),

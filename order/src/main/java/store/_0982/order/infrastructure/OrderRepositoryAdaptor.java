@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository;
 import store._0982.order.domain.Order;
 import store._0982.order.domain.OrderRepository;
 
+import store._0982.order.domain.OrderStatus;
+
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,6 +21,11 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public Order save(Order order) {
         return orderJpaRepository.save(order);
+    }
+
+    @Override
+    public List<Order> saveAll(List<Order> orders) {
+        return orderJpaRepository.saveAll(orders);
     }
 
     @Override
@@ -33,5 +41,20 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public void delete(Order order) {
         orderJpaRepository.delete(order);
+    }
+
+    @Override
+    public Optional<Order> findByOrderIdAndDeletedAtIsNull(UUID orderId) {
+        return orderJpaRepository.findByOrderIdAndDeletedAtIsNull(orderId);
+    }
+
+    @Override
+    public Page<Order> findByMemberIdAndDeletedIsNull(UUID memberId, Pageable pageable) {
+        return orderJpaRepository.findByMemberIdAndDeletedAtIsNull(memberId, pageable);
+    }
+
+    @Override
+    public Page<Order> findBySellerIdAndDeletedIsNull(UUID sellerId, Pageable pageable) {
+        return orderJpaRepository.findBySellerIdAndDeletedAtIsNull(sellerId, pageable);
     }
 }
