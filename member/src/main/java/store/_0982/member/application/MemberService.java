@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.member.application.dto.*;
 import store._0982.member.common.exception.CustomErrorCode;
 import store._0982.member.domain.*;
@@ -25,8 +26,9 @@ public class MemberService {
     private final EmailTokenRepository emailTokenRepository;
 
     private final EmailService emailService;
-    //TODO: 이메일 검증 SMTP
     //TODO: 만료된 토큰 하루 단위로 삭제 스케쥴링
+
+    @ServiceLog
     @Transactional
     public MemberSignUpInfo createMember(MemberSignUpCommand command) {
         checkEmailDuplication(command.email());
@@ -36,14 +38,14 @@ public class MemberService {
         member.encodePassword(passwordEncoder.encode(member.getSaltKey() + member.getPassword()));
         return MemberSignUpInfo.from(memberRepository.save(member));
     }
-
+    @ServiceLog
     @Transactional
     public void changePassword(PasswordChangeCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         checkPassword(command.password(), member);
         member.changePassword(passwordEncoder.encode(member.getSaltKey() + command.newPassword()));
     }
-
+    @ServiceLog
     @Transactional
     public void deleteMember(MemberDeleteCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
@@ -80,6 +82,7 @@ public class MemberService {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
 
+    @ServiceLog
     @Transactional
     public void sendVerificationEmail(String email) {
         checkEmailDuplication(email);
@@ -88,6 +91,7 @@ public class MemberService {
         emailService.sendEmail(email, "0909 이메일 인증 요청 메일입니다.", "http://localhost:8000/api/members/email/verification/" + emailToken.getToken());
     }
 
+    @ServiceLog
     @Transactional
     public void verifyEmail(String token) {
         EmailToken emailToken = emailTokenRepository.findByToken(token).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
