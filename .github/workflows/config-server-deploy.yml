@@ -3,9 +3,7 @@ on:
   push:
     branches:
       - feature/ci-cd
-    paths:
-      - 'config/**'
-      - '!config/repo/**'
+    # 나중에 경로 추가
   workflow_run:
     workflows:
       - "Config Repo Update"
@@ -26,9 +24,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Gradle 빌드
-        run: |
-          cd config
-          ./gradlew clean build -x test
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: clean build -x test
+          build-root-directory: ./config
 
       - name: Docker Hub 로그인
         uses: docker/login-action@v2
