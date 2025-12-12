@@ -27,8 +27,8 @@ import store._0982.order.client.MemberFeignClient;
 import store._0982.order.client.dto.SellerAccountInfo;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -86,7 +86,9 @@ public class MonthlySettlementJobConfig {
                         WHERE s.settlementBalance >= :amount
                         ORDER BY s.balanceId ASC
                         """)
-                .parameterValues(Map.of("amount", MINIMUM_TRANSFER_AMOUNT))
+                .parameterValues(Map.of(
+                        "amount", MINIMUM_TRANSFER_AMOUNT
+                ))
                 .build();
     }
 
@@ -112,10 +114,10 @@ public class MonthlySettlementJobConfig {
 
     @Bean
     public ItemWriter<Settlement> monthlySettlementWriter() {
-        return settlements -> {
+        return chunk -> {
 
-            List<Settlement> settlementList = new ArrayList<>(settlements.getItems());
-            List<UUID> sellerIds = settlementList.stream()
+            List<? extends Settlement> settlements = chunk.getItems();
+            List<UUID> sellerIds = settlements.stream()
                     .map(Settlement::getSellerId)
                     .toList();
 
@@ -130,33 +132,17 @@ public class MonthlySettlementJobConfig {
                     .stream()
                     .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
 
-            for (Settlement settlement : settlementList) {
+            for (Settlement settlement : settlements) {
                 SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
 
                 if (accountInfo == null || accountInfo.accountNumber() == null || accountInfo.accountNumber().isBlank()) {
-                    handleNoAccountInfo(settlement);
+                    handleSettlementFailure(settlement, "계좌 정보가 없습니다");
                     continue;
                 }
 
                 processTransfer(settlement, accountInfo, balanceMap);
             }
         };
-    }
-
-    private void handleNoAccountInfo(Settlement settlement) {
-        settlement.markAsFailed();
-        settlementRepository.save(settlement);
-
-        SettlementFailure failure = new SettlementFailure(
-                settlement.getSellerId(),
-                settlement.getPeriodStart(),
-                settlement.getPeriodEnd(),
-                "계좌 정보가 등록되지 않았습니다",
-                0,
-                settlement.getSettlementId()
-        );
-        settlementFailureRepository.save(failure);
-        publishFailedEvent(settlement);
     }
 
     private void processTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
@@ -184,20 +170,7 @@ public class MonthlySettlementJobConfig {
 
         } catch (Exception e) {
             log.error(String.format(SettlementLogFormat.MONTHLY_SETTLEMENT_FAIL, settlement.getSellerId(), e.getMessage()), e);
-            settlement.markAsFailed();
-            settlementRepository.save(settlement);
-
-            SettlementFailure failure = new SettlementFailure(
-                    settlement.getSellerId(),
-                    settlement.getPeriodStart(),
-                    settlement.getPeriodEnd(),
-                    e.getMessage(),
-                    0,
-                    settlement.getSettlementId()
-            );
-            settlementFailureRepository.save(failure);
-
-            publishFailedEvent(settlement);
+            handleSettlementFailure(settlement, e.getMessage());
         }
     }
 
@@ -226,7 +199,9 @@ public class MonthlySettlementJobConfig {
                           AND s.settlementBalance < :minAmount
                         ORDER BY s.balanceId ASC
                         """)
-                .parameterValues(Map.of("minAmount", MINIMUM_TRANSFER_AMOUNT))
+                .parameterValues(Map.of(
+                        "minAmount", MINIMUM_TRANSFER_AMOUNT
+                ))
                 .build();
     }
 
@@ -249,15 +224,31 @@ public class MonthlySettlementJobConfig {
 
     @Bean
     public ItemWriter<Settlement> lowBalanceNotificationWriter() {
-        return settlements -> {
-            List<Settlement> settlementList = new ArrayList<>(settlements.getItems());
+        return chunk -> {
+            List<? extends Settlement> settlements = chunk.getItems();
 
-            for (Settlement settlement : settlementList) {
-                settlement.markAsFailed();
+            for (Settlement settlement : settlements) {
                 settlementRepository.save(settlement);
                 publishDeferredEvent(settlement);
             }
         };
+    }
+
+    private void handleSettlementFailure(Settlement settlement, String reason) {
+        settlement.markAsFailed();
+        settlementRepository.save(settlement);
+
+        SettlementFailure failure = new SettlementFailure(
+                settlement.getSellerId(),
+                settlement.getPeriodStart(),
+                settlement.getPeriodEnd(),
+                reason,
+                0,
+                settlement.getSettlementId()
+        );
+        settlementFailureRepository.save(failure);
+
+        publishFailedEvent(settlement);
     }
 
     private void publishCompletedEvent(Settlement settlement) {
