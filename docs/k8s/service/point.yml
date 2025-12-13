@@ -17,7 +17,7 @@ spec:
       containers:
         - name: point
           image: minbros/point
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           envFrom:
             - secretRef:
                 name: point-secret
