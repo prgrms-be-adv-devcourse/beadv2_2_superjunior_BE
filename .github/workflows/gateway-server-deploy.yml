@@ -120,7 +120,3 @@ jobs:
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Gateway Server deployed successfully with version ${{ steps.version.outputs.tag }}"
-            
-            echo "Removing unused images..."
-            sudo k3s crictl rmi --prune || true
-            echo "Image cleanup completed"
