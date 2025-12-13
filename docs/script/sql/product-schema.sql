@@ -16,7 +16,8 @@ create table product_schema.product
     original_url varchar(255)                           null,
     seller_id    uuid                                   not null,
     created_at   timestamp with time zone default now() not null,
-    updated_at   timestamp with time zone
+    updated_at   timestamp with time zone,
+    deleted_at   timestamp with time zone
 );
 
 comment on table product_schema.product is '상품';
@@ -40,6 +41,8 @@ comment on column product_schema.product.seller_id is '판매자 ID';
 comment on column product_schema.product.created_at is '등록일';
 
 comment on column product_schema.product.updated_at is '수정일';
+
+comment on column product_schema.product.deleted_at is '삭제일';
 
 alter table product_schema.product
     owner to postgres;
