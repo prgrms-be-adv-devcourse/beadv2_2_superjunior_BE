@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: point
-          image: minbros/point
+          image: minbros/point:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:

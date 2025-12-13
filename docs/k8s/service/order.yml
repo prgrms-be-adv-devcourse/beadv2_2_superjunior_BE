@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: order
-          image: minbros/order
+          image: minbros/order:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
