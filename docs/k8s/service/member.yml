@@ -14,12 +14,15 @@ spec:
         app: member
     spec:
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-5
       automountServiceAccountToken: false
       containers:
         - name: member
           image: minbros/member
           imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: member-secret
           resources:
             requests:
               cpu: "200m"
