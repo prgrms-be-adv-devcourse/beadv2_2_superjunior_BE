@@ -35,11 +35,11 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "128Mi"
+              memory: "192Mi"
               ephemeral-storage: "512Mi"
             limits:
               cpu: "500m"
-              memory: "256Mi"
+              memory: "384Mi"
               ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8084
