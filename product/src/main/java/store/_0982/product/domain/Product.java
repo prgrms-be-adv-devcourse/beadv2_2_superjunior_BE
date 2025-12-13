@@ -49,6 +49,9 @@ public class Product {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     public Product(String name,
                    int price,
                    ProductCategory category,
@@ -79,6 +82,10 @@ public class Product {
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+    }
+
+    public void softDelete() {
+        this.deletedAt = OffsetDateTime.now();
     }
 
     public ProductEvent toEvent() {
