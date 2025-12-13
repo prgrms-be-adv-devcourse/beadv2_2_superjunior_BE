@@ -1,3 +1,4 @@
+#file: noinspection HttpUrlsUsage
 spring:
   application:
     name: gateway
@@ -17,13 +18,11 @@ spring:
                 - Path=/api/members/**
               filters:
                 - JwtAuth
-                - RewritePath=/api/members/(?<segment>.*), /api/members/${segment}
+
             - id: member-auth-api
               uri: lb://member
               predicates:
                 - Path=/api/auth/**
-              filters:
-                - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
 
             - id: member-internal-api
               uri: lb://member
@@ -31,14 +30,11 @@ spring:
                 - Path=/internal/members/**
               filters:
 #                - InternalToken
-                - RewritePath=/internal/members/(?<segment>.*), /internal/members/${segment}
 
             - id: order-api
               uri: lb://order
               predicates:
                 - Path=/api/orders/**
-              filters:
-                - RewritePath=/api/orders/(?<segment>.*), /api/orders/${segment}
 
             - id: openapi
               uri: http://${GATEWAY_HOSTNAME:localhost}:${server.port}

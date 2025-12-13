@@ -5,14 +5,14 @@ on:
     branches:
       - main
       - feature/ci-cd   # 테스트용
+      - feature/ci-cd-*
     paths:
-      - 'config/repo/*-prod.yml'
+      - 'config/repo/*.yml'
       - '.github/workflows/config-repo-update.yml'  # 테스트용
 
 jobs:
   update-configmap:
     runs-on: ubuntu-latest
-
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
       - name: 변경된 파일 탐색
         id: changed-files
         run: |
-          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*-prod\.yml$' || echo "")
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*\.yml$' || echo "")
           echo "files=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"
@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
-          source: "config/repo/*-prod.yml"
+          source: "config/repo/*.yml"
           target: "/tmp/config-repo"
           strip_components: 2
           overwrite: true
@@ -74,26 +74,24 @@ jobs:
 
             CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
 
-            if echo "$CHANGED_FILES" | grep -q "application-prod.yml"; then
+            if echo "$CHANGED_FILES" | grep -q "application.yml"; then
               echo "Common config changed, restarting all services..."
-              kubectl rollout restart deployment/eureka
-              kubectl rollout restart deployment/gateway
-              kubectl rollout restart deployment/member
-              kubectl rollout restart deployment/product
-              kubectl rollout restart deployment/order
-              kubectl rollout restart deployment/point
-              kubectl rollout restart deployment/notification
-              kubectl rollout restart deployment/search
+              kubectl rollout restart deployment/gateway-server
+              kubectl rollout restart deployment/member-server
+              kubectl rollout restart deployment/product-server
+              kubectl rollout restart deployment/order-server
+              kubectl rollout restart deployment/point-server
+              kubectl rollout restart deployment/notification-server
+              kubectl rollout restart deployment/search-server
             else
               echo "Restarting affected services only..."
-              echo "$CHANGED_FILES" | grep -q "eureka-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
-              echo "$CHANGED_FILES" | grep -q "gateway-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
-              echo "$CHANGED_FILES" | grep -q "member-prod.yml" && kubectl rollout restart deployment/member && echo "Member restarted" || true
-              echo "$CHANGED_FILES" | grep -q "product-prod.yml" && kubectl rollout restart deployment/product && echo "Product restarted" || true
-              echo "$CHANGED_FILES" | grep -q "order-prod.yml" && kubectl rollout restart deployment/order && echo "Order restarted" || true
-              echo "$CHANGED_FILES" | grep -q "point-prod.yml" && kubectl rollout restart deployment/point && echo "Point restarted" || true
-              echo "$CHANGED_FILES" | grep -q "notification-prod.yml" && kubectl rollout restart deployment/notification && echo "Notification restarted" || true
-              echo "$CHANGED_FILES" | grep -q "search-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
+              echo "$CHANGED_FILES" | grep -q "gateway.yml" && kubectl rollout restart deployment/gateway-server && echo "Gateway restarted" || true
+              echo "$CHANGED_FILES" | grep -q "member.yml" && kubectl rollout restart deployment/member-server && echo "Member restarted" || true
+              echo "$CHANGED_FILES" | grep -q "product.yml" && kubectl rollout restart deployment/product-server && echo "Product restarted" || true
+              echo "$CHANGED_FILES" | grep -q "order.yml" && kubectl rollout restart deployment/order-server && echo "Order restarted" || true
+              echo "$CHANGED_FILES" | grep -q "point.yml" && kubectl rollout restart deployment/point-server && echo "Point restarted" || true
+              echo "$CHANGED_FILES" | grep -q "notification.yml" && kubectl rollout restart deployment/notification-server && echo "Notification restarted" || true
+              echo "$CHANGED_FILES" | grep -q "elastic-search.yml" && kubectl rollout restart deployment/search-server && echo "Search restarted" || true
             fi
 
             rm -rf /tmp/config-repo

@@ -6,10 +6,24 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    //swagger
+
+    //noinspection VulnerableLibrariesLocal
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.14'
 }
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = 'minbros/gateway-server'
+    }
+    container {
+        ports = ['8000']
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+    }
 }
