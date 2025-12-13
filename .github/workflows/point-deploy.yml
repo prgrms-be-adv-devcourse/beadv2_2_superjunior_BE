@@ -111,9 +111,6 @@ jobs:
           script: |
             TAG=${{ needs.build.outputs.image-tag }}
 
-            echo "Pulling Docker image minbros/point:${TAG}..."
-            docker pull minbros/point:${TAG}
-
             echo "Updating deployment..."
             sudo kubectl set image deployment/point \
               point=minbros/point:${TAG} \

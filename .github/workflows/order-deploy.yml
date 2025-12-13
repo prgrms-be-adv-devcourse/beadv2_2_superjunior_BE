@@ -111,9 +111,6 @@ jobs:
           script: |
             TAG=${{ needs.build.outputs.image-tag }}
 
-            echo "Pulling Docker image minbros/order:${TAG}..."
-            docker pull minbros/order:${TAG}
-
             echo "Updating deployment..."
             sudo kubectl set image deployment/order \
               order=minbros/order:${TAG} \
