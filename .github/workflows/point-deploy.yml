@@ -4,7 +4,7 @@ on:
     branches:
       - main
       - feature/ci-cd-yjs
-      - feature/ci-cd-yjs-test
+      - release
     paths:
       - 'point/build.gradle'
       - 'point/src/**'
