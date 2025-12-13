@@ -13,7 +13,6 @@ import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 
-//todo: doc 관련 api 호출 방식을 kafka 이벤트 처리 방식으로 변경
 @Tag(name = "Group Purchase Search", description = "공동구매 검색 및 색인")
 @RequiredArgsConstructor
 @RestController
@@ -47,9 +46,10 @@ public class GroupPurchaseSearchController {
     public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocument(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, pageable);
+        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, category, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }

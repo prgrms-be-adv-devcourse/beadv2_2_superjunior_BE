@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
@@ -47,7 +48,7 @@ public class ProductSearchController {
     @GetMapping("/search")
     public ResponseDto<PageResponse<ProductDocumentInfo>> searchProductDocument(
             @RequestParam(defaultValue = "") String keyword,
-            @RequestParam UUID sellerId,
+            @RequestHeader(value = HeaderName.ID) UUID sellerId,
             @RequestParam(required = false) String category,
             Pageable pageable
     ) {

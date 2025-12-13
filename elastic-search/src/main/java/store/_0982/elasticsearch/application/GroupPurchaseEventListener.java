@@ -20,14 +20,14 @@ public class GroupPurchaseEventListener {
 
     @RetryableTopic
     @ServiceLog
-    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_ADDED, groupId = "search-service-group", containerFactory = "createGroupPurchaseKafkaListenerFactory")
+    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_CREATED, groupId = "search-service-group", containerFactory = "createGroupPurchaseKafkaListenerFactory")
     public void create(GroupPurchaseEvent event) {
         saveGroupPurchaseDocument(GroupPurchaseDocumentCommand.from(event));
     }
 
     @RetryableTopic
     @ServiceLog
-    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, groupId = "search-service-group", containerFactory = "changeGroupPurchaseKafkaListenerFactory")
+    @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_CHANGED, groupId = "search-service-group", containerFactory = "changeGroupPurchaseKafkaListenerFactory")
     public void changed(GroupPurchaseEvent event) {
         if(event.getKafkaStatus() == GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE){
                 groupPurchaseRepository.deleteById(event.getId().toString());

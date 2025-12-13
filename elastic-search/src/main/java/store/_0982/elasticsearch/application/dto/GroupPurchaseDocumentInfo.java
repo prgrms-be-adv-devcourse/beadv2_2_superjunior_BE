@@ -1,7 +1,8 @@
 package store._0982.elasticsearch.application.dto;
 
-import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
+import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
+
 import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentInfo(
@@ -18,7 +19,8 @@ public record GroupPurchaseDocumentInfo(
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
         Integer currentQuantity,
-        ProductEvent productEvent
+        Long discountRate,
+        ProductDocumentEmbedded productDocumentEmbedded
 ) {
     public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
         return new GroupPurchaseDocumentInfo(
@@ -35,7 +37,9 @@ public record GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getCreatedAt(),
                 groupPurchaseDocument.getUpdatedAt(),
                 groupPurchaseDocument.getCurrentQuantity(),
-                groupPurchaseDocument.getProductEvent()
+                groupPurchaseDocument.getDiscountRate(),
+                groupPurchaseDocument.getProductDocumentEmbedded()
         );
     }
 }
+

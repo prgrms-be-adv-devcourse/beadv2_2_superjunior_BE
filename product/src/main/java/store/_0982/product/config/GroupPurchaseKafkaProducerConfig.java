@@ -40,11 +40,11 @@ public class GroupPurchaseKafkaProducerConfig {
 
     @Bean
     public NewTopic groupPurchaseTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_ADDED);
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_CREATED);
     }
 
     @Bean
     public NewTopic groupPurchaseChangedTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED);
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_CHANGED);
     }
 }

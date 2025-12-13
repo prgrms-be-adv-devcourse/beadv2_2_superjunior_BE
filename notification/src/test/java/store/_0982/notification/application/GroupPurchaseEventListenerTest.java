@@ -46,7 +46,7 @@ class GroupPurchaseEventListenerTest {
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, sellerId.toString(), event);
+        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, sellerId.toString(), event);
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -79,7 +79,7 @@ class GroupPurchaseEventListenerTest {
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, sellerId.toString(), event);
+        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, sellerId.toString(), event);
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
