@@ -3,8 +3,6 @@ package store._0982.product.application.dto;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseStatus;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -13,7 +11,7 @@ public record GroupPurchaseThumbnailInfo(
         int minQuantity,
         int maxQuantity,
         String title,
-        int discountedPrice,
+        Long discountedPrice,
         int currentQuantity,
         OffsetDateTime startDate,
         OffsetDateTime endDate,

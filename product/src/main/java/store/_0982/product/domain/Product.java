@@ -23,7 +23,7 @@ public class Product {
     private String name;
 
     @Column(name = "price", nullable = false)
-    private int price;
+    private Long price;
 
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -53,7 +53,7 @@ public class Product {
     private OffsetDateTime deletedAt;
 
     public Product(String name,
-                   int price,
+                   Long price,
                    ProductCategory category,
                    String description,
                    int stock,
@@ -71,7 +71,7 @@ public class Product {
     }
 
     public void updateProduct(String name,
-                              int price,
+                              Long price,
                               ProductCategory category,
                               String description,
                               int stock,
@@ -92,7 +92,7 @@ public class Product {
         return new ProductEvent(
                 this.productId,
                 this.name,
-                (long) this.price,
+                this.price,
                 this.category.name(),
                 this.description,
                 this.stock,
