@@ -2,8 +2,8 @@ package store._0982.point.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.point.domain.MemberPoint;
-import store._0982.point.domain.MemberPointRepository;
+import store._0982.point.domain.entity.MemberPoint;
+import store._0982.point.domain.repository.MemberPointRepository;
 
 import java.util.Optional;
 import java.util.UUID;

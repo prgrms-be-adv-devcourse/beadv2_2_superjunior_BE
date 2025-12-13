@@ -11,6 +11,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.PaymentPointService;
+import store._0982.point.application.RefundService;
 import store._0982.point.application.dto.*;
 import store._0982.point.presentation.dto.*;
 
@@ -18,9 +19,10 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/points")
+@RequestMapping("/api/payments")
 public class PaymentPointController {
     private final PaymentPointService paymentPointService;
+    private final RefundService refundService;
 
     @Operation(summary = "포인트 충전 생성", description = "포인트 충전 requested 생성.")
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,50 +63,18 @@ public class PaymentPointController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody @Valid PointRefundRequest request
     ) {
-        PointRefundInfo info = paymentPointService.refundPaymentPoint(memberId, request.toCommand());
+        PointRefundInfo info = refundService.refundPaymentPoint(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 결제 환불 완료");
     }
 
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/payment")
+    @GetMapping
     public ResponseDto<PageResponse<PaymentPointHistoryInfo>> getPaymentHistory(
             @RequestHeader(HeaderName.ID) UUID memberId,
             Pageable pageable
     ) {
         PageResponse<PaymentPointHistoryInfo> page = paymentPointService.getPaymentHistory(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, page, "포인트 충전 내역 조회 성공");
-    }
-
-    @Operation(summary = "포인트 조회", description = "선택한 멤버의 포인트를 조회한다.")
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    public ResponseDto<MemberPointInfo> getPoints(@RequestHeader(HeaderName.ID) UUID memberId) {
-        MemberPointInfo info = paymentPointService.getPoints(memberId);
-        return new ResponseDto<>(HttpStatus.OK, info, "포인트 조회 성공");
-    }
-
-    @Operation(summary = "포인트 차감", description = "선택한 멤버의 포인트를 차감한다.")
-    @ResponseStatus(HttpStatus.OK)
-    @ControllerLog
-    @PatchMapping("/deduct")
-    public ResponseDto<MemberPointInfo> deductPoints(
-            @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody @Valid PointMinusRequest request
-    ) {
-        MemberPointInfo info = paymentPointService.deductPoints(memberId, request);
-        return new ResponseDto<>(HttpStatus.OK, info, "포인트 차감 완료");
-    }
-
-    @Operation(summary = "포인트 반환", description = "선택한 멤버의 포인트를 반환한다.")
-    @ResponseStatus(HttpStatus.OK)
-    @ControllerLog
-    @PatchMapping("/return")
-    public ResponseDto<MemberPointInfo> returnPoints(
-            @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody @Valid PointReturnRequest request
-    ) {
-        MemberPointInfo info = paymentPointService.returnPoints(memberId, request);
-        return new ResponseDto<>(HttpStatus.OK, info, "포인트 반환 완료");
     }
 }

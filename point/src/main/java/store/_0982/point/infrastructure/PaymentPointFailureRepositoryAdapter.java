@@ -2,9 +2,9 @@ package store._0982.point.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.point.domain.PaymentPoint;
-import store._0982.point.domain.PaymentPointFailure;
-import store._0982.point.domain.PaymentPointFailureRepository;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPointFailure;
+import store._0982.point.domain.repository.PaymentPointFailureRepository;
 
 import java.util.Optional;
 

@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -164,7 +165,7 @@ public class GroupPurchase {
         return this.returnedAt != null;
     }
 
-    public GroupPurchaseEvent toEvent(String productName, String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus) {
+    public GroupPurchaseEvent toEvent(String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus, ProductEvent productEvent) {
         return new GroupPurchaseEvent(
                 this.groupPurchaseId,
                 this.minQuantity,
@@ -174,12 +175,12 @@ public class GroupPurchase {
                 (long)this.discountedPrice,
                 this.status.name(),
                 sellerName,
-                productName,
                 this.startDate.toString(),
                 this.endDate.toString(),
                 this.createdAt.toString(),
                 this.updatedAt.toString(),
                 this.currentQuantity,
+                productEvent,
                 searchKafkaStatus
         );
     }

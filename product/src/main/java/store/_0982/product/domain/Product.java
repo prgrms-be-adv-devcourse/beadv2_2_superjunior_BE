@@ -85,7 +85,7 @@ public class Product {
         return new ProductEvent(
                 this.productId,
                 this.name,
-                this.price,
+                (long) this.price,
                 this.category.name(),
                 this.description,
                 this.stock,

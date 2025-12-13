@@ -20,15 +20,30 @@ public class GroupPurchaseEvent extends BaseEvent {
     private Long discountedPrice;
     private String status;
     private String sellerName;
-    private String productName;
     private String startDate;
     private String endDate;
     private String createdAt;
     private String updatedAt;
     private Integer currentQuantity;
+    private ProductEvent productEvent;
     private SearchKafkaStatus kafkaStatus;
 
-    public GroupPurchaseEvent(Clock clock, UUID id, Integer minQuantity, Integer maxQuantity, String title, String description, Integer discountedPrice, String status, String sellerName, String productName, String startDate, String endDate, String createdAt, String updatedAt, Integer currentQuantity, SearchKafkaStatus kafkaStatus) {
+    public GroupPurchaseEvent(Clock clock,
+                              UUID id,
+                              Integer minQuantity,
+                              Integer maxQuantity,
+                              String title,
+                              String description,
+                              Integer discountedPrice,
+                              String status,
+                              String sellerName,
+                              String startDate,
+                              String endDate,
+                              String createdAt,
+                              String updatedAt,
+                              Integer currentQuantity,
+                              ProductEvent productEvent,
+                              SearchKafkaStatus kafkaStatus) {
         super(clock);
         this.id = id;
         this.minQuantity = minQuantity;
@@ -38,12 +53,12 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.discountedPrice = (long) discountedPrice;
         this.status = status;
         this.sellerName = sellerName;
-        this.productName = productName;
         this.startDate = startDate;
         this.endDate = endDate;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.currentQuantity = currentQuantity;
+        this.productEvent = productEvent;
         this.kafkaStatus = kafkaStatus;
     }
 

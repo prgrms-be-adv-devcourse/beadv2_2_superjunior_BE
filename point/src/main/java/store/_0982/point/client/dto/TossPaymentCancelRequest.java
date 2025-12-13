@@ -1,7 +1,7 @@
 package store._0982.point.client.dto;
 
 import store._0982.point.application.dto.PointRefundCommand;
-import store._0982.point.domain.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPoint;
 
 public record TossPaymentCancelRequest(
         String paymentKey,

@@ -1,7 +1,8 @@
-package store._0982.point.domain;
+package store._0982.point.domain.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.point.domain.entity.PaymentPoint;
 
 import java.util.Optional;
 import java.util.UUID;

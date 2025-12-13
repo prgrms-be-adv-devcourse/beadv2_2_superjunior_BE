@@ -1,28 +1,28 @@
 package store._0982.elasticsearch.application.dto;
 
+import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentInfo(
         String groupPurchaseId,
-        String productName,
         String sellerName,
         Integer minQuantity,
         Integer maxQuantity,
         String title,
         String description,
-        Integer discountedPrice,
+        Long discountedPrice,
         String status,
         String startDate,
         String endDate,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
-        Integer currentQuantity
+        Integer currentQuantity,
+        ProductEvent productEvent
 ) {
     public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
         return new GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getGroupPurchaseId(),
-                groupPurchaseDocument.getProductName(),
                 groupPurchaseDocument.getSellerName(),
                 groupPurchaseDocument.getMinQuantity(),
                 groupPurchaseDocument.getMaxQuantity(),
@@ -34,7 +34,8 @@ public record GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getEndDate(),
                 groupPurchaseDocument.getCreatedAt(),
                 groupPurchaseDocument.getUpdatedAt(),
-                groupPurchaseDocument.getCurrentQuantity()
+                groupPurchaseDocument.getCurrentQuantity(),
+                groupPurchaseDocument.getProductEvent()
         );
     }
 }
