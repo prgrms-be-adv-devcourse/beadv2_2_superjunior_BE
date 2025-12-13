@@ -20,9 +20,6 @@ spec:
         - name: discovery-server
           image: minbros/discovery-server
           imagePullPolicy: IfNotPresent
-          envFrom:
-            - secretRef:
-
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
