@@ -10,6 +10,10 @@ eureka:
       instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
       health-check-url-path: /actuator/health
 
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
 management:
   endpoints:
     web:
