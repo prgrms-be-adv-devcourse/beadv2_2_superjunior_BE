@@ -21,3 +21,4 @@ spring:
       initialize-schema: never
     job:
       enabled: false
+# 테스트용

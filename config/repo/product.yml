@@ -18,3 +18,4 @@ spring:
   batch:
     jdbc:
       initialize-schema: never
+# 테스트용

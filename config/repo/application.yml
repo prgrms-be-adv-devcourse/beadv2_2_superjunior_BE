@@ -33,3 +33,4 @@ token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
 
+# 테스트용
