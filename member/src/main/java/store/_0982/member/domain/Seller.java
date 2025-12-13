@@ -47,7 +47,6 @@ public class Seller {
         Seller seller = new Seller();
         seller.member = member;
         seller.member.registerSeller();
-        seller.sellerId = member.getMemberId();
         seller.createdAt = OffsetDateTime.now();
         seller.bankCode = bankCode;
         seller.accountNumber = accountNumber;
