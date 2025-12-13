@@ -73,3 +73,5 @@ spec:
       targetPort: 8084
       protocol: TCP
       name: http
+
+# 테스트 주석
