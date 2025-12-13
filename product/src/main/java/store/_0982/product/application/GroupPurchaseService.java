@@ -124,7 +124,7 @@ public class GroupPurchaseService {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
-        if (findGroupPurchase.getStatus().equals(GroupPurchaseStatus.OPEN)) {
+        if (findGroupPurchase.getStatus() != GroupPurchaseStatus.SCHEDULED) {
             throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
         }
         if (!findGroupPurchase.getSellerId().equals(memberId)) {
