@@ -96,7 +96,7 @@ jobs:
 
       - name: Jib로 Docker 이미지 빌드
         run: |
-          ./gradlew :search:jib \
+          ./gradlew :elastic-search:jib \
           -Djib.to.image=minbros/search \
           -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
