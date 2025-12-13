@@ -8,8 +8,6 @@ on:
       - feature/ci-cd-*
     paths:
       - 'docs/k8s/infra/*.yml'
-      - '!docs/k8s/infra/config.yml'
-      - '!docs/k8s/infra/discovery.yml'
       - '.github/workflows/infra-pods-update.yml'
 
 jobs:
@@ -104,6 +102,16 @@ jobs:
             if echo "$CHANGED_FILES" | grep -q "logstash.yml"; then
               echo "Waiting for logstash deployment..."
               kubectl rollout status deployment/logstash --timeout=3m || true
+            fi
+            
+            if echo "$CHANGED_FILES" | grep -q "config.yml"; then
+              echo "Waiting for config deployment..."
+              kubectl rollout status deployment/config --timeout=3m || true
+            fi
+            
+            if echo "$CHANGED_FILES" | grep -q "discovery.yml"; then
+              echo "Waiting for discovery deployment..."
+              kubectl rollout status deployment/discovery --timeout=3m || true
             fi
 
             echo "Infrastructure update completed!"

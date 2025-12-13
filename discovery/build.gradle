@@ -1,5 +1,4 @@
 dependencies {
-    // 필요한 의존성 추가
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
 }
 
