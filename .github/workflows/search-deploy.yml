@@ -111,12 +111,12 @@ jobs:
           port: 22
           script: |
             echo "Updating deployment..."
-            kubectl set image deployment/search \
+            sudo kubectl set image deployment/search \
               search=minbros/search:${{ steps.version.outputs.tag }} \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
-            kubectl rollout status deployment/search \
+            sudo kubectl rollout status deployment/search \
               --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
