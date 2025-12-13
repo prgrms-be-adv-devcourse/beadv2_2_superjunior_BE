@@ -1,24 +1,23 @@
 #file: noinspection SpellCheckingInspection
-name: Notification Deploy
+name: Search Deploy
 on:
   push:
     branches:
       - main
-      - feature/ci-cd
       - feature/ci-cd-*
     paths:
-      - 'notification/src/**'
-      - 'notification/build.gradle'
-      - 'docs/k8s/service/notification.yml'
-      - '.github/workflows/notification-deploy.yml'
+      - 'elastic-search/src/**'
+      - 'elastic-search/build.gradle'
+      - 'docs/k8s/service/search.yml'
+      - '.github/workflows/search-deploy.yml'
       - 'common/src/**'
       - 'common/build.gradle'
 
 jobs:
-  apply-notification:
+  apply-search:
     runs-on: ubuntu-latest
     outputs:
-      infra-changed: ${{ steps.check-notification.outputs.changed }}
+      infra-changed: ${{ steps.check-search.outputs.changed }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -26,31 +25,31 @@ jobs:
           fetch-depth: 2
 
       - name: Gateway 파일 변경 확인
-        id: check-notification
+        id: check-search
         run: |
-          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/notification\.yml'; then
+          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/search\.yml'; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Notification file changed"
+            echo "Search file changed"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No notification file changes"
+            echo "No search file changes"
           fi
 
       - name: Gateway 설정 파일을 Bastion으로 복사
-        if: steps.check-notification.outputs.changed == 'true'
+        if: steps.check-search.outputs.changed == 'true'
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
           username: ${{ secrets.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
-          source: "docs/k8s/service/notification.yml"
+          source: "docs/k8s/service/search.yml"
           target: "/tmp/k8s-service"
           strip_components: 3
           overwrite: true
 
-      - name: Notification 리소스 적용
-        if: steps.check-notification.outputs.changed == 'true'
+      - name: Search 리소스 적용
+        if: steps.check-search.outputs.changed == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
@@ -62,11 +61,11 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
             
             echo "Applying config.yml..."
-            kubectl apply -f /tmp/k8s-service/notification.yml
-            echo "Notification service applied successfully"
+            kubectl apply -f /tmp/k8s-service/search.yml
+            echo "Search service applied successfully"
 
-  deploy-notification:
-    needs: apply-notification
+  deploy-search:
+    needs: apply-search
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
@@ -97,8 +96,8 @@ jobs:
 
       - name: Jib로 Docker 이미지 빌드
         run: |
-          ./gradlew :notification:jib \
-          -Djib.to.image=minbros/notification \
+          ./gradlew :search:jib \
+          -Djib.to.image=minbros/search \
           -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
@@ -112,13 +111,13 @@ jobs:
           port: 22
           script: |
             echo "Updating deployment..."
-            kubectl set image deployment/notification \
-              notification=minbros/notification:${{ steps.version.outputs.tag }} \
+            kubectl set image deployment/search \
+              search=minbros/search:${{ steps.version.outputs.tag }} \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
-            kubectl rollout status deployment/notification \
+            kubectl rollout status deployment/search \
               --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
-            echo "Notification Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+            echo "Search Server deployed successfully with version ${{ steps.version.outputs.tag }}"

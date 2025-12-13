@@ -1,0 +1,74 @@
+#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search
+  template:
+    metadata:
+      labels:
+        app: search
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: search
+          image: minbros/search
+          imagePullPolicy: Always
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: "http://config-service:8888"
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://admin:admin@discovery-service:8761/eureka"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: "discovery-service"
+            - name: GATEWAY_HOST
+              value: "http://gateway-service:8000"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: SPRING_ELASTICSEARCH_URIS
+              value: http://elasticsearch-service:9200
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Gi"
+              ephemeral-storage: "1Gi"
+          ports:
+            - containerPort: 8082
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-service
+spec:
+  type: ClusterIP
+  selector:
+    app: search
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
+      name: http

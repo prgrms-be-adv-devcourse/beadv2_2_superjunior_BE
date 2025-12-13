@@ -1,3 +1,4 @@
+//file:noinspection VulnerableLibrariesLocal
 dependencies {
     implementation project(':common')
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -16,4 +17,17 @@ dependencies {
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = 'minbros/search'
+    }
+    container {
+        ports = ['8082']
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+    }
 }
