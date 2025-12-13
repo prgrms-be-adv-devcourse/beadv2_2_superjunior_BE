@@ -21,6 +21,17 @@ spec:
           envFrom:
             - secretRef:
                 name: point-secret
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: "http://config-service:8888"
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://admin:admin@discovery-service:8761/eureka"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: "discovery-service"
+            - name: GATEWAY_HOST
+              value: "http://gateway-service:8000"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "http://kafka-service:9092"
           resources:
             requests:
               cpu: "200m"
