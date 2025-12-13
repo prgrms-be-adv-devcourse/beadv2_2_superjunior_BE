@@ -8,6 +8,7 @@ on:
       - feature/ci-cd-*
     paths:
       - 'discovery/**'
+      - '.github/workflows/discovery-server-deploy.yml'
 
 jobs:
   deploy-discovery-server:
@@ -89,7 +90,7 @@ jobs:
 
             echo "Waiting for rollout..."
             kubectl rollout status deployment/discovery-server \
-              --timeout=10m \
+              --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Discovery Server deployed successfully with version ${{ steps.version.outputs.tag }}"

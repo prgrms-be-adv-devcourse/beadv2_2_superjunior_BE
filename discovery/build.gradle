@@ -15,7 +15,7 @@ jib {
         image = 'minbros/discovery-server'
     }
     container {
-        ports = ['8888']
+        ports = ['8761']
         jvmFlags = ['-Xms256m', '-Xmx512m']
     }
 }
