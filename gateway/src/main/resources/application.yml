@@ -28,16 +28,14 @@ spring:
               uri: lb://member
               predicates:
                 - Path=/internal/members/**
-              filters:
-#                - InternalToken
 
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**
+                - Path=/api/orders/**, /internal/orders/**
 
             - id: openapi
-              uri: http://${GATEWAY_HOSTNAME:localhost}:${server.port}
+              uri: http://${GATEWAY_HOST:localhost}:${server.port}
               predicates:
                 - Path=/v3/api-docs/**
               filters:
@@ -46,30 +44,22 @@ spring:
             - id: product-api
               uri: lb://product
               predicates:
-                - Path=/api/products/**
-              filters:
-                - RewritePath=/api/products/(?<segment>.*), /api/products/${segment}
+                - Path=/api/products/**, /internal/products/**
 
             - id: group-purchase-api
               uri: lb://product
               predicates:
-                - Path=/api/purchases/**
-              filters:
-                - RewritePath=/api/purchases/(?<segment>.*), /api/purchases/${segment}
+                - Path=/api/purchases/**, /internal/purchases/**
 
             - id: point-api
               uri: lb://point
               predicates:
-                - Path=/api/points/**
-              filters:
-                - RewritePath=/api/points/(?<segment>.*), /api/points/${segment}
+                - Path=/api/points/**, /internal/points/**
 
             - id: elastic-search-api
               uri: lb://elastic-search
               predicates:
-                - Path=/api/searches/**
-              filters:
-                - RewritePath=/api/searches/(?<segment>.*), /api/searches/${segment}
+                - Path=/api/searches/**, /internal/searches/**
 
             - id: point-api
               uri: lb://point
@@ -79,7 +69,7 @@ spring:
             - id: notification-api
               uri: lb://notification
               predicates:
-                - Path=/api/notifications/**
+                - Path=/api/notifications/**, /internal/notifications/**
 
           discovery:
             locator:
@@ -94,8 +84,15 @@ springdoc:
         url: /v3/api-docs/member
       - name: order-service
         url: /v3/api-docs/order
-      - name: elastic-search-service
+      - name: search-service
         url: /v3/api-docs/elastic-search
+      - name: notification-service
+        url: /v3/api-docs/notification
+      - name: point-service
+        url: /v3/api-docs/point
+      - name: product-service
+        url: /v3/api-docs/product
+
     # 필요하면 경로도 커스터마이징 가능 (옵션)
     # path: /swagger-ui.html
 
