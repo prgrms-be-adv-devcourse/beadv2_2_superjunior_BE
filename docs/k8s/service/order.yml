@@ -2,30 +2,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: config
+  name: order
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: config
+      app: order
   template:
     metadata:
       labels:
-        app: config
+        app: order
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
       automountServiceAccountToken: false
       containers:
-        - name: config
-          image: minbros/config
-          imagePullPolicy: Never
+        - name: order
+          image: minbros/order
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: order-secret
           env:
-            - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
-              value: "file:/config-repo"
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: "http://config-service:8888"
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://admin:admin@discovery-service:8761/eureka"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: "discovery-service"
+            - name: GATEWAY_HOST
+              value: "http://gateway-service:8000"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "http://kafka-service:9092"
           resources:
             requests:
-              cpu: "100m"
+              cpu: "200m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
             limits:
@@ -33,36 +42,29 @@ spec:
               memory: "512Mi"
               ephemeral-storage: "1Gi"
           ports:
-            - containerPort: 8888
+            - containerPort: 8085
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: 8888
+              port: 8085
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8888
+              port: 8085
             initialDelaySeconds: 60
             periodSeconds: 10
-          volumeMounts:
-            - name: config-volume
-              mountPath: /config-repo
-              readOnly: true
-      volumes:
-        - name: config-volume
-          configMap:
-            name: config-repo
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: config-service
+  name: order-service
 spec:
   selector:
-    app: config
+    app: order
   ports:
-    - port: 8888
-      targetPort: 8888
+    - port: 8085
+      targetPort: 8085
   type: ClusterIP
+
