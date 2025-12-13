@@ -31,9 +31,11 @@ spec:
         app: elasticsearch
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: elasticsearch
-          image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+          image: elasticsearch-nori:8.11.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9200

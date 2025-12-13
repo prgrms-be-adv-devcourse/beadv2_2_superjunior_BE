@@ -1,0 +1,101 @@
+#file: noinspection SpellCheckingInspection
+name: Config Repo Update
+on:
+  push:
+    branches:
+      - main
+      - feature/ci-cd   # 테스트용
+    paths:
+      - 'config/repo/*-prod.yml'
+      - '.github/workflows/config-repo-update.yml'  # 테스트용
+
+jobs:
+  update-configmap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 변경된 파일 탐색
+        id: changed-files
+        run: |
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*-prod\.yml$' || echo "")
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          echo "Changed files:"
+          echo "$CHANGED"
+
+      - name: 설정 파일을 전달 받을 폴더 생성
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          script: |
+            sudo rm -rf /tmp/config-repo
+            mkdir -p /tmp/config-repo
+
+      - name: 변경된 설정 파일을 EC2 인스턴스로 복사
+        if: steps.changed-files.outputs.files != ''
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: "config/repo/*-prod.yml"
+          target: "/tmp/config-repo"
+          strip_components: 2
+          overwrite: true
+
+      - name: ConfigMap 적용 후 필요한 Pod 재시작
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          command_timeout: '5m'
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+            kubectl create configmap config-repo \
+              --from-file=/tmp/config-repo/ \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            echo "ConfigMap updated successfully"
+
+            kubectl rollout restart deployment/config-server
+            echo "Waiting for config-server to be ready..."
+            kubectl rollout status deployment/config-server --timeout=3m
+
+            CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
+
+            if echo "$CHANGED_FILES" | grep -q "application-prod.yml"; then
+              echo "Common config changed, restarting all services..."
+              kubectl rollout restart deployment/eureka
+              kubectl rollout restart deployment/gateway
+              kubectl rollout restart deployment/member
+              kubectl rollout restart deployment/product
+              kubectl rollout restart deployment/order
+              kubectl rollout restart deployment/point
+              kubectl rollout restart deployment/notification
+              kubectl rollout restart deployment/search
+            else
+              echo "Restarting affected services only..."
+              echo "$CHANGED_FILES" | grep -q "eureka-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
+              echo "$CHANGED_FILES" | grep -q "gateway-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
+              echo "$CHANGED_FILES" | grep -q "member-prod.yml" && kubectl rollout restart deployment/member && echo "Member restarted" || true
+              echo "$CHANGED_FILES" | grep -q "product-prod.yml" && kubectl rollout restart deployment/product && echo "Product restarted" || true
+              echo "$CHANGED_FILES" | grep -q "order-prod.yml" && kubectl rollout restart deployment/order && echo "Order restarted" || true
+              echo "$CHANGED_FILES" | grep -q "point-prod.yml" && kubectl rollout restart deployment/point && echo "Point restarted" || true
+              echo "$CHANGED_FILES" | grep -q "notification-prod.yml" && kubectl rollout restart deployment/notification && echo "Notification restarted" || true
+              echo "$CHANGED_FILES" | grep -q "search-prod.yml" && kubectl rollout restart deployment/search && echo "Search restarted" || true
+            fi
+
+            rm -rf /tmp/config-repo
+
+            echo "Config update completed!"
