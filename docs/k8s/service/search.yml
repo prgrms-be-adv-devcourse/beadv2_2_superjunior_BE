@@ -31,6 +31,8 @@ spec:
               value: "kafka-service:9092"
             - name: SPRING_ELASTICSEARCH_URIS
               value: http://elasticsearch-service:9200
+            - name: KAFKA_LOG_SEGMENT_BYTES
+              value: "67108864"  # 64MB (기본 1GB)
           resources:
             requests:
               cpu: "200m"
@@ -38,7 +40,7 @@ spec:
               ephemeral-storage: "512Mi"
             limits:
               cpu: "500m"
-              memory: "384Mi"
+              memory: "512Mi"
               ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8082
