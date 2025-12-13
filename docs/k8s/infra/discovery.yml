@@ -18,6 +18,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: discovery-server
+          # CI/CD 테스트용 주석
           image: minbros/discovery-server
           imagePullPolicy: Never
           env:
