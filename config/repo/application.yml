@@ -1,15 +1,18 @@
 #file: noinspection HttpUrlsUsage, SpringBootApplicationYaml
 eureka:
   client:
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
-      register-with-eureka: true
-      fetch-registry: true
-      service-url:
-        defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
+      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
     instance:
       prefer-ip-address: true
       instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
       health-check-url-path: /actuator/health
+
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 management:
   endpoints:
@@ -27,9 +30,8 @@ gateway:
   host: ${GATEWAY_HOST:http://localhost:8000}
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
-
