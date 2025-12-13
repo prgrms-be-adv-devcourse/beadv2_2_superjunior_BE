@@ -108,3 +108,4 @@ jobs:
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
             
             echo "Member deployed successfully with version ${TAG}"
+
