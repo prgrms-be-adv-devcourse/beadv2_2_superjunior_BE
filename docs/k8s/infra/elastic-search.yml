@@ -36,7 +36,7 @@ spec:
       containers:
         - name: elasticsearch
           image: elasticsearch-nori:8.11.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 9200
               name: http
@@ -55,12 +55,12 @@ spec:
               value: "group-purchase-node"
           resources:
             requests:
-              ephemeral-storage: "2Gi"
-              memory: "1Gi"
+              ephemeral-storage: "1.5Gi"
+              memory: "768Mi"
               cpu: "500m"
             limits:
-              ephemeral-storage: "3Gi"
-              memory: "1.5Gi"
+              ephemeral-storage: "2Gi"
+              memory: "1Gi"
               cpu: "1000m"
           volumeMounts:
             - name: elasticsearch-storage

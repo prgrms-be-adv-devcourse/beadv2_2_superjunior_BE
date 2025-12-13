@@ -19,13 +19,13 @@ spec:
       containers:
         - name: config-server
           image: minbros/config-server
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           env:
             - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
               value: "file:/config-repo"
           resources:
             requests:
-              cpu: "200m"
+              cpu: "100m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
             limits:

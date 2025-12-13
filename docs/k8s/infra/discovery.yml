@@ -19,13 +19,13 @@ spec:
       containers:
         - name: discovery-server
           image: minbros/discovery-server
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
           resources:
             requests:
-              cpu: "200m"
+              cpu: "100m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
             limits:
