@@ -21,8 +21,8 @@ spec:
           image: minbros/discovery
           imagePullPolicy: Never
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: prod
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE
+              value: "http://admin@admindiscovery-service:8761/eureka"
           resources:
             requests:
               cpu: "100m"
