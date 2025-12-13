@@ -6,6 +6,7 @@ import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record GroupPurchaseUpdateRequest(
@@ -35,11 +36,11 @@ public record GroupPurchaseUpdateRequest(
         @JsonProperty("startDate")
         @NotNull(message = "시작일은 필수입니다")
         @FutureOrPresent(message = "시작일은 현재 또는 미래여야 합니다")
-        LocalDateTime startDate,
+        OffsetDateTime startDate,
 
         @JsonProperty("endDate")
         @NotNull(message = "종료일은 필수입니다")
-        LocalDate endDate,
+        OffsetDateTime endDate,
 
         @JsonProperty("productId")
         @NotNull(message = "상품 ID는 필수입니다")

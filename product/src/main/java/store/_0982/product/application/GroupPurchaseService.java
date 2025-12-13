@@ -63,7 +63,7 @@ public class GroupPurchaseService {
             throw new CustomException(CustomErrorCode.INVALID_QUANTITY_RANGE);
         }
 
-        if(command.startDate().isAfter(command.endDate().atStartOfDay())){
+        if(command.startDate().isAfter(command.endDate())){
             throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
         }
         GroupPurchase groupPurchase = new GroupPurchase(
