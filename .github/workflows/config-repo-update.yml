@@ -23,7 +23,8 @@ jobs:
         id: changed-files
         run: |
           CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'config/repo/.*\.yml$' || echo "")
-          echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          CHANGED_CSV=$(echo "$CHANGED" | paste -sd "," -)
+          echo "files=$CHANGED_CSV" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"
 

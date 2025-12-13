@@ -6,4 +6,3 @@ spring:
 #    추후 xpack.security.enabled=false 변경 시
 #    username: elastic
 #    password: your_password
-# 테스트용

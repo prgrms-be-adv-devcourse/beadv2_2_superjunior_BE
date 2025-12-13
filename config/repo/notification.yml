@@ -12,4 +12,3 @@ spring:
         default_schema: notification_schema
         format_sql: true
         show_sql: false
-# 테스트용

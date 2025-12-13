@@ -12,4 +12,3 @@ spring:
         default_schema: point_schema
         format_sql: true
         show_sql: true
-# 테스트용
