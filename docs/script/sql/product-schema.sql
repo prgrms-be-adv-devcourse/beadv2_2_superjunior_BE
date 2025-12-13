@@ -71,7 +71,7 @@ create table product_schema.group_purchase
     version           bigint                   default 0,
     created_at        timestamp with time zone default now()                          not null,
     updated_at        timestamp with time zone,
-    settled_at        timestamp with time zone
+    settled_at        timestamp with time zone ,
     returned_at        timestamp with time zone
 );
 
