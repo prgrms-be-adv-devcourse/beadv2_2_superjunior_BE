@@ -35,7 +35,7 @@ spring:
                 - Path=/api/orders/**, /internal/orders/**
 
             - id: openapi
-              uri: http://${GATEWAY_HOST:localhost}:${server.port}
+              uri: ${GATEWAY_HOST:http://localhost:8000}
               predicates:
                 - Path=/v3/api-docs/**
               filters:
