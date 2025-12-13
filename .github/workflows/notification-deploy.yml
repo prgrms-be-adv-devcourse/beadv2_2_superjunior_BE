@@ -48,7 +48,7 @@ jobs:
           overwrite: true
 
       - name: Notification 리소스 적용
-        if: steps.check-gateway.outputs.changed == 'true'
+        if: steps.check-notification.outputs.changed == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
