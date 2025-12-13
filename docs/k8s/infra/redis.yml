@@ -1,9 +1,9 @@
+#file: noinspection SpellCheckingInspection
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: redis-config
 data:
-  # noinspection NginxDirectiveValueInspection
   redis.conf: |
     appendonly yes
     appendfilename "appendonly.aof"
@@ -29,6 +29,8 @@ spec:
         app: redis
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: redis
           image: redis:7-alpine

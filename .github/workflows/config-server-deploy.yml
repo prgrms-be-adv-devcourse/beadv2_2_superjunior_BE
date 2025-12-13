@@ -1,0 +1,113 @@
+#file: noinspection SpellCheckingInspection
+name: Config Server Deploy
+on:
+  push:
+    branches:
+      - main
+      - feature/ci-cd
+    paths:
+      - 'config/src/**'
+      - 'config/build.gradle'
+      - '.github/workflows/config-server-deploy.yml'
+      - 'docs/k8s/infra/config.yml'
+
+jobs:
+  deploy-config-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 버전 태그 생성
+        id: version
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "Image tag: $SHORT_SHA"
+
+      - name: Jib로 Docker 이미지 빌드 (로컬)
+        run: |
+          ./gradlew :config:jibDockerBuild \
+            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
+
+      - name: Docker 이미지를 tar 파일로 저장
+        run: |
+          docker save minbros/config-server:${{ steps.version.outputs.tag }} | gzip > config-server.tar.gz
+          ls -lh config-server.tar.gz
+
+      - name: 이미지 파일을 프라이빗 인스턴스로 전송 (Bastion 경유)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          source: "config-server.tar.gz"
+          target: "/tmp"
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+
+      - name: SSH로 프라이빗 인스턴스 접속 및 이미지 로드 (Bastion 경유)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+          script: |
+            echo "Loading Docker image..."
+            gunzip -c /tmp/config-server.tar.gz | sudo k3s ctr images import -
+
+            rm -f /tmp/config-server.tar.gz
+
+      - name: 컨트롤 플레인 접속 후 배포 명령 실행
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          script: |
+            echo "Updating deployment..."
+            sudo kubectl set image deployment/config-server \
+              config-server=minbros/config-server:${{ steps.version.outputs.tag }} \
+              --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+            echo "Waiting for rollout..."
+            sudo kubectl rollout status deployment/config-server \
+              --timeout=10m \
+              --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+            echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+
+      - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+          script: |
+            echo "Removing unused images..."
+            sudo k3s crictl rmi --prune || true
+            echo "Image cleanup completed"
