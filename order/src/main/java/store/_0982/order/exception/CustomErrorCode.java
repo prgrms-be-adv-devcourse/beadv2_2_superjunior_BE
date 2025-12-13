@@ -27,8 +27,13 @@ public enum CustomErrorCode implements ErrorCode {
     ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN,"본인의 주문내역만 조회할 수 있습니다."),
 
 
+    //403
+    NOT_CART_OWNER(HttpStatus.FORBIDDEN, "카트에 대한 권한이 없습니다."),
+
     // 404 Not Found
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
+    GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다."),
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 공동구매를 찾을 수 없습니다.");
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
     GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다.");
