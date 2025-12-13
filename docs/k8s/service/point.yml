@@ -67,3 +67,4 @@ spec:
     - port: 8086
       targetPort: 8086
   type: ClusterIP
+
