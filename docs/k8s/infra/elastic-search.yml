@@ -36,7 +36,6 @@ spec:
       containers:
         - name: elasticsearch
           image: elasticsearch-nori:8.11.0
-          # CI/CD 동작시키게 만든 주석
           imagePullPolicy: Never
           ports:
             - containerPort: 9200

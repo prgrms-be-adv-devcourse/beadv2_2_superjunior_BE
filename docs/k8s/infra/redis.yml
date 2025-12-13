@@ -34,7 +34,6 @@ spec:
       containers:
         - name: redis
           image: redis:7-alpine
-          # CI/CD 동작시키게 만든 주석
           imagePullPolicy: Never
           ports:
             - containerPort: 6379
