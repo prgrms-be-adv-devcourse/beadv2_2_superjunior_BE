@@ -94,6 +94,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
           script: |
+            set -e
             TAG=${{ needs.build.outputs.image-tag }}
 
             echo "Updating deployment..."
