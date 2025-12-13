@@ -1,6 +1,6 @@
-create schema batch_schema;
+create schema batch_order_schema;
 
-create table batch_schema.batch_job_instance
+create table batch_order_schema.batch_job_instance
 (
     job_instance_id bigint       not null
         constraint batch_job_instance_pk
@@ -11,10 +11,10 @@ create table batch_schema.batch_job_instance
     constraint job_inst_un unique (job_name, job_key)
 );
 
-alter table batch_schema.batch_job_instance
+alter table batch_order_schema.batch_job_instance
     owner to postgres;
 
-create table batch_schema.batch_job_execution
+create table batch_order_schema.batch_job_execution
 (
     job_execution_id bigint    not null
         constraint batch_job_execution_pk
@@ -22,7 +22,7 @@ create table batch_schema.batch_job_execution
     version          bigint,
     job_instance_id  bigint    not null
         constraint job_inst_exec_fk
-            references batch_schema.batch_job_instance,
+            references batch_order_schema.batch_job_instance,
     create_time      timestamp not null,
     start_time       timestamp default null,
     end_time         timestamp default null,
@@ -32,24 +32,24 @@ create table batch_schema.batch_job_execution
     last_updated     timestamp
 );
 
-alter table batch_schema.batch_job_execution
+alter table batch_order_schema.batch_job_execution
     owner to postgres;
 
-create table batch_schema.batch_job_execution_params
+create table batch_order_schema.batch_job_execution_params
 (
     job_execution_id bigint       not null
         constraint job_exec_params_fk
-            references batch_schema.batch_job_execution,
+            references batch_order_schema.batch_job_execution,
     parameter_name   varchar(100) not null,
     parameter_type   varchar(100) not null,
     parameter_value  varchar(2500),
     identifying      char(1)      not null
 );
 
-alter table batch_schema.batch_job_execution_params
+alter table batch_order_schema.batch_job_execution_params
     owner to postgres;
 
-create table batch_schema.batch_step_execution
+create table batch_order_schema.batch_step_execution
 (
     step_execution_id  bigint       not null
         constraint batch_step_execution_pk
@@ -58,7 +58,7 @@ create table batch_schema.batch_step_execution
     step_name          varchar(100) not null,
     job_execution_id   bigint       not null
         constraint job_exec_step_fk
-            references batch_schema.batch_job_execution,
+            references batch_order_schema.batch_job_execution,
     create_time        timestamp    not null,
     start_time         timestamp default null,
     end_time           timestamp default null,
@@ -76,37 +76,37 @@ create table batch_schema.batch_step_execution
     last_updated       timestamp
 );
 
-alter table batch_schema.batch_step_execution
+alter table batch_order_schema.batch_step_execution
     owner to postgres;
 
-create table batch_schema.batch_step_execution_context
+create table batch_order_schema.batch_step_execution_context
 (
     step_execution_id  bigint        not null
         constraint batch_step_execution_context_pk
             primary key
         constraint step_exec_ctx_fk
-            references batch_schema.batch_step_execution,
+            references batch_order_schema.batch_step_execution,
     short_context      varchar(2500) not null,
     serialized_context text
 );
 
-alter table batch_schema.batch_step_execution_context
+alter table batch_order_schema.batch_step_execution_context
     owner to postgres;
 
-create table batch_schema.batch_job_execution_context
+create table batch_order_schema.batch_job_execution_context
 (
     job_execution_id   bigint        not null
         constraint batch_job_execution_context_pk
             primary key
         constraint job_exec_ctx_fk
-            references batch_schema.batch_job_execution,
+            references batch_order_schema.batch_job_execution,
     short_context      varchar(2500) not null,
     serialized_context text
 );
 
-alter table batch_schema.batch_job_execution_context
+alter table batch_order_schema.batch_job_execution_context
     owner to postgres;
 
-create sequence batch_schema.batch_step_execution_seq maxvalue 9223372036854775807 no cycle;
-create sequence batch_schema.batch_job_execution_seq maxvalue 9223372036854775807 no cycle;
-create sequence batch_schema.batch_job_seq maxvalue 9223372036854775807 no cycle;
+create sequence batch_order_schema.batch_step_execution_seq maxvalue 9223372036854775807 no cycle;
+create sequence batch_order_schema.batch_job_execution_seq maxvalue 9223372036854775807 no cycle;
+create sequence batch_order_schema.batch_job_seq maxvalue 9223372036854775807 no cycle;

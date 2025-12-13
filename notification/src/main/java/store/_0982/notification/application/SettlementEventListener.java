@@ -62,6 +62,7 @@ public class SettlementEventListener {
                     "일일 정산 실패",
                     String.format("일일 정산이 실패해 %s원이 다음날 같이 적립될 예정입니다.",
                             AMOUNT_FORMATTER.format(event.getSettlementAmount())));
+            case DEFERRED -> null;
         };
     }
 
@@ -76,6 +77,11 @@ public class SettlementEventListener {
                     NotificationType.MONTHLY_SETTLEMENT_FAILED,
                     "월간 정산 실패",
                     String.format("월간 정산에 실패해 %s원이 송금되지 않았습니다. 오류가 반복될 경우 관리자에게 문의하세요.",
+                            AMOUNT_FORMATTER.format(event.getSettlementAmount())));
+            case DEFERRED -> new NotificationContent(
+                    NotificationType.MONTHLY_SETTLEMENT_COMPLETED,
+                    "월간 정산 보류",
+                    String.format("월간 정산 금액 %s원이 최소 송금 기준에 미달하여 다음 달에 합산 송금됩니다.",
                             AMOUNT_FORMATTER.format(event.getSettlementAmount())));
         };
     }
