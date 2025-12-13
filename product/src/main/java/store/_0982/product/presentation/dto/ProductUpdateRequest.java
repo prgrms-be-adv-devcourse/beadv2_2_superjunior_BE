@@ -5,7 +5,7 @@ import store._0982.product.domain.ProductCategory;
 
 public record ProductUpdateRequest(
         String name,
-        int price,
+        Long price,
         ProductCategory category,
         String description,
         int stock,

@@ -27,4 +27,6 @@ public interface GroupPurchaseRepository {
 
     int openReadyGroupPurchases(OffsetDateTime now);
 
+    boolean existsByProductId(UUID productId);
+
 }

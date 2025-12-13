@@ -15,6 +15,7 @@ import store._0982.product.application.dto.ProductUpdateCommand;
 import store._0982.product.application.dto.ProductUpdateInfo;
 import store._0982.product.common.exception.CustomErrorCode;
 import store._0982.product.common.exception.CustomException;
+import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
@@ -27,6 +28,7 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
     private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
     @ServiceLog
@@ -45,7 +47,6 @@ public class ProductService {
         return ProductRegisterInfo.from(savedProduct);
     }
 
-    @ServiceLog
     public void deleteProduct(UUID productId, UUID memberId) {
         Product findProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
@@ -54,8 +55,16 @@ public class ProductService {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
         }
 
-        productRepository.delete(findProduct);
+        boolean isUsedInGroupPurchase = groupPurchaseRepository.existsByProductId(productId);
 
+        if (isUsedInGroupPurchase) {
+            // soft delete: 상태를 삭제로 변경
+            findProduct.softDelete();
+            productRepository.save(findProduct);
+        } else {
+            // hard delete
+            productRepository.delete(findProduct);
+        }
         //kafka
         kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.toEvent());
     }

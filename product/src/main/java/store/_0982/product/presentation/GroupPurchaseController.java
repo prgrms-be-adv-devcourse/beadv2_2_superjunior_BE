@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.HeaderName;
 import store._0982.common.log.ControllerLog;
 import store._0982.product.application.dto.*;
 import store._0982.product.application.GroupPurchaseService;
@@ -73,7 +74,7 @@ public class GroupPurchaseController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Void> deleteGroupPurchase(
             @PathVariable UUID purchaseId,
-            @RequestHeader("X-Member-Id") UUID memberId) {
+            @RequestHeader(HeaderName.ID) UUID memberId) {
         purchaseService.deleteGroupPurchase(purchaseId, memberId);
         return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 삭제되었습니다");
     }

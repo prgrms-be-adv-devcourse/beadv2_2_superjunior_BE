@@ -66,4 +66,9 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
         return groupPurchaseJpaRepository.openReadyGroupPurchases(now);
     }
 
+    @Override
+    public boolean existsByProductId(UUID productId) {
+        return groupPurchaseJpaRepository.existsByProductId((productId));
+    }
+
 }

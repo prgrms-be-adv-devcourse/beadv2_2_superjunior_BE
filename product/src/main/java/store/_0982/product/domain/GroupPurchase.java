@@ -10,8 +10,6 @@ import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.ProductEvent;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -36,7 +34,7 @@ public class GroupPurchase {
     private String description;
 
     @Column(name = "discounted_price", nullable = false)
-    private int discountedPrice;
+    private Long discountedPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -79,7 +77,7 @@ public class GroupPurchase {
                          int maxQuantity,
                          String title,
                          String description,
-                         int discountedPrice,
+                         Long discountedPrice,
                          OffsetDateTime startDate,
                          OffsetDateTime endDate,
                          UUID sellerId,
@@ -128,7 +126,7 @@ public class GroupPurchase {
                                     int maxQuantity,
                                     String title,
                                     String description,
-                                    int discountedPrice,
+                                    Long discountedPrice,
                                     OffsetDateTime startDate,
                                     OffsetDateTime endDate,
                                     UUID productId){
@@ -172,7 +170,7 @@ public class GroupPurchase {
                 this.maxQuantity,
                 this.title,
                 this.description,
-                (long)this.discountedPrice,
+                this.discountedPrice,
                 this.status.name(),
                 sellerName,
                 this.startDate.toString(),
