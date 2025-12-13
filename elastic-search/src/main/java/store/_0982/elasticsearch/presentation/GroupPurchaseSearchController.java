@@ -46,9 +46,10 @@ public class GroupPurchaseSearchController {
     public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocument(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, pageable);
+        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, category, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }

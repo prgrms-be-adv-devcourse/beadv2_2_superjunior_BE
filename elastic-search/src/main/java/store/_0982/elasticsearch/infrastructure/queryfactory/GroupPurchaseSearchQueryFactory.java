@@ -12,6 +12,7 @@ public class GroupPurchaseSearchQueryFactory {
     public NativeQuery createSearchQuery(
             String keyword,
             String status,
+            String category,
             Pageable pageable
     ) {
         boolean noKeyword = (keyword == null || keyword.isBlank());
@@ -29,6 +30,18 @@ public class GroupPurchaseSearchQueryFactory {
                             b.filter(f -> f.term(t -> t
                                     .field("status")
                                     .value(status)
+                            ));
+                        }
+                        // category 선택
+                        if (category != null && !category.isBlank()) {
+                            b.filter(f -> f.nested(n -> n
+                                    .path("ProductDocumentEmbedded")
+                                    .query(p -> p
+                                            .term(t -> t
+                                                    .field("ProductDocumentEmbedded.category")
+                                                    .value(category)
+                                            )
+                                    )
                             ));
                         }
 
@@ -82,6 +95,18 @@ public class GroupPurchaseSearchQueryFactory {
                         b.filter(f -> f.term(t -> t
                                 .field("status")
                                 .value(status)
+                        ));
+                    }
+                    // category 선택
+                    if (category != null && !category.isBlank()) {
+                        b.filter(f -> f.nested(n -> n
+                                .path("productDocumentEmbedded")
+                                .query(p -> p
+                                        .term(t -> t
+                                                .field("productDocumentEmbedded.category")
+                                                .value(category)
+                                        )
+                                )
                         ));
                     }
 

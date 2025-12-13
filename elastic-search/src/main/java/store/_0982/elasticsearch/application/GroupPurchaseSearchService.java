@@ -48,9 +48,10 @@ public class GroupPurchaseSearchService {
     public PageResponse<GroupPurchaseDocumentInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
+            String category,
             Pageable pageable
     ) {
-        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, pageable);
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, category, pageable);
 
         SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
 

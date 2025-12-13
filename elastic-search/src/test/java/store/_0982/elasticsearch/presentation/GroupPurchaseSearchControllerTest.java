@@ -104,6 +104,7 @@ class GroupPurchaseSearchControllerTest {
         // given
         String keyword = "아이폰";
         String status = "OPEN";
+        String category = "";
 
         GroupPurchaseDocumentInfo doc =
                 new GroupPurchaseDocumentInfo(
@@ -136,6 +137,7 @@ class GroupPurchaseSearchControllerTest {
         when(groupPurchaseSearchService.searchGroupPurchaseDocument(
                 eq(keyword),
                 eq(status),
+                eq(category),
                 any(Pageable.class)
         )).thenReturn(response);
 
@@ -170,6 +172,7 @@ class GroupPurchaseSearchControllerTest {
 
         when(groupPurchaseSearchService.searchGroupPurchaseDocument(
                 eq(keyword),
+                isNull(),
                 isNull(),
                 any(Pageable.class)
         )).thenReturn(response);

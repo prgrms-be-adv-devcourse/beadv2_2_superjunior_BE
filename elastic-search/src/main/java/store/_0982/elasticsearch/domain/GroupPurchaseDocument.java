@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 
@@ -58,5 +57,5 @@ public class GroupPurchaseDocument {
     private Integer currentQuantity;
 
     @Field(type = FieldType.Nested)
-    private ProductEvent productEvent;
+    private ProductDocumentEmbedded productDocumentEmbedded;
 }

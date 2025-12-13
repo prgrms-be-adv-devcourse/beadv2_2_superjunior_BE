@@ -3,6 +3,8 @@ package store._0982.elasticsearch.application.dto;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
+import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
+
 import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
@@ -55,7 +57,7 @@ public record GroupPurchaseDocumentCommand(
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .currentQuantity(currentQuantity)
-                .productEvent(productEvent)
+                .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
                 .build();
     }
 }
