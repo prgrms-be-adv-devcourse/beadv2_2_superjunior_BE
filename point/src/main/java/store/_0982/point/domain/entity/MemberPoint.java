@@ -1,4 +1,4 @@
-package store._0982.point.domain;
+package store._0982.point.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,8 +23,8 @@ public class MemberPoint {
     private UUID memberId;
 
     // TODO: 밸런스를 정말 안전하게 long 타입으로 관리하는 게 좋을까?
-    @Column(name = "point_balance")
-    private Integer pointBalance;
+    @Column(name = "point_balance", nullable = false)
+    private long pointBalance;
 
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
