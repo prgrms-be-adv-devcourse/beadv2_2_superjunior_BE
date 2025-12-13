@@ -14,6 +14,40 @@ on:
       - 'common/build.gradle'
 
 jobs:
+  apply-infra:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Infra 설정 파일을 Bastion으로 복사
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: "docs/k8s/service/search.yml"
+          target: "/tmp/k8s-service-temp"
+          strip_components: 3
+          overwrite: true
+
+      - name: Infra 리소스 적용
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          command_timeout: '3m'
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            echo "Applying search.yml..."
+            kubectl apply -f /tmp/k8s-service-temp/search.yml
+            echo "search infra applied successfully"
+
   build:
     runs-on: ubuntu-latest
     outputs:
@@ -42,48 +76,37 @@ jobs:
       - name: Jib로 Docker 이미지 빌드
         run: |
           ./gradlew :elastic-search:jibDockerBuild \
-            -Djib.to.tags=latest
+            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
       - name: Docker 이미지 push
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker image push minbros/search:${{ steps.version.outputs.tag }}
           docker image push minbros/search:latest
 
-  apply-search:
-    needs: build
+  deploy:
+    needs: [apply-infra, build]
     runs-on: ubuntu-latest
     steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - name: Search 설정 파일을 Bastion으로 복사
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "docs/k8s/service/search.yml"
-          target: "/tmp/k8s-service-temp"
-          strip_components: 3
-          overwrite: true
-
-      - name: Search 리소스 적용
+      - name: 컨트롤 플레인에서 이미지 pull 후 배포 명령 실행
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
           username: ${{ secrets.BASTION_USER }}
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
-          command_timeout: '3m'
           script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            echo "Applying search.yml..."
-            kubectl apply -f /tmp/k8s-service-temp/search.yml
-            echo "search applied successfully"
-            
+            set -e
+            TAG=${{ needs.build.outputs.image-tag }}
+
+            echo "Updating deployment..."
+            sudo kubectl set image deployment/search \
+              search=minbros/search:${TAG} \
+              --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
             echo "Waiting for rollout..."
             sudo kubectl rollout status deployment/search \
-              --timeout=3m \
+              --timeout=10m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+            echo "search deployed successfully with version ${TAG}"
