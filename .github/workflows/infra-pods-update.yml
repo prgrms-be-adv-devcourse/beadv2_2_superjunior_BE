@@ -73,7 +73,6 @@ jobs:
               filename=$(basename "$file")
               if [ -f "/tmp/k8s-infra/$filename" ]; then
                 echo "Applying $filename..."
-                kubectl delete -f "/tmp/k8s-infra/$filename"
                 kubectl apply -f "/tmp/k8s-infra/$filename"
                 echo "$filename applied successfully"
               fi

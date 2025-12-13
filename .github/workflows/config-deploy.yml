@@ -149,19 +149,3 @@ jobs:
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"
-
-      - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.PRIVATE_HOST }}
-          username: ${{ secrets.PRIVATE_USER }}
-          key: ${{ secrets.PRIVATE_SSH_KEY }}
-          port: 22
-          proxy_host: ${{ secrets.BASTION_HOST }}
-          proxy_username: ${{ secrets.BASTION_USER }}
-          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
-          proxy_port: 22
-          script: |
-            echo "Removing unused images..."
-            sudo k3s crictl rmi --prune || true
-            echo "Image cleanup completed"
