@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.common.log.ServiceLog;
 import store._0982.product.application.dto.ProductRegisterCommand;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
@@ -28,6 +29,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
+    @ServiceLog
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         Product product = new Product(command.name(),
                 command.price(), command.category(),
@@ -43,6 +45,7 @@ public class ProductService {
         return ProductRegisterInfo.from(savedProduct);
     }
 
+    @ServiceLog
     public void deleteProduct(UUID productId, UUID memberId) {
         Product findProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));

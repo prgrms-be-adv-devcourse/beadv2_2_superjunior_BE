@@ -15,8 +15,8 @@ public record GroupPurchaseThumbnailInfo(
         String title,
         int discountedPrice,
         int currentQuantity,
-        LocalDateTime startDate,
-        LocalDate endDate,
+        OffsetDateTime startDate,
+        OffsetDateTime endDate,
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
 ) {
