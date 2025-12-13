@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.SettlementEvent;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -52,5 +53,71 @@ public class Settlement {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    public Settlement(
+            UUID sellerId,
+            OffsetDateTime periodStart,
+            OffsetDateTime periodEnd,
+            Long totalAmount,
+            BigDecimal serviceFee,
+            BigDecimal settlementAmount
+    ) {
+        this.settlementId = UUID.randomUUID();
+        this.sellerId = sellerId;
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+        this.totalAmount = totalAmount;
+        this.serviceFee = serviceFee;
+        this.settlementAmount = settlementAmount;
+        this.status = SettlementStatus.PENDING;
+    }
+
+    public void markAsCompleted() {
+        this.status = SettlementStatus.COMPLETED;
+        this.settledAt = OffsetDateTime.now();
+    }
+
+    public void markAsFailed() {
+        this.status = SettlementStatus.FAILED;
+    }
+
+    public SettlementEvent toCompletedEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.SUCCESS,
+                this.totalAmount,
+                this.serviceFee,
+                this.settlementAmount
+        );
+    }
+
+    public SettlementEvent toFailedEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.FAILED,
+                this.totalAmount,
+                this.serviceFee,
+                this.settlementAmount
+        );
+    }
+
+    public SettlementEvent toDeferredEvent() {
+        return new SettlementEvent(
+                this.settlementId,
+                this.sellerId,
+                this.periodStart,
+                this.periodEnd,
+                SettlementEvent.Status.DEFERRED,
+                this.totalAmount,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO
+        );
+    }
 
 }

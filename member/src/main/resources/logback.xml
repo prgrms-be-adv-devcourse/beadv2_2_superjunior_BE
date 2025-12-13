@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+    <!--  환경 변수화 필요  -->
+    <property name="SERVICE_NAME" value="member-service"/>
+    <property name="LOGSTASH_HOST" value="localhost"/>
+    <property name="LOGSTASH_PORT" value="5000"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] [%logger{36}] - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Logstash TCP Appender 로그를 파일로 저장하지 않고 바로 logstash로 전송 -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- 추가 필드 작성 -->
+            <customFields>{"service":"${SERVICE_NAME}"}</customFields>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="LOGSTASH"/>
+    </root>
+</configuration>

@@ -30,7 +30,7 @@ public class ProductSearchService {
     public void createProductIndex() {
         IndexOperations ops = operations.indexOps(ProductDocument.class);
 
-        if (!ops.exists()) {
+        if (ops.exists()) {
             throw new CustomException(CustomErrorCode.ALREADY_EXIST_INDEX);
         }
         Document settings = Document.create();

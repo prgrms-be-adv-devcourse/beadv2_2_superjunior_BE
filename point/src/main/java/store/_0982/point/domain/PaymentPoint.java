@@ -1,9 +1,7 @@
 package store._0982.point.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -12,7 +10,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table(name = "payment_point", schema = "point_schema")
 public class PaymentPoint {
 

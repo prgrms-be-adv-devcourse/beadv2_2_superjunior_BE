@@ -2,6 +2,9 @@ dependencies {
     // 필요한 의존성 추가
     implementation project(':common')
 
+    //openfeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
     //DB
