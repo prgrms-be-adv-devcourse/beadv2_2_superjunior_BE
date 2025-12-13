@@ -27,7 +27,7 @@ management:
       type: w3c  # 또는 b3
 
 gateway:
-  host: http://localhost:8000
+  host: ${GATEWAY_HOST:http://localhost:8000}
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
