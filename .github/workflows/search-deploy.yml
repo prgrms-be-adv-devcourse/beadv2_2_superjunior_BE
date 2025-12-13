@@ -82,29 +82,8 @@ jobs:
             echo "Applying search.yml..."
             kubectl apply -f /tmp/k8s-service-temp/search.yml
             echo "search applied successfully"
-
-  deploy:
-    needs: [apply-search, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 컨트롤 플레인에서 이미지 pull 후 배포 명령 실행
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          script: |
-            set -e
-
-            echo "Updating deployment..."
-            sudo kubectl set image deployment/search \
-              search=minbros/search:latest \
-              --kubeconfig=/etc/rancher/k3s/k3s.yaml
             
             echo "Waiting for rollout..."
             sudo kubectl rollout status deployment/search \
-              --timeout=10m \
+              --timeout=3m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
-            
-            echo "Search deployed successfully"
