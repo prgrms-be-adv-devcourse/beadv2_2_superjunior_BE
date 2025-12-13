@@ -27,4 +27,9 @@ gateway:
   host: http://localhost:8000
 
 kafka:
-  bootstrap-servers: http://localhost:9092
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:http://localhost:9092}
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+

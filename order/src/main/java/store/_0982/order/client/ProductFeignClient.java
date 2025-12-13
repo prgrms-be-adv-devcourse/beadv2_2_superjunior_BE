@@ -9,13 +9,13 @@ import store._0982.order.client.dto.GroupPurchaseInternalInfo;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = "product-service", url = "${gateway.url}")
+@FeignClient(name = "product-service", url = "${gateway.host}")
 public interface ProductFeignClient {
 
-    @GetMapping("/api/purchases/unsettled")
+    @GetMapping("/internal/purchases/unsettled")
     List<GroupPurchaseInternalInfo> getUnSettledGroupPurchase();
 
-    @PutMapping("/api/purchases/{groupPurchaseId}/settle")
+    @PutMapping("/internal/purchases/{groupPurchaseId}/settle")
     void markAsSettled(@PathVariable("groupPurchaseId") UUID groupPurchaseId);
 
 }

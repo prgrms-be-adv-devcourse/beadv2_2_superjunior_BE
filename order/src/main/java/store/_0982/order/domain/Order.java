@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.exception.CustomException;
+import store._0982.order.application.dto.OrderRegisterCommand;
+import store._0982.order.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -60,6 +63,9 @@ public class Order {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt;
+
     public Order(
             int quantity,
             int price,
@@ -74,7 +80,7 @@ public class Order {
         this.quantity = quantity;
         this.price = price;
         this.memberId = memberId;
-        this.status = OrderStatus.SCHEDULED;
+        this.status = OrderStatus.IN_PROGRESS;
         this.address = address;
         this.addressDetail = addressDetail;
         this.postalCode = postalCode;
@@ -83,4 +89,56 @@ public class Order {
         this.groupPurchaseId = groupPurchaseId;
 
     }
+
+    public static Order create(OrderRegisterCommand command, UUID memberId){
+        return new Order(
+                command.quantity(),
+                command.price(),
+                memberId,
+                command.address(),
+                command.addressDetail(),
+                command.postalCode(),
+                command.receiverName(),
+                command.sellerId(),
+                command.groupPurchaseId()
+        );
+    }
+
+    // 상태 변경
+    public void updateStatus(OrderStatus newStatus){
+        validateStatus(this.status, newStatus );
+        this.status = newStatus;
+    }
+
+    // 상태 전환 검증
+    private void validateStatus(OrderStatus current, OrderStatus target) {
+        if (current == target) {
+            return;
+        }
+
+        switch (current) {
+            case IN_PROGRESS -> {
+                if (target != OrderStatus.SUCCESS && target != OrderStatus.FAILED) {
+                    throw new IllegalStateException("SUCCESS, FAILED로만 변경 가능");
+                }
+            }
+            case SUCCESS, FAILED ->
+                throw new IllegalStateException("현재 상태 " + current + " 변경 불가능");
+
+        }
+    }
+
+    // 환불 완료
+    public void markReturned(){
+        if(this.returnedAt != null){
+            throw new IllegalStateException("이미 환불된 건입니다.");
+        }
+        this.returnedAt = OffsetDateTime.now();
+    }
+
+    // 환불 여부
+    public boolean isReturned(){
+        return this.returnedAt != null;
+    }
+
 }

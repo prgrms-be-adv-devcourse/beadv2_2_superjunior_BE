@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +53,17 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     @Override
     public List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status) {
         return groupPurchaseJpaRepository.findByStatusAndSettledAtIsNull(status);
+    }
+
+    @Override
+    public List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList) {
+        return groupPurchaseJpaRepository.saveAll(groupPurchaseList);
+    }
+
+    @Override
+    @Transactional
+    public int openReadyGroupPurchases(OffsetDateTime now) {
+        return groupPurchaseJpaRepository.openReadyGroupPurchases(now);
     }
 
 }

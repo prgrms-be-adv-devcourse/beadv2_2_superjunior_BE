@@ -20,7 +20,8 @@ create table order_schema."order"
     group_purchase_id     uuid                                                     not null,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
-    deleted_at     timestamp with time zone
+    deleted_at     timestamp with time zone,
+    returned_at    timestamp with time zone
 );
 
 comment on table order_schema."order" is '주문';
@@ -53,6 +54,8 @@ comment on column order_schema."order".updated_at is '수정일';
 
 comment on column order_schema."order".deleted_at is '주문 취소일';
 
+comment on column order_schema."order".returned_at is '환불 완료일';
+
 alter table order_schema."order"
     owner to postgres;
 
@@ -61,11 +64,12 @@ create table order_schema.shopping_cart
     shopping_cart_id  uuid              not null
         constraint shopping_cart_pk
             primary key,
-    member_id         uuid              not null
-        constraint shopping_cart_pk_2
-            unique,
+    member_id         uuid              not null,
     group_purchase_id uuid              not null,
-    quantity          integer default 1 not null
+    quantity          integer default 1 not null,
+    created_at     timestamp with time zone default now()                          not null,
+    updated_at     timestamp with time zone,
+    deleted_at     timestamp with time zone,
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
@@ -77,6 +81,12 @@ comment on column order_schema.shopping_cart.member_id is '멤버 ID';
 comment on column order_schema.shopping_cart.group_purchase_id is '공동 구매 ID';
 
 comment on column order_schema.shopping_cart.quantity is '수량';
+
+comment on column order_schema."order".created_at is '등록 시각';
+
+comment on column order_schema."order".updated_at is '수정 시각';
+
+comment on column order_schema."order".deleted_at is '삭제 시각';
 
 alter table order_schema.shopping_cart
     owner to postgres;
@@ -93,7 +103,7 @@ create table order_schema.settlement
     service_fee       numeric(12, 2)                         not null,
     settlement_amount numeric(12, 2)                         not null,
     status            varchar(20)                            not null,
-    settled_at        timestamp with time zone               not null,
+    settled_at        timestamp with time zone                       ,
     created_at        timestamp with time zone default now() not null,
     updated_at        timestamp with time zone
 );

@@ -24,8 +24,6 @@ import java.util.UUID;
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
 @Slf4j
-//TODO: log 달기
-
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
@@ -74,7 +72,7 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")
-    @GetMapping("email/{email}")
+    @GetMapping("/email/{email}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<String> sendVerificationEmail(@PathVariable("email") String email) {
         memberService.sendVerificationEmail(email);
@@ -82,7 +80,7 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증", description = "인증 메일에 포함된 토큰으로 이메일 인증을 완료합니다.")
-    @GetMapping("email/verification/{token}")
+    @GetMapping("/email/verification/{token}")
     public ResponseDto<String> verifyEmail(@PathVariable("token") String token) {
         memberService.verifyEmail(token);
         return new ResponseDto<>(HttpStatus.OK, null, "이메일 인증이 완료되었습니다.");
@@ -146,13 +144,6 @@ public class MemberController {
         headers.put(HeaderName.ROLE, role);
 
         return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");
-    }
-
-    @Operation(summary = "판매자 계좌 조회 (내부용)", description = "internal 통신용으로 판매자의 정산 계좌 정보를 조회합니다.") //TODO: 판매자 수만큼 호출은 N+1 문제, -> 리스트 요청, 리스트 응답으로 변경 필요
-    @GetMapping("/internal/seller-account/{sellerId}")
-    public ResponseDto<SellerAccountInfo> getSellerAccountInfo(@PathVariable UUID sellerId){
-        SellerAccountInfo sellerAccountInfo = sellerService.getSellerAccountInfo(sellerId);
-        return new ResponseDto<>(HttpStatus.OK, sellerAccountInfo, "판매자 계좌 정보");
     }
 
 }
