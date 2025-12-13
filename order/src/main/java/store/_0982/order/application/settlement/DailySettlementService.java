@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.client.ProductFeignClient;
 import store._0982.order.client.dto.GroupPurchaseInternalInfo;
+import store._0982.order.domain.SettlementLogFormat;
 
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,6 @@ public class DailySettlementService {
 
     private final ProductFeignClient productFeignClient;
     private final SellerSettlementProcessor sellerSettlementProcessor;
-
-    private static final String SETTLEMENT_START = "[SETTLEMENT] [Seller:%s] started - 공구 수: %d";
-    private static final String SETTLEMENT_COMPLETE = "[SETTLEMENT] [Seller:%s] completed";
-    private static final String SETTLEMENT_FAIL = "[SETTLEMENT] [Seller:%s] failed - %s";
 
     /**
      * 데일리 정산 메인 프로세스
@@ -55,16 +52,13 @@ public class DailySettlementService {
             List<GroupPurchaseInternalInfo> sellerGroupPurchases = entry.getValue();
 
             try {
-                log.info(String.format(SETTLEMENT_START, sellerId, sellerGroupPurchases.size()));
-                processSellerDailySettlement(sellerId, sellerGroupPurchases);
-                log.info(String.format(SETTLEMENT_COMPLETE, sellerId));
+                log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_START, sellerId, sellerGroupPurchases.size()));
+                sellerSettlementProcessor.processSellerSettlement(sellerId, sellerGroupPurchases);
+                log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_COMPLETE, sellerId));
             } catch (Exception e) {
-                log.error(String.format(SETTLEMENT_FAIL, sellerId, e.getMessage()), e);
+                log.error(String.format(SettlementLogFormat.DAILY_SETTLEMENT_FAIL, sellerId, e.getMessage()), e);
             }
         }
     }
 
-    private void processSellerDailySettlement(UUID sellerId, List<GroupPurchaseInternalInfo> groupPurchases) {
-        sellerSettlementProcessor.processSellerSettlement(sellerId, groupPurchases);
-    }
 }

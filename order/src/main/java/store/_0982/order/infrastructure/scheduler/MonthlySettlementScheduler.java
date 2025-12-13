@@ -8,6 +8,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import store._0982.order.domain.SettlementLogFormat;
 
 import java.time.LocalDateTime;
 
@@ -19,17 +20,13 @@ public class MonthlySettlementScheduler {
     private final JobLauncher jobLauncher;
     private final Job monthlySettlementJob;
 
-    private static final String SCHEDULER_START = "[SCHEDULER] [%s] started";
-    private static final String SCHEDULER_COMPLETE = "[SCHEDULER] [%s] completed";
-    private static final String SCHEDULER_FAIL = "[SCHEDULER] [%s] failed";
-
     /**
      * 매월 1일 02:00에 월별 정산 배치 실행
      */
     @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() {
         String schedulerName = "MonthlySettlement";
-        log.info(String.format(SCHEDULER_START, schedulerName));
+        log.info(String.format(SettlementLogFormat.START, schedulerName));
 
         try {
             JobParameters jobParameters = new JobParametersBuilder()
@@ -37,9 +34,9 @@ public class MonthlySettlementScheduler {
                     .toJobParameters();
 
             jobLauncher.run(monthlySettlementJob, jobParameters);
-            log.info(String.format(SCHEDULER_COMPLETE, schedulerName));
+            log.info(String.format(SettlementLogFormat.COMPLETE, schedulerName));
         } catch (Exception e) {
-            log.error(String.format(SCHEDULER_FAIL, schedulerName), e);
+            log.info(String.format(SettlementLogFormat.FAIL, schedulerName));
         }
     }
 }
