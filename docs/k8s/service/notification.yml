@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: notification
-          image: minbros/gateway
+          image: minbros/notification
           imagePullPolicy: Always
           env:
             - name: SPRING_CLOUD_CONFIG_URI
