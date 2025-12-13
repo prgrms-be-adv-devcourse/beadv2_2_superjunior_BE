@@ -2,21 +2,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway
+  name: gateway-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gateway
+      app: gateway-server
   template:
     metadata:
       labels:
-        app: gateway
+        app: gateway-server
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: gateway
-          image: minbros/gateway
+        - name: gateway-server
+          image: minbros/gateway-server
           imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_CONFIG_IMPORT
@@ -65,7 +65,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: gateway
+    app: gateway-server
   ports:
     - port: 8000
       targetPort: 8000
