@@ -122,3 +122,5 @@ jobs:
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Notification Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+
+# SDF
