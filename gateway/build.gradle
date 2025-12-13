@@ -20,7 +20,7 @@ jib {
         image = 'eclipse-temurin:17-jre'
     }
     to {
-        image = 'minbros/gateway-server'
+        image = 'minbros/gateway'
     }
     container {
         ports = ['8000']

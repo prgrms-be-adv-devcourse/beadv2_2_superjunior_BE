@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: config-server
+  name: config
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: config-server
+      app: config
   template:
     metadata:
       labels:
-        app: config-server
+        app: config
     spec:
       nodeSelector:
         kubernetes.io/hostname: ip-10-0-131-196
       automountServiceAccountToken: false
       containers:
-        - name: config-server
-          image: minbros/config-server
+        - name: config
+          image: minbros/config
           imagePullPolicy: Never
           env:
             - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
@@ -58,10 +58,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: config-server
+  name: config-service
 spec:
   selector:
-    app: config-server
+    app: config
   ports:
     - port: 8888
       targetPort: 8888

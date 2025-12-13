@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: gateway-server-deploy.yml
+name: Gateway Deploy
 on:
   push:
     branches:
@@ -10,7 +10,7 @@ on:
       - 'gateway/src/**'
       - 'gateway/build.gradle'
       - 'docs/k8s/service/gateway.yml'
-      - '.github/workflows/gateway-server-deploy.yml'
+      - 'gateway-deploy.yml'
 
 jobs:
   apply-gateway:
@@ -63,7 +63,7 @@ jobs:
             kubectl apply -f /tmp/k8s-service/gateway.yml
             echo "Gateway service applied successfully"
 
-  deploy-gateway-server:
+  deploy-gateway:
     needs: apply-gateway
     runs-on: ubuntu-latest
     steps:
@@ -96,7 +96,7 @@ jobs:
       - name: Jib로 Docker 이미지 빌드
         run: |
           ./gradlew :gateway:jib \
-          -Djib.to.image=minbros/gateway-server \
+          -Djib.to.image=minbros/gateway \
           -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
@@ -110,12 +110,12 @@ jobs:
           port: 22
           script: |
             echo "Updating deployment..."
-            kubectl set image deployment/gateway-server \
-              gateway-server=minbros/gateway-server:${{ steps.version.outputs.tag }} \
+            kubectl set image deployment/gateway \
+              gateway=minbros/gateway:${{ steps.version.outputs.tag }} \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
-            kubectl rollout status deployment/gateway-server \
+            kubectl rollout status deployment/gateway \
               --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 

@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: discovery-server
+  name: discovery
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: discovery-server
+      app: discovery
   template:
     metadata:
       labels:
-        app: discovery-server
+        app: discovery
     spec:
       nodeSelector:
         kubernetes.io/hostname: ip-10-0-131-196
       automountServiceAccountToken: false
       containers:
-        - name: discovery-server
-          image: minbros/discovery-server
+        - name: discovery
+          image: minbros/discovery
           imagePullPolicy: Never
           env:
             - name: SPRING_PROFILES_ACTIVE
@@ -50,10 +50,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: discovery-server
+  name: discovery-service
 spec:
   selector:
-    app: discovery-server
+    app: discovery
   ports:
     - port: 8761
       targetPort: 8761
