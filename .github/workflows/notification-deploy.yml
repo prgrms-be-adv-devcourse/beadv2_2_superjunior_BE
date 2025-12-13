@@ -96,6 +96,9 @@ jobs:
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Docker Hub 이미지 업로드 대기
+        run: sleep 30
+
       - name: 컨트롤 플레인 접속 후 배포 명령 실행 및 이미지 정리
         uses: appleboy/ssh-action@v1.0.0
         with:
