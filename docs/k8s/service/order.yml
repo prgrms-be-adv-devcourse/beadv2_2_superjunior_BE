@@ -2,25 +2,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: member
+  name: order
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: member
+      app: order
   template:
     metadata:
       labels:
-        app: member
+        app: order
     spec:
       automountServiceAccountToken: false
       containers:
-        - name: member
-          image: minbros/member
+        - name: order
+          image: minbros/order
           imagePullPolicy: Never
           envFrom:
             - secretRef:
-                name: member-secret
+                name: order-secret
           resources:
             requests:
               cpu: "200m"
@@ -31,28 +31,29 @@ spec:
               memory: "512Mi"
               ephemeral-storage: "1Gi"
           ports:
-            - containerPort: 8083
+            - containerPort: 8085
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: 8083
+              port: 8085
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8083
+              port: 8085
             initialDelaySeconds: 60
             periodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: member
+  name: order
 spec:
   selector:
-    app: member
+    app: order
   ports:
-    - port: 8083
-      targetPort: 8083
+    - port: 8085
+      targetPort: 8085
   type: ClusterIP
+
