@@ -9,7 +9,7 @@ on:
     paths:
       - 'discovery/**'
       - 'docs/k8s/infra/discovery.yml'
-      - 'discovery-deploy.yml'
+      - '.github/workflows/discovery-deploy.yml'
 
 jobs:
   apply-infra:

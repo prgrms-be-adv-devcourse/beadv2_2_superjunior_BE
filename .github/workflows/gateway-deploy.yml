@@ -10,7 +10,7 @@ on:
       - 'gateway/src/**'
       - 'gateway/build.gradle'
       - 'docs/k8s/service/gateway.yml'
-      - 'gateway-deploy.yml'
+      - '.github/workflows/gateway-deploy.yml'
 
 jobs:
   apply-gateway:

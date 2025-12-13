@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd   # 테스트용
+      - feature/ci-cd
       - feature/ci-cd-*
     paths:
       - 'config/repo/*.yml'
-      - '.github/workflows/config-repo-update.yml'  # 테스트용
+      - '.github/workflows/config-repo-update.yml'
 
 jobs:
   update-configmap:

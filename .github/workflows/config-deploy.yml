@@ -10,7 +10,7 @@ on:
       - 'config/src/**'
       - 'docs/k8s/infra/config.yml'
       - 'config/build.gradle'
-      - 'config-deploy.yml'
+      - '.github/workflows/config-deploy.yml'
 
 jobs:
   apply-infra:
