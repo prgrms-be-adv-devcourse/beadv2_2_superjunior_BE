@@ -6,3 +6,16 @@ dependencies {
 bootJar {
     enabled = true
 }
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = 'minbros/discovery-server'
+    }
+    container {
+        ports = ['8888']
+        jvmFlags = ['-Xms256m', '-Xmx512m']
+    }
+}
