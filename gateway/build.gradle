@@ -24,6 +24,6 @@ jib {
     }
     container {
         ports = ['8000']
-        jvmFlags = ['-Xms128m', '-Xmx256m']
+        jvmFlags = ['-Xms256m', '-Xmx512m']
     }
 }

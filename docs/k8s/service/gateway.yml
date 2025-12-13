@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: minbros/gateway
+          image: minbros/gateway:latest
           imagePullPolicy: Always
           env:
             - name: SPRING_CLOUD_CONFIG_URI
