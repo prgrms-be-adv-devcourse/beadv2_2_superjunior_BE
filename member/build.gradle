@@ -31,6 +31,19 @@ dependencies {
 
     //common 모듈
     implementation project(':common')
+
+    jib {
+        from {
+            image = 'eclipse-temurin:17-jre'
+        }
+        to {
+            image = 'minbros/member'
+        }
+        container {
+            ports = ['8083']
+            jvmFlags = ['-Xms256m', '-Xmx512m']
+        }
+    }
 }
 
 bootJar {

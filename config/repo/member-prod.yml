@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url:
+    username: ${MEMBER_POSTGRES_USERNAME}
+    password: ${MEMBER_POSTGRES_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # none / validate / update / create / create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MEMBER_SMTP_EMAIL}
+    password: ${MEMBER_SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
+  refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}

@@ -1,0 +1,46 @@
+name: member-deploy.yml
+on:
+  push:
+    branches:
+      - main
+      - feature/ci-cd-yjs
+      - feature/ci-cd-yjs-test
+    paths:
+      - 'member/build.gradle'
+      - 'member/src/**'
+      - '.github/workflows/member-deploy.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Gradle 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 버전 태그 생성
+        id: version
+        run: |
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "Image tag: $SHORT_SHA"
+
+      - name: Jib로 Docker 이미지 빌드
+        run: |
+          ./gradlew :config:jibDockerBuild \
+            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
+
+      - name: Docker 이미지 push
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker image push minbros/member:${{ steps.version.outputs.tag }}
+          docker image push minbros/member:latest
