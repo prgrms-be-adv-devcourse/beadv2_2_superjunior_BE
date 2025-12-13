@@ -69,7 +69,7 @@ create table order_schema.shopping_cart
     quantity          integer default 1 not null,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
-    deleted_at     timestamp with time zone,
+    deleted_at     timestamp with time zone
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
