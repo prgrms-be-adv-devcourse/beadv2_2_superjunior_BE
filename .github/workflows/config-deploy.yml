@@ -97,7 +97,7 @@ jobs:
       - name: Docker 이미지를 tar 파일로 저장
         run: |
           docker save minbros/config:${{ steps.version.outputs.tag }} | gzip > config.tar.gz
-          ls -lh config-server.tar.gz
+          ls -lh config.tar.gz
 
       - name: 이미지 파일을 프라이빗 인스턴스로 전송 (Bastion 경유)
         uses: appleboy/scp-action@v1.0.0
