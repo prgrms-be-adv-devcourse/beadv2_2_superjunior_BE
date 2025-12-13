@@ -8,6 +8,7 @@ on:
       - feature/ci-cd-*
     paths:
       - 'discovery/**'
+      - 'docs/k8s/infra/discovery.yml'
       - '.github/workflows/discovery-server-deploy.yml'
 
 jobs:

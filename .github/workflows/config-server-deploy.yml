@@ -8,6 +8,7 @@ on:
       - feature/ci-cd-*
     paths:
       - 'config/src/**'
+      - 'docs/k8s/infra/config.yml'
       - 'config/build.gradle'
       - '.github/workflows/config-server-deploy.yml'
 
