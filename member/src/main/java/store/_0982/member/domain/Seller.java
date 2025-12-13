@@ -34,7 +34,7 @@ public class Seller {
     @Column(name = "bank_code", length = 20, nullable = false)
     private String bankCode;
 
-    @Column(name = "account_number", length = 20, nullable = false, unique = true)
+    @Column(name = "account_number", length = 20, nullable = false)
     private String accountNumber;
 
     @Column(name = "account_holder", length = 50, nullable = false)
