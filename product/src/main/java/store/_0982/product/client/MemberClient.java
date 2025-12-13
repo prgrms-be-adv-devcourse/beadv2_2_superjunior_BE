@@ -14,8 +14,6 @@ import java.util.UUID;
         url = "${gateway.host}"
 )
 public interface MemberClient {
-
-
-    @GetMapping("/api/members/profile")
-    ResponseDto<ProfileInfo> getMember(@RequestHeader(value = HeaderName.ID, required = false) UUID memberId);
+    @GetMapping("/internal/members/profile")
+    ResponseDto<ProfileInfo> getMember(@RequestHeader(value = HeaderName.ID) UUID memberId);
 }

@@ -25,6 +25,14 @@ spring:
               filters:
                 - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
 
+            - id: member-internal-api
+              uri: lb://member
+              predicates:
+                - Path=/internal/members/**
+              filters:
+#                - InternalToken
+                - RewritePath=/internal/members/(?<segment>.*), /internal/members/${segment}
+
             - id: order-api
               uri: lb://order
               predicates:
