@@ -24,7 +24,7 @@ jib {
         image = 'eclipse-temurin:17-jre'
     }
     to {
-        image = 'minbros/search'
+        image = 'minbros/store-search'
     }
     container {
         ports = ['8082']

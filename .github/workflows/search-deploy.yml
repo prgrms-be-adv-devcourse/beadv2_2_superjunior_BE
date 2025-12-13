@@ -62,7 +62,7 @@ jobs:
 
             echo "Applying config.yml..."
             kubectl apply -f /tmp/k8s-service/search.yml
-            echo "notification service applied successfully"
+            echo "search service applied successfully"
 
   deploy-search:
     needs: apply-search
@@ -90,7 +90,7 @@ jobs:
       - name: Jib로 Docker 이미지 빌드
         run: |
           ./gradlew :elastic-search:jib \
-          -Djib.to.image=minbros/search \
+          -Djib.to.image=minbros/store-search \
           -Djib.to.tags=latest \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
@@ -105,7 +105,7 @@ jobs:
           script: |
             echo "Updating deployment..."
             kubectl set image deployment/search \
-              search=minbros/search:latest \
+              search=minbros/store-search:latest \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."

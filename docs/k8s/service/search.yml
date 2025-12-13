@@ -16,8 +16,8 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: search
-          image: minbros/search:latest
-          imagePullPolicy: IfNotPresent
+          image: minbros/store-search:latest
+          imagePullPolicy: Always
           env:
             - name: SPRING_CLOUD_CONFIG_URI
               value: "http://config-service:8888"
