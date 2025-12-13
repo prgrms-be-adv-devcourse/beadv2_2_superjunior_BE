@@ -19,8 +19,8 @@ spec:
           image: minbros/gateway
           imagePullPolicy: Always
           env:
-            - name: SPRING_CONFIG_IMPORT
-              value: "optional:configserver:http://config-service:8888"
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
             - name: EUREKA_INSTANCE_HOSTNAME
