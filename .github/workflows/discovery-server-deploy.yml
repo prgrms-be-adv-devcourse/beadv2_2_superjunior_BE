@@ -36,7 +36,7 @@ jobs:
 
       - name: Jib로 Docker 이미지 빌드 (로컬)
         run: |
-          ./gradlew :config:jibDockerBuild \
+          ./gradlew :discovery:jibDockerBuild \
             -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
       - name: Docker 이미지를 tar 파일로 저장
