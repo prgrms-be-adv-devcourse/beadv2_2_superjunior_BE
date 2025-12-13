@@ -25,7 +25,7 @@ jobs:
       - name: Infra 파일 변경 확인
         id: check-infra
         run: |
-          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/infra/config\.yml'; then
+          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/member-deploy\.yml'; then
             echo "changed=true" >> $GITHUB_OUTPUT
             echo "Config infra file changed"
           else
@@ -56,10 +56,10 @@ jobs:
           command_timeout: '3m'
           script: |
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            echo "Applying config.yml..."
-            kubectl apply -f /tmp/k8s-infra-temp/config.yml
+            echo "Applying member-deploy.yml..."
+            kubectl apply -f /tmp/k8s-service-temp/member-deploy.yml
             echo "Config infra applied successfully"
-            rm -rf /tmp/k8s-infra-temp
+            
 
   build:
     runs-on: ubuntu-latest
@@ -96,6 +96,7 @@ jobs:
           docker image push minbros/member:latest
 
   deploy:
+    needs: [apply-infra, build]
     runs-on: ubuntu-latest
     steps:
       - name: 컨트롤 플레인에서 이미지 pull 후 배포 명령 실행
