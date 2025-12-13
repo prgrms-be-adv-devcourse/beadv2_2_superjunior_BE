@@ -35,7 +35,7 @@ spec:
         kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: elasticsearch
-          image: elasticsearch-nori:8.11.0
+          image: elasticsearch-nori:8.18.8
           imagePullPolicy: Never
           ports:
             - containerPort: 9200
