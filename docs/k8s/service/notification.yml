@@ -1,0 +1,75 @@
+#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification
+  template:
+    metadata:
+      labels:
+        app: notification
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: notification
+          image: minbros/gateway
+          imagePullPolicy: Always
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: "http://config-service:8888"
+            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+              value: "http://admin:admin@discovery-service:8761/eureka"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: "discovery-service"
+            - name: GATEWAY_HOST
+              value: "http://gateway-service:8000"
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "http://kafka-service:9092"
+          envFrom:
+            - secretRef:
+                name: notification-secret
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Gi"
+              ephemeral-storage: "1Gi"
+          ports:
+            - containerPort: 8084
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+spec:
+  type: ClusterIP
+  selector:
+    app: notification
+  ports:
+    - port: 8084
+      targetPort: 8084
+      protocol: TCP
+      name: http
