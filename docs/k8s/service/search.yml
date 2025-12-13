@@ -17,7 +17,7 @@ spec:
       containers:
         - name: search
           image: minbros/search:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: SPRING_CLOUD_CONFIG_URI
               value: "http://config-service:8888"
