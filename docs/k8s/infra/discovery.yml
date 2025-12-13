@@ -22,7 +22,7 @@ spec:
           imagePullPolicy: Never
           env:
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-              value: "http://admin@admindiscovery-service:8761/eureka"
+              value: "http://admin:admin@discovery-service:8761/eureka"
           resources:
             requests:
               cpu: "100m"

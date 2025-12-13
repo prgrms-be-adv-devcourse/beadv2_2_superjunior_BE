@@ -22,7 +22,7 @@ spec:
             - name: SPRING_CONFIG_IMPORT
               value: "optional:configserver:http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
-              value: "http://admin@admindiscovery-service:8761/eureka"
+              value: "http://admin:admin@discovery-service:8761/eureka"
             - name: GATEWAY_HOST
               value: "http://gateway-service:8000"
             - name: KAFKA_BOOTSTRAP_SERVERS
