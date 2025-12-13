@@ -6,21 +6,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.common.HeaderName;
 import store._0982.common.auth.RequireRole;
 import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.order.application.OrderService;
-import store._0982.order.application.dto.OrderDetailInfo;
-import store._0982.order.application.dto.OrderInfo;
-import store._0982.order.application.dto.OrderRegisterInfo;
+import store._0982.order.application.dto.*;
 import store._0982.order.presentation.dto.OrderRegisterRequest;
 
 import java.util.UUID;
@@ -55,23 +51,40 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 상세 조회가 완료 되었습니다.");
     }
 
-    @Operation(summary = "주문 목록 조회", description = "주문 목록을 조회합니다.")
-    @GetMapping
-    @RequireRole({Role.CONSUMER, Role.SELLER, Role.ADMIN})
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<PageResponse<OrderInfo>> getOrders(
-            @RequestHeader("X-Member-Id") UUID memberId,
-            @RequestHeader(HeaderName.ROLE) String roleH,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Role role = Role.valueOf(roleH.toUpperCase());
-        PageResponse<OrderInfo> response = null;
-        if(role == Role.SELLER){
-            response = orderService.getOrdersBySeller(memberId, pageable);
-        }else{
-            response = orderService.getOrdersByConsumer(memberId, pageable);
-        }
-        return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회가 완료 되었습니다.");
+    @Operation(summary = "주문 목록 조회(구매자)", description = "주문 목록(구매자)을 조회합니다.")
+    @GetMapping("/consumer")
+    @RequireRole({Role.CONSUMER, Role.SELLER})
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderInfo>> getOrdersConsumer(
+            @RequestHeader("X-Member-Id") UUID memberId,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )Pageable pageable) {
+
+        PageResponse<OrderInfo> response = orderService.getOrdersByConsumer(memberId, pageable);
+
+        return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(구매자)가 완료 되었습니다.");
+    }
+
+    // TODO : 판매자 공동 구매별 주문 요약 -> 클릭 시 공동 구매별 주문 목록 조회 -> 목록 클릭 시 주문 상세 조회 필요(BFF)
+    @Operation(summary = "주문 목록 조회(판매자)", description = "주문 목록(판매자)을 조회합니다.")
+    @GetMapping("/seller")
+    @RequireRole({Role.SELLER})
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderInfo>> getOrdersSeller(
+            @RequestHeader("X-Member-Id") UUID memberId,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.ASC
+            )Pageable pageable) {
+
+        PageResponse<OrderInfo> response = orderService.getOrdersBySeller(memberId, pageable);
+
+        return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(판매자)가 완료 되었습니다.");
     }
 
 }
