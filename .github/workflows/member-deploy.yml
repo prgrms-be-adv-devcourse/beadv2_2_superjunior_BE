@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd-yjs
       - release
     paths:
       - 'member/build.gradle'
