@@ -89,6 +89,7 @@ spec:
       containers:
         - name: logstash
           image: docker.elastic.co/logstash/logstash:8.11.0
+          # CI/CD 동작시키게 만든 주석
           imagePullPolicy: Never
           ports:
             - containerPort: 5000

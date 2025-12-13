@@ -35,6 +35,7 @@ spec:
       containers:
         - name: postgres
           image: postgres:15-alpine
+          # CI/CD 동작시키게 만든 주석
           imagePullPolicy: Never
           ports:
             - containerPort: 5432
