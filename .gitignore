@@ -14,7 +14,7 @@ docker/postgres/init/*.log
 .env
 .env.local
 .env.*.local
-docs/k8s/service/.env.member
+docs/k8s/service/.env.*
 # 로그 파일
 *.log
 logs/
