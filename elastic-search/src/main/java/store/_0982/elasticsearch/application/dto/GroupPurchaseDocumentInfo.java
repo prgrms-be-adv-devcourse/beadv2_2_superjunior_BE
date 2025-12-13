@@ -19,6 +19,7 @@ public record GroupPurchaseDocumentInfo(
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
         Integer currentQuantity,
+        Long discountRate,
         ProductDocumentEmbedded productDocumentEmbedded
 ) {
     public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
@@ -36,7 +37,9 @@ public record GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getCreatedAt(),
                 groupPurchaseDocument.getUpdatedAt(),
                 groupPurchaseDocument.getCurrentQuantity(),
+                groupPurchaseDocument.getDiscountRate(),
                 groupPurchaseDocument.getProductDocumentEmbedded()
         );
     }
 }
+

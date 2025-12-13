@@ -56,6 +56,9 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Integer)
     private Integer currentQuantity;
 
+    @Field(type = FieldType.Long)
+    private Long discountRate;
+
     @Field(type = FieldType.Nested)
     private ProductDocumentEmbedded productDocumentEmbedded;
 }

@@ -121,6 +121,7 @@ class GroupPurchaseSearchControllerTest {
                         OffsetDateTime.now(),   // createdAt
                         OffsetDateTime.now(),   // updatedAt
                         5,                      // currentQuantity
+                        null,
                         null                    // productEvent
                 );
 

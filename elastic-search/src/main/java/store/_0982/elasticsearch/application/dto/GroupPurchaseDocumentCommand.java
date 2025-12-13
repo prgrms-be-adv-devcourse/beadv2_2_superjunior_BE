@@ -57,7 +57,21 @@ public record GroupPurchaseDocumentCommand(
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .currentQuantity(currentQuantity)
+                .discountRate(calculateDiscountRate(productEvent.getPrice(), discountedPrice))
                 .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
                 .build();
+    }
+    private static Long calculateDiscountRate(Long price, Long discountedPrice) {
+        if (price == null) {
+            return 0L;
+        }
+
+        if (price <= 0 || discountedPrice >= price) {
+            return 0L;
+        }
+
+        return Math.round(
+                ((double) (price - discountedPrice) / price) * 100
+        );
     }
 }

@@ -35,10 +35,10 @@ public class GroupPurchaseSearchQueryFactory {
                         // category 선택
                         if (category != null && !category.isBlank()) {
                             b.filter(f -> f.nested(n -> n
-                                    .path("ProductDocumentEmbedded")
+                                    .path("productDocumentEmbedded")
                                     .query(p -> p
                                             .term(t -> t
-                                                    .field("ProductDocumentEmbedded.category")
+                                                    .field("productDocumentEmbedded.category")
                                                     .value(category)
                                             )
                                     )
