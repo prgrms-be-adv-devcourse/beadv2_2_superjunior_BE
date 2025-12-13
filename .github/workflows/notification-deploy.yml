@@ -15,10 +15,59 @@ on:
       - 'common/build.gradle'
 
 jobs:
-  build:
+  apply-notification:
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ steps.version.outputs.tag }}
+      infra-changed: ${{ steps.check-notification.outputs.changed }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: notification 파일 변경 확인
+        id: check-notification
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/notification\.yml'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "notification file changed"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No notification file changes"
+          fi
+
+      - name: notification 설정 파일을 Bastion으로 복사
+        if: steps.check-notification.outputs.changed == 'true'
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: "docs/k8s/service/notification.yml"
+          target: "/tmp/k8s-service"
+          strip_components: 3
+          overwrite: true
+
+      - name: notification 리소스 적용
+        if: steps.check-notification.outputs.changed == 'true'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          command_timeout: '3m'
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+            echo "Applying config.yml..."
+            kubectl apply -f /tmp/k8s-service/notification.yml
+            echo "notification service applied successfully"
+
+  deploy-notification:
+    needs: apply-notification
+    runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -33,63 +82,21 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: 버전 태그 생성
-        id: version
-        run: |
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "Image tag: $SHORT_SHA"
+      - name: Docker Hub 로그인
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Jib로 Docker 이미지 빌드
         run: |
-          ./gradlew :notification:jibDockerBuild \
-            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
+          ./gradlew :notification:jib \
+          -Djib.to.image=minbros/notification \
+          -Djib.to.tags=latest \
+          -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
+          -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Docker 이미지 push
-        run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker image push minbros/notification:${{ steps.version.outputs.tag }}
-          docker image push minbros/notification:latest
-
-  apply-notification:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-      - name: Notification 설정 파일을 Bastion으로 복사
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "docs/k8s/service/notification.yml"
-          target: "/tmp/k8s-service-temp"
-          strip_components: 3
-          overwrite: true
-
-      - name: Infra 리소스 적용
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          command_timeout: '3m'
-          script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            echo "Applying notification.yml..."
-            kubectl apply -f /tmp/k8s-service-temp/notification.yml
-            echo "Notification applied successfully"
-
-  deploy:
-    needs: [apply-notification, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 컨트롤 플레인에서 이미지 pull 후 배포 명령 실행
+      - name: 컨트롤 플레인 접속 후 배포 명령 실행 및 이미지 정리
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
@@ -97,17 +104,14 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
           script: |
-            set -e
-            TAG=${{ needs.build.outputs.image-tag }}
-
             echo "Updating deployment..."
-            sudo kubectl set image deployment/notification \
-              notification=minbros/notification:${TAG} \
+            kubectl set image deployment/notification \
+              notification=minbros/notification:latest \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
-            
+
             echo "Waiting for rollout..."
-            sudo kubectl rollout status deployment/notification \
-              --timeout=10m \
+            kubectl rollout status deployment/notification \
+              --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
-            
-            echo "Notification deployed successfully with version ${TAG}"
+
+            echo "notification Server deployed successfully"
