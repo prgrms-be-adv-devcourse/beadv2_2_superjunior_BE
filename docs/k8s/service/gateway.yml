@@ -1,4 +1,4 @@
-#file: noinspection KubernetesUnknownValues
+#file: noinspection KubernetesUnknownValues,SpellCheckingInspection
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,7 +21,7 @@ spec:
           env:
             - name: SPRING_CONFIG_IMPORT
               value: "optional:configserver:http://config-service:8888"
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: "http://admin@admindiscovery-service:8761/eureka"
             - name: GATEWAY_HOST
               value: "http://gateway-service:8000"
