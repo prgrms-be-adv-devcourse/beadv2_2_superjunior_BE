@@ -24,10 +24,8 @@ jobs:
       - name: 변경된 파일 탐색
         id: changed-files
         run: |
-          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/config\.yml' | grep -v 'docs/k8s/infra/discovery\.yml' || echo "")
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/config\.yml' | grep -v 'docs/k8s/infra/discovery\.yml' | tr '\n' ' ' || echo "")
+          echo "files=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"
 
