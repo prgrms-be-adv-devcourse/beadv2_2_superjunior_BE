@@ -12,40 +12,6 @@ on:
       - 'docs/k8s/service/point.yml'
 
 jobs:
-  apply-infra:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Infra 설정 파일을 Bastion으로 복사
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "docs/k8s/service/point.yml"
-          target: "/tmp/k8s-service-temp"
-          strip_components: 3
-          overwrite: true
-
-      - name: Infra 리소스 적용
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          command_timeout: '3m'
-          script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            echo "Applying point.yml..."
-            kubectl apply -f /tmp/k8s-service-temp/point.yml
-            echo "Point infra applied successfully"
-
   build:
     runs-on: ubuntu-latest
     outputs:
@@ -81,6 +47,41 @@ jobs:
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           docker image push minbros/point:${{ steps.version.outputs.tag }}
           docker image push minbros/point:latest
+
+  apply-infra:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Infra 설정 파일을 Bastion으로 복사
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: "docs/k8s/service/point.yml"
+          target: "/tmp/k8s-service-temp"
+          strip_components: 3
+          overwrite: true
+
+      - name: Infra 리소스 적용
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          command_timeout: '3m'
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            echo "Applying point.yml..."
+            kubectl apply -f /tmp/k8s-service-temp/point.yml
+            echo "Point infra applied successfully"
 
   deploy:
     needs: [apply-infra, build]
