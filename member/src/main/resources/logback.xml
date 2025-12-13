@@ -2,8 +2,8 @@
 <configuration scan="true" scanPeriod="60 seconds">
     <!--  환경 변수화 필요  -->
     <property name="SERVICE_NAME" value="member-service"/>
-    <property name="LOGSTASH_HOST" value="localhost"/>
-    <property name="LOGSTASH_PORT" value="5000"/>
+    <property name="LOGSTASH_HOST" value="${LOGSTASH_HOST:localhost}"/>
+    <property name="LOGSTASH_PORT" value="${LOGSTASH_PORT:5000}"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
