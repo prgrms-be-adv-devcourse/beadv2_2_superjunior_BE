@@ -14,9 +14,11 @@ spec:
         app: member
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: member
-          image: minbros/member
+          image: minbros/member:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
@@ -35,7 +37,7 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
+              memory: "384Mi"
               ephemeral-storage: "512Mi"
             limits:
               cpu: "500m"
@@ -55,6 +57,7 @@ spec:
               port: 8083
             initialDelaySeconds: 60
             periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service

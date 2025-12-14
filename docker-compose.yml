@@ -72,6 +72,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      tags:
+        - elasticsearch-nori:8.18.8
     container_name: group-purchase-elasticsearch
     environment:
       - discovery.type=single-node

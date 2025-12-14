@@ -1,6 +1,6 @@
 spring:
   elasticsearch:
-    uris: http://localhost:9200
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
     connection-timeout: 1s
     socket-timeout: 3s
 #    추후 xpack.security.enabled=false 변경 시

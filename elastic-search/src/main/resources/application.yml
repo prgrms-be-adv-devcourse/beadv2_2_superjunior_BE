@@ -1,8 +1,51 @@
+#file: noinspection HttpUrlsUsage, SpringBootApplicationYaml, SpellCheckingInspection
 spring:
   application:
     name: elastic-search
 
-  config:
-    import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: 1s
+    socket-timeout: 3s
+    #    추후 xpack.security.enabled=false 변경 시
+    #    username: elastic
+    #    password: your_password
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
 server:
   port: 8082
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    health-check-url-path: /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c  # 또는 b3
+
+gateway:
+  host: ${GATEWAY_HOST:http://localhost:8000}
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}

@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd
-      - feature/ci-cd-*
+      - feature/ci-cd-*-test
     paths:
       - 'discovery/**'
       - 'docs/k8s/infra/discovery.yml'
@@ -148,6 +147,8 @@ jobs:
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Discovery Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+
+      # 테스트
 
       - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
         uses: appleboy/ssh-action@v1.0.0
