@@ -18,6 +18,7 @@ spec:
         - name: gateway
           image: minbros/gateway:latest
           imagePullPolicy: Always
+          # 테스트용
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
