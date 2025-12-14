@@ -29,4 +29,5 @@ public interface GroupPurchaseRepository {
 
     boolean existsByProductId(UUID productId);
 
+    List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 }
