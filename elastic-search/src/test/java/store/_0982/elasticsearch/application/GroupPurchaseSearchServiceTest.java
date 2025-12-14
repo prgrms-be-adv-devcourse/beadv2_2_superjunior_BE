@@ -12,16 +12,13 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -65,24 +62,19 @@ class GroupPurchaseSearchServiceTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 공동구매 인덱스 생성 시 예외 발생")
-    void createGroupPurchaseIndex_alreadyExists() {
-        // given
+    @DisplayName("이미 존재하는 공동구매 인덱스가 있으면 생성하지 않는다")
+    void createGroupPurchaseIndex_alreadyExists_skip() {
         when(operations.indexOps(GroupPurchaseDocument.class))
                 .thenReturn(indexOperations);
-
         when(indexOperations.exists())
                 .thenReturn(true);
 
-        // when & then
-        assertThatThrownBy(() -> service.createGroupPurchaseIndex())
-                .isInstanceOf(CustomException.class)
-                .satisfies(e ->
-                        assertThat(((CustomException) e).getErrorCode())
-                                .isEqualTo(CustomErrorCode.ALREADY_EXIST_INDEX)
-                );
+        // when
+        service.createGroupPurchaseIndex();
 
+        // then
         verify(indexOperations, never()).create(any());
+        verify(indexOperations, never()).putMapping(any(Document.class));
     }
 
     @Test
@@ -106,22 +98,14 @@ class GroupPurchaseSearchServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 공동구매 인덱스 삭제 시 예외 발생")
-    void deleteGroupPurchaseIndex_notExists() {
-        // given
+    @DisplayName("존재하지 않는 공동구매 인덱스 삭제 시 아무 작업도 하지 않는다")
+    void deleteGroupPurchaseIndex_notExists_skip() {
         when(operations.indexOps(GroupPurchaseDocument.class))
                 .thenReturn(indexOperations);
-
         when(indexOperations.exists())
                 .thenReturn(false);
 
-        // when & then
-        assertThatThrownBy(() -> service.deleteGroupPurchaseIndex())
-                .isInstanceOf(CustomException.class)
-                .satisfies(e ->
-                        assertThat(((CustomException) e).getErrorCode())
-                                .isEqualTo(CustomErrorCode.DONOT_EXIST_INDEX)
-                );
+        service.deleteGroupPurchaseIndex();
 
         verify(indexOperations, never()).delete();
     }

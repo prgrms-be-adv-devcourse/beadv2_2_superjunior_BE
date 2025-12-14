@@ -12,17 +12,14 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.domain.ProductDocument;
-import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.infrastructure.queryfactory.ProductSearchQueryFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -66,24 +63,20 @@ class ProductSearchServiceTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 상품 인덱스 생성 시 예외 발생")
-    void createProductIndex_alreadyExists() {
+    @DisplayName("이미 존재하는 상품 인덱스가 있으면 생성하지 않는다")
+    void createProductIndex_alreadyExists_skip() {
         // given
         when(operations.indexOps(ProductDocument.class))
                 .thenReturn(indexOperations);
-
         when(indexOperations.exists())
                 .thenReturn(true);
 
-        // when & then
-        assertThatThrownBy(() -> service.createProductIndex())
-                .isInstanceOf(CustomException.class)
-                .satisfies(e ->
-                        assertThat(((CustomException) e).getErrorCode())
-                                .isEqualTo(CustomErrorCode.ALREADY_EXIST_INDEX)
-                );
+        // when
+        service.createProductIndex();
 
+        // then
         verify(indexOperations, never()).create(any());
+        verify(indexOperations, never()).putMapping(any(Document.class));
     }
 
     @Test
@@ -107,23 +100,18 @@ class ProductSearchServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 상품 인덱스 삭제 시 예외 발생")
-    void deleteProductIndex_notExists() {
+    @DisplayName("존재하지 않는 상품 인덱스가 있으면 삭제하지 않는다")
+    void deleteProductIndex_notExists_skip() {
         // given
         when(operations.indexOps(ProductDocument.class))
                 .thenReturn(indexOperations);
-
         when(indexOperations.exists())
                 .thenReturn(false);
 
-        // when & then
-        assertThatThrownBy(() -> service.deleteProductIndex())
-                .isInstanceOf(CustomException.class)
-                .satisfies(e ->
-                        assertThat(((CustomException) e).getErrorCode())
-                                .isEqualTo(CustomErrorCode.DONOT_EXIST_INDEX)
-                );
+        // when
+        service.deleteProductIndex();
 
+        // then
         verify(indexOperations, never()).delete();
     }
 

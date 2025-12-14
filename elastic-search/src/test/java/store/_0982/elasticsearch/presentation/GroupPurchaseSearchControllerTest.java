@@ -13,10 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
-import store._0982.elasticsearch.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -54,21 +52,6 @@ class GroupPurchaseSearchControllerTest {
     }
 
     @Test
-    @DisplayName("이미 존재하는 공동구매 인덱스 생성 시 409 에러 반환")
-    void createGroupPurchaseIndex_alreadyExists() throws Exception {
-        // given
-        doThrow(new CustomException(CustomErrorCode.ALREADY_EXIST_INDEX))
-                .when(groupPurchaseSearchService)
-                .createGroupPurchaseIndex();
-
-        // when & then
-        mockMvc.perform(put("/api/searches/purchase/index"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("이미 존재하는 인덱스입니다."));
-    }
-
-    @Test
     @DisplayName("공동구매 인덱스 삭제 API 호출 성공")
     void deleteGroupPurchaseIndex_success() throws Exception {
         // given
@@ -81,21 +64,6 @@ class GroupPurchaseSearchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("인덱스 삭제 완료"));
-    }
-
-    @Test
-    @DisplayName("존재하지 않는 공동구매 인덱스 삭제 시 404 에러 반환")
-    void deleteGroupPurchaseIndex_alreadyExists() throws Exception {
-        // given
-        doThrow(new CustomException(CustomErrorCode.DONOT_EXIST_INDEX))
-                .when(groupPurchaseSearchService)
-                .deleteGroupPurchaseIndex();
-
-        // when & then
-        mockMvc.perform(delete("/api/searches/purchase/index"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("삭제할 인덱스가 존재하지 않습니다."));
     }
 
     @Test
