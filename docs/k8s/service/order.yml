@@ -14,6 +14,8 @@ spec:
         app: order
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: order
           image: minbros/order
@@ -31,7 +33,7 @@ spec:
             - name: GATEWAY_HOST
               value: "http://gateway-service:8000"
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "http://kafka-service:9092"
+              value: "kafka-service:9092"
           resources:
             requests:
               cpu: "200m"
@@ -67,4 +69,3 @@ spec:
     - port: 8085
       targetPort: 8085
   type: ClusterIP
-
