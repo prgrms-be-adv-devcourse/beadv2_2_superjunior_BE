@@ -5,9 +5,6 @@ spring:
   config:
     import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
 
-toss:
-  secret-key: ${TOSS_SECRET_KEY}
-
 springdoc:
   swagger-ui:
     disable-swagger-default-url: true

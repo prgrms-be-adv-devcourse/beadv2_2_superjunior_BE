@@ -20,6 +20,7 @@ spec:
         - name: discovery
           image: minbros/discovery
           imagePullPolicy: Never
+          # 테스트용
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
