@@ -96,15 +96,18 @@ public class GroupPurchaseService {
         Product findProduct = productRepository.findById(findGroupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
-        return GroupPurchaseDetailInfo.from(findGroupPurchase, findProduct.getOriginalUrl(), findProduct.getPrice());
+        return GroupPurchaseDetailInfo.from(findGroupPurchase, findProduct.getOriginalUrl(), findProduct.getPrice(), findProduct.getCategory());
     }
 
     @Transactional(readOnly = true)
     public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchase(Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
-        Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                GroupPurchaseThumbnailInfo::from);
+        Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
+            Product product = productRepository.findById(groupPurchase.getProductId())
+                    .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
+        });
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }
@@ -113,8 +116,11 @@ public class GroupPurchaseService {
     public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
-        Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(
-                GroupPurchaseThumbnailInfo::from);
+        Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
+            Product product = productRepository.findById(groupPurchase.getProductId())
+                    .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
+        });
 
         return PageResponseDto.from(groupPurchaseInfoPage);
     }

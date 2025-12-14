@@ -52,6 +52,7 @@ spring:
               predicates:
                 - Path=/api/products/**
               filters:
+                - JwtAuth
                 - RewritePath=/api/products/(?<segment>.*), /api/products/${segment}
 
             - id: group-purchase-api
@@ -59,6 +60,7 @@ spring:
               predicates:
                 - Path=/api/purchases/**
               filters:
+                - JwtAuth
                 - RewritePath=/api/purchases/(?<segment>.*), /api/purchases/${segment}
 
             - id: point-api
