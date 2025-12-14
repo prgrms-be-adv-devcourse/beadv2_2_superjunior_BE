@@ -14,6 +14,8 @@ spec:
         app: notification
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: notification
           image: minbros/notification:latest
