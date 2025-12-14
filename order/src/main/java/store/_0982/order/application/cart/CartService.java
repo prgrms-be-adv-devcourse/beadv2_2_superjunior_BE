@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.order.application.OrderService;
+import store._0982.order.application.order.OrderService;
 import store._0982.order.application.cart.dto.CartAddCommand;
 import store._0982.order.application.cart.dto.CartDeleteCommand;
 import store._0982.order.application.cart.dto.CartInfo;
@@ -16,7 +16,6 @@ import store._0982.order.domain.cart.Cart;
 import store._0982.order.domain.cart.CartRepository;
 import store._0982.order.exception.CustomErrorCode;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service

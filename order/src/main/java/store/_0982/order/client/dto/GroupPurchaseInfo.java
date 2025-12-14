@@ -3,22 +3,19 @@ package store._0982.order.client.dto;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record GroupPurchaseDetailInfo(
+public record GroupPurchaseInfo(
         UUID groupPurchaseId,
         int minQuantity,
         int maxQuantity,
+        Long discountedPrice,
         String title,
         String description,
-        Long discountedPrice,
-        int participantCount,
+        GroupPurchaseStatus status,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
         UUID sellerId,
         UUID productId,
-        String originalUrl,
-        Long price,
-        GroupPurchaseStatus status,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
 ) {
-
 }

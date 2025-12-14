@@ -1,4 +1,4 @@
-package store._0982.order.domain;
+package store._0982.order.domain.order;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,9 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.exception.CustomException;
-import store._0982.order.application.dto.OrderRegisterCommand;
-import store._0982.order.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -25,7 +22,7 @@ public class Order {
     private int quantity;
 
     @Column(name = "price", nullable = false)
-    private int  price;
+    private Long  price;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -68,7 +65,7 @@ public class Order {
 
     public Order(
             int quantity,
-            int price,
+            Long price,
             UUID memberId,
             String address,
             String addressDetail,
@@ -88,20 +85,6 @@ public class Order {
         this.sellerId = sellerId;
         this.groupPurchaseId = groupPurchaseId;
 
-    }
-
-    public static Order create(OrderRegisterCommand command, UUID memberId){
-        return new Order(
-                command.quantity(),
-                command.price(),
-                memberId,
-                command.address(),
-                command.addressDetail(),
-                command.postalCode(),
-                command.receiverName(),
-                command.sellerId(),
-                command.groupPurchaseId()
-        );
     }
 
     // 상태 변경

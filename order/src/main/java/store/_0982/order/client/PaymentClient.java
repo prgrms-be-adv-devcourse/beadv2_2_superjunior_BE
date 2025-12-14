@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.order.client.dto.MemberPointInfo;
-import store._0982.order.client.dto.PointMinusRequest;
+import store._0982.order.client.dto.PointDeductRequest;
 import store._0982.order.client.dto.PointReturnRequest;
 
 import java.util.UUID;
@@ -24,7 +24,7 @@ public interface PaymentClient {
     @PostMapping("/internal/points/deduct")
     ResponseDto<MemberPointInfo> deductPointsInternal(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody PointMinusRequest request
+            @RequestBody PointDeductRequest request
     );
 
     /**

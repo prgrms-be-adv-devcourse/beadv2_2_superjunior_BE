@@ -1,7 +1,7 @@
 package store._0982.order.application.dto;
 
-import store._0982.order.domain.Order;
-import store._0982.order.domain.OrderStatus;
+import store._0982.order.domain.order.Order;
+import store._0982.order.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -9,7 +9,7 @@ import java.util.UUID;
 public record OrderDetailInfo(
         UUID orderId,
         int quantity,
-        int price,
+        Long price,
         OrderStatus status,
         UUID memberId,
         String address,
