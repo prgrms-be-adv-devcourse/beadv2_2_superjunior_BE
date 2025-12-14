@@ -5,11 +5,7 @@ on:
       - main
       - feature/ci-cd-yjs
       - feature/ci-cd-yjs-test
-    paths:
-      - 'order/build.gradle'
-      - 'order/src/**'
-      - '.github/workflows/order-deploy.yml'
-      - 'docs/k8s/service/order.yml'
+
 
 jobs:
   build:
