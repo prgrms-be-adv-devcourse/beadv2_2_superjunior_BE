@@ -26,7 +26,10 @@ spring:
 
   batch:
     jdbc:
+      table-prefix: batch_order_schema.batch_
       initialize-schema: never
+    job:
+      enabled: false
 
 server:
   port: 8087
