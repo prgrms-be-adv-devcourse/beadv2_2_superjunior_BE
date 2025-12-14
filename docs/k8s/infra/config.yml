@@ -1,0 +1,68 @@
+#file: noinspection KubernetesUnknownValues
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: config
+  template:
+    metadata:
+      labels:
+        app: config
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
+      automountServiceAccountToken: false
+      containers:
+        - name: config
+          image: minbros/config
+          imagePullPolicy: Never
+          env:
+            - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
+              value: "file:/config-repo"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
+          ports:
+            - containerPort: 8888
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8888
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config-repo
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: config-repo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: config-service
+spec:
+  selector:
+    app: config
+  ports:
+    - port: 8888
+      targetPort: 8888
+  type: ClusterIP

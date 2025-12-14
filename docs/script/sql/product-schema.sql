@@ -68,7 +68,8 @@ create table product_schema.group_purchase
     version           bigint                   default 0,
     created_at        timestamp with time zone default now()                          not null,
     updated_at        timestamp with time zone,
-    settled_at        timestamp with time zone
+    settled_at        timestamp with time zone,
+    returned_at        timestamp with time zone
 );
 
 comment on table product_schema.group_purchase is '공동 구매';
@@ -104,6 +105,8 @@ comment on column product_schema.group_purchase.created_at is '등록일';
 comment on column product_schema.group_purchase.updated_at is '수정일';
 
 comment on column product_schema.group_purchase.settled_at is '정산 완료일';
+        
+comment on column product_schema.group_purchase.returned_at is '환불 완료일';
 
 alter table product_schema.group_purchase
     owner to postgres;

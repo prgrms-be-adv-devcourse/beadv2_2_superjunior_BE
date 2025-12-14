@@ -58,9 +58,7 @@ create table member_schema.seller
             references member_schema.member,
     created_at    timestamp with time zone default now()                         not null,
     updated_at                   timestamp with time zone,
-    account_number               varchar(20) not null
-        constraint seller_pk_3
-            unique,
+    account_number               varchar(20) not null,
     bank_code                    varchar(20) not null,
     account_holder               varchar(50) not null,
     business_registration_number varchar(15) not null

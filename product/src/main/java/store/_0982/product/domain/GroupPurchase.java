@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,10 +43,10 @@ public class GroupPurchase {
     private GroupPurchaseStatus status;
 
     @Column(name = "start_date", nullable = false)
-    private LocalDateTime startDate;
+    private OffsetDateTime startDate;
 
     @Column(name = "end_date", nullable = false)
-    private LocalDate endDate;
+    private OffsetDateTime endDate;
 
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
@@ -69,14 +71,17 @@ public class GroupPurchase {
 
     @Column(name = "settled_at")
     private OffsetDateTime settledAt;
+
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt;
     
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
                          String title,
                          String description,
                          int discountedPrice,
-                         LocalDateTime startDate,
-                         LocalDate endDate,
+                         OffsetDateTime startDate,
+                         OffsetDateTime endDate,
                          UUID sellerId,
                          UUID productId){
         this.groupPurchaseId = UUID.randomUUID();
@@ -124,8 +129,8 @@ public class GroupPurchase {
                                     String title,
                                     String description,
                                     int discountedPrice,
-                                    LocalDateTime startDate,
-                                    LocalDate endDate,
+                                    OffsetDateTime startDate,
+                                    OffsetDateTime endDate,
                                     UUID productId){
         this.minQuantity = mintQuantity;
         this.maxQuantity = maxQuantity;
@@ -144,8 +149,23 @@ public class GroupPurchase {
     public boolean isSettled() {
         return this.settledAt != null;
     }
+  
+    public void updateStatus(GroupPurchaseStatus status){
+        this.status = status;
+    }
 
-    public GroupPurchaseEvent toEvent(String productName, String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus) {
+    public void markAsReturned() {
+        if (this.returnedAt != null) {
+            throw new IllegalStateException("이미 환불 처리된 공동구매입니다.");
+        }
+        this.returnedAt = OffsetDateTime.now();
+    }
+
+    public boolean isReturned() {
+        return this.returnedAt != null;
+    }
+
+    public GroupPurchaseEvent toEvent(String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus, ProductEvent productEvent) {
         return new GroupPurchaseEvent(
                 this.groupPurchaseId,
                 this.minQuantity,
@@ -155,13 +175,23 @@ public class GroupPurchase {
                 (long)this.discountedPrice,
                 this.status.name(),
                 sellerName,
-                productName,
                 this.startDate.toString(),
                 this.endDate.toString(),
                 this.createdAt.toString(),
                 this.updatedAt.toString(),
                 this.currentQuantity,
+                productEvent,
                 searchKafkaStatus
+        );
+    }
+
+    public GroupPurchaseChangedEvent toChangedEvent(GroupPurchaseChangedEvent.Status status, long totalAmount) {
+        return new GroupPurchaseChangedEvent(
+                this.groupPurchaseId,
+                this.sellerId,
+                this.title,
+                status,
+                totalAmount
         );
     }
 }

@@ -1,4 +1,7 @@
-package store._0982.point.domain;
+package store._0982.point.domain.repository;
+
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPointFailure;
 
 import java.util.Optional;
 

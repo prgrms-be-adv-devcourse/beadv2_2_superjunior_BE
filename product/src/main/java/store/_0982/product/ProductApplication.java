@@ -1,12 +1,16 @@
 package store._0982.product;
 
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableRetry
+@EnableScheduling
 @EnableFeignClients
+@EnableBatchProcessing
 @SpringBootApplication
 public class ProductApplication {
 
