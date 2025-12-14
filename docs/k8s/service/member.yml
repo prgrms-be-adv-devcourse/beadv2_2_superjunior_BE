@@ -55,6 +55,7 @@ spec:
               port: 8083
             initialDelaySeconds: 60
             periodSeconds: 10
+
 ---
 apiVersion: v1
 kind: Service

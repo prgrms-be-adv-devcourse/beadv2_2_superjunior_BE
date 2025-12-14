@@ -1,10 +1,10 @@
+#file: noinspection SpellCheckingInspection
 name: member-deploy.yml
 on:
   push:
     branches:
       - main
-      - feature/ci-cd-yjs
-      - feature/ci-cd-yjs-test
+      - feature/ci-cd-*-test
     paths:
       - 'member/build.gradle'
       - 'member/src/**'
