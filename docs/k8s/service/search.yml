@@ -15,14 +15,12 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-5
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: search
           image: minbros/store-search:latest
           imagePullPolicy: Always
           env:
-            - name: SPRING_CLOUD_CONFIG_URI
-              value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
             - name: EUREKA_INSTANCE_HOSTNAME

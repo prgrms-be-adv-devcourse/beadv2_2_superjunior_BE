@@ -10,14 +10,12 @@ on:
       - 'elastic-search/build.gradle'
       - 'docs/k8s/service/search.yml'
       - '.github/workflows/search-deploy.yml'
-      - 'common/src/**'
-      - 'common/build.gradle'
 
 jobs:
   apply-search:
     runs-on: ubuntu-latest
     outputs:
-      infra-changed: ${{ steps.check-search.outputs.changed }}
+      search-changed: ${{ steps.check-search.outputs.changed }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -29,10 +27,10 @@ jobs:
         run: |
           if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/search\.yml'; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "search file changed"
+            echo "search search file changed"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No search file changes"
+            echo "No search search file changes"
           fi
 
       - name: search 설정 파일을 Bastion으로 복사
@@ -44,7 +42,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
           source: "docs/k8s/service/search.yml"
-          target: "/tmp/k8s-service"
+          target: "/tmp/k8s-service-temp"
           strip_components: 3
           overwrite: true
 
@@ -60,9 +58,11 @@ jobs:
           script: |
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-            echo "Applying config.yml..."
-            kubectl apply -f /tmp/k8s-service/search.yml
-            echo "search service applied successfully"
+            echo "Applying search.yml..."
+            kubectl apply -f /tmp/k8s-search-temp/search.yml
+            echo "search search applied successfully"
+
+            rm -rf /tmp/k8s-service-temp
 
   deploy-search:
     needs: apply-search
@@ -81,21 +81,55 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: Docker Hub 로그인
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Jib로 Docker 이미지 빌드
+      - name: 버전 태그 생성
+        id: version
         run: |
-          ./gradlew :elastic-search:jib \
-          -Djib.to.image=minbros/store-search \
-          -Djib.to.tags=latest \
-          -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
-          -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "Image tag: $SHORT_SHA"
 
-      - name: 컨트롤 플레인 접속 후 배포 명령 실행 및 이미지 정리
+      - name: Jib로 Docker 이미지 빌드 (로컬)
+        run: |
+          ./gradlew :elastic-search:jibDockerBuild \
+            -Djib.to.tags=${{ steps.version.outputs.tag }},latest
+
+      - name: Docker 이미지를 tar 파일로 저장
+        run: |
+          docker save minbros/search:${{ steps.version.outputs.tag }} | gzip > search.tar.gz
+          ls -lh search.tar.gz
+
+      - name: 이미지 파일을 프라이빗 인스턴스로 전송 (Bastion 경유)
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          source: "search.tar.gz"
+          target: "/tmp"
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+
+      - name: SSH로 프라이빗 인스턴스 접속 및 이미지 로드 (Bastion 경유)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+          script: |
+            echo "Loading Docker image..."
+            gunzip -c /tmp/search.tar.gz | sudo k3s ctr images import -
+
+            rm -f /tmp/search.tar.gz
+
+      - name: 컨트롤 플레인 접속 후 배포 명령 실행
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.BASTION_HOST }}
@@ -105,12 +139,28 @@ jobs:
           script: |
             echo "Updating deployment..."
             kubectl set image deployment/search \
-              search=minbros/store-search:latest \
+              search=minbros/search:${{ steps.version.outputs.tag }} \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
             kubectl rollout status deployment/search \
-              --timeout=2m \
+              --timeout=3m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
-            echo "search Server deployed search"
+            echo "search Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+
+      - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PRIVATE_HOST }}
+          username: ${{ secrets.PRIVATE_USER }}
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          port: 22
+          proxy_host: ${{ secrets.BASTION_HOST }}
+          proxy_username: ${{ secrets.BASTION_USER }}
+          proxy_key: ${{ secrets.BASTION_SSH_KEY }}
+          proxy_port: 22
+          script: |
+            echo "Removing unused images..."
+            sudo k3s crictl rmi --prune || true
+            echo "Image cleanup completed"
