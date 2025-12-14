@@ -9,7 +9,7 @@ import java.util.UUID;
 public record ProductDetailInfo(
         UUID productId,
         String name,
-        int price,
+        Long price,
         ProductCategory category,
         String description,
         int stock,

@@ -6,9 +6,12 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
+import store._0982.product.domain.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,12 +23,12 @@ public class OpenGroupPurchaseTasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         OffsetDateTime now = OffsetDateTime.now();
 
-        // SCHEDULED 이면서 시작 시간 지난 공동구매 찾기
-        int updatedCount = groupPurchaseRepository.openReadyGroupPurchases(now);
+        List<GroupPurchase> purchaseList = groupPurchaseRepository.findAllByStatusAndStartDateBefore(
+                GroupPurchaseStatus.SCHEDULED, OffsetDateTime.now());
 
-        log.info("공동 구매 오픈 완료: {}건", updatedCount);
+        purchaseList.forEach( gp -> gp.updateStatus(GroupPurchaseStatus.OPEN));
 
-        contribution.incrementWriteCount(updatedCount);
+        contribution.incrementWriteCount(purchaseList.size());
 
         return RepeatStatus.FINISHED;
     }
