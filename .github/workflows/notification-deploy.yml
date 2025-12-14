@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd
-      - feature/ci-cd-*
+      - feature/ci-cd-*test
     paths:
       - 'notification/src/**'
       - 'notification/build.gradle'
