@@ -1,18 +1,71 @@
 #file: noinspection SpellCheckingInspection
-name: Config Server Deploy
+name: Discovery Deploy
 on:
   push:
     branches:
       - main
       - feature/ci-cd
+      - feature/ci-cd-*
     paths:
-      - 'config/src/**'
-      - 'config/build.gradle'
-      - '.github/workflows/config-server-deploy.yml'
-      - 'docs/k8s/infra/config.yml'
+      - 'discovery/**'
+      - 'docs/k8s/infra/discovery.yml'
+      - '.github/workflows/discovery-deploy.yml'
 
 jobs:
-  deploy-config-server:
+  apply-infra:
+    runs-on: ubuntu-latest
+    outputs:
+      infra-changed: ${{ steps.check-infra.outputs.changed }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Infra 파일 변경 확인
+        id: check-infra
+        run: |
+          if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/infra/discovery\.yml'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Discovery infra file changed"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No discovery infra file changes"
+          fi
+
+      - name: Infra 설정 파일을 Bastion으로 복사
+        if: steps.check-infra.outputs.changed == 'true'
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          source: "docs/k8s/infra/discovery.yml"
+          target: "/tmp/k8s-infra-temp"
+          strip_components: 3
+          overwrite: true
+
+      - name: Infra 리소스 적용
+        if: steps.check-infra.outputs.changed == 'true'
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_SSH_KEY }}
+          port: 22
+          command_timeout: '3m'
+          script: |
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+            echo "Applying discovery.yml..."
+            kubectl apply -f /tmp/k8s-infra-temp/discovery.yml
+            echo "Discovery infra applied successfully"
+
+            rm -rf /tmp/k8s-infra-temp
+
+  deploy-discovery:
+    needs: apply-infra
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
@@ -37,13 +90,13 @@ jobs:
 
       - name: Jib로 Docker 이미지 빌드 (로컬)
         run: |
-          ./gradlew :config:jibDockerBuild \
+          ./gradlew :discovery:jibDockerBuild \
             -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
       - name: Docker 이미지를 tar 파일로 저장
         run: |
-          docker save minbros/config-server:${{ steps.version.outputs.tag }} | gzip > config-server.tar.gz
-          ls -lh config-server.tar.gz
+          docker save minbros/discovery:${{ steps.version.outputs.tag }} | gzip > discovery.tar.gz
+          ls -lh discovery.tar.gz
 
       - name: 이미지 파일을 프라이빗 인스턴스로 전송 (Bastion 경유)
         uses: appleboy/scp-action@v1.0.0
@@ -52,7 +105,7 @@ jobs:
           username: ${{ secrets.PRIVATE_USER }}
           key: ${{ secrets.PRIVATE_SSH_KEY }}
           port: 22
-          source: "config-server.tar.gz"
+          source: "discovery.tar.gz"
           target: "/tmp"
           proxy_host: ${{ secrets.BASTION_HOST }}
           proxy_username: ${{ secrets.BASTION_USER }}
@@ -72,9 +125,9 @@ jobs:
           proxy_port: 22
           script: |
             echo "Loading Docker image..."
-            gunzip -c /tmp/config-server.tar.gz | sudo k3s ctr images import -
+            gunzip -c /tmp/discovery.tar.gz | sudo k3s ctr images import -
 
-            rm -f /tmp/config-server.tar.gz
+            rm -f /tmp/discovery.tar.gz
 
       - name: 컨트롤 플레인 접속 후 배포 명령 실행
         uses: appleboy/ssh-action@v1.0.0
@@ -85,16 +138,16 @@ jobs:
           port: 22
           script: |
             echo "Updating deployment..."
-            sudo kubectl set image deployment/config-server \
-              config-server=minbros/config-server:${{ steps.version.outputs.tag }} \
+            kubectl set image deployment/discovery \
+              discovery=minbros/discovery:${{ steps.version.outputs.tag }} \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
-            sudo kubectl rollout status deployment/config-server \
-              --timeout=10m \
+            kubectl rollout status deployment/discovery \
+              --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
-            echo "Config Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+            echo "Discovery Server deployed successfully with version ${{ steps.version.outputs.tag }}"
 
       - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
         uses: appleboy/ssh-action@v1.0.0

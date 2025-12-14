@@ -19,3 +19,16 @@ dependencies {
 bootJar {
     enabled = true
 }
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    to {
+        image = 'minbros/point'
+    }
+    container {
+        ports = ['8086']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
+    }
+}

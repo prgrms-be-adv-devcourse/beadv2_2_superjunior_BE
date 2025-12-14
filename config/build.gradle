@@ -12,7 +12,7 @@ jib {
         image = 'eclipse-temurin:17-jre'
     }
     to {
-        image = 'minbros/config-server'
+        image = 'minbros/config'
     }
     container {
         ports = ['8888']

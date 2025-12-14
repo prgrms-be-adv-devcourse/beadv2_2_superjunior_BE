@@ -1,3 +1,5 @@
+create schema notification_schema;
+
 create table notification_schema.notification
 (
     notification_id   uuid        not null
