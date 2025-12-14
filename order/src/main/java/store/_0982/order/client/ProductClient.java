@@ -1,15 +1,14 @@
 package store._0982.order.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
 import store._0982.order.client.dto.GroupPurchaseDetailInfo;
+import store._0982.order.client.dto.GroupPurchaseInfo;
 import store._0982.order.client.dto.ParticipateInfo;
 import store._0982.order.client.dto.ParticipateRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 @FeignClient(
@@ -24,6 +23,14 @@ public interface ProductClient {
     @GetMapping("/api/purchases/{purchaseId}")
     ResponseDto<GroupPurchaseDetailInfo> getGroupPurchaseById(
             @PathVariable UUID purchaseId
+    );
+
+    /**
+     * 공동 구매 리스트 조회
+     */
+    @GetMapping("/internal/purchases")
+    List<GroupPurchaseInfo> getGroupPurchaseByIds(
+            @RequestParam("ids") List<UUID> purchaseIds
     );
 
     /**

@@ -1,4 +1,4 @@
-package store._0982.order.domain;
+package store._0982.order.domain.order;
 
 public enum OrderStatus {
     SCHEDULED,      // 시작전

@@ -1,4 +1,4 @@
-package store._0982.order.domain;
+package store._0982.order.domain.order;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

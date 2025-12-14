@@ -46,4 +46,14 @@ public class CartRepositoryAdapter implements CartRepository {
         cartJpaRepository.flushCart(memberId);
     }
 
+    @Override
+    public List<Cart> findAllByCartIdIn(List<UUID> cartIds) {
+        return cartJpaRepository.findAllByCartIdIn(cartIds);
+    }
+
+    @Override
+    public void deleteAll(List<Cart> carts) {
+        cartJpaRepository.deleteAll(carts);
+    }
+
 }

@@ -1,13 +1,13 @@
-package store._0982.order.infrastructure;
+package store._0982.order.infrastructure.order;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.order.domain.Order;
-import store._0982.order.domain.OrderRepository;
+import store._0982.order.domain.order.Order;
+import store._0982.order.domain.order.OrderRepository;
 
-import store._0982.order.domain.OrderStatus;
+import store._0982.order.domain.order.OrderStatus;
 
 import java.util.List;
 import java.util.Optional;

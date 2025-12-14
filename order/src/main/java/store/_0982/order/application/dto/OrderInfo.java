@@ -1,7 +1,7 @@
 package store._0982.order.application.dto;
 
-import store._0982.order.domain.Order;
-import store._0982.order.domain.OrderStatus;
+import store._0982.order.domain.order.Order;
+import store._0982.order.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -10,8 +10,8 @@ public record OrderInfo(
         UUID orderId,
         OrderStatus status,
         int quantity,
-        int price,
-        int totalAmount,
+        Long price,
+        Long totalAmount,
         OffsetDateTime createdAt
 ) {
     public static OrderInfo from(Order order){
