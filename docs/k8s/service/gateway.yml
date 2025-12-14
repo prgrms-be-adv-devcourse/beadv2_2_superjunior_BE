@@ -1,4 +1,4 @@
-#file: noinspection KubernetesUnknownValues,SpellCheckingInspection
+#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,11 +16,9 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: minbros/gateway
+          image: minbros/gateway:latest
           imagePullPolicy: Always
           env:
-            - name: SPRING_CLOUD_CONFIG_URI
-              value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
             - name: EUREKA_INSTANCE_HOSTNAME
@@ -35,8 +33,8 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
-              ephemeral-storage: "512Mi"
+              memory: "384Mi"
+              ephemeral-storage: "768Mi"
             limits:
               cpu: "500m"
               memory: "512Gi"
