@@ -13,6 +13,8 @@ spec:
       labels:
         app: order
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
       automountServiceAccountToken: false
       containers:
         - name: order
