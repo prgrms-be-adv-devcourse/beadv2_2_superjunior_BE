@@ -32,7 +32,7 @@ dependencies {
         }
         container {
             ports = ['8083']
-            jvmFlags = ['-Xms256m', '-Xmx512m']
+            jvmFlags = ['-Xms128m', '-Xmx256m']
         }
     }
 }
