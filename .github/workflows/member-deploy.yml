@@ -10,6 +10,9 @@ on:
       - 'member/src/**'
       - '.github/workflows/member-deploy.yml'
       - 'docs/k8s/service/member.yml'
+      - 'common/src/**'
+      - 'common/build.gradle'
+      - 'build.gradle'
 
 jobs:
   apply-infra:
