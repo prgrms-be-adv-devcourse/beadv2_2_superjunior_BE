@@ -7,6 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
@@ -18,7 +19,6 @@ import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 import store._0982.product.client.MemberClient;
 import store._0982.product.application.dto.*;
 import store._0982.product.exception.CustomErrorCode;
-import store._0982.product.exception.CustomException;
 import store._0982.product.domain.*;
 
 import java.util.List;
