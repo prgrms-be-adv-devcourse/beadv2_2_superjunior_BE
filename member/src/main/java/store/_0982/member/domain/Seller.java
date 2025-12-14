@@ -34,7 +34,7 @@ public class Seller {
     @Column(name = "bank_code", length = 20, nullable = false)
     private String bankCode;
 
-    @Column(name = "account_number", length = 20, nullable = false, unique = true)
+    @Column(name = "account_number", length = 20, nullable = false)
     private String accountNumber;
 
     @Column(name = "account_holder", length = 50, nullable = false)
@@ -47,7 +47,6 @@ public class Seller {
         Seller seller = new Seller();
         seller.member = member;
         seller.member.registerSeller();
-        seller.sellerId = member.getMemberId();
         seller.createdAt = OffsetDateTime.now();
         seller.bankCode = bankCode;
         seller.accountNumber = accountNumber;

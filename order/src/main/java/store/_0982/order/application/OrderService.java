@@ -12,10 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
-import store._0982.order.application.dto.OrderDetailInfo;
-import store._0982.order.application.dto.OrderInfo;
-import store._0982.order.application.dto.OrderRegisterCommand;
-import store._0982.order.application.dto.OrderRegisterInfo;
+import store._0982.order.application.dto.*;
 import store._0982.order.client.MemberClient;
 import store._0982.order.client.PaymentClient;
 import store._0982.order.client.ProductClient;
@@ -156,7 +153,7 @@ public class OrderService {
     }
 
     /**
-     * 판매자별 주문 목록 조회
+     * 판매자 주문 목록 조회
      * @param sellerId 판매자 id
      * @param pageable pageable
      * @return OrderInfo
@@ -175,7 +172,7 @@ public class OrderService {
     }
 
     /**
-     * 판매자별 주문 목록 조회
+     * 구매자 주문 목록 조회
      * @param memberId 구매자 id
      * @param pageable pageable
      * @return OrderInfo
