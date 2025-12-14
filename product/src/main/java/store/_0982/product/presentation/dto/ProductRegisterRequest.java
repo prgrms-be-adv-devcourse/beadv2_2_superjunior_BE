@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record ProductRegisterRequest(
         String name,
-        int price,
+        Long price,
         ProductCategory category,
         String description,
         int stock,

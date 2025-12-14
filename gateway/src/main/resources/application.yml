@@ -45,11 +45,17 @@ spring:
               uri: lb://product
               predicates:
                 - Path=/api/products/**, /internal/products/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/products/(?<segment>.*), /api/products/${segment}
 
             - id: group-purchase-api
               uri: lb://product
               predicates:
                 - Path=/api/purchases/**, /internal/purchases/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/purchases/(?<segment>.*), /api/purchases/${segment}
 
             - id: point-api
               uri: lb://point

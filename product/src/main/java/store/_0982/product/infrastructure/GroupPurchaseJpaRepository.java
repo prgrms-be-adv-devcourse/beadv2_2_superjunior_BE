@@ -24,4 +24,6 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
             "WHERE g.status = 'SCHEDULED' " +
             "AND g.startDate <= :now")
     int openReadyGroupPurchases(@Param("now") OffsetDateTime now);
+
+    boolean existsByProductId(UUID productId);
 }
