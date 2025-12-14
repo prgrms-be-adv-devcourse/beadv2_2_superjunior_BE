@@ -29,7 +29,7 @@ public interface ProductClient {
     /**
      * 공동 구매 참여(수량 증가)
      */
-    @PostMapping("/api/purchases/{purchaseId}/participate")
+    @PostMapping("/internal/purchases/{purchaseId}/participate")
     ResponseDto<ParticipateInfo> participate(
             @PathVariable UUID purchaseId,
             @RequestBody ParticipateRequest request

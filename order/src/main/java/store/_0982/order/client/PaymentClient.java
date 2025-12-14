@@ -21,7 +21,7 @@ public interface PaymentClient {
     /**
      * 포인트 차감
      */
-    @PostMapping("/api/points/internal/deduct")
+    @PostMapping("/internal/points/deduct")
     ResponseDto<MemberPointInfo> deductPointsInternal(
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody PointMinusRequest request
@@ -30,7 +30,7 @@ public interface PaymentClient {
     /**
      * 포인트 환불
      */
-    @PostMapping("/api/points/internal/return")
+    @PostMapping("/internal/points/return")
     ResponseDto<MemberPointInfo> returnPointsInternal(
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody PointReturnRequest request
