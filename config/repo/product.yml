@@ -17,4 +17,5 @@ spring:
           time_zone: Asia/Seoul
   batch:
     jdbc:
+      table-prefix: batch_product_schema.batch_
       initialize-schema: never
