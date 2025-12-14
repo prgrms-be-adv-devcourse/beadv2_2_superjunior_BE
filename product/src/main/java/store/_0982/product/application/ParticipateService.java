@@ -15,8 +15,8 @@ import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.product.application.dto.ParticipateInfo;
 import store._0982.product.client.MemberClient;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
+import store._0982.product.exception.CustomErrorCode;
+import store._0982.product.exception.CustomException;
 import store._0982.product.domain.*;
 
 import java.util.UUID;

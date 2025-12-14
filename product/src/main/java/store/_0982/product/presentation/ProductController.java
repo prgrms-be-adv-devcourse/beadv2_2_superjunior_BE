@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
 import store._0982.common.auth.RequireRole;
 import store._0982.common.auth.Role;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.product.application.ProductService;
 import store._0982.product.application.dto.ProductRegisterInfo;
@@ -15,7 +16,6 @@ import store._0982.product.application.dto.ProductDetailInfo;
 import store._0982.product.application.dto.ProductUpdateInfo;
 import store._0982.product.presentation.dto.ProductRegisterRequest;
 import store._0982.product.presentation.dto.ProductUpdateRequest;
-import store._0982.product.common.dto.ResponseDto;
 
 import java.util.UUID;
 

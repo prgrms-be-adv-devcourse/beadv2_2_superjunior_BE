@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.dto.PageResponse;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
@@ -16,9 +17,8 @@ import store._0982.product.application.dto.GroupPurchaseInfo;
 import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 import store._0982.product.client.MemberClient;
 import store._0982.product.application.dto.*;
-import store._0982.product.common.dto.PageResponseDto;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
+import store._0982.product.exception.CustomErrorCode;
+import store._0982.product.exception.CustomException;
 import store._0982.product.domain.*;
 
 import java.util.List;
@@ -100,7 +100,7 @@ public class GroupPurchaseService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchase(Pageable pageable) {
+    public PageResponse<GroupPurchaseThumbnailInfo> getGroupPurchase(Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
@@ -109,11 +109,11 @@ public class GroupPurchaseService {
             return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
         });
 
-        return PageResponseDto.from(groupPurchaseInfoPage);
+        return PageResponse.from(groupPurchaseInfoPage);
     }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<GroupPurchaseThumbnailInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
+    public PageResponse<GroupPurchaseThumbnailInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
@@ -122,7 +122,7 @@ public class GroupPurchaseService {
             return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
         });
 
-        return PageResponseDto.from(groupPurchaseInfoPage);
+        return PageResponse.from(groupPurchaseInfoPage);
     }
 
     @ServiceLog

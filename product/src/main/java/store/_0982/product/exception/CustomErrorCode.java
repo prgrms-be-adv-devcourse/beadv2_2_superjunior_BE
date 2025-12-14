@@ -1,4 +1,4 @@
-package store._0982.product.common.exception;
+package store._0982.product.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
