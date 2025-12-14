@@ -1,4 +1,4 @@
-name: order-deploy.yml
+name: Order Deploy
 on:
   push:
     branches:
