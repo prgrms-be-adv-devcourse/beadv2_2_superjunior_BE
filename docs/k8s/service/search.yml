@@ -18,8 +18,8 @@ spec:
         kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: search
-          image: minbros/store-search:latest
-          imagePullPolicy: Always
+          image: minbros/search:latest
+          imagePullPolicy: Never
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
