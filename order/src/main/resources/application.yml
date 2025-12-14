@@ -41,10 +41,10 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-    instance:
-      prefer-ip-address: true
-      instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-      health-check-url-path: /actuator/health
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    health-check-url-path: /actuator/health
 
 
 management:
