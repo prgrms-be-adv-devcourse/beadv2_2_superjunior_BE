@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd-yjs
-      - feature/ci-cd-yjs-test
+      - feature/ci-cd-*-test
     paths:
       - 'order/build.gradle'
       - 'order/src/**'
