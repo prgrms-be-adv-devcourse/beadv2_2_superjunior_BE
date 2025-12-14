@@ -9,14 +9,14 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.product.application.dto.ParticipateInfo;
 import store._0982.product.client.MemberClient;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
+import store._0982.product.exception.CustomErrorCode;
 import store._0982.product.domain.*;
 
 import java.util.UUID;
@@ -68,7 +68,7 @@ public class ParticipateService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.INCREASE_PARTICIPATE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(
                 groupPurchase.getStatus().name(),

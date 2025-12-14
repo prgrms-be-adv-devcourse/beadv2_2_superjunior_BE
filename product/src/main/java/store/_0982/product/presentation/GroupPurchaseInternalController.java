@@ -6,12 +6,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
 import store._0982.common.log.ControllerLog;
 import store._0982.product.application.GroupPurchaseService;
 import store._0982.product.application.ParticipateService;
 import store._0982.product.application.dto.*;
-import store._0982.product.common.dto.ResponseDto;
-import store._0982.product.common.exception.CustomException;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.presentation.dto.ParticipateRequest;
 
@@ -40,7 +40,7 @@ public class GroupPurchaseInternalController {
 
             return new ResponseDto<>(HttpStatus.OK, result, result.message());
         } catch (CustomException e) {
-            ParticipateInfo errorResult = ParticipateInfo.failure(e.getErrorCode().name(), 0, e.getMessage());
+            ParticipateInfo errorResult = ParticipateInfo.failure(e.getErrorCode().getHttpStatus().name(), 0, e.getMessage());
             return new ResponseDto<>(HttpStatus.OK, errorResult, e.getMessage());
         }
     }

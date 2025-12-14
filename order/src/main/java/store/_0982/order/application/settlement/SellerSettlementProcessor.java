@@ -13,7 +13,7 @@ import java.util.UUID;
 @Service
 public class SellerSettlementProcessor {
 
-    private final SellerBalanceService sellerBalanceService;
+    private final SellerBalanceCommandService sellerBalanceCommandService;
     private final ProductFeignClient productFeignClient;
 
     @Transactional
@@ -23,7 +23,7 @@ public class SellerSettlementProcessor {
                 .mapToLong(gp -> gp.totalAmount() != null ? gp.totalAmount() : 0L)
                 .sum();
 
-        sellerBalanceService.increaseBalance(sellerId, totalAmount);
+        sellerBalanceCommandService.increaseBalance(sellerId, totalAmount);
 
         for (GroupPurchaseInternalInfo gp : groupPurchases) {
             productFeignClient.markAsSettled(gp.groupPurchaseId());

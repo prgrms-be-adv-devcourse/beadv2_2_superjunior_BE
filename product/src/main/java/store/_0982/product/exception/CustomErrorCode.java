@@ -1,12 +1,13 @@
-package store._0982.product.common.exception;
+package store._0982.product.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import store._0982.common.exception.ErrorCode;
 
 @Getter
 @RequiredArgsConstructor
-public enum CustomErrorCode {
+public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),

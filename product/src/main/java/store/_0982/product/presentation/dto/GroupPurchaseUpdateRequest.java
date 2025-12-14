@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import store._0982.product.application.dto.GroupPurchaseUpdateCommand;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -31,7 +29,7 @@ public record GroupPurchaseUpdateRequest(
         @JsonProperty("discountedPrice")
         @NotNull(message = "할인 가격은 필수입니다")
         @Min(value = 0, message = "가격은 0 이상이어야 합니다")
-        Integer discountedPrice,
+        Long discountedPrice,
 
         @JsonProperty("startDate")
         @NotNull(message = "시작일은 필수입니다")

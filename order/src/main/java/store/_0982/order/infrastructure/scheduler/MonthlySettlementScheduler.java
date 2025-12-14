@@ -26,7 +26,7 @@ public class MonthlySettlementScheduler {
     @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() {
         String schedulerName = "MonthlySettlement";
-        log.info(String.format(SettlementLogFormat.START, schedulerName));
+        log.info(SettlementLogFormat.START, schedulerName);
 
         try {
             JobParameters jobParameters = new JobParametersBuilder()
@@ -34,9 +34,9 @@ public class MonthlySettlementScheduler {
                     .toJobParameters();
 
             jobLauncher.run(monthlySettlementJob, jobParameters);
-            log.info(String.format(SettlementLogFormat.COMPLETE, schedulerName));
+            log.info(SettlementLogFormat.COMPLETE, schedulerName);
         } catch (Exception e) {
-            log.info(String.format(SettlementLogFormat.FAIL, schedulerName));
+            log.error(SettlementLogFormat.FAIL, schedulerName);
         }
     }
 }

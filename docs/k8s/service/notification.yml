@@ -14,9 +14,11 @@ spec:
         app: notification
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: notification
-          image: minbros/notification
+          image: minbros/notification:latest
           imagePullPolicy: Always
           env:
             - name: SPRING_CLOUD_CONFIG_URI
@@ -39,7 +41,7 @@ spec:
               ephemeral-storage: "512Mi"
             limits:
               cpu: "500m"
-              memory: "512Gi"
+              memory: "512Mi"
               ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8084
@@ -73,5 +75,3 @@ spec:
       targetPort: 8084
       protocol: TCP
       name: http
-
-# 테스트 주석

@@ -34,7 +34,7 @@ public class GroupPurchaseEvent extends BaseEvent {
                               Integer maxQuantity,
                               String title,
                               String description,
-                              Integer discountedPrice,
+                              Long discountedPrice,
                               String status,
                               String sellerName,
                               String startDate,

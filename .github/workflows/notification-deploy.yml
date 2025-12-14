@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - main
-      - feature/ci-cd
-      - feature/ci-cd-*
+      - feature/ci-cd-*test
     paths:
       - 'notification/src/**'
       - 'notification/build.gradle'
       - 'docs/k8s/service/notification.yml'
       - '.github/workflows/notification-deploy.yml'
+      - 'common/src/**'
+      - 'common/build.gradle'
+      - 'build.gradle'
 
 jobs:
   apply-notification:
@@ -23,18 +25,18 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Gateway 파일 변경 확인
+      - name: notification 파일 변경 확인
         id: check-notification
         run: |
           if git diff --name-only HEAD^ HEAD | grep -q 'docs/k8s/service/notification\.yml'; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "Notification file changed"
+            echo "notification file changed"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "No notification file changes"
           fi
 
-      - name: Gateway 설정 파일을 Bastion으로 복사
+      - name: notification 설정 파일을 Bastion으로 복사
         if: steps.check-notification.outputs.changed == 'true'
         uses: appleboy/scp-action@v1.0.0
         with:
@@ -47,7 +49,7 @@ jobs:
           strip_components: 3
           overwrite: true
 
-      - name: Notification 리소스 적용
+      - name: notification 리소스 적용
         if: steps.check-notification.outputs.changed == 'true'
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -58,10 +60,10 @@ jobs:
           command_timeout: '3m'
           script: |
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            
+
             echo "Applying config.yml..."
             kubectl apply -f /tmp/k8s-service/notification.yml
-            echo "Notification service applied successfully"
+            echo "notification service applied successfully"
 
   deploy-notification:
     needs: apply-notification
@@ -80,13 +82,6 @@ jobs:
       - name: Gradle 실행 권한 부여
         run: chmod +x ./gradlew
 
-      - name: 버전 태그 생성
-        id: version
-        run: |
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "Image tag: $SHORT_SHA"
-
       - name: Docker Hub 로그인
         uses: docker/login-action@v2
         with:
@@ -97,7 +92,7 @@ jobs:
         run: |
           ./gradlew :notification:jib \
           -Djib.to.image=minbros/notification \
-          -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
+          -Djib.to.tags=latest \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
 
@@ -111,7 +106,7 @@ jobs:
           script: |
             echo "Updating deployment..."
             kubectl set image deployment/notification \
-              notification=minbros/notification:${{ steps.version.outputs.tag }} \
+              notification=minbros/notification:latest \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
             echo "Waiting for rollout..."
@@ -119,4 +114,4 @@ jobs:
               --timeout=2m \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
-            echo "Notification Server deployed successfully with version ${{ steps.version.outputs.tag }}"
+            echo "notification Server deployed successfully"

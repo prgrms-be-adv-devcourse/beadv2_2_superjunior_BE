@@ -5,8 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.HeaderName;
 import store._0982.common.auth.RequireRole;
 import store._0982.common.auth.Role;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.product.application.ProductService;
 import store._0982.product.application.dto.ProductRegisterInfo;
@@ -14,7 +16,6 @@ import store._0982.product.application.dto.ProductDetailInfo;
 import store._0982.product.application.dto.ProductUpdateInfo;
 import store._0982.product.presentation.dto.ProductRegisterRequest;
 import store._0982.product.presentation.dto.ProductUpdateRequest;
-import store._0982.product.common.dto.ResponseDto;
 
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ public class ProductController {
     @RequireRole({Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ProductRegisterInfo> createProduct(
-            @RequestHeader("X-Member-Id") UUID memberId,
+            @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody ProductRegisterRequest request) {
         ProductRegisterInfo info = productService.createProduct(request.toCommand(memberId));
         return new ResponseDto<>(HttpStatus.CREATED, info, "상품이 등록되었습니다.");
@@ -44,7 +45,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<ProductRegisterInfo> deleteProduct(
             @PathVariable UUID productId,
-            @RequestHeader("X-Member-Id") UUID memberId) {
+            @RequestHeader(HeaderName.ID) UUID memberId) {
         productService.deleteProduct(productId, memberId);
         return new ResponseDto<>(HttpStatus.OK, null, "상품이 삭제되었습니다.");
     }
