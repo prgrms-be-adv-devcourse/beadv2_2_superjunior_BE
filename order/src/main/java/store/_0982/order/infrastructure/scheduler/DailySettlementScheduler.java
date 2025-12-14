@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import store._0982.order.application.settlement.DailySettlementService;
-import store._0982.order.domain.SettlementLogFormat;
+import store._0982.order.domain.order.SettlementLogFormat;
 
 @Slf4j
 @RequiredArgsConstructor

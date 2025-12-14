@@ -1,14 +1,13 @@
-package store._0982.order.presentation;
+package store._0982.order.presentation.order;
 
 import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
-import store._0982.order.application.OrderService;
-import store._0982.order.domain.OrderStatus;
+import store._0982.order.application.order.OrderService;
+import store._0982.order.domain.order.OrderStatus;
 
 import java.util.UUID;
 
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Slf4j
 @RequestMapping("/internal/orders")
 @Hidden
-public class InternalController {
+public class OrderInternalController {
 
     private final OrderService orderService;
 

@@ -1,4 +1,4 @@
-package store._0982.order.application;
+package store._0982.order.application.order;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -12,19 +12,23 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.order.application.dto.*;
 import store._0982.order.client.MemberClient;
 import store._0982.order.client.PaymentClient;
 import store._0982.order.client.ProductClient;
 import store._0982.order.client.dto.*;
-import store._0982.order.domain.Order;
-import store._0982.order.domain.OrderRepository;
-import store._0982.order.domain.OrderStatus;
+import store._0982.order.domain.cart.Cart;
+import store._0982.order.domain.cart.CartRepository;
+import store._0982.order.domain.order.Order;
+import store._0982.order.domain.order.OrderRepository;
+import store._0982.order.domain.order.OrderStatus;
 import store._0982.order.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,6 +36,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final CartRepository cartRepository;
     private final MemberClient memberClient;
     private final ProductClient productClient;
     private final PaymentClient paymentClient;
@@ -43,6 +48,7 @@ public class OrderService {
      * @param command  주문 command
      * @return OrderRegisterInfo
      */
+    @ServiceLog
     @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
@@ -50,20 +56,139 @@ public class OrderService {
         validateMember(memberId);
 
         // 공동 구매 존재 여부
-        validateGroupPurchase(command.groupPurchaseId());
+        GroupPurchaseDetailInfo purchase = validateGroupPurchase(command.groupPurchaseId());
 
         // 공동 구매 참여
         participate(command);
 
         // 포인트 차감 (예치금)
-        deductPoints(memberId, command);
+        deductPoints(memberId, command, purchase.discountedPrice());
 
         // order 생성
-        Order order = Order.create(command, memberId);
+        Order order = new Order(
+                command.quantity(),
+                purchase.discountedPrice(),
+                memberId,
+                command.address(),
+                command.addressDetail(),
+                command.postalCode(),
+                command.receiverName(),
+                command.sellerId(),
+                command.groupPurchaseId()
+        );
 
         Order savedOrder = orderRepository.save(order);
         return OrderRegisterInfo.from(savedOrder);
     }
+
+    /**
+     * 장바구니 주문 생성
+     * @param memberId 고객
+     * @param command 주문 command
+     * @return OrderRegisterInfo List
+     */
+    @Transactional
+    @ServiceLog
+    public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
+        // 주문자 존재 여부
+        validateMember(memberId);
+
+        // cartId 리스트로 장바구니 아이템들 조회
+        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cardIds());
+        if(carts.size() != command.cardIds().size()){
+            throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
+        }
+
+        // 장바구니가 해당 회원 것인지 확인
+        carts.forEach(cart -> {
+            if(!cart.getMemberId().equals(memberId)){
+                throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
+            }
+
+            if(cart.getQuantity() < 0){
+                throw new CustomException(CustomErrorCode.INVALID_QUANTITY);
+            }
+        });
+
+        // 공동 구매 유효한지 확인 -> 참여 -> 포인트 차감
+        Set<UUID> groupPurchaseIds = carts.stream()
+                .map(Cart::getGroupPurchaseId)
+                .collect(Collectors.toSet());
+
+        // 공동 구매 리스트 조회
+        List<GroupPurchaseInfo> purchases = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+
+        Map<UUID, GroupPurchaseInfo> purchasesMap = purchases.stream()
+                .collect(Collectors.toMap(
+                        GroupPurchaseInfo::groupPurchaseId,
+                        Function.identity()
+                ));
+
+        // 각 공동 구매가 조건에 맞는지 확인
+        purchasesMap.values().forEach(purchase -> {
+            if (purchase.status() != GroupPurchaseStatus.OPEN) {
+                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
+            }
+            if (purchase.endDate().isBefore(OffsetDateTime.now())) {
+                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
+            }
+        });
+
+        // 주문 생성
+        List<Order> orders = new ArrayList<>();
+
+        for(Cart cart : carts){
+
+            GroupPurchaseInfo purchase = purchasesMap.get(cart.getGroupPurchaseId());
+
+            if (purchase == null) {
+                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+            }
+
+            // 공동 구매 참여
+            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
+                    cart.getQuantity(),
+                    command.address(),
+                    command.addressDetail(),
+                    command.postalCode(),
+                    command.receiverName(),
+                    purchase.sellerId(),
+                    purchase.groupPurchaseId()
+            );
+
+            participate(orderCommand);
+
+            // 포인트 차감
+            deductPoints(memberId, orderCommand, purchase.discountedPrice());
+
+            // Order 생성
+            Order order = new Order(
+                    cart.getQuantity(),
+                    purchase.discountedPrice(),
+                    memberId,
+                    command.address(),
+                    command.addressDetail(),
+                    command.postalCode(),
+                    command.receiverName(),
+                    purchase.sellerId(),
+                    cart.getGroupPurchaseId()
+            );
+
+            orders.add(order);
+        }
+
+        // 주문 저장
+        List<Order> savedOrders = orderRepository.saveAll(orders);
+
+        // 장바구니 비우기
+        cartRepository.deleteAll(carts);
+
+        return savedOrders.stream()
+                .map(OrderRegisterInfo::from)
+                .toList();
+    }
+
+
 
     private void validateMember(UUID memberId) {
         try {
@@ -76,12 +201,11 @@ public class OrderService {
         }
     }
 
-    private void validateGroupPurchase(UUID groupPurchaseId) {
+    private GroupPurchaseDetailInfo validateGroupPurchase(UUID groupPurchaseId) {
         try {
             // ResponseDto로 받기
-            ResponseDto<GroupPurchaseDetailInfo> response =
-                    productClient.getGroupPurchaseById(groupPurchaseId);
-            GroupPurchaseDetailInfo groupPurchase = response.data();
+            GroupPurchaseDetailInfo groupPurchase =
+                    productClient.getGroupPurchaseById(groupPurchaseId).data();
 
             // 상태확인
             if (groupPurchase.status() != GroupPurchaseStatus.OPEN) {
@@ -92,6 +216,7 @@ public class OrderService {
             if (groupPurchase.endDate().isBefore(OffsetDateTime.now())) {
                 throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
             }
+            return groupPurchase;
 
         } catch (CustomException e) {
             throw e;
@@ -120,13 +245,17 @@ public class OrderService {
 
     }
 
-    private void deductPoints(UUID memberId, OrderRegisterCommand command) {
-        int totalAmount = command.price() * command.quantity();
+    private void deductPoints(UUID memberId, OrderRegisterCommand command, Long price) {
+        Long totalAmount = price * command.quantity();
+        log.info("가격 : {}, 수량 : {}, 총 가격 : {}", price, command.quantity(), totalAmount);
         try {
             paymentClient.deductPointsInternal(
                     memberId,
-                    new PointMinusRequest(totalAmount)
+                    new PointDeductRequest(UUID.randomUUID(), UUID.randomUUID(), totalAmount)
             );
+        } catch(FeignException.BadRequest e){
+            log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         } catch (FeignException e) {
             log.error("포인트 차감 실패: memberId={}, amount={}", memberId, totalAmount, e);
 
@@ -236,6 +365,4 @@ public class OrderService {
             }
         }
     }
-
-
 }
