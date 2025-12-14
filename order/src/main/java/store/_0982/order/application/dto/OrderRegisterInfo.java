@@ -9,7 +9,7 @@ import java.util.UUID;
 public record OrderRegisterInfo(
         UUID orderId,
         int quantity,
-        int price,
+        Long price,
         OrderStatus status,
         UUID memberId,
         String address,

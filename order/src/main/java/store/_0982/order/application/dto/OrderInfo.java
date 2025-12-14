@@ -10,8 +10,8 @@ public record OrderInfo(
         UUID orderId,
         OrderStatus status,
         int quantity,
-        int price,
-        int totalAmount,
+        Long price,
+        Long totalAmount,
         OffsetDateTime createdAt
 ) {
     public static OrderInfo from(Order order){

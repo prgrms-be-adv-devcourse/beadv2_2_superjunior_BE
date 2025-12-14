@@ -349,7 +349,7 @@ public class OrderService {
                 log.info("이미 환불된 주문 : {}", order.getOrderId());
                 continue;
             }
-            int amount = order.getPrice() * order.getQuantity();
+            Long amount = order.getPrice() * order.getQuantity();
 
             try{
                 paymentClient.returnPointsInternal(
