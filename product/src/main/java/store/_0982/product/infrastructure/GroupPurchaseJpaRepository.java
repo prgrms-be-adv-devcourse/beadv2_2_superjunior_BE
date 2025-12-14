@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseStatus;
 
+import javax.swing.*;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -26,4 +27,6 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     int openReadyGroupPurchases(@Param("now") OffsetDateTime now);
 
     boolean existsByProductId(UUID productId);
+
+    List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 }
