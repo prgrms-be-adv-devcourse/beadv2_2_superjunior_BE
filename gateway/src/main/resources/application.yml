@@ -8,6 +8,22 @@ spring:
 
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:8080"
+              - "http://192.168.45.137:8080"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
       server:
         webflux:
           routes:
@@ -33,6 +49,9 @@ spring:
               uri: lb://order
               predicates:
                 - Path=/api/orders/**, /internal/orders/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/orders/(?<segment>.*), /api/orders/${segment}
 
             - id: openapi
               uri: ${GATEWAY_HOST:http://localhost:8000}
@@ -45,16 +64,18 @@ spring:
               uri: lb://product
               predicates:
                 - Path=/api/products/**, /internal/products/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/products/(?<segment>.*), /api/products/${segment}
 
             - id: group-purchase-api
               uri: lb://product
               predicates:
                 - Path=/api/purchases/**, /internal/purchases/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/purchases/(?<segment>.*), /api/purchases/${segment}
 
-            - id: point-api
-              uri: lb://point
-              predicates:
-                - Path=/api/points/**, /internal/points/**
 
             - id: elastic-search-api
               uri: lb://elastic-search
@@ -65,11 +86,16 @@ spring:
               uri: lb://point
               predicates:
                 - Path=/api/points/**, /api/payments/**, /internal/points/**, /internal/payments/**
+              filters:
+                - JwtAuth
+                - RewritePath=/api/points/(?<segment>.*), /api/points/${segment}
 
             - id: notification-api
               uri: lb://notification
               predicates:
                 - Path=/api/notifications/**, /internal/notifications/**
+              filters:
+                - JwtAuth
 
           discovery:
             locator:

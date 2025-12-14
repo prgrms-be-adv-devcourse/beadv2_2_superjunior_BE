@@ -27,4 +27,6 @@ public interface GroupPurchaseRepository {
 
     int openReadyGroupPurchases(OffsetDateTime now);
 
+    List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
 }

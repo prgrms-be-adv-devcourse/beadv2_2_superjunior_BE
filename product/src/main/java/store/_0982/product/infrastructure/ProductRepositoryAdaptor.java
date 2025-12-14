@@ -7,6 +7,7 @@ import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
 import java.awt.print.Pageable;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,6 +40,11 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     @Override
     public void delete(Product product) {
         productJpaRepository.delete(product);
+    }
+
+    @Override
+    public List<Product> findAllByProductIdIn(List<UUID> productIds) {
+        return productJpaRepository.findAllByProductIdIn(productIds);
     }
 
 }

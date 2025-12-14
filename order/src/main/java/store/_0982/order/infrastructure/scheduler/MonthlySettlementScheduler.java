@@ -8,7 +8,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import store._0982.order.domain.SettlementLogFormat;
+import store._0982.order.domain.order.SettlementLogFormat;
 
 import java.time.LocalDateTime;
 

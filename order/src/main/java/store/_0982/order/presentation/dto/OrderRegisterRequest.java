@@ -9,9 +9,6 @@ public record OrderRegisterRequest(
         @NotNull(message = "수량은 필수입니다.")
         @Min(value = 1, message = "수량은 최소 1개 이상이어야 합니다.")
         int quantity,
-        @NotNull(message = "가격은 필수입니다")
-        @Min(value = 0, message = "가격은 0원 이상이어야 합니다")
-        int price,
         @NotBlank(message = "주소는 필수입니다")
         @Size(min = 5, max = 100, message = "주소는 5자 이상 100자 이하여야 합니다")
         String address,
@@ -28,6 +25,6 @@ public record OrderRegisterRequest(
         UUID groupPurchaseId
 ) {
     public OrderRegisterCommand toCommand(){
-        return new OrderRegisterCommand(quantity, price, address, addressDetail, postalCode, receiverName, sellerId, groupPurchaseId);
+        return new OrderRegisterCommand(quantity, address, addressDetail, postalCode, receiverName, sellerId, groupPurchaseId);
     }
 }
