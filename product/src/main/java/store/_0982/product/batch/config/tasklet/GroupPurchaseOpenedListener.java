@@ -27,8 +27,8 @@ public class GroupPurchaseOpenedListener {
     private final GroupPurchaseRepository groupPurchaseRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void onOpened(UUID gp) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(gp)
+    public void onOpened(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
         Product product = productRepository.findById(groupPurchase.getProductId())
             .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
