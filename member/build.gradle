@@ -3,17 +3,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     /* === Mail === */
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
+//    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     /* === JPA / DB === */
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'       // PostgreSQL 드라이버
-
-    /* === Redis === */
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
-    /* === Security / JWT === */
-//    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // JJWT 0.11.x (권장 조합)
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -23,14 +17,24 @@ dependencies {
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
-    //smtp
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-
     // Logstash Logback encoder (LOGSTASH appender용)
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
     //common 모듈
     implementation project(':common')
+
+    jib {
+        from {
+            image = 'eclipse-temurin:17-jre'
+        }
+        to {
+            image = 'minbros/member'
+        }
+        container {
+            ports = ['8083']
+            jvmFlags = ['-Xms128m', '-Xmx256m']
+        }
+    }
 }
 
 bootJar {

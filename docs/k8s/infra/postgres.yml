@@ -1,3 +1,4 @@
+#file: noinspection KubernetesUnknownValues
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -35,16 +36,12 @@ spec:
       containers:
         - name: postgres
           image: postgres:15-alpine
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 5432
-          env:
-            - name: POSTGRES_USER
-              value: "postgres"
-            - name: POSTGRES_PASSWORD
-              value: "postgres1234"
-            - name: POSTGRES_DB
-              value: "group_purchase"
+          envFrom:
+            - secretRef:
+                name: postgres-secret
           resources:
             requests:
               ephemeral-storage: "1Gi"
