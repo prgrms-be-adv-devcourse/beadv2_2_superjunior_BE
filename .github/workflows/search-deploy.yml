@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.BASTION_SSH_KEY }}
           port: 22
           source: "docs/k8s/service/search.yml"
-          target: "/tmp/k8s-service-temp"
+          target: "/tmp/k8s-service"
           strip_components: 3
           overwrite: true
 
@@ -59,7 +59,7 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
             echo "Applying search.yml..."
-            kubectl apply -f /tmp/k8s-search-temp/search.yml
+            kubectl apply -f /tmp/k8s-service/search.yml
             echo "search search applied successfully"
 
             rm -rf /tmp/k8s-service-temp
