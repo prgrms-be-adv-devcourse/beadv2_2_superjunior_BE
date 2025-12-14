@@ -22,6 +22,8 @@ spec:
             - secretRef:
                 name: point-secret
           env:
+            - name: LOGGING_LEVEL_STORE
+              value: info
             - name: SPRING_CLOUD_CONFIG_URI
               value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
@@ -31,7 +33,7 @@ spec:
             - name: GATEWAY_HOST
               value: "http://gateway-service:8000"
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "http://kafka-service:9092"
+              value: "kafka-service:9092"
           resources:
             requests:
               cpu: "200m"
@@ -67,4 +69,3 @@ spec:
     - port: 8086
       targetPort: 8086
   type: ClusterIP
-
