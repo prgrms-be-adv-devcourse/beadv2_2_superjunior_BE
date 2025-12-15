@@ -53,7 +53,8 @@ public class GroupPurchaseSearchService {
             String category,
             Pageable pageable
     ) {
-        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable);
+        String sellerId = memberId != null ? memberId.toString() : null;
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
         SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
 
