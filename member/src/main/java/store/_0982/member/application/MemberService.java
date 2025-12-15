@@ -88,7 +88,7 @@ public class MemberService {
         checkEmailDuplication(email);
         EmailToken emailToken = emailTokenRepository.findByEmail(email).map(EmailToken::refresh).orElse(EmailToken.create(email));
         emailTokenRepository.save(emailToken);
-        emailService.sendEmail(email, "0909 이메일 인증 요청 메일입니다.", "0909 이메일 인증 코드입니다.\n 인증 코드: " + emailToken.getToken());
+        emailService.sendEmail("no-reply@0909.store", email, "0909 이메일 인증 요청 메일입니다.", "0909 이메일 인증 코드입니다.\n 인증 코드: " + emailToken.getToken());
     }
 
     @ServiceLog
