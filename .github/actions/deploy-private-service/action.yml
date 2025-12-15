@@ -43,47 +43,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: K8s 매니페스트 변경 확인
-      if: inputs.manifest-path != ''
-      id: check-manifest
-      shell: bash
-      run: |
-        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "${{ inputs.manifest-path }}"; then
-          echo "changed=true" >> $GITHUB_OUTPUT
-        else
-          echo "changed=false" >> $GITHUB_OUTPUT
-        fi
-
-    - name: K8s 매니페스트 파일을 Bastion으로 복사
-      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
-      uses: appleboy/scp-action@v1.0.0
-      with:
-        host: ${{ inputs.bastion-host }}
-        username: ${{ inputs.bastion-user }}
-        key: ${{ inputs.bastion-ssh-key }}
-        port: 22
-        source: ${{ inputs.manifest-path }}
-        target: /tmp/k8s-${{ inputs.service-name }}-temp
-        strip_components: 3
-        overwrite: true
-
-    - name: K8s 리소스 적용
-      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ inputs.bastion-host }}
-        username: ${{ inputs.bastion-user }}
-        key: ${{ inputs.bastion-ssh-key }}
-        port: 22
-        command_timeout: '3m'
-        script: |
-          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-          MANIFEST_FILE=$(basename "${{ inputs.manifest-path }}")
-          echo "Applying $MANIFEST_FILE..."
-          kubectl apply -f /tmp/k8s-${{ inputs.service-name }}-temp/$MANIFEST_FILE
-          echo "${{ inputs.service-name }} manifest applied successfully"
-          rm -rf /tmp/k8s-${{ inputs.service-name }}-temp
-
     - name: JDK 17 설정
       uses: actions/setup-java@v4
       with:
@@ -149,6 +108,47 @@ runs:
           gunzip -c /tmp/${{ inputs.service-name }}.tar.gz | sudo k3s ctr images import -
           rm -f /tmp/${{ inputs.service-name }}.tar.gz
 
+    - name: K8s 매니페스트 변경 확인
+      if: inputs.manifest-path != ''
+      id: check-manifest
+      shell: bash
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "${{ inputs.manifest-path }}"; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: K8s 매니페스트 파일을 Bastion으로 복사
+      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        source: ${{ inputs.manifest-path }}
+        target: /tmp/k8s-${{ inputs.service-name }}-temp
+        strip_components: 3
+        overwrite: true
+
+    - name: K8s 리소스 적용
+      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        command_timeout: '3m'
+        script: |
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+          MANIFEST_FILE=$(basename "${{ inputs.manifest-path }}")
+          echo "Applying $MANIFEST_FILE..."
+          kubectl apply -f /tmp/k8s-${{ inputs.service-name }}-temp/$MANIFEST_FILE
+          echo "${{ inputs.service-name }} manifest applied successfully"
+          rm -rf /tmp/k8s-${{ inputs.service-name }}-temp
+
     - name: 컨트롤 플레인 접속 후 배포 명령 실행
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -173,19 +173,3 @@ runs:
             --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
           echo "${{ inputs.service-name }} Server deployed successfully with version ${{ steps.version.outputs.tag }}"
-
-    - name: SSH로 프라이빗 인스턴스 접속 후 기존 이미지 삭제
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ inputs.private-host }}
-        username: ${{ inputs.private-user }}
-        key: ${{ inputs.private-ssh-key }}
-        port: 22
-        proxy_host: ${{ inputs.bastion-host }}
-        proxy_username: ${{ inputs.bastion-user }}
-        proxy_key: ${{ inputs.bastion-ssh-key }}
-        proxy_port: 22
-        script: |
-          echo "Removing unused images..."
-          sudo k3s crictl rmi --prune || true
-          echo "Image cleanup completed"
