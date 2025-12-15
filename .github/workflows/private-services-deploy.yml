@@ -1,0 +1,96 @@
+#file: noinspection SpellCheckingInspection
+name: Private Services Deploy
+on:
+  push:
+    branches:
+      - dev
+      - feature/ci-cd-*-test
+    paths:
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'discovery/**'
+      - 'elastic-search/**'
+      - 'docs/k8s/infra/discovery.yml'
+      - 'docs/k8s/service/search.yml'
+      - '.github/workflows/private-services-deploy.yml'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      discovery: ${{ steps.filter.outputs.discovery }}
+      search: ${{ steps.filter.outputs.search }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 변경된 서비스 감지
+        id: filter
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+          # Discovery
+          if echo "$CHANGED_FILES" | grep -qE '^(discovery/|build\.gradle|settings\.gradle|docs/k8s/infra/discovery\.yml)'; then
+            echo "discovery=true" >> $GITHUB_OUTPUT
+          else
+            echo "discovery=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Search
+          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
+            echo "search=true" >> $GITHUB_OUTPUT
+          else
+            echo "search=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Discovery 배포
+  deploy-discovery:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.discovery == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Discovery 배포
+        uses: ./.github/actions/deploy-private-service
+        with:
+          service-name: discovery
+          image-name: minbros/discovery
+          manifest-path: docs/k8s/infra/discovery.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          private-host: ${{ secrets.PRIVATE_HOST }}
+          private-user: ${{ secrets.PRIVATE_USER }}
+          private-ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+
+  # Search 배포
+  deploy-search:
+    needs: [detect-changes, deploy-discovery]
+    if: always() && needs.detect-changes.outputs.search == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search 배포
+        uses: ./.github/actions/deploy-private-service
+        with:
+          service-name: search
+          module-name: elastic-search
+          image-name: minbros/search
+          manifest-path: docs/k8s/service/search.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          private-host: ${{ secrets.PRIVATE_HOST }}
+          private-user: ${{ secrets.PRIVATE_USER }}
+          private-ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}

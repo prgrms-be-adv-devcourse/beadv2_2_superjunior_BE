@@ -1,0 +1,194 @@
+#file: noinspection SpellCheckingInspection
+name: 'Deploy Public Service'
+description: 'Deploy a service to public instance via Docker Hub'
+inputs:
+  service-name:
+    description: 'Service name (e.g., gateway, member)'
+    required: true
+  module-name:
+    description: 'Gradle module name (defaults to service-name)'
+    required: false
+  use-version-tag:
+    description: 'Use version tag instead of latest'
+    required: false
+    default: 'false'
+  manifest-path:
+    description: 'Path to k8s manifest file'
+    required: false
+  manifest-target-dir:
+    description: 'Target directory for manifest'
+    required: false
+    default: '/tmp/k8s-service'
+  bastion-host:
+    description: 'Bastion host address'
+    required: true
+  bastion-user:
+    description: 'Bastion username'
+    required: true
+  bastion-ssh-key:
+    description: 'Bastion SSH key'
+    required: true
+  dockerhub-username:
+    description: 'Docker Hub username'
+    required: true
+  dockerhub-token:
+    description: 'Docker Hub token'
+    required: true
+  docker-username:
+    description: 'Docker username for Jib auth'
+    required: true
+  docker-password:
+    description: 'Docker password for Jib auth'
+    required: true
+  rollout-timeout:
+    description: 'Rollout timeout'
+    required: false
+    default: '5m'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: K8s 매니페스트 변경 확인
+      if: inputs.manifest-path != ''
+      id: check-manifest
+      shell: bash
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "${{ inputs.manifest-path }}"; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: K8s 매니페스트 파일을 Bastion으로 복사
+      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        source: ${{ inputs.manifest-path }}
+        target: ${{ inputs.manifest-target-dir }}
+        strip_components: 3
+        overwrite: true
+
+    - name: K8s 리소스 적용
+      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        command_timeout: '3m'
+        script: |
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+          MANIFEST_FILE=$(basename "${{ inputs.manifest-path }}")
+          echo "Applying $MANIFEST_FILE..."
+          kubectl apply -f ${{ inputs.manifest-target-dir }}/$MANIFEST_FILE
+          echo "${{ inputs.service-name }} manifest applied successfully"
+
+    - name: JDK 17 설정
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Gradle 실행 권한 부여
+      shell: bash
+      run: chmod +x ./gradlew
+
+    - name: Docker Hub 로그인
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: 버전 태그 생성
+      if: inputs.use-version-tag == 'true'
+      id: version
+      shell: bash
+      run: |
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+        echo "Image tag: $SHORT_SHA"
+
+    # 버전 태그 사용하는 경우
+    - name: Jib로 Docker 이미지 빌드 (버전 태그)
+      if: inputs.use-version-tag == 'true'
+      shell: bash
+      run: |
+        MODULE="${{ inputs.module-name }}"
+        if [ -z "$MODULE" ]; then
+          MODULE="${{ inputs.service-name }}"
+        fi
+        ./gradlew :${MODULE}:jibDockerBuild \
+          -Djib.to.tags=${{ steps.version.outputs.tag }},latest
+
+    - name: Docker 이미지 push (버전 태그)
+      if: inputs.use-version-tag == 'true'
+      shell: bash
+      run: |
+        docker image push minbros/${{ inputs.service-name }}:${{ steps.version.outputs.tag }}
+        docker image push minbros/${{ inputs.service-name }}:latest
+
+    - name: 컨트롤 플레인에서 배포 (버전 태그)
+      if: inputs.use-version-tag == 'true'
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        script: |
+          set -e
+          TAG=${{ steps.version.outputs.tag }}
+
+          echo "Updating deployment for ${{ inputs.service-name }}..."
+          sudo kubectl set image deployment/${{ inputs.service-name }} \
+            ${{ inputs.service-name }}=minbros/${{ inputs.service-name }}:${TAG} \
+            --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+          echo "Waiting for rollout..."
+          sudo kubectl rollout status deployment/${{ inputs.service-name }} \
+            --timeout=${{ inputs.rollout-timeout }} \
+            --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+          echo "${{ inputs.service-name }} deployed successfully with version ${TAG}"
+
+    # latest 태그만 사용하는 경우
+    - name: Jib로 Docker 이미지 빌드 및 Push (latest)
+      if: inputs.use-version-tag == 'false'
+      shell: bash
+      run: |
+        MODULE="${{ inputs.module-name }}"
+        if [ -z "$MODULE" ]; then
+          MODULE="${{ inputs.service-name }}"
+        fi
+        ./gradlew :${MODULE}:jib \
+          -Djib.to.image=minbros/${{ inputs.service-name }} \
+          -Djib.to.tags=latest \
+          -Djib.to.auth.username=${{ inputs.docker-username }} \
+          -Djib.to.auth.password=${{ inputs.docker-password }}
+
+    - name: 컨트롤 플레인에서 배포 (latest)
+      if: inputs.use-version-tag == 'false'
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ inputs.bastion-host }}
+        username: ${{ inputs.bastion-user }}
+        key: ${{ inputs.bastion-ssh-key }}
+        port: 22
+        script: |
+          echo "Updating deployment for ${{ inputs.service-name }}..."
+          kubectl set image deployment/${{ inputs.service-name }} \
+            ${{ inputs.service-name }}=minbros/${{ inputs.service-name }}:latest \
+            --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+          echo "Waiting for rollout..."
+          kubectl rollout status deployment/${{ inputs.service-name }} \
+            --timeout=${{ inputs.rollout-timeout }} \
+            --kubeconfig=/etc/rancher/k3s/k3s.yaml
+
+          echo "${{ inputs.service-name }} deployed successfully"
