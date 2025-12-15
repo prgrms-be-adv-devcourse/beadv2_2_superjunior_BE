@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: Services Deploy (Public)
+name: Public Services Deploy
 on:
   push:
     branches:
@@ -17,7 +17,7 @@ on:
       - 'settings.gradle'
       - 'docs/k8s/service/*.yml'
       - '!docs/k8s/service/search.yml'
-      - '.github/workflows/services-deploy.yml'
+      - '.github/workflows/public-services-deploy.yml'
 
 jobs:
   detect-changes:
@@ -41,7 +41,7 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
           # Gateway
-          if echo "$CHANGED_FILES" | grep -qE '^(gateway/|common/|build\.gradle|settings\.gradle|docs/k8s/service/gateway\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(gateway/|build\.gradle|settings\.gradle|docs/k8s/service/gateway\.yml)'; then
             echo "gateway=true" >> $GITHUB_OUTPUT
           else
             echo "gateway=false" >> $GITHUB_OUTPUT
@@ -194,9 +194,6 @@ jobs:
         with:
           service-name: order
           manifest-path: docs/k8s/service/order.yml
-          manifest-target-dir: /tmp/k8s-service-temp
-          use-version-tag: 'true'
-          rollout-timeout: 10m
           bastion-host: ${{ secrets.BASTION_HOST }}
           bastion-user: ${{ secrets.BASTION_USER }}
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
@@ -221,9 +218,6 @@ jobs:
         with:
           service-name: product
           manifest-path: docs/k8s/service/product.yml
-          manifest-target-dir: /tmp/k8s-service-temp
-          use-version-tag: 'true'
-          rollout-timeout: 10m
           bastion-host: ${{ secrets.BASTION_HOST }}
           bastion-user: ${{ secrets.BASTION_USER }}
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}

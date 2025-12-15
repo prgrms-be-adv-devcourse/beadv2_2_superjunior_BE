@@ -16,7 +16,7 @@ inputs:
     required: false
   manifest-path:
     description: 'Path to k8s manifest file'
-    required: false
+    required: true
   bastion-host:
     description: 'Bastion host address'
     required: true

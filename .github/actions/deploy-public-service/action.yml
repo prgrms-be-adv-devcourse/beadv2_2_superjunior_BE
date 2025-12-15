@@ -1,3 +1,4 @@
+#file: noinspection SpellCheckingInspection
 name: 'Deploy Public Service'
 description: 'Deploy a service to public instance via Docker Hub'
 inputs:
@@ -98,6 +99,12 @@ runs:
       shell: bash
       run: chmod +x ./gradlew
 
+    - name: Docker Hub 로그인
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
     - name: 버전 태그 생성
       if: inputs.use-version-tag == 'true'
       id: version
@@ -118,12 +125,6 @@ runs:
         fi
         ./gradlew :${MODULE}:jibDockerBuild \
           -Djib.to.tags=${{ steps.version.outputs.tag }},latest
-
-    - name: Docker Hub 로그인 (버전 태그)
-      if: inputs.use-version-tag == 'true'
-      shell: bash
-      run: |
-        echo "${{ inputs.dockerhub-token }}" | docker login -u "${{ inputs.dockerhub-username }}" --password-stdin
 
     - name: Docker 이미지 push (버전 태그)
       if: inputs.use-version-tag == 'true'
@@ -157,13 +158,6 @@ runs:
           echo "${{ inputs.service-name }} deployed successfully with version ${TAG}"
 
     # latest 태그만 사용하는 경우
-    - name: Docker Hub 로그인 (latest)
-      if: inputs.use-version-tag == 'false'
-      uses: docker/login-action@v2
-      with:
-        username: ${{ inputs.dockerhub-username }}
-        password: ${{ inputs.dockerhub-token }}
-
     - name: Jib로 Docker 이미지 빌드 및 Push (latest)
       if: inputs.use-version-tag == 'false'
       shell: bash

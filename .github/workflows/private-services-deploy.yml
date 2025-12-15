@@ -6,6 +6,9 @@ on:
       - main
       - feature/ci-cd-*-test
     paths:
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
       - 'discovery/**'
       - 'elastic-search/**'
       - 'docs/k8s/infra/discovery.yml'
@@ -30,14 +33,14 @@ jobs:
           CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
 
           # Discovery
-          if echo "$CHANGED_FILES" | grep -qE '^(discovery/|docs/k8s/infra/discovery\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(discovery/|build\.gradle|settings\.gradle|docs/k8s/infra/discovery\.yml)'; then
             echo "discovery=true" >> $GITHUB_OUTPUT
           else
             echo "discovery=false" >> $GITHUB_OUTPUT
           fi
 
           # Search
-          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|docs/k8s/service/search\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
             echo "search=true" >> $GITHUB_OUTPUT
           else
             echo "search=false" >> $GITHUB_OUTPUT
@@ -85,7 +88,6 @@ jobs:
           module-name: elastic-search
           image-name: minbros/search
           manifest-path: docs/k8s/service/search.yml
-          rollout-timeout: 3m
           bastion-host: ${{ secrets.BASTION_HOST }}
           bastion-user: ${{ secrets.BASTION_USER }}
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
