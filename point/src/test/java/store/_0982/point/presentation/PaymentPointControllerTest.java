@@ -1,8 +1,10 @@
 package store._0982.point.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -31,8 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PaymentPointController.class)
 class PaymentPointControllerTest {
@@ -65,6 +66,11 @@ class PaymentPointControllerTest {
         public OrderServiceClient orderServiceClient() {
             return mock(OrderServiceClient.class);
         }
+    }
+
+    @BeforeEach
+    void resetMocks() {
+        Mockito.reset(paymentPointService);
     }
 
     @Test
@@ -106,25 +112,8 @@ class PaymentPointControllerTest {
     void confirmPayment() throws Exception {
         // given
         UUID orderId = UUID.randomUUID();
-        UUID memberId = UUID.randomUUID();
 
-        PaymentPointInfo paymentPointInfo = new PaymentPointInfo(
-                UUID.randomUUID(),
-                memberId,
-                orderId,
-                "CARD",
-                "test_payment_key",
-                10000,
-                PaymentPointStatus.COMPLETED,
-                OffsetDateTime.now(),
-                OffsetDateTime.now()
-        );
-
-        MemberPointInfo memberPointInfo = new MemberPointInfo(memberId, 10000, OffsetDateTime.now());
-
-        PointChargeConfirmInfo info = new PointChargeConfirmInfo(paymentPointInfo, memberPointInfo);
-
-        when(paymentPointService.confirmPayment(any())).thenReturn(info);
+        doNothing().when(paymentPointService).confirmPayment(any());
 
         // when & then
         mockMvc.perform(get("/api/payments/confirm")
@@ -132,11 +121,27 @@ class PaymentPointControllerTest {
                         .param("orderId", orderId.toString())
                         .param("amount", "10000")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.message").value("결제 및 포인트 충전 성공"))
-                .andExpect(jsonPath("$.data.paymentPoint.orderId").value(orderId.toString()))
-                .andExpect(jsonPath("$.data.memberPoint.pointBalance").value(10000));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/success"));
+
+        verify(paymentPointService).confirmPayment(any());
+    }
+
+    @Test
+    @DisplayName("포인트 충전 완료 중 에러가 발생한다")
+    void confirmPayment_fail() throws Exception {
+        // given
+        UUID orderId = UUID.randomUUID();
+
+        doThrow(new RuntimeException("임의 에러")).when(paymentPointService).confirmPayment(any());
+
+        mockMvc.perform(get("/api/payments/confirm")
+                        .param("paymentKey", "test_payment_key")
+                        .param("orderId", orderId.toString())
+                        .param("amount", "10000")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/fail"));
 
         verify(paymentPointService).confirmPayment(any());
     }
@@ -146,17 +151,8 @@ class PaymentPointControllerTest {
     void handlePaymentFailure() throws Exception {
         // given
         UUID orderId = UUID.randomUUID();
-        PointChargeFailInfo info = new PointChargeFailInfo(
-                UUID.randomUUID(),
-                orderId,
-                "test_payment_key",
-                "PAYMENT_FAILED",
-                "카드 승인 실패",
-                10000,
-                OffsetDateTime.now()
-        );
 
-        when(paymentPointService.handlePaymentFailure(any())).thenReturn(info);
+        doNothing().when(paymentPointService).handlePaymentFailure(any());
 
         // when & then
         mockMvc.perform(get("/api/payments/fail")
@@ -167,10 +163,8 @@ class PaymentPointControllerTest {
                         .param("amount", "10000")
                         .param("rawPayload", "{}")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.message").value("결제 실패 정보 저장 완료"))
-                .andExpect(jsonPath("$.data.errorCode").value("PAYMENT_FAILED"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/fail"));
 
         verify(paymentPointService).handlePaymentFailure(any());
     }
@@ -213,7 +207,7 @@ class PaymentPointControllerTest {
 
     @Test
     @DisplayName("포인트 충전 내역을 조회한다")
-    void getPaymentHistory() throws Exception {
+    void getPaymentHistories() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
         List<PaymentPointHistoryInfo> histories = List.of(
@@ -247,7 +241,7 @@ class PaymentPointControllerTest {
                 new PageImpl<>(histories, PageRequest.of(0, 20), histories.size())
         );
 
-        when(paymentPointService.getPaymentHistory(eq(memberId), any(Pageable.class)))
+        when(paymentPointService.getPaymentHistories(eq(memberId), any(Pageable.class)))
                 .thenReturn(pageResponse);
 
         // when & then
@@ -262,6 +256,6 @@ class PaymentPointControllerTest {
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content.length()").value(2));
 
-        verify(paymentPointService).getPaymentHistory(eq(memberId), any(Pageable.class));
+        verify(paymentPointService).getPaymentHistories(eq(memberId), any(Pageable.class));
     }
 }

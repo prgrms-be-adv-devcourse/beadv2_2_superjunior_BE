@@ -121,11 +121,9 @@ class PaymentPointServiceTest {
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
 
         // when
-        PointChargeConfirmInfo result = paymentPointService.confirmPayment(command);
+        paymentPointService.confirmPayment(command);
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.paymentPoint().orderId()).isEqualTo(orderId);
         assertThat(memberPoint.getPointBalance()).isEqualTo(10000);
         verify(pointEventPublisher).publishPointRechargedEvent(paymentPoint);
     }
@@ -195,12 +193,9 @@ class PaymentPointServiceTest {
         when(paymentPointFailureRepository.save(any(PaymentPointFailure.class))).thenReturn(failure);
 
         // when
-        PointChargeFailInfo result = paymentPointService.handlePaymentFailure(command);
+        paymentPointService.handlePaymentFailure(command);
 
         // then
-        assertThat(result).isNotNull();
-        assertThat(result.errorCode()).isEqualTo("PAYMENT_FAILED");
         verify(paymentPointFailureRepository).save(any(PaymentPointFailure.class));
     }
-
 }
