@@ -5,15 +5,15 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.product.client.MemberClient;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
+import store._0982.product.exception.CustomErrorCode;
 
 import java.util.UUID;
 
