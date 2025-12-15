@@ -13,4 +13,6 @@ public interface PaymentPointRepository {
     Optional<PaymentPoint> findByOrderId(UUID orderId);
 
     PaymentPoint save(PaymentPoint paymentPoint);
+
+    Optional<PaymentPoint> findById(UUID id);
 }

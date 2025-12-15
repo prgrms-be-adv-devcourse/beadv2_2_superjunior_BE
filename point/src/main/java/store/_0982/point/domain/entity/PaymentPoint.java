@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.exception.CustomException;
 import store._0982.point.domain.constant.PaymentPointStatus;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -93,5 +95,11 @@ public class PaymentPoint {
         this.status = PaymentPointStatus.REFUNDED;
         this.refundedAt = refundedAt;
         this.refundMessage = cancelReason;
+    }
+
+    public void validate(UUID memberId) {
+        if (!this.memberId.equals(memberId)) {
+            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
     }
 }
