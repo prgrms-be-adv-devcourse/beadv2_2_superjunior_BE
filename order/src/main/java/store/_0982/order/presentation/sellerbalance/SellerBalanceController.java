@@ -1,4 +1,4 @@
-package store._0982.order.presentation.sellerbalacne;
+package store._0982.order.presentation.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

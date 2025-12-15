@@ -21,7 +21,7 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementEvent;
 import store._0982.order.application.settlement.BankTransferService;
 import store._0982.order.client.dto.SellerAccountListRequest;
-import store._0982.order.domain.order.SettlementLogFormat;
+import store._0982.order.infrastructure.settlement.SettlementLogFormat;
 import store._0982.order.domain.settlement.*;
 import store._0982.order.client.MemberFeignClient;
 import store._0982.order.client.dto.SellerAccountInfo;

@@ -1,4 +1,4 @@
-package store._0982.order.domain.order;
+package store._0982.order.infrastructure.settlement;
 
 public class SettlementLogFormat {
 

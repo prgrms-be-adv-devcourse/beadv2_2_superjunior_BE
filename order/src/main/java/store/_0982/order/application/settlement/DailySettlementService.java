@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.client.ProductFeignClient;
 import store._0982.order.client.dto.GroupPurchaseInternalInfo;
-import store._0982.order.domain.order.SettlementLogFormat;
+import store._0982.order.infrastructure.settlement.SettlementLogFormat;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package store._0982.order.infrastructure.scheduler;
+package store._0982.order.infrastructure.settlement.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,7 +8,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import store._0982.order.domain.order.SettlementLogFormat;
+import store._0982.order.infrastructure.settlement.SettlementLogFormat;
 
 import java.time.LocalDateTime;
 

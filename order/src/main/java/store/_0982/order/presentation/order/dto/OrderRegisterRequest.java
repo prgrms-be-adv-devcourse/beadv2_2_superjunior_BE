@@ -1,4 +1,4 @@
-package store._0982.order.presentation.dto;
+package store._0982.order.presentation.order.dto;
 
 import jakarta.validation.constraints.*;
 import store._0982.order.application.dto.OrderRegisterCommand;
