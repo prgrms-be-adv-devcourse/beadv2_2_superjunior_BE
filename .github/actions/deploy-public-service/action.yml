@@ -11,7 +11,7 @@ inputs:
   use-version-tag:
     description: 'Use version tag instead of latest'
     required: false
-    default: 'false'
+    default: 'true'
   manifest-path:
     description: 'Path to k8s manifest file'
     required: false
