@@ -5,7 +5,7 @@ import store._0982.point.domain.entity.PaymentPoint;
 
 public record TossPaymentCancelRequest(
         String paymentKey,
-        int amount,
+        long amount,
         String reason
 ) {
     public static TossPaymentCancelRequest from(PaymentPoint paymentPoint, PointRefundCommand command) {

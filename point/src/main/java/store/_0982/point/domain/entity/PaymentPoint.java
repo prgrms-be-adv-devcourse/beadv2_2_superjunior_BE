@@ -36,7 +36,7 @@ public class PaymentPoint {
     private String paymentKey;
 
     @Column(nullable = false)
-    private int amount;
+    private long amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -65,7 +65,7 @@ public class PaymentPoint {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private PaymentPoint(UUID memberId, UUID pgOrderId, int amount){
+    private PaymentPoint(UUID memberId, UUID pgOrderId, long amount){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
         this.pgOrderId = pgOrderId;
@@ -74,7 +74,7 @@ public class PaymentPoint {
         this.status = PaymentPointStatus.REQUESTED;
     }
 
-    public static PaymentPoint create(UUID memberId, UUID orderId, int amount){
+    public static PaymentPoint create(UUID memberId, UUID orderId, long amount){
         return new PaymentPoint(memberId, orderId, amount);
     }
 

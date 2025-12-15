@@ -10,7 +10,7 @@ public record PointChargeFailCommand(
         String paymentKey,
         String errorCode,
         String errorMessage,
-        int amount,
+        Long amount,
         String rawPayload
 ) {
 }

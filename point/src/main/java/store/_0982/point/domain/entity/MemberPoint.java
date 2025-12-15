@@ -33,16 +33,16 @@ public class MemberPoint {
         this.pointBalance = 0;
     }
 
-    public void addPoints(int pointBalance) {
+    public void addPoints(long pointBalance) {
         this.pointBalance += pointBalance;
     }
 
-    public void deductPoints(int pointBalance) {
+    public void deductPoints(long pointBalance) {
         refund(pointBalance);
         lastUsedAt = OffsetDateTime.now();
     }
 
-    public void refund(int pointBalance) {
+    public void refund(long pointBalance) {
         if (this.pointBalance < pointBalance) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }

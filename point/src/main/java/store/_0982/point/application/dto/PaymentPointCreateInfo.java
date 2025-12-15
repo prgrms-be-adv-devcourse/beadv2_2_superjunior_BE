@@ -10,7 +10,7 @@ public record PaymentPointCreateInfo(
         UUID paymentPointId,
         UUID memberId,
         UUID orderId,
-        int amount,
+        long amount,
         PaymentPointStatus status,
         OffsetDateTime createdAt,
         OffsetDateTime requestedAt
