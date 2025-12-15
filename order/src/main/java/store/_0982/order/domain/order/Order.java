@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "\"order\"")
+@Table(name = "\"order\"", schema = "order_schema")
 public class Order {
     @Id
     private UUID orderId;
