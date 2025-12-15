@@ -42,7 +42,7 @@ public class OrderInternalController {
         return new ResponseDto<>(HttpStatus.OK, null, "포인트가 환불되었습니다.");
     }
 
-    @PostMapping("/{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     OrderDetailInfo getOrder(
             @PathVariable UUID id,
