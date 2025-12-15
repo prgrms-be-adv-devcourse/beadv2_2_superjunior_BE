@@ -4,6 +4,7 @@ import store._0982.notification.domain.Notification;
 import store._0982.notification.domain.NotificationStatus;
 import store._0982.notification.domain.NotificationType;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -17,8 +18,8 @@ public record NotificationInfo(
         String message,
         String failureMessage,
         NotificationStatus status,
-        UUID referenceId
-) {
+        UUID referenceId,
+        OffsetDateTime createdAt) {
     public static NotificationInfo from(Notification notification) {
         return new NotificationInfo(
                 notification.getId(),
@@ -28,6 +29,7 @@ public record NotificationInfo(
                 notification.getMessage(),
                 notification.getFailureMessage(),
                 notification.getStatus(),
-                notification.getReferenceId());
+                notification.getReferenceId(),
+                notification.getCreatedAt());
     }
 }

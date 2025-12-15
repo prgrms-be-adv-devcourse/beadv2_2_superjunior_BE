@@ -5,6 +5,6 @@ import java.util.UUID;
 public record PointDeductCommand(
         UUID idempotencyKey,
         UUID orderId,
-        int amount
+        long amount
 ) {
 }

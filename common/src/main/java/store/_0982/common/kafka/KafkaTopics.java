@@ -11,6 +11,10 @@ public final class KafkaTopics {
     public static final String PRODUCT_UPSERTED = "product.upserted";
     public static final String PRODUCT_DELETED = "product.deleted";
 
+    /**
+     * @deprecated 사용하지 않는 Kafka 토픽입니다. {@link KafkaTopics#GROUP_PURCHASE_CREATED}로 대체될 예정입니다.
+     */
+    @Deprecated(forRemoval = true)
     public static final String GROUP_PURCHASE_ADDED = "group-purchase.added";
     public static final String GROUP_PURCHASE_STATUS_CHANGED = "group-purchase.changed";
 
