@@ -15,6 +15,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     //swagger
+    //noinspection VulnerableLibrariesLocal
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
     // Logstash Logback encoder (LOGSTASH appender용)
@@ -26,9 +27,6 @@ dependencies {
     jib {
         from {
             image = 'eclipse-temurin:17-jre'
-        }
-        to {
-            image = 'minbros/member'
         }
         container {
             ports = ['8083']

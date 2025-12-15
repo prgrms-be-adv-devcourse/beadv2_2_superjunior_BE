@@ -28,9 +28,6 @@ jib {
     from {
         image = 'eclipse-temurin:17-jre'
     }
-    to {
-        image = 'minbros/order'
-    }
     container {
         ports = ['8085']
         jvmFlags = ['-Xms128m', '-Xmx256m']

@@ -61,7 +61,7 @@ jobs:
         uses: ./.github/actions/deploy-private-service
         with:
           service-name: discovery
-          image-name: minbros/discovery
+          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/discovery
           manifest-path: docs/k8s/infra/discovery.yml
           bastion-host: ${{ secrets.BASTION_HOST }}
           bastion-user: ${{ secrets.BASTION_USER }}
@@ -86,7 +86,7 @@ jobs:
         with:
           service-name: search
           module-name: elastic-search
-          image-name: minbros/search
+          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/search
           manifest-path: docs/k8s/service/search.yml
           bastion-host: ${{ secrets.BASTION_HOST }}
           bastion-user: ${{ secrets.BASTION_USER }}
