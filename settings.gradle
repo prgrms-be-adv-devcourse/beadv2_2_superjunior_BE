@@ -1,5 +1,6 @@
 rootProject.name = 'group-purchase'
 
+include 'config'
 include 'common'
 include 'discovery'
 include 'gateway'
@@ -9,3 +10,5 @@ include 'order'
 include 'point'
 include 'product'
 include 'elastic-search'
+
+// 테스트
