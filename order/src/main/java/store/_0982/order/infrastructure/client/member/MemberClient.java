@@ -1,10 +1,10 @@
-package store._0982.order.client;
+package store._0982.order.infrastructure.client.member;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import store._0982.common.dto.ResponseDto;
-import store._0982.order.client.dto.ProfileInfo;
+import store._0982.order.infrastructure.client.member.dto.ProfileInfo;
 
 import java.util.UUID;
 

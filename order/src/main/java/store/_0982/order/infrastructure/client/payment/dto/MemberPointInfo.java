@@ -1,4 +1,4 @@
-package store._0982.order.client.dto;
+package store._0982.order.infrastructure.client.payment.dto;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

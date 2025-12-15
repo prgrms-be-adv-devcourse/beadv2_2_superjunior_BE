@@ -1,4 +1,4 @@
-package store._0982.order.client.dto;
+package store._0982.order.infrastructure.client.member.dto;
 
 import java.util.UUID;
 

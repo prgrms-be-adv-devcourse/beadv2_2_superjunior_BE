@@ -1,4 +1,4 @@
-package store._0982.order.client.dto;
+package store._0982.order.infrastructure.client.product.dto;
 
 public enum GroupPurchaseStatus {
     SCHEDULED,       // 진행전

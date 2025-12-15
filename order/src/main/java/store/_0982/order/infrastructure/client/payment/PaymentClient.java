@@ -1,4 +1,4 @@
-package store._0982.order.client;
+package store._0982.order.infrastructure.client.payment;
 
 
 import org.springframework.cloud.openfeign.FeignClient;
@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
-import store._0982.order.client.dto.MemberPointInfo;
-import store._0982.order.client.dto.PointDeductRequest;
-import store._0982.order.client.dto.PointReturnRequest;
+import store._0982.order.infrastructure.client.payment.dto.MemberPointInfo;
+import store._0982.order.infrastructure.client.payment.dto.PointDeductRequest;
+import store._0982.order.infrastructure.client.payment.dto.PointReturnRequest;
 
 import java.util.UUID;
 

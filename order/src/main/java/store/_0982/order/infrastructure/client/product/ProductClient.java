@@ -1,12 +1,12 @@
-package store._0982.order.client;
+package store._0982.order.infrastructure.client.product;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
-import store._0982.order.client.dto.GroupPurchaseDetailInfo;
-import store._0982.order.client.dto.GroupPurchaseInfo;
-import store._0982.order.client.dto.ParticipateInfo;
-import store._0982.order.client.dto.ParticipateRequest;
+import store._0982.order.infrastructure.client.product.dto.GroupPurchaseDetailInfo;
+import store._0982.order.infrastructure.client.product.dto.GroupPurchaseInfo;
+import store._0982.order.infrastructure.client.product.dto.ParticipateInfo;
+import store._0982.order.infrastructure.client.product.dto.ParticipateRequest;
 
 import java.util.List;
 import java.util.UUID;
