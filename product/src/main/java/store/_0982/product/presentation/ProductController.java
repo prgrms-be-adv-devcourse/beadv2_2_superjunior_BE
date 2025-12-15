@@ -2,6 +2,7 @@ package store._0982.product.presentation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,7 +40,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ProductRegisterInfo> createProduct(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody ProductRegisterRequest request) {
+            @Valid @RequestBody ProductRegisterRequest request) {
         ProductRegisterInfo info = productService.createProduct(request.toCommand(memberId));
         return new ResponseDto<>(HttpStatus.CREATED, info, "상품이 등록되었습니다.");
     }
