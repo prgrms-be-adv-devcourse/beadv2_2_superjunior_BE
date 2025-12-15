@@ -3,7 +3,7 @@ name: Private Services Deploy
 on:
   push:
     branches:
-      - main
+      - dev
       - feature/ci-cd-*-test
     paths:
       - 'common/**'
@@ -24,13 +24,11 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: 변경된 서비스 감지
         id: filter
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
           # Discovery
           if echo "$CHANGED_FILES" | grep -qE '^(discovery/|build\.gradle|settings\.gradle|docs/k8s/infra/discovery\.yml)'; then
@@ -54,8 +52,6 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Discovery 배포
         uses: ./.github/actions/deploy-private-service
@@ -78,8 +74,6 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Search 배포
         uses: ./.github/actions/deploy-private-service

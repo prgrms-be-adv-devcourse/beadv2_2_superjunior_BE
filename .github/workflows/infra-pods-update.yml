@@ -3,7 +3,7 @@ name: Infra Pods Update
 on:
   push:
     branches:
-      - main
+      - dev
       - feature/ci-cd-*test
     paths:
       - 'docs/k8s/infra/*.yml'
@@ -17,13 +17,11 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: 변경된 파일 탐색
         id: changed-files
         run: |
-          CHANGED=$(git diff --name-only HEAD^ HEAD | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/config\.yml' | grep -v 'docs/k8s/infra/discovery\.yml' | tr '\n' ' ' || echo "")
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/config\.yml' | grep -v 'docs/k8s/infra/discovery\.yml' | tr '\n' ' ' || echo "")
           echo "files=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"
