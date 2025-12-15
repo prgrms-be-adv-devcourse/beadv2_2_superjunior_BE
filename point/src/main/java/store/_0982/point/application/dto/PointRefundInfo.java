@@ -12,7 +12,7 @@ public record PointRefundInfo(
         UUID orderId,
         String paymentMethod,
         String paymentKey,
-        int amount,
+        long amount,
         PaymentPointStatus status,
         OffsetDateTime createdAt,
         OffsetDateTime refundedAt

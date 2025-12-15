@@ -32,7 +32,7 @@ public class PaymentPointFailure {
     private String errorMessage;
 
     @Column(name = "amount")
-    private Integer amount;
+    private Long amount;
 
     @Column(name = "raw_payload", nullable = false, columnDefinition = "TEXT")
     private String rawPayload;
@@ -46,7 +46,7 @@ public class PaymentPointFailure {
             String paymentKey,
             String errorCode,
             String errorMessage,
-            int amount,
+            Long amount,
             String rawPayload
     ) {
         this.id = UUID.randomUUID();

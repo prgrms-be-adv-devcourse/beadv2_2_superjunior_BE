@@ -41,7 +41,7 @@ public class MemberPointService {
                 command.idempotencyKey(),
                 memberPoint -> {
                     UUID orderId = command.orderId();
-                    int amount = command.amount();
+                    long amount = command.amount();
 
                     OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
                     orderInfo.validateDeductible(memberId, orderId, amount);
@@ -60,7 +60,7 @@ public class MemberPointService {
                 command.idempotencyKey(),
                 memberPoint -> {
                     UUID orderId = command.orderId();
-                    int amount = command.amount();
+                    long amount = command.amount();
 
                     OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
                     orderInfo.validateReturnable(memberId, orderId, amount);

@@ -12,7 +12,7 @@ public record TossPaymentResponse(
         String paymentKey,
         UUID orderId,
         @JsonProperty("totalAmount")
-        int amount,
+        long amount,
         String method,
         String status,
         OffsetDateTime requestedAt,
@@ -21,7 +21,7 @@ public record TossPaymentResponse(
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record CancelInfo(
-            int cancelAmount,
+            long cancelAmount,
             String cancelReason,
             OffsetDateTime canceledAt
     ) {

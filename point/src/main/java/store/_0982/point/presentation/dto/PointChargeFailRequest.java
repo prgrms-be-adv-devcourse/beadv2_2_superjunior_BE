@@ -12,7 +12,7 @@ public record PointChargeFailRequest(
         @NotBlank String paymentKey,
         String errorCode,
         String errorMessage,
-        @Positive int amount,
+        @Positive long amount,
         @NotBlank String rawPayload
 ) {
     public PointChargeFailCommand toCommand() {

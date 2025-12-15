@@ -183,7 +183,7 @@ class PaymentPointServiceTest {
                 "test_payment_key",
                 "PAYMENT_FAILED",
                 "카드 승인 실패",
-                10000,
+                10000L,
                 "{}"
         );
 

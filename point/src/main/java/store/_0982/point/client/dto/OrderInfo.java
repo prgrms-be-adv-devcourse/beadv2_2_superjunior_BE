@@ -9,7 +9,7 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record OrderInfo(
         UUID orderId,
-        int price,
+        long price,
         Status status,
         UUID memberId
 ) {
