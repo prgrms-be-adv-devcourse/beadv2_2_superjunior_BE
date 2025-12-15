@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: TLS 파일 변경 확인
         id: check-tls

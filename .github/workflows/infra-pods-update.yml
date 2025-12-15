@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: 변경된 파일 탐색
         id: changed-files

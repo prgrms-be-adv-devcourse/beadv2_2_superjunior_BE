@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: 변경된 서비스 감지
         id: filter
@@ -52,6 +54,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Discovery 배포
         uses: ./.github/actions/deploy-private-service
@@ -74,6 +78,8 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Search 배포
         uses: ./.github/actions/deploy-private-service
