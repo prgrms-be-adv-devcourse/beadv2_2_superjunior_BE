@@ -53,12 +53,6 @@ public class MemberPointService {
         );
     }
 
-    /*
-    TODO: 포인트 차감 / 반환 시 정상적인 요청이 맞는지 검증이 필요할 것 같다.
-        멱등키 검증은 적용했지만, 추가적인 검증이 있어야 한다.
-        주문 ID 등을 추가로 요청받아서 주문 정보 조회 API 호출
-        -> 주문한 사용자와 일치하는지, 이미 환불된 요청은 아닌지 등의 검증 필요
-     */
     @ServiceLog
     public MemberPointInfo returnPoints(UUID memberId, PointReturnCommand command) {
         return processPointOperation(
