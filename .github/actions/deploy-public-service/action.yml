@@ -69,7 +69,7 @@ runs:
         echo "Image tag: $SHORT_SHA"
 
     # 버전 태그 사용하는 경우
-    - name: Jib로 Docker 이미지 빌드 (버전 태그)
+    - name: Jib로 Docker 이미지 빌드 및 Push (latest)
       if: inputs.use-version-tag == 'true'
       shell: bash
       run: |
@@ -77,15 +77,11 @@ runs:
         if [ -z "$MODULE" ]; then
           MODULE="${{ inputs.service-name }}"
         fi
-        ./gradlew :${MODULE}:jibDockerBuild \
-          -Djib.to.tags=${{ steps.version.outputs.tag }},latest
-
-    - name: Docker 이미지 push (버전 태그)
-      if: inputs.use-version-tag == 'true'
-      shell: bash
-      run: |
-        docker image push ${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:${{ steps.version.outputs.tag }}
-        docker image push ${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:latest
+        ./gradlew :${MODULE}:jib \
+          -Djib.to.image=${{ inputs.dockerhub-username }}/${{ inputs.service-name }} \
+          -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
+          -Djib.to.auth.username=${{ inputs.dockerhub-username }} \
+          -Djib.to.auth.password=${{ inputs.dockerhub-token }}
 
     # latest 태그만 사용하는 경우
     - name: Jib로 Docker 이미지 빌드 및 Push (latest)
