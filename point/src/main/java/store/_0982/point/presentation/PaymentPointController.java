@@ -3,6 +3,7 @@ package store._0982.point.presentation;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -11,14 +12,24 @@ import org.springframework.web.servlet.view.RedirectView;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
 import store._0982.common.log.ControllerLog;
+import store._0982.common.log.LogFormat;
 import store._0982.point.application.PaymentPointService;
 import store._0982.point.application.RefundService;
-import store._0982.point.application.dto.*;
-import store._0982.point.presentation.dto.*;
+import store._0982.point.application.dto.PaymentPointCreateInfo;
+import store._0982.point.application.dto.PaymentPointHistoryInfo;
+import store._0982.point.application.dto.PointRefundInfo;
+import store._0982.point.exception.PaymentClientException;
+import store._0982.point.presentation.dto.PointChargeConfirmRequest;
+import store._0982.point.presentation.dto.PointChargeCreateRequest;
+import store._0982.point.presentation.dto.PointChargeFailRequest;
+import store._0982.point.presentation.dto.PointRefundRequest;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/payments")
@@ -49,24 +60,20 @@ public class PaymentPointController {
     @ControllerLog
     @GetMapping("/confirm")
     public RedirectView confirmPayment(@ModelAttribute @Valid PointChargeConfirmRequest request) {
-        try {
+        return handleExceptionWhenConfirmOrFail(() -> {
             paymentPointService.confirmPayment(request.toCommand());
             return new RedirectView(frontendUrl + PAYMENT_SUCCESS_ENDPOINT);
-        } catch (Exception e) {
-            return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
-        }
+        });
     }
 
     @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
     @ControllerLog
     @GetMapping("/fail")
     public RedirectView handlePaymentFailure(@ModelAttribute @Valid PointChargeFailRequest request) {
-        try {
+        return handleExceptionWhenConfirmOrFail(() -> {
             paymentPointService.handlePaymentFailure(request.toCommand());
             return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
-        } catch (Exception e) {
-            return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
-        }
+        });
     }
 
     @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
@@ -101,5 +108,18 @@ public class PaymentPointController {
     ) {
         PaymentPointHistoryInfo response = paymentPointService.getPaymentHistory(id, memberId);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 충전 내역 상세 조회 성공");
+    }
+
+    private RedirectView handleExceptionWhenConfirmOrFail(Supplier<RedirectView> supplier) {
+        try {
+            return supplier.get();
+        } catch (CustomException e) {
+            log.error(LogFormat.errorOf(e.getErrorCode().getHttpStatus(), e.getMessage()), e);
+        } catch (PaymentClientException e) {
+            log.error(LogFormat.errorOf(e.getStatus(), e.getMessage()), e);
+        } catch (Exception e) {
+            log.error(LogFormat.errorOf(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), e);
+        }
+        return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
     }
 }
