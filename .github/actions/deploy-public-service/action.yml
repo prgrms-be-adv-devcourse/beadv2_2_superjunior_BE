@@ -34,12 +34,6 @@ inputs:
   dockerhub-token:
     description: 'Docker Hub token'
     required: true
-  docker-username:
-    description: 'Docker username for Jib auth'
-    required: true
-  docker-password:
-    description: 'Docker password for Jib auth'
-    required: true
   rollout-timeout:
     description: 'Rollout timeout'
     required: false
@@ -90,8 +84,8 @@ runs:
       if: inputs.use-version-tag == 'true'
       shell: bash
       run: |
-        docker image push minbros/${{ inputs.service-name }}:${{ steps.version.outputs.tag }}
-        docker image push minbros/${{ inputs.service-name }}:latest
+        docker image push ${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:${{ steps.version.outputs.tag }}
+        docker image push ${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:latest
 
     # latest 태그만 사용하는 경우
     - name: Jib로 Docker 이미지 빌드 및 Push (latest)
@@ -103,10 +97,10 @@ runs:
           MODULE="${{ inputs.service-name }}"
         fi
         ./gradlew :${MODULE}:jib \
-          -Djib.to.image=minbros/${{ inputs.service-name }} \
+          -Djib.to.image=${{ inputs.dockerhub-username }}/${{ inputs.service-name }} \
           -Djib.to.tags=latest \
-          -Djib.to.auth.username=${{ inputs.docker-username }} \
-          -Djib.to.auth.password=${{ inputs.docker-password }}
+          -Djib.to.auth.username=${{ inputs.dockerhub-username }} \
+          -Djib.to.auth.password=${{ inputs.dockerhub-token }}
 
     - name: K8s 매니페스트 변경 확인
       if: inputs.manifest-path != ''
@@ -162,7 +156,7 @@ runs:
 
           echo "Updating deployment for ${{ inputs.service-name }}..."
           sudo kubectl set image deployment/${{ inputs.service-name }} \
-            ${{ inputs.service-name }}=minbros/${{ inputs.service-name }}:${TAG} \
+            ${{ inputs.service-name }}=${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:${TAG} \
             --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
           echo "Waiting for rollout..."
@@ -183,7 +177,7 @@ runs:
         script: |
           echo "Updating deployment for ${{ inputs.service-name }}..."
           kubectl set image deployment/${{ inputs.service-name }} \
-            ${{ inputs.service-name }}=minbros/${{ inputs.service-name }}:latest \
+            ${{ inputs.service-name }}=${{ inputs.dockerhub-username }}/${{ inputs.service-name }}:latest \
             --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
           echo "Waiting for rollout..."
