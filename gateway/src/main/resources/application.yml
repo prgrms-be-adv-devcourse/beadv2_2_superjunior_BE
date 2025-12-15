@@ -82,14 +82,14 @@ spring:
             - id: elastic-search-api
               uri: lb://elastic-search
               predicates:
-                - Path=/api/searches/**, /internal/searches/**
+                - Path=/api/searches/**
               filters:
                 - JwtAuth
 
             - id: notification-api
               uri: lb://notification
               predicates:
-                - Path=/api/notifications/**, /internal/notifications/**
+                - Path=/api/notifications/**
               filters:
                 - JwtAuth
 
