@@ -33,7 +33,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: 변경된 서비스 감지
         id: filter
@@ -91,7 +91,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Gateway 배포
         uses: ./.github/actions/deploy-public-service
@@ -115,7 +115,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Member 배포
         uses: ./.github/actions/deploy-public-service
@@ -139,7 +139,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Notification 배포
         uses: ./.github/actions/deploy-public-service
@@ -163,7 +163,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Point 배포
         uses: ./.github/actions/deploy-public-service
@@ -187,7 +187,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Order 배포
         uses: ./.github/actions/deploy-public-service
@@ -211,7 +211,7 @@ jobs:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Product 배포
         uses: ./.github/actions/deploy-public-service
