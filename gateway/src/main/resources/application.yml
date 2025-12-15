@@ -23,8 +23,6 @@ spring:
               uri: lb://member
               predicates:
                 - Path=/api/auth/**
-              filters:
-                - JwtAuth
 
             - id: member-internal-api
               uri: lb://member
