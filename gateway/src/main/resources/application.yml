@@ -11,7 +11,6 @@ spring:
       server:
         webflux:
           routes:
-            # === 기존 API 라우트들 ===
             - id: member-api
               uri: lb://member
               predicates:
@@ -19,48 +18,59 @@ spring:
               filters:
                 - JwtAuth
 
+            - id: member-internal-api
+              uri: lb://member
+              predicates:
+                - Path=/internal/members/**
+              filters:
+                - InternalAuth
+
             - id: member-auth-api
               uri: lb://member
               predicates:
                 - Path=/api/auth/**
 
-            - id: member-internal-api
-              uri: lb://member
+            - id: notification-api
+              uri: lb://notification
               predicates:
-                - Path=/internal/members/**
+                - Path=/api/notifications/**
+              filters:
+                - JwtAuth
+
+            - id: notification-internal-api
+              uri: lb://notification
+              predicates:
+                - Path=/internal/notifications/**
+              filters:
+                - InternalAuth
 
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**, /internal/orders/**
+                - Path=/api/orders/**, /api/carts/**, /api/balances/**
               filters:
                 - JwtAuth
 
-            - id: openapi
-              uri: ${GATEWAY_HOST:http://localhost:8000}
+            - id: order-internal-api
+              uri: lb://order
               predicates:
-                - Path=/v3/api-docs/**
+                - Path=/internal/orders/**, /internal/carts/**, /internal/balances/**
               filters:
-                - RewritePath=/v3/api-docs/(?<segment>.*), /$\{segment}/v3/api-docs
+                - InternalAuth
 
             - id: product-api
               uri: lb://product
               predicates:
-                - Path=/api/products/**
+                - Path=/api/products/**, /api/purchases/**
               filters:
                 - JwtAuth
 
-            - id: group-purchase-api
+            - id: product-internal-api
               uri: lb://product
               predicates:
-                - Path=/api/purchases/**
+                - Path=/internal/products/**, /internal/purchases/**
               filters:
-                - JwtAuth
-
-            - id: group-purchase-internal-api
-              uri: lb://product
-              predicates:
-                - Path=/internal/purchases/**
+                - InternalAuth
 
             - id: point-api
               uri: lb://point
@@ -73,20 +83,29 @@ spring:
               uri: lb://point
               predicates:
                 - Path=/internal/points/**, /internal/payments/**
+              filters:
+                - InternalAuth
 
             - id: elastic-search-api
               uri: lb://elastic-search
               predicates:
-                - Path=/api/searches/**, /internal/searches/**
+                - Path=/api/searches/**
               filters:
                 - JwtAuth
 
-            - id: notification-api
-              uri: lb://notification
+            - id: elastic-search-internal-api
+              uri: lb://elastic-search
               predicates:
-                - Path=/api/notifications/**, /internal/notifications/**
+                - Path=/internal/searches/**
               filters:
-                - JwtAuth
+                - InternalAuth
+
+            - id: openapi
+              uri: ${GATEWAY_HOST:http://localhost:8000}
+              predicates:
+                - Path=/v3/api-docs/**
+              filters:
+                - RewritePath=/v3/api-docs/(?<segment>.*), /$\{segment}/v3/api-docs
 
           discovery:
             locator:
