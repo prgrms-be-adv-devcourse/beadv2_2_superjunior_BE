@@ -28,7 +28,7 @@ public record OrderInfo(
     }
 
     private void validate(UUID memberId, UUID orderId, long amount) {
-        if (this.memberId != memberId || this.orderId != orderId || price != amount) {
+        if (!this.memberId.equals(memberId) || !this.orderId.equals(orderId) || price != amount) {
             throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
         }
     }
