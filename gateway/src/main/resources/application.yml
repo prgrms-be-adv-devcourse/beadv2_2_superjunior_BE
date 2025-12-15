@@ -23,6 +23,8 @@ spring:
               uri: lb://member
               predicates:
                 - Path=/api/auth/**
+              filters:
+                - JwtAuth
 
             - id: member-internal-api
               uri: lb://member
@@ -33,6 +35,8 @@ spring:
               uri: lb://order
               predicates:
                 - Path=/api/orders/**, /internal/orders/**
+              filters:
+                - JwtAuth
 
             - id: openapi
               uri: ${GATEWAY_HOST:http://localhost:8000}
@@ -63,22 +67,28 @@ spring:
             - id: point-api
               uri: lb://point
               predicates:
-                - Path=/api/points/**, /internal/points/**
+                - Path=/api/points/**, /api/payments/**
+              filters:
+                - JwtAuth
+
+            - id: point-internal-api
+              uri: lb://point
+              predicates:
+                - Path=/internal/points/**, /internal/payments/**
 
             - id: elastic-search-api
               uri: lb://elastic-search
               predicates:
                 - Path=/api/searches/**, /internal/searches/**
-
-            - id: point-api
-              uri: lb://point
-              predicates:
-                - Path=/api/points/**, /api/payments/**, /internal/points/**, /internal/payments/**
+              filters:
+                - JwtAuth
 
             - id: notification-api
               uri: lb://notification
               predicates:
                 - Path=/api/notifications/**, /internal/notifications/**
+              filters:
+                - JwtAuth
 
           discovery:
             locator:
