@@ -117,10 +117,6 @@ public class GroupPurchaseService {
     public List<GroupPurchaseInfo> getGroupPurchaseByIds(List<UUID> purchaseIds) {
         List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
 
-        if (groupPurchases.isEmpty()) {
-            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
-        }
-
         return groupPurchases.stream()
                 .map(GroupPurchaseInfo::from)
                 .toList();
