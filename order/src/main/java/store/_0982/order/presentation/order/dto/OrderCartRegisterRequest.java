@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 public record OrderCartRegisterRequest(
-    @NotEmpty List<UUID> cardIds,
+    @NotEmpty List<UUID> cartIds,
     @NotBlank String address,
     @NotBlank String addressDetail,
     @NotBlank String postalCode,
     String receiverName
 ) {
     public OrderCartRegisterCommand toCommand(){
-        return new OrderCartRegisterCommand(cardIds, address, addressDetail, postalCode, receiverName);
+        return new OrderCartRegisterCommand(cartIds, address, addressDetail, postalCode, receiverName);
     }
 }

@@ -5,8 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.order.application.order.OrderService;
+import store._0982.order.application.order.dto.OrderDetailInfo;
+import store._0982.order.application.order.dto.OrderInfo;
 import store._0982.order.domain.order.OrderStatus;
 
 import java.util.UUID;
@@ -37,5 +40,14 @@ public class OrderInternalController {
     ) {
         orderService.returnOrder(purchaseId);
         return new ResponseDto<>(HttpStatus.OK, null, "포인트가 환불되었습니다.");
+    }
+
+    @PostMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    OrderDetailInfo getOrder(
+            @PathVariable UUID id,
+            @RequestHeader(HeaderName.ID) UUID memberId
+    ){
+        return orderService.getOrderById(id, memberId);
     }
 }

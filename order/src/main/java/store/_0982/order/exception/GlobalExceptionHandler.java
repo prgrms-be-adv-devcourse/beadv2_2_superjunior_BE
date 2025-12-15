@@ -26,6 +26,7 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
         }
 
         CustomException ex = switch (fieldError.getField()) {
+            case "cartIds" -> new CustomException(CustomErrorCode.CART_IS_EMPTY);
             case "quantity" -> new CustomException(CustomErrorCode.INVALID_QUANTITY);
             case "price" -> new CustomException(CustomErrorCode.INVALID_PRICE);
             case "address", "addressDetail" -> new CustomException(CustomErrorCode.INVALID_ADDRESS);

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.application.order.dto.*;
@@ -95,8 +96,8 @@ public class OrderService {
         validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
-        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cardIds());
-        if(carts.size() != command.cardIds().size()){
+        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
+        if(carts.size() != command.cartIds().size()){
             throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
         }
 
@@ -117,7 +118,9 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         // 공동 구매 리스트 조회
-        List<GroupPurchaseInfo> purchases = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+        ResponseDto<List<GroupPurchaseInfo>> response = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+
+        List<GroupPurchaseInfo> purchases = response.data();
 
         Map<UUID, GroupPurchaseInfo> purchasesMap = purchases.stream()
                 .collect(Collectors.toMap(
