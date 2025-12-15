@@ -14,6 +14,9 @@ public final class KafkaTopics {
     public static final String GROUP_PURCHASE_ADDED = "group-purchase.added";
     public static final String GROUP_PURCHASE_STATUS_CHANGED = "group-purchase.changed";
 
+    public static final String GROUP_PURCHASE_CREATED = "group-purchase.created";
+    public static final String GROUP_PURCHASE_CHANGED = "group-purchase.update";
+
     public static final String DAILY_SETTLEMENT_COMPLETED = "settlement.daily.completed";
     public static final String DAILY_SETTLEMENT_FAILED = "settlement.daily.failed";
     public static final String MONTHLY_SETTLEMENT_COMPLETED = "settlement.monthly.completed";

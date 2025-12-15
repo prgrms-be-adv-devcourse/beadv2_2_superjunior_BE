@@ -3,6 +3,7 @@ package store._0982.member.presentation.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.Length;
 import store._0982.member.application.dto.AddressAddCommand;
 
 import java.util.UUID;
@@ -23,7 +24,8 @@ public record AddressAddRequest(
 
         @NotBlank
         @Size(max = 100)
-        @Pattern(regexp = "^[°Ą-ĆRa-zA-Z\\s]+$")
+        @Length(min = 2, max = 50)
+        @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]+$")
         String receiverName,
 
         @NotBlank

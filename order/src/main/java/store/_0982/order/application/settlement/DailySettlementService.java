@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.client.ProductFeignClient;
 import store._0982.order.client.dto.GroupPurchaseInternalInfo;
-import store._0982.order.domain.SettlementLogFormat;
+import store._0982.order.domain.order.SettlementLogFormat;
 
 import java.util.List;
 import java.util.Map;
@@ -52,11 +52,11 @@ public class DailySettlementService {
             List<GroupPurchaseInternalInfo> sellerGroupPurchases = entry.getValue();
 
             try {
-                log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_START, sellerId, sellerGroupPurchases.size()));
+                log.info(SettlementLogFormat.DAILY_SETTLEMENT_START, sellerId, sellerGroupPurchases.size());
                 sellerSettlementProcessor.processSellerSettlement(sellerId, sellerGroupPurchases);
-                log.info(String.format(SettlementLogFormat.DAILY_SETTLEMENT_COMPLETE, sellerId));
+                log.info(SettlementLogFormat.DAILY_SETTLEMENT_COMPLETE, sellerId);
             } catch (Exception e) {
-                log.error(String.format(SettlementLogFormat.DAILY_SETTLEMENT_FAIL, sellerId, e.getMessage()), e);
+                log.error(SettlementLogFormat.DAILY_SETTLEMENT_FAIL, sellerId, e.getMessage());
             }
         }
     }

@@ -1,5 +1,6 @@
 package store._0982.member.application;
 
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,8 @@ import store._0982.member.domain.Member;
 import store._0982.member.domain.MemberRepository;
 import store._0982.member.infrastructure.JwtProvider;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,8 +31,7 @@ public class AuthService {
     @Transactional
     @ServiceLog
     public LoginTokens login(MemberLoginCommand memberLoginCommand) {
-        Member member = memberRepository.findByEmail(memberLoginCommand.email())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
+        Member member = memberRepository.findByEmail(memberLoginCommand.email()).orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
 
         checkPassword(member, memberLoginCommand.password());
 
@@ -46,19 +48,24 @@ public class AuthService {
         if (refreshToken == null) {
             throw new CustomException(CustomErrorCode.NO_REFRESH_TOKEN);
         }
-        try{
+        try {
             UUID memberId = jwtProvider.getMemberIdFromToken(refreshToken);
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+            Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
             return jwtProvider.generateAccessToken(member);
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new CustomException(CustomErrorCode.BAD_REQUEST);
         }
     }
 
-    private void checkPassword(Member member, String password){
+    private void checkPassword(Member member, String password) {
         if (!passwordEncoder.matches(member.getSaltKey() + password, member.getPassword())) {
             throw new CustomException(CustomErrorCode.FAILED_LOGIN);
         }
+    }
+
+    public List<Cookie> logout(Cookie[] cookies) {
+        List<Cookie> tokenCookieList = Arrays.stream(cookies).filter(cookie -> cookie.getName().contains("Token")).toList();
+        tokenCookieList.forEach(cookie -> cookie.setMaxAge(0));
+        return tokenCookieList;
     }
 }

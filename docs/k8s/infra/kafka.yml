@@ -45,6 +45,8 @@ spec:
             - containerPort: 9093
               name: controller
           env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xms384m -Xmx512m"
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES

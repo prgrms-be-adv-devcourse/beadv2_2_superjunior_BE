@@ -9,14 +9,14 @@ public record GroupPurchaseDetailInfo(
         int maxQuantity,
         String title,
         String description,
-        int discountedPrice,
+        Long discountedPrice,
         int participantCount,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
         UUID sellerId,
         UUID productId,
         String originalUrl,
-        int price,
+        Long price,
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
 ) {

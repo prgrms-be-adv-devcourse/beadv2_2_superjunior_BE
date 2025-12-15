@@ -25,4 +25,6 @@ public interface CartJpaRepository extends JpaRepository<Cart, UUID> {
     @Modifying
     @Query("update Cart c set c.quantity = 0 where c.memberId = :memberId")
     void flushCart(UUID memberId);
+
+    List<Cart> findAllByCartIdIn(List<UUID> cartIds);
 }

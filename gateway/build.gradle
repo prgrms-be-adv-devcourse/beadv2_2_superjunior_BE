@@ -19,11 +19,8 @@ jib {
     from {
         image = 'eclipse-temurin:17-jre'
     }
-    to {
-        image = 'minbros/gateway'
-    }
     container {
         ports = ['8000']
-        jvmFlags = ['-Xms256m', '-Xmx512m']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
     }
 }

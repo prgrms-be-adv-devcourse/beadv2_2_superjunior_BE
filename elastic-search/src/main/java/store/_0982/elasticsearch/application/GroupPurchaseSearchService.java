@@ -26,14 +26,13 @@ public class GroupPurchaseSearchService {
     public void createGroupPurchaseIndex() {
         IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
 
-        if (ops.exists()) {
-            throw new CustomException(CustomErrorCode.ALREADY_EXIST_INDEX);
+        if (!ops.exists()) {
+            Document settings = Document.create();
+            settings.put("index.number_of_shards", 1);
+            settings.put("index.number_of_replicas", 0);
+            ops.create(settings);
+            ops.putMapping(ops.createMapping(GroupPurchaseDocument.class));
         }
-        Document settings = Document.create();
-        settings.put("index.number_of_shards", 1);
-        settings.put("index.number_of_replicas", 0);
-        ops.create(settings);
-        ops.putMapping(ops.createMapping(GroupPurchaseDocument.class));
     }
 
     public void deleteGroupPurchaseIndex() {
@@ -48,9 +47,10 @@ public class GroupPurchaseSearchService {
     public PageResponse<GroupPurchaseDocumentInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
+            String category,
             Pageable pageable
     ) {
-        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, pageable);
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, category, pageable);
 
         SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
 

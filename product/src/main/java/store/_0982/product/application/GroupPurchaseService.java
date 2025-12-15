@@ -84,7 +84,7 @@ public class GroupPurchaseService {
         //kafka
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_ADDED,event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CREATED,event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
     }
@@ -150,7 +150,7 @@ public class GroupPurchaseService {
 
         //search kafka
         GroupPurchaseEvent event = findGroupPurchase.toEvent("", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE, null);
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED,event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED,event.getId().toString(), event);
     }
 
     /**
@@ -199,7 +199,7 @@ public class GroupPurchaseService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         GroupPurchaseEvent event = saved.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
     }

@@ -3,6 +3,8 @@ package store._0982.elasticsearch.application.dto;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
+import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
+
 import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
@@ -55,7 +57,21 @@ public record GroupPurchaseDocumentCommand(
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
                 .currentQuantity(currentQuantity)
-                .productEvent(productEvent)
+                .discountRate(calculateDiscountRate(productEvent.getPrice(), discountedPrice))
+                .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
                 .build();
+    }
+    private static Long calculateDiscountRate(Long price, Long discountedPrice) {
+        if (price == null) {
+            return 0L;
+        }
+
+        if (price <= 0 || discountedPrice >= price) {
+            return 0L;
+        }
+
+        return Math.round(
+                ((double) (price - discountedPrice) / price) * 100
+        );
     }
 }

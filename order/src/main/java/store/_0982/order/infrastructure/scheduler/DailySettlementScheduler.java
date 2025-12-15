@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import store._0982.order.application.settlement.DailySettlementService;
-import store._0982.order.domain.SettlementLogFormat;
+import store._0982.order.domain.order.SettlementLogFormat;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,13 +20,13 @@ public class DailySettlementScheduler {
     @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
     public void scheduleDailySettlement() {
         String schedulerName = "DailySettlement";
-        log.info(String.format(SettlementLogFormat.START, schedulerName));
+        log.info(SettlementLogFormat.START, schedulerName);
 
         try {
             dailySettlementService.processDailySettlement();
-            log.info(String.format(SettlementLogFormat.COMPLETE, schedulerName));
+            log.info(SettlementLogFormat.COMPLETE, schedulerName);
         } catch (Exception e) {
-            log.error(String.format(SettlementLogFormat.FAIL, schedulerName));
+            log.error(SettlementLogFormat.FAIL, schedulerName);
         }
     }
 }

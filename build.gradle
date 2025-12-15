@@ -38,9 +38,7 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-        implementation 'org.springframework.cloud:spring-cloud-starter-config'
         implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-        implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
 
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
         implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
@@ -62,21 +60,17 @@ subprojects {
     }
 }
 
-project(':config') {
-    dependencies {
-        configurations.configureEach {
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-bootstrap'
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-        }
-    }
-}
+//project(':config') {
+//    dependencies {
+//        configurations.configureEach {
+//            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
+//        }
+//    }
+//}
 
 project(':discovery') {
     dependencies {
         configurations.configureEach {
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-bootstrap'
             exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
         }
     }
