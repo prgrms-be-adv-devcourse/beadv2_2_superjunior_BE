@@ -15,13 +15,11 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.kafka.core.KafkaTemplate;
 import store._0982.common.dto.ResponseDto;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.SettlementEvent;
 import store._0982.order.application.settlement.BankTransferService;
 import store._0982.order.client.dto.SellerAccountListRequest;
 import store._0982.order.infrastructure.settlement.SettlementLogFormat;
+import store._0982.order.infrastructure.settlement.event.SettlementEventPublisher;
 import store._0982.order.domain.settlement.*;
 import store._0982.order.client.MemberFeignClient;
 import store._0982.order.client.dto.SellerAccountInfo;
@@ -46,7 +44,7 @@ public class MonthlySettlementJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     private final MemberFeignClient memberFeignClient;
-    private final KafkaTemplate<String, SettlementEvent> settlementKafkaTemplate;
+    private final SettlementEventPublisher settlementEventPublisher;
 
     private final SettlementRepository settlementRepository;
     private final SettlementFailureRepository settlementFailureRepository;
@@ -164,7 +162,7 @@ public class MonthlySettlementJobConfig {
             balance.resetBalance();
             sellerBalanceRepository.save(balance);
 
-            publishCompletedEvent(settlement);
+            settlementEventPublisher.publishCompleted(settlement);
             log.info(SettlementLogFormat.MONTHLY_SETTLEMENT_COMPLETE, settlement.getSellerId());
 
         } catch (Exception e) {
@@ -228,7 +226,7 @@ public class MonthlySettlementJobConfig {
 
             for (Settlement settlement : settlements) {
                 settlementRepository.save(settlement);
-                publishDeferredEvent(settlement);
+                settlementEventPublisher.publishDeferred(settlement);
             }
         };
     }
@@ -246,34 +244,6 @@ public class MonthlySettlementJobConfig {
                 settlement.getSettlementId()
         );
         settlementFailureRepository.save(failure);
-
-        publishFailedEvent(settlement);
-    }
-
-    private void publishCompletedEvent(Settlement settlement) {
-        SettlementEvent event = settlement.toCompletedEvent();
-        settlementKafkaTemplate.send(
-                KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED,
-                settlement.getSellerId().toString(),
-                event
-        );
-    }
-
-    private void publishFailedEvent(Settlement settlement) {
-        SettlementEvent event = settlement.toFailedEvent();
-        settlementKafkaTemplate.send(
-                KafkaTopics.MONTHLY_SETTLEMENT_FAILED,
-                settlement.getSellerId().toString(),
-                event
-        );
-    }
-
-    private void publishDeferredEvent(Settlement settlement) {
-        SettlementEvent event = settlement.toDeferredEvent();
-        settlementKafkaTemplate.send(
-                KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED,
-                settlement.getSellerId().toString(),
-                event
-        );
+        settlementEventPublisher.publishFailed(settlement);
     }
 }
