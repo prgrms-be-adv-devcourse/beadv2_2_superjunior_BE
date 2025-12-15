@@ -103,8 +103,6 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
   # Member 배포
   deploy-member:
@@ -127,8 +125,6 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
   # Notification 배포
   deploy-notification:
@@ -151,8 +147,6 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
   # Point 배포
   deploy-point:
@@ -175,8 +169,6 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
   # Order 배포
   deploy-order:
@@ -199,8 +191,6 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}
 
   # Product 배포
   deploy-product:
@@ -223,5 +213,3 @@ jobs:
           bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          docker-username: ${{ secrets.DOCKER_USERNAME }}
-          docker-password: ${{ secrets.DOCKER_PASSWORD }}

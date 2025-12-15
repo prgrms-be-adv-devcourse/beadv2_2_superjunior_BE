@@ -70,6 +70,7 @@ runs:
           MODULE="${{ inputs.service-name }}"
         fi
         ./gradlew :${MODULE}:jibDockerBuild \
+          -Djib.to.image=${{ inputs.image-name }} \
           -Djib.to.tags=${{ steps.version.outputs.tag }},latest
 
     - name: Docker 이미지를 tar 파일로 저장
