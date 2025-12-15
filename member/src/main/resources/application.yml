@@ -23,14 +23,14 @@ spring:
 
   mail:
     host: smtp.gmail.com
-    port: 465
+    port: 587
     username: ${MEMBER_SMTP_EMAIL}
     password: ${MEMBER_SMTP_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
 
 server:
