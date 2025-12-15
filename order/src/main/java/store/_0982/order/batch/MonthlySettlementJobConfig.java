@@ -15,10 +15,7 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.common.dto.ResponseDto;
-import store._0982.order.application.settlement.BankTransferService;
 import store._0982.order.client.dto.SellerAccountListRequest;
-import store._0982.order.infrastructure.settlement.SettlementLogFormat;
 import store._0982.order.infrastructure.settlement.event.SettlementEventPublisher;
 import store._0982.order.domain.settlement.*;
 import store._0982.order.client.MemberFeignClient;
@@ -44,13 +41,11 @@ public class MonthlySettlementJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     private final MemberFeignClient memberFeignClient;
+    private final MonthlySettlementProcessor monthlySettlementProcessor;
     private final SettlementEventPublisher settlementEventPublisher;
 
     private final SettlementRepository settlementRepository;
-    private final SettlementFailureRepository settlementFailureRepository;
     private final SellerBalanceRepository sellerBalanceRepository;
-    private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
-    private final BankTransferService bankTransferService;
 
     @Bean
     public Job monthlySettlementJob(Step monthlySettlementStep, Step lowBalanceNotificationStep) {
@@ -65,7 +60,7 @@ public class MonthlySettlementJobConfig {
         return new StepBuilder("monthlySettlementStep", jobRepository)
                 .<SellerBalance, Settlement>chunk(10, transactionManager)
                 .reader(monthlySettlementReader(entityManagerFactory))
-                .processor(monthlySettlementProcessor())
+                .processor(settlementItemProcessor())
                 .writer(monthlySettlementWriter())
                 .build();
     }
@@ -90,7 +85,7 @@ public class MonthlySettlementJobConfig {
     }
 
     @Bean
-    public ItemProcessor<SellerBalance, Settlement> monthlySettlementProcessor() {
+    public ItemProcessor<SellerBalance, Settlement> settlementItemProcessor() {
         return sellerBalance -> {
             Long currentBalance = sellerBalance.getSettlementBalance();
             long serviceFee = currentBalance / SERVICE_FEE_RATE;
@@ -119,8 +114,7 @@ public class MonthlySettlementJobConfig {
                     .toList();
 
             SellerAccountListRequest request = new SellerAccountListRequest(sellerIds);
-            ResponseDto<List<SellerAccountInfo>> response = memberFeignClient.getSellerAccountInfos(request);
-            List<SellerAccountInfo> accountInfos = response.data();
+            List<SellerAccountInfo> accountInfos = memberFeignClient.getSellerAccountInfos(request).data();
             Map<UUID, SellerAccountInfo> accountMap = accountInfos.stream()
                     .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
 
@@ -133,42 +127,13 @@ public class MonthlySettlementJobConfig {
                 SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
 
                 if (accountInfo == null || accountInfo.accountNumber() == null || accountInfo.accountNumber().isBlank()) {
-                    handleSettlementFailure(settlement, "계좌 정보가 없습니다");
+                    monthlySettlementProcessor.handleSettlementFailure(settlement, "계좌 정보가 없습니다");
                     continue;
                 }
 
-                processTransfer(settlement, accountInfo, balanceMap);
+                monthlySettlementProcessor.processTransfer(settlement, accountInfo, balanceMap);
             }
         };
-    }
-
-    private void processTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
-        try {
-            long transferAmount = settlement.getSettlementAmount().longValue();
-            bankTransferService.transfer(accountInfo, transferAmount);
-
-            settlement.markAsCompleted();
-            settlementRepository.save(settlement);
-
-            SellerBalanceHistory history = new SellerBalanceHistory(
-                    settlement.getSellerId(),
-                    settlement.getSettlementId(),
-                    transferAmount,
-                    BalanceHistoryStatus.DEBIT
-            );
-            sellerBalanceHistoryRepository.save(history);
-
-            SellerBalance balance = balanceMap.get(settlement.getSellerId());
-            balance.resetBalance();
-            sellerBalanceRepository.save(balance);
-
-            settlementEventPublisher.publishCompleted(settlement);
-            log.info(SettlementLogFormat.MONTHLY_SETTLEMENT_COMPLETE, settlement.getSellerId());
-
-        } catch (Exception e) {
-            log.error(SettlementLogFormat.MONTHLY_SETTLEMENT_FAIL, settlement.getSellerId(), e.getMessage(), e);
-            handleSettlementFailure(settlement, e.getMessage());
-        }
     }
 
     // 3만원 미만 판매자 알림 Step
@@ -229,21 +194,5 @@ public class MonthlySettlementJobConfig {
                 settlementEventPublisher.publishDeferred(settlement);
             }
         };
-    }
-
-    private void handleSettlementFailure(Settlement settlement, String reason) {
-        settlement.markAsFailed();
-        settlementRepository.save(settlement);
-
-        SettlementFailure failure = new SettlementFailure(
-                settlement.getSellerId(),
-                settlement.getPeriodStart(),
-                settlement.getPeriodEnd(),
-                reason,
-                0,
-                settlement.getSettlementId()
-        );
-        settlementFailureRepository.save(failure);
-        settlementEventPublisher.publishFailed(settlement);
     }
 }

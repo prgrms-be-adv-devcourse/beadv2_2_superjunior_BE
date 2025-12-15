@@ -23,7 +23,7 @@ public class MonthlySettlementScheduler {
     /**
      * 매월 1일 02:00에 월별 정산 배치 실행
      */
-    @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 19 18 * * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() {
         String schedulerName = "MonthlySettlement";
         log.info(SettlementLogFormat.START, schedulerName);
