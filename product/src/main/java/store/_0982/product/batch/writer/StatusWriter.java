@@ -25,28 +25,24 @@ public class StatusWriter implements ItemWriter<GroupPurchase> {
     public void write(Chunk<? extends GroupPurchase> chunk) throws Exception {
         List<GroupPurchase> items = new ArrayList<>(chunk.getItems());
         for(GroupPurchase groupPurchase : items){
-            log.info("groupPurchaseId : {}",groupPurchase.getGroupPurchaseId());
-            // 저장
-            groupPurchaseRepository.save(groupPurchase);
 
             try{
                 if(groupPurchase.getStatus() == GroupPurchaseStatus.SUCCESS){
-                    log.info("공동 구매 성공 {}",groupPurchase.getGroupPurchaseId());
                     ResponseDto<Void> response = orderClient.updateOrderStatus(
                             groupPurchase.getGroupPurchaseId(),
                             "SUCCESS"
                     );
+                    log.debug("주문 상태 성공으로 변경");
                 }else{
-                    log.info("공동 구매 실패 {}",groupPurchase.getGroupPurchaseId());
                     ResponseDto<Void> response = orderClient.updateOrderStatus(
                             groupPurchase.getGroupPurchaseId(),
                             "FAILED"
                     );
+                    log.debug("주문 상태 실패로 변경");
                 }
             }catch(Exception e){
                 log.error("주문 상태 변경 실패: groupPurchaseId={}", groupPurchase.getGroupPurchaseId(), e);
             }
         }
-        groupPurchaseRepository.saveAll(items);
     }
 }
