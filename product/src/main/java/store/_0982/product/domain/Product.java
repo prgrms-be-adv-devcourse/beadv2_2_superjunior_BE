@@ -99,7 +99,7 @@ public class Product {
                 this.originalUrl,
                 this.sellerId,
                 this.createdAt.toString(),
-                this.updatedAt.toString()
+                this.updatedAt != null ? this.updatedAt.toString() : null
         );
     }
 }

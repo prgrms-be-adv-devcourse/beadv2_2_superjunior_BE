@@ -22,6 +22,7 @@ import store._0982.product.exception.CustomErrorCode;
 import store._0982.product.domain.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -110,6 +111,19 @@ public class GroupPurchaseService {
         });
 
         return PageResponse.from(groupPurchaseInfoPage);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupPurchaseInfo> getGroupPurchaseByIds(List<UUID> purchaseIds) {
+        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
+
+        if (groupPurchases.isEmpty()) {
+            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+        }
+
+        return groupPurchases.stream()
+                .map(GroupPurchaseInfo::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -215,5 +229,6 @@ public class GroupPurchaseService {
         groupPurchase.markAsSettled();
         groupPurchaseRepository.save(groupPurchase);
     }
+
 
 }

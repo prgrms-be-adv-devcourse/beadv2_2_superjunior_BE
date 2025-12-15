@@ -6,6 +6,7 @@ import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class OpenGroupPurchaseTasklet implements Tasklet {
     private final GroupPurchaseRepository groupPurchaseRepository;
 
