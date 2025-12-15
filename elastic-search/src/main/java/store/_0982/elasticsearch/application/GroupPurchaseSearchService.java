@@ -15,6 +15,8 @@ import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
+import java.util.UUID;
+
 
 @RequiredArgsConstructor
 @Service
@@ -47,10 +49,11 @@ public class GroupPurchaseSearchService {
     public PageResponse<GroupPurchaseDocumentInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
+            UUID memberId,
             String category,
             Pageable pageable
     ) {
-        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, category, pageable);
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable);
 
         SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
 

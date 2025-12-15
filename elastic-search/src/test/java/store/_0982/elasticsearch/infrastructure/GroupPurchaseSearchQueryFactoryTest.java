@@ -23,12 +23,14 @@ class GroupPurchaseSearchQueryFactoryTest {
         Pageable pageable = PageRequest.of(0, 10);
         String status = "OPEN";
         String category = "HOME";
+        String memberId = "";
 
         // when
         NativeQuery query = factory.createSearchQuery(
                 null,
                 status,
                 category,
+                memberId,
                 pageable
         );
 
@@ -55,6 +57,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
+                null,
                 null,
                 null,
                 pageable
@@ -85,6 +88,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         String keyword = "갤럭시";
         String status = "CLOSED";
         String category = "HOME";
+        String memberId = "1";
         Pageable pageable = PageRequest.of(0, 20);
 
         // when
@@ -92,6 +96,7 @@ class GroupPurchaseSearchQueryFactoryTest {
                 keyword,
                 status,
                 category,
+                memberId,
                 pageable
         );
 
@@ -115,6 +120,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
+                null,
                 null,
                 null,
                 pageable

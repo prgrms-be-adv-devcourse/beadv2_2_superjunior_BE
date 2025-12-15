@@ -17,6 +17,7 @@ import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -118,10 +119,11 @@ class GroupPurchaseSearchServiceTest {
         String keyword = "아이폰";
         String status = "OPEN";
         String category = "HOME";
+        UUID memberId = UUID.randomUUID();
 
         NativeQuery query = mock(NativeQuery.class);
 
-        when(queryFactory.createSearchQuery(keyword, status, category, pageable))
+        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         GroupPurchaseDocument document = GroupPurchaseDocument.builder()
@@ -142,13 +144,13 @@ class GroupPurchaseSearchServiceTest {
 
         // when
         PageResponse<GroupPurchaseDocumentInfo> response =
-                service.searchGroupPurchaseDocument(keyword, status, category, pageable);
+                service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable);
 
         // then
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).title()).isEqualTo("아이폰 공동구매");
 
-        verify(queryFactory).createSearchQuery(keyword, status, category, pageable);
+        verify(queryFactory).createSearchQuery(keyword, status, memberId.toString(), category, pageable);
         verify(operations).search(query, GroupPurchaseDocument.class);
     }
 }

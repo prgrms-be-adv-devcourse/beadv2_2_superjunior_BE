@@ -18,6 +18,7 @@ import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -73,6 +74,7 @@ class GroupPurchaseSearchControllerTest {
         String keyword = "아이폰";
         String status = "OPEN";
         String category = "";
+        UUID memberId = UUID.randomUUID();
 
         GroupPurchaseDocumentInfo doc =
                 new GroupPurchaseDocumentInfo(
@@ -106,6 +108,7 @@ class GroupPurchaseSearchControllerTest {
         when(groupPurchaseSearchService.searchGroupPurchaseDocument(
                 eq(keyword),
                 eq(status),
+                eq(memberId),
                 eq(category),
                 any(Pageable.class)
         )).thenReturn(response);
@@ -141,6 +144,7 @@ class GroupPurchaseSearchControllerTest {
 
         when(groupPurchaseSearchService.searchGroupPurchaseDocument(
                 eq(keyword),
+                isNull(),
                 isNull(),
                 isNull(),
                 any(Pageable.class)
