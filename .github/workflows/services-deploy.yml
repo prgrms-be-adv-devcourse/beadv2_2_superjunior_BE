@@ -1,0 +1,233 @@
+#file: noinspection SpellCheckingInspection
+name: Services Deploy (Public)
+on:
+  push:
+    branches:
+      - main
+      - feature/ci-cd-*-test
+    paths:
+      - 'gateway/**'
+      - 'member/**'
+      - 'notification/**'
+      - 'point/**'
+      - 'order/**'
+      - 'product/**'
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'docs/k8s/service/*.yml'
+      - '!docs/k8s/service/search.yml'
+      - '.github/workflows/services-deploy.yml'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      member: ${{ steps.filter.outputs.member }}
+      notification: ${{ steps.filter.outputs.notification }}
+      point: ${{ steps.filter.outputs.point }}
+      order: ${{ steps.filter.outputs.order }}
+      product: ${{ steps.filter.outputs.product }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 변경된 서비스 감지
+        id: filter
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+
+          # Gateway
+          if echo "$CHANGED_FILES" | grep -qE '^(gateway/|common/|build\.gradle|settings\.gradle|docs/k8s/service/gateway\.yml)'; then
+            echo "gateway=true" >> $GITHUB_OUTPUT
+          else
+            echo "gateway=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Member
+          if echo "$CHANGED_FILES" | grep -qE '^(member/|common/|build\.gradle|settings\.gradle|docs/k8s/service/member\.yml)'; then
+            echo "member=true" >> $GITHUB_OUTPUT
+          else
+            echo "member=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Notification
+          if echo "$CHANGED_FILES" | grep -qE '^(notification/|common/|build\.gradle|settings\.gradle|docs/k8s/service/notification\.yml)'; then
+            echo "notification=true" >> $GITHUB_OUTPUT
+          else
+            echo "notification=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Point
+          if echo "$CHANGED_FILES" | grep -qE '^(point/|common/|build\.gradle|settings\.gradle|docs/k8s/service/point\.yml)'; then
+            echo "point=true" >> $GITHUB_OUTPUT
+          else
+            echo "point=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Order
+          if echo "$CHANGED_FILES" | grep -qE '^(order/|common/|build\.gradle|settings\.gradle|docs/k8s/service/order\.yml)'; then
+            echo "order=true" >> $GITHUB_OUTPUT
+          else
+            echo "order=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Product
+          if echo "$CHANGED_FILES" | grep -qE '^(product/|common/|build\.gradle|settings\.gradle|docs/k8s/service/product\.yml)'; then
+            echo "product=true" >> $GITHUB_OUTPUT
+          else
+            echo "product=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Gateway 배포
+  deploy-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Gateway 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: gateway
+          manifest-path: docs/k8s/service/gateway.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+  # Member 배포
+  deploy-member:
+    needs: [detect-changes, deploy-gateway]
+    if: always() && needs.detect-changes.outputs.member == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Member 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: member
+          manifest-path: docs/k8s/service/member.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+  # Notification 배포
+  deploy-notification:
+    needs: [detect-changes, deploy-member]
+    if: always() && needs.detect-changes.outputs.notification == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Notification 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: notification
+          manifest-path: docs/k8s/service/notification.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+  # Point 배포
+  deploy-point:
+    needs: [detect-changes, deploy-notification]
+    if: always() && needs.detect-changes.outputs.point == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Point 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: point
+          manifest-path: docs/k8s/service/point.yml
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+  # Order 배포
+  deploy-order:
+    needs: [detect-changes, deploy-point]
+    if: always() && needs.detect-changes.outputs.order == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Order 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: order
+          manifest-path: docs/k8s/service/order.yml
+          manifest-target-dir: /tmp/k8s-service-temp
+          use-version-tag: 'true'
+          rollout-timeout: 10m
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
+
+  # Product 배포
+  deploy-product:
+    needs: [detect-changes, deploy-order]
+    if: always() && needs.detect-changes.outputs.product == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Product 배포
+        uses: ./.github/actions/deploy-public-service
+        with:
+          service-name: product
+          manifest-path: docs/k8s/service/product.yml
+          manifest-target-dir: /tmp/k8s-service-temp
+          use-version-tag: 'true'
+          rollout-timeout: 10m
+          bastion-host: ${{ secrets.BASTION_HOST }}
+          bastion-user: ${{ secrets.BASTION_USER }}
+          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          docker-username: ${{ secrets.DOCKER_USERNAME }}
+          docker-password: ${{ secrets.DOCKER_PASSWORD }}
