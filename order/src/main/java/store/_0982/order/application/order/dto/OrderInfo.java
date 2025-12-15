@@ -1,4 +1,4 @@
-package store._0982.order.application.dto;
+package store._0982.order.application.order.dto;
 
 import store._0982.order.domain.order.Order;
 import store._0982.order.domain.order.OrderStatus;

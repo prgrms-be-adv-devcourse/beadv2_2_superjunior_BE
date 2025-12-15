@@ -2,7 +2,7 @@ package store._0982.order.presentation.order.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import store._0982.order.application.dto.OrderCartRegisterCommand;
+import store._0982.order.application.order.dto.OrderCartRegisterCommand;
 
 import java.util.List;
 import java.util.UUID;

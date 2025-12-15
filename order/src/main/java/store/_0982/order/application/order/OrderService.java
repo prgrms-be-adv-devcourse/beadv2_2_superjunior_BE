@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.order.application.dto.*;
+import store._0982.order.application.order.dto.*;
 import store._0982.order.infrastructure.client.member.MemberClient;
 import store._0982.order.infrastructure.client.payment.PaymentClient;
 import store._0982.order.infrastructure.client.payment.dto.PointDeductRequest;

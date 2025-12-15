@@ -1,7 +1,7 @@
 package store._0982.order.presentation.order.dto;
 
 import jakarta.validation.constraints.*;
-import store._0982.order.application.dto.OrderRegisterCommand;
+import store._0982.order.application.order.dto.OrderRegisterCommand;
 
 import java.util.UUID;
 

@@ -1,12 +1,12 @@
-package store._0982.order.application.dto;
+package store._0982.order.application.order.dto;
 
-import store._0982.order.domain.order.Order;
 import store._0982.order.domain.order.OrderStatus;
+import store._0982.order.domain.order.Order;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record OrderDetailInfo(
+public record OrderRegisterInfo(
         UUID orderId,
         int quantity,
         Long price,
@@ -22,8 +22,8 @@ public record OrderDetailInfo(
         OffsetDateTime updatedAt,
         OffsetDateTime deletedAt
 ) {
-    public static OrderDetailInfo from(Order order){
-        return new OrderDetailInfo(
+    public static OrderRegisterInfo from(Order order){
+        return new OrderRegisterInfo(
                 order.getOrderId(),
                 order.getQuantity(),
                 order.getPrice(),

@@ -1,4 +1,4 @@
-package store._0982.order.application.dto;
+package store._0982.order.application.order.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
