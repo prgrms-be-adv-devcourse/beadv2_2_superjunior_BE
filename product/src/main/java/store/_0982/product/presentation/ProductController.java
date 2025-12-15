@@ -2,15 +2,21 @@ package store._0982.product.presentation;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
 import store._0982.common.auth.RequireRole;
 import store._0982.common.auth.Role;
+import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.product.application.ProductService;
+import store._0982.product.application.dto.ProductListInfo;
 import store._0982.product.application.dto.ProductRegisterInfo;
 import store._0982.product.application.dto.ProductDetailInfo;
 import store._0982.product.application.dto.ProductUpdateInfo;
@@ -34,7 +40,7 @@ public class ProductController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ProductRegisterInfo> createProduct(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody ProductRegisterRequest request) {
+            @Valid @RequestBody ProductRegisterRequest request) {
         ProductRegisterInfo info = productService.createProduct(request.toCommand(memberId));
         return new ResponseDto<>(HttpStatus.CREATED, info, "상품이 등록되었습니다.");
     }
@@ -59,6 +65,22 @@ public class ProductController {
         ProductDetailInfo response = productService.getProductInfo(productId);
         return new ResponseDto<>(HttpStatus.OK, response, "상품 조회가 완료되었습니다.");
     }
+
+    @Operation(summary = "내가 등록한 상품 조회(판매자)", description = "내가 등록한 상품 목록을 조회 합니다.")
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @RequireRole({Role.SELLER, Role.ADMIN})
+    public ResponseDto<PageResponse<ProductListInfo>> getProductListInfo(
+            @RequestHeader(HeaderName.ID) UUID memberId,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable ){
+        PageResponse<ProductListInfo> response = productService.getProductListInfo(memberId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, response, "내가 등록한 상품 목록 조회가 완료되었습니다.");
+    }
+
 
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "상품 정보 수정", description = "판매자 정보를 수정한다.")

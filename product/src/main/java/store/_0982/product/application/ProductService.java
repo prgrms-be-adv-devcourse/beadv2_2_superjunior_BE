@@ -2,18 +2,17 @@ package store._0982.product.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.common.log.ServiceLog;
-import store._0982.product.application.dto.ProductRegisterCommand;
-import store._0982.product.application.dto.ProductRegisterInfo;
-import store._0982.product.application.dto.ProductDetailInfo;
-import store._0982.product.application.dto.ProductUpdateCommand;
-import store._0982.product.application.dto.ProductUpdateInfo;
+import store._0982.product.application.dto.*;
 import store._0982.product.exception.CustomErrorCode;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.Product;
@@ -82,6 +81,13 @@ public class ProductService {
         return ProductDetailInfo.from(product);
     }
 
+    public PageResponse<ProductListInfo> getProductListInfo(UUID sellerId, Pageable pageable) {
+        Page<Product> product = productRepository.findBySellerId(sellerId, pageable);
+
+        Page<ProductListInfo> products = product.map(ProductListInfo::from);
+
+        return PageResponse.from(products);
+    }
     /**
      * 상품 업데이트
      * @param productId 상품 id
