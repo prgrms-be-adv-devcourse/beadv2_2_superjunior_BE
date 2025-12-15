@@ -1,4 +1,4 @@
-package store._0982.order.infrastructure.settlement.scheduler;
+package store._0982.order.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

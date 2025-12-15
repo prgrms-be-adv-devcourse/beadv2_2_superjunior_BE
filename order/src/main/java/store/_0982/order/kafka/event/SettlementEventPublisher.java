@@ -1,4 +1,4 @@
-package store._0982.order.infrastructure.settlement.event;
+package store._0982.order.kafka.event;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
