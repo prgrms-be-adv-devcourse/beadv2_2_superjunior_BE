@@ -32,7 +32,7 @@ spring:
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**,/api/carts/**
+                - Path=/api/orders/**,/api/carts/**, /api/balances/**
               filters:
                 - JwtAuth
 
