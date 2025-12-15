@@ -32,9 +32,14 @@ spring:
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**, /internal/orders/**
+                - Path=/api/orders/**,/api/carts/**, /api/balances/**
               filters:
                 - JwtAuth
+
+            - id: order-internal-api
+              uri: lb://order
+              predicates:
+                - Path=/internal/orders/**
 
             - id: openapi
               uri: ${GATEWAY_HOST:http://localhost:8000}
@@ -129,7 +134,6 @@ eureka:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
     health-check-url-path: /actuator/health
 
-
 management:
   endpoints:
     web:
@@ -153,3 +157,6 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
+
+frontend:
+  url: https://0982.vercel.app
