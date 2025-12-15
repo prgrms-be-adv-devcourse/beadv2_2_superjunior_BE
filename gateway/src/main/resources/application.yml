@@ -32,9 +32,14 @@ spring:
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**, /internal/orders/**
+                - Path=/api/orders/**,/api/carts/**
               filters:
                 - JwtAuth
+
+            - id: order-internal-api
+              uri: lb://order
+              predicates:
+                - Path=/internal/orders/**
 
             - id: openapi
               uri: ${GATEWAY_HOST:http://localhost:8000}
