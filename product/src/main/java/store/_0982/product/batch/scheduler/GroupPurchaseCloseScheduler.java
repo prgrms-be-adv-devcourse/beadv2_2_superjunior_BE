@@ -9,6 +9,8 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.OffsetDateTime;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class GroupPurchaseCloseScheduler {
         try{
             JobParameters params = new JobParametersBuilder()
                     .addLong("timestamp", System.currentTimeMillis())
+                    .addString("now",OffsetDateTime.now().toString())
                     .toJobParameters();
 
             log.info("공동구매 마감 배치 시작");

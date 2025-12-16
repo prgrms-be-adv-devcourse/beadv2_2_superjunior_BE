@@ -9,6 +9,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
+import store._0982.common.auth.RequireRole;
+import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
@@ -31,12 +33,12 @@ public class GroupPurchaseController {
     @Operation(summary="공동 구매 생성", description = "공동 구매를 생성합니다.")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
+    @RequireRole({Role.SELLER, Role.ADMIN})
     public ResponseDto<GroupPurchaseInfo> createGroupPurchase(
-            @RequestHeader("X-Member-Id") UUID memberId,
-            @RequestHeader("X-Member-Role") String memberRole,
+            @RequestHeader(HeaderName.ID) UUID memberId,
             @Valid @RequestBody GroupPurchaseRegisterRequest request
     ){
-        GroupPurchaseInfo response = purchaseService.createGroupPurchase(memberId, memberRole, request.toCommand());
+        GroupPurchaseInfo response = purchaseService.createGroupPurchase(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, response, "공동 구매가 생성 되었습니다.");
     }
 
@@ -82,12 +84,12 @@ public class GroupPurchaseController {
     @Operation(summary = "공동구매 수정", description = "공동구매 정보를 수정한다.")
     @PatchMapping("/{purchaseId}")
     @ResponseStatus(HttpStatus.OK)
+    @RequireRole({Role.SELLER, Role.ADMIN})
     public ResponseDto<GroupPurchaseInfo> updateGroupPurchase(
             @PathVariable UUID purchaseId,
-            @RequestHeader("X-Member-Role") String memberRole,
-            @RequestHeader("X-Member-Id") UUID memberId,
+            @RequestHeader(HeaderName.ID) UUID memberId,
             @Valid @RequestBody GroupPurchaseUpdateRequest request) {
-        GroupPurchaseInfo response = purchaseService.updateGroupPurchase(memberId,  memberRole, purchaseId, request.toCommand());
+        GroupPurchaseInfo response = purchaseService.updateGroupPurchase(memberId, purchaseId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, response, "공동구매 정보가 수정되었습니다.");
     }
 

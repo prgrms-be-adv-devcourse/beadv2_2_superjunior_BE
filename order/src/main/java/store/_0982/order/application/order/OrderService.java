@@ -357,9 +357,12 @@ public class OrderService {
     @Transactional
     public void returnOrder(UUID groupPurchaseId){
         List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
-        log.info("환불주문");
+
+        log.info("환불 대상 주문 조회 완료 : groupPurchaseId = {}, count = {}", groupPurchaseId, orders.size());
+
         int success = 0;
         int fail = 0;
+
         for(Order order : orders){
 
             if(order.isReturned()){
@@ -371,13 +374,18 @@ public class OrderService {
             try{
                 paymentClient.returnPointsInternal(
                         order.getMemberId(),
-                        new PointReturnRequest(amount)
+                        new PointReturnRequest(
+                                UUID.randomUUID(),
+                                order.getOrderId(),
+                                amount
+                        )
                 );
                 order.markReturned();
                 success++;
                 log.info("환불 완료 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
             }catch(Exception e){
                 fail++;
+                log.error("환불 실패 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
                 // TODO : 환불 실패 처리 필요(재시도 큐? 관리자 알람?)
             }
         }
