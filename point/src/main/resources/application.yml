@@ -20,6 +20,7 @@ spring:
         default_schema: point_schema
         format_sql: true
         show_sql: true
+    open-in-view: false
 
 springdoc:
   swagger-ui:
