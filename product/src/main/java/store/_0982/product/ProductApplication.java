@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableRetry
 @EnableScheduling
 @EnableFeignClients
-@EnableBatchProcessing
 @SpringBootApplication
 public class ProductApplication {
 

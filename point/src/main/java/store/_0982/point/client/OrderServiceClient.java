@@ -9,7 +9,6 @@ import store._0982.point.client.dto.OrderInfo;
 
 import java.util.UUID;
 
-// TODO: Order 모듈 내부 API 구현 완료되면 적용하자
 @FeignClient(name = "gateway")
 public interface OrderServiceClient {
     @GetMapping("/internal/orders/{id}")

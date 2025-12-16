@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record PointChargeConfirmRequest(
         @NotNull UUID orderId,
-        @Positive int amount,
+        @Positive long amount,
         @NotBlank String paymentKey
 ) {
     public PointChargeConfirmCommand toCommand(){

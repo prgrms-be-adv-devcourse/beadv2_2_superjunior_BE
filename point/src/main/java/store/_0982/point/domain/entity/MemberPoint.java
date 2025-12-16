@@ -22,7 +22,6 @@ public class MemberPoint {
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
-    // TODO: 밸런스를 정말 안전하게 long 타입으로 관리하는 게 좋을까?
     @Column(name = "point_balance", nullable = false)
     private long pointBalance;
 
@@ -34,16 +33,16 @@ public class MemberPoint {
         this.pointBalance = 0;
     }
 
-    public void addPoints(int pointBalance) {
+    public void addPoints(long pointBalance) {
         this.pointBalance += pointBalance;
     }
 
-    public void deductPoints(int pointBalance) {
+    public void deductPoints(long pointBalance) {
         refund(pointBalance);
         lastUsedAt = OffsetDateTime.now();
     }
 
-    public void refund(int pointBalance) {
+    public void refund(long pointBalance) {
         if (this.pointBalance < pointBalance) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }

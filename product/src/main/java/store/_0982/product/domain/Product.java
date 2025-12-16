@@ -14,7 +14,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "\"product\"")
+@Table(name = "\"product\"", schema = "product_schema")
 public class Product {
     @Id
     private UUID productId;
@@ -99,7 +99,7 @@ public class Product {
                 this.originalUrl,
                 this.sellerId,
                 this.createdAt.toString(),
-                this.updatedAt.toString()
+                this.updatedAt != null ? this.updatedAt.toString() : null
         );
     }
 }

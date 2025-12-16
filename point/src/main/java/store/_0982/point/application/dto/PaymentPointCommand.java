@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public record PaymentPointCommand(
         UUID orderId,
-        int amount
+        long amount
 ) {
 }

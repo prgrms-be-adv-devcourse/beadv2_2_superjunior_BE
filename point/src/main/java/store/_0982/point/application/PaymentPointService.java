@@ -43,7 +43,7 @@ public class PaymentPointService {
                 });
     }
 
-    public PageResponse<PaymentPointHistoryInfo> getPaymentHistory(UUID memberId, Pageable pageable) {
+    public PageResponse<PaymentPointHistoryInfo> getPaymentHistories(UUID memberId, Pageable pageable) {
         Page<PaymentPointHistoryInfo> page = paymentPointRepository.findAllByMemberId(memberId, pageable)
                 .map(PaymentPointHistoryInfo::from);
         return PageResponse.from(page);
@@ -55,7 +55,7 @@ public class PaymentPointService {
      */
     @ServiceLog
     @Transactional
-    public PointChargeConfirmInfo confirmPayment(PointChargeConfirmCommand command) {
+    public void confirmPayment(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
@@ -73,27 +73,30 @@ public class PaymentPointService {
 
         memberPoint.addPoints(paymentPoint.getAmount());
         pointEventPublisher.publishPointRechargedEvent(paymentPoint);
-        return new PointChargeConfirmInfo(
-                PaymentPointInfo.from(paymentPoint), MemberPointInfo.from(memberPoint));
     }
 
     @ServiceLog
     @Transactional
-    public PointChargeFailInfo handlePaymentFailure(PointChargeFailCommand command) {
+    public void handlePaymentFailure(PointChargeFailCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         switch (paymentPoint.getStatus()) {
             case COMPLETED, REFUNDED -> throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
             case FAILED -> {
-                PaymentPointFailure existingFailure = paymentPointFailureRepository.findByPaymentPoint(paymentPoint)
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR));
-                return PointChargeFailInfo.from(existingFailure);
+                return;
             }
             case REQUESTED -> paymentPoint.markFailed(command.errorMessage());
         }
 
         PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
-        return PointChargeFailInfo.from(paymentPointFailureRepository.save(failure));
+        paymentPointFailureRepository.save(failure);
+    }
+
+    public PaymentPointHistoryInfo getPaymentHistory(UUID id, UUID memberId) {
+        PaymentPoint paymentPoint = paymentPointRepository.findById(id)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+        paymentPoint.validate(memberId);
+        return PaymentPointHistoryInfo.from(paymentPoint);
     }
 }

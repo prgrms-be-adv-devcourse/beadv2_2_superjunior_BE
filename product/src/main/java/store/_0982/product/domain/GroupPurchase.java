@@ -16,7 +16,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "\"group_purchase\"")
+@Table(name = "\"group_purchase\"", schema = "product_schema")
 public class GroupPurchase {
     @Id
     private UUID groupPurchaseId;

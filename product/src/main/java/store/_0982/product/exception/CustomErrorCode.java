@@ -14,6 +14,10 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_QUANTITY_RANGE(HttpStatus.BAD_REQUEST, "잘못된 수량입니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "잘못된 날짜 범위입니다."),
     INVALID_OPEN_PURCHASE_UPDATE(HttpStatus.BAD_REQUEST, "공동 구매가 OPEN 상태입니다."),
+    INVALID_PRODUCT_NAME(HttpStatus.BAD_REQUEST, "상품명이 유효하지 않습니다."),
+    INVALID_PRICE(HttpStatus.BAD_REQUEST, "가격이 유효하지 않습니다."),
+    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리가 유효하지 않습니다."),
+    INVALID_STOCK(HttpStatus.BAD_REQUEST, "재고가 유효하지 않습니다."),
 
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),

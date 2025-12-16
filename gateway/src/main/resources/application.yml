@@ -148,7 +148,6 @@ eureka:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
     health-check-url-path: /actuator/health
 
-
 management:
   endpoints:
     web:
@@ -172,3 +171,6 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
+
+frontend:
+  url: https://0982.vercel.app
