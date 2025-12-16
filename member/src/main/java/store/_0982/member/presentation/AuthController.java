@@ -87,6 +87,7 @@ public class AuthController {
                 .httpOnly(true)
                 .path("/api/auth/refresh")
                 .maxAge(Duration.ofDays(30))   // 30일
+                .sameSite("None")
                 .secure(true) // 필요 시 활성화
                 .build();
     }
