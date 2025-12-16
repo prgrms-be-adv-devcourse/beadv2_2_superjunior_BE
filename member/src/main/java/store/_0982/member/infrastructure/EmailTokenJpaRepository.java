@@ -16,6 +16,6 @@ public interface EmailTokenJpaRepository extends JpaRepository<EmailToken, UUID>
     void deleteByEmail(String email);
     @Modifying
     @Query("delete from EmailToken et where et.expiredAt < :now")
-    int deleteExpiredTokens(@Param("now") OffsetDateTime now);
+    void deleteExpiredTokens(@Param("now") OffsetDateTime now);
 
 }
