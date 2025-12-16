@@ -8,6 +8,7 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,11 +24,13 @@ class GroupPurchaseSearchQueryFactoryTest {
         Pageable pageable = PageRequest.of(0, 10);
         String status = "OPEN";
         String category = "HOME";
+        String memberId = UUID.randomUUID().toString();
 
         // when
         NativeQuery query = factory.createSearchQuery(
                 null,
                 status,
+                memberId,
                 category,
                 pageable
         );
@@ -57,6 +60,7 @@ class GroupPurchaseSearchQueryFactoryTest {
                 keyword,
                 null,
                 null,
+                null,
                 pageable
         );
 
@@ -84,6 +88,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // given
         String keyword = "갤럭시";
         String status = "CLOSED";
+        String  memberId = UUID.randomUUID().toString();
         String category = "HOME";
         Pageable pageable = PageRequest.of(0, 20);
 
@@ -91,6 +96,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         NativeQuery query = factory.createSearchQuery(
                 keyword,
                 status,
+                memberId,
                 category,
                 pageable
         );
@@ -115,6 +121,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
+                null,
                 null,
                 null,
                 pageable
