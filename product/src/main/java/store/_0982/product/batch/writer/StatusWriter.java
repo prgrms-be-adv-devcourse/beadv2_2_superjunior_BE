@@ -5,43 +5,50 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
+import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
-
-import java.util.ArrayList;
-import java.util.List;
+import store._0982.product.exception.CustomErrorCode;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class StatusWriter implements ItemWriter<GroupPurchase> {
+public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final OrderClient orderClient;
 
     @Override
-    public void write(Chunk<? extends GroupPurchase> chunk) throws Exception {
-        List<GroupPurchase> items = new ArrayList<>(chunk.getItems());
-        for(GroupPurchase groupPurchase : items){
+    public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
 
-            try{
-                if(groupPurchase.getStatus() == GroupPurchaseStatus.SUCCESS){
-                    ResponseDto<Void> response = orderClient.updateOrderStatus(
-                            groupPurchase.getGroupPurchaseId(),
-                            "SUCCESS"
-                    );
-                    log.debug("주문 상태 성공으로 변경");
-                }else{
-                    ResponseDto<Void> response = orderClient.updateOrderStatus(
-                            groupPurchase.getGroupPurchaseId(),
-                            "FAILED"
-                    );
-                    log.debug("주문 상태 실패로 변경");
-                }
-            }catch(Exception e){
-                log.error("주문 상태 변경 실패: groupPurchaseId={}", groupPurchase.getGroupPurchaseId(), e);
+        
+        for(GroupPurchaseResult result : chunk.getItems()){
+            GroupPurchase groupPurchase = groupPurchaseRepository.findById(result.groupPurchase().getGroupPurchaseId())
+                    .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+            if(result.success()){
+                // 공동 구매 상태 변경
+                groupPurchase.updateStatus(GroupPurchaseStatus.SUCCESS);
+
+                // 주문 상태 변경
+                orderClient.updateOrderStatus(
+                        groupPurchase.getGroupPurchaseId(),
+                        "SUCCESS"
+                );
+
+                log.info("공동 구매 성공 처리 완료 : groupPurchaseId - {}", groupPurchase.getGroupPurchaseId());
+            }else {
+                // 공동 구매 상태 변경
+                groupPurchase.updateStatus(GroupPurchaseStatus.FAILED);
+
+                // 주문 상태 변경
+                orderClient.updateOrderStatus(
+                        groupPurchase.getGroupPurchaseId(),
+                        "FAILED"
+                );
+                log.info("공동 구매 실패 처리 완료 : groupPurchaseId - {}", groupPurchase.getGroupPurchaseId());
             }
         }
     }

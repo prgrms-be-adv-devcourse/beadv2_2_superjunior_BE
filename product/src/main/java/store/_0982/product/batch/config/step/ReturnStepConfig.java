@@ -10,12 +10,12 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.batch.processor.ReturnProcessor;
 import store._0982.product.batch.writer.ReturnWriter;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseStatus;
 
-import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Configuration
@@ -30,7 +30,7 @@ public class ReturnStepConfig {
     @Bean
     public Step returnStep(){
         return new StepBuilder("returnStep", jobRepository)
-                .<GroupPurchase, GroupPurchase>chunk(50, transactionManager)
+                .<GroupPurchase, GroupPurchaseResult>chunk(50, transactionManager)
                 .reader(failedGroupPurchaseReader())
                 .processor(returnProcessor)
                 .writer(returnWriter)
