@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record OrderCartRegisterCommand(
-        @NotEmpty List<UUID> cardIds,
+        @NotEmpty List<UUID> cartIds,
         @NotBlank String address,
         @NotBlank String addressDetail,
         @NotBlank String postalCode,
