@@ -5,15 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
-
-import java.util.ArrayList;
-import java.util.List;
+import store._0982.product.exception.CustomErrorCode;
 
 @Slf4j
 @Component
@@ -25,8 +23,10 @@ public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
 
+        
         for(GroupPurchaseResult result : chunk.getItems()){
-            GroupPurchase groupPurchase = result.groupPurchase();
+            GroupPurchase groupPurchase = groupPurchaseRepository.findById(result.groupPurchase().getGroupPurchaseId())
+                    .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
             if(result.success()){
                 // 공동 구매 상태 변경

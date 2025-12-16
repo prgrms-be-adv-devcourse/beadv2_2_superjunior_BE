@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
 import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseStatus;
+
+import javax.swing.*;
 
 import javax.swing.*;
 
