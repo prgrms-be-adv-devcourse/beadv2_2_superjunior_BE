@@ -5,6 +5,6 @@ import java.util.UUID;
 public record PointReturnCommand(
         UUID idempotencyKey,
         UUID orderId,
-        int amount
+        long amount
 ) {
 }

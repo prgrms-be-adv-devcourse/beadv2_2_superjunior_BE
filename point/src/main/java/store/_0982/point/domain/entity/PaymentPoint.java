@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.exception.CustomException;
 import store._0982.point.domain.constant.PaymentPointStatus;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -34,7 +36,7 @@ public class PaymentPoint {
     private String paymentKey;
 
     @Column(nullable = false)
-    private int amount;
+    private long amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -63,7 +65,7 @@ public class PaymentPoint {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private PaymentPoint(UUID memberId, UUID pgOrderId, int amount){
+    private PaymentPoint(UUID memberId, UUID pgOrderId, long amount){
         this.id = UUID.randomUUID();
         this.memberId = memberId;
         this.pgOrderId = pgOrderId;
@@ -72,7 +74,7 @@ public class PaymentPoint {
         this.status = PaymentPointStatus.REQUESTED;
     }
 
-    public static PaymentPoint create(UUID memberId, UUID orderId, int amount){
+    public static PaymentPoint create(UUID memberId, UUID orderId, long amount){
         return new PaymentPoint(memberId, orderId, amount);
     }
 
@@ -93,5 +95,11 @@ public class PaymentPoint {
         this.status = PaymentPointStatus.REFUNDED;
         this.refundedAt = refundedAt;
         this.refundMessage = cancelReason;
+    }
+
+    public void validate(UUID memberId) {
+        if (!this.memberId.equals(memberId)) {
+            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
     }
 }

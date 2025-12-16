@@ -61,7 +61,7 @@ public class Notification {
     private UUID referenceId;
 
     public void validateMemberId(UUID memberId) {
-        if (memberId != this.memberId) {
+        if (!this.memberId.equals(memberId)) {
             throw new CustomException(CustomErrorCode.NO_PERMISSION_TO_READ);
         }
     }

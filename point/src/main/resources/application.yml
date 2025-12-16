@@ -68,3 +68,6 @@ token:
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
+
+frontend:
+  url: https://0982.vercel.app

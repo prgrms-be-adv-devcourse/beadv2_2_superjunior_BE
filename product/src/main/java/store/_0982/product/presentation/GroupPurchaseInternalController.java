@@ -45,6 +45,16 @@ public class GroupPurchaseInternalController {
         }
     }
 
+    @Operation(summary = "공동구매 리스트 조회", description = "공동 구매 리스트 조회")
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<List<GroupPurchaseInfo>> getGroupPurchaseByIds(
+            @RequestParam("ids") List<UUID> ids) {
+        List<GroupPurchaseInfo> info = purchaseService.getGroupPurchaseByIds(ids);
+        return new ResponseDto<>(HttpStatus.OK, info, "공동구매 리스트가 조회되었습니다.");
+    }
+
+
     @GetMapping("/unsettled")
     @ResponseStatus(HttpStatus.OK)
     public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {

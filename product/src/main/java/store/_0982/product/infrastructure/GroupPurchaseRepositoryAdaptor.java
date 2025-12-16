@@ -76,4 +76,8 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
         return groupPurchaseJpaRepository.findAllByStatusAndStartDateBefore(status, now);
     }
 
+    @Override
+    public List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds) {
+        return groupPurchaseJpaRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
+    }
 }

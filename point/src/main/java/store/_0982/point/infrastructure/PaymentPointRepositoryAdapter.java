@@ -30,4 +30,9 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     public PaymentPoint save(PaymentPoint paymentPoint) {
         return paymentPointJpaRepository.save(paymentPoint);
     }
+
+    @Override
+    public Optional<PaymentPoint> findById(UUID id) {
+        return paymentPointJpaRepository.findById(id);
+    }
 }

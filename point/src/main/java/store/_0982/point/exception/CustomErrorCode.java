@@ -11,6 +11,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 금액입니다."),
+    INVALID_POINT_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 포인트 차감 / 반환 요청입니다."),
     IDEMPOTENCY_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "멱등키가 전달되지 않았습니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),

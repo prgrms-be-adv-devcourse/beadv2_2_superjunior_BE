@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record PointChargeConfirmCommand(
         UUID orderId,
-        int amount,
+        long amount,
         String paymentKey
 ) {
 }

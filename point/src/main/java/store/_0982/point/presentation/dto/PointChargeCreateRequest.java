@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record PointChargeCreateRequest(
         @NotNull UUID orderId,
-        @Positive int amount
+        @Positive long amount
 ) {
     public PaymentPointCommand toCommand(){
         return new PaymentPointCommand(orderId, amount);
