@@ -186,7 +186,7 @@ public class OrderService {
                     cart.getGroupPurchaseId()
             );
 
-            Order savedOrder = orderRepository.saveAndFlush(order);
+            Order savedOrder = orderRepository.save(order);
 
             eventPublisher.publishEvent(
                     new OrderCreatedEvent(
