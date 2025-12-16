@@ -12,6 +12,7 @@ import store._0982.point.application.dto.MemberPointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.MemberPointHistory;
 import store._0982.point.domain.event.PointDeductedEvent;
@@ -168,10 +169,12 @@ class MemberPointServiceTest {
 
         PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
         MemberPointHistory history = MemberPointHistory.returned(memberId, command);
+        OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.SUCCESS, memberId, 1);
 
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
         when(memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
         when(memberPointHistoryRepository.save(any(MemberPointHistory.class))).thenReturn(history);
+        when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
         // when
         MemberPointInfo result = memberPointService.returnPoints(memberId, command);

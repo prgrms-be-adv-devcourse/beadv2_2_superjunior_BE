@@ -9,6 +9,8 @@ import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.MemberPointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
+import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.MemberPointHistory;
 import store._0982.point.domain.event.PointDeductedEvent;
@@ -27,6 +29,7 @@ public class MemberPointService {
     private final MemberPointRepository memberPointRepository;
     private final MemberPointHistoryRepository memberPointHistoryRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final OrderServiceClient orderServiceClient;
 
     public MemberPointInfo getPoints(UUID memberId) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
@@ -55,7 +58,11 @@ public class MemberPointService {
                 memberId,
                 command.idempotencyKey(),
                 memberPoint -> {
+                    UUID orderId = command.orderId();
                     long amount = command.amount();
+
+                    OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
+                    orderInfo.validateReturnable(memberId, orderId, amount);
                     memberPoint.addPoints(amount);
                     MemberPointHistory history = memberPointHistoryRepository.save(MemberPointHistory.returned(memberId, command));
                     applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
