@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
-import store._0982.common.event.dto.OrderCreatedEvent;
+import store._0982.order.event.dto.OrderCreatedEvent;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.application.order.dto.*;

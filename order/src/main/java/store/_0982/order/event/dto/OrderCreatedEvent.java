@@ -1,4 +1,4 @@
-package store._0982.common.event.dto;
+package store._0982.order.event.dto;
 
 
 import java.util.UUID;
