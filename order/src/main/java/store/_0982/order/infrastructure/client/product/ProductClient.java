@@ -29,7 +29,7 @@ public interface ProductClient {
      * 공동 구매 리스트 조회
      */
     @GetMapping("/internal/purchases")
-    List<GroupPurchaseInfo> getGroupPurchaseByIds(
+    ResponseDto<List<GroupPurchaseInfo>> getGroupPurchaseByIds(
             @RequestParam("ids") List<UUID> purchaseIds
     );
 
