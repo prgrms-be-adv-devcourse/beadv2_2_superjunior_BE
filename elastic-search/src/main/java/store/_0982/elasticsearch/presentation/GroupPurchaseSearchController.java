@@ -72,4 +72,20 @@ public class GroupPurchaseSearchController {
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }
+
+    @Operation(summary = "공동구매 문서 검색", description = "키워드(제목, 설명) + 상태 기준으로 공동구매를 검색합니다.")
+    @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
+    @GetMapping("/search/seller")
+    public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocumentBySeller(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) UUID sellerId,
+            @RequestParam(defaultValue = "") String category,
+            Pageable pageable
+    ) {
+        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, sellerId, category, pageable);
+
+        return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
+    }
 }
