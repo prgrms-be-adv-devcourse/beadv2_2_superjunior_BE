@@ -10,6 +10,7 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.batch.processor.StatusProcessor;
 import store._0982.product.batch.writer.StatusWriter;
 import store._0982.product.domain.GroupPurchase;
@@ -30,7 +31,7 @@ public class UpdateStatusStepConfig {
     @Bean
     public Step updateStatusStep(){
         return new StepBuilder("updateStatus", jobRepository)
-                .<GroupPurchase, GroupPurchase>chunk(20, transactionManager)
+                .<GroupPurchase, GroupPurchaseResult>chunk(20, transactionManager)
                 .reader(expiredGroupPurchaseReader())
                 .processor(statusProcessor)
                 .writer(statusWriter)
