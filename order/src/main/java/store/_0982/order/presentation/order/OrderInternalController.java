@@ -48,6 +48,6 @@ public class OrderInternalController {
             @PathVariable UUID id,
             @RequestHeader(HeaderName.ID) UUID memberId
     ){
-        return orderService.getOrderById(id, memberId);
+        return orderService.getOrderById(memberId, id);
     }
 }
