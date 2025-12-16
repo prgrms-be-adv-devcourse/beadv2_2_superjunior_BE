@@ -63,4 +63,21 @@ public class GroupPurchaseSearchService {
                 .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
         return PageResponse.from(mappedPage);
     }
+
+    @ServiceLog
+    public PageResponse<GroupPurchaseDocumentInfo> searchAllGroupPurchaseDocument(
+            String keyword,
+            String status,
+            String category,
+            Pageable pageable
+    ) {
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
+
+        SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
+
+        SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
+        Page<GroupPurchaseDocumentInfo> mappedPage = searchPage
+                .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
+        return PageResponse.from(mappedPage);
+    }
 }
