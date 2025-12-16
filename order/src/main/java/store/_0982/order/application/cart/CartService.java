@@ -32,12 +32,14 @@ public class CartService {
         return CartInfo.from(cartRepository.save(cart));
     }
 
+    @Transactional
     public void deleteFromCart(CartDeleteCommand command) {
         Cart cart = cartRepository.findById(command.cartId()).orElseThrow(() -> new CustomException(CustomErrorCode.CART_NOT_FOUND));
         checkOwner(cart, command.memberId());
         cart.delete();
     }
 
+    @Transactional
     public CartInfo updateNumOfGpInCart(CartUpdateCommand command) {
         Cart cart = cartRepository.findById(command.cartId()).orElseThrow(() -> new CustomException(CustomErrorCode.CART_NOT_FOUND));
         checkOwner(cart, command.memberId());
@@ -50,6 +52,7 @@ public class CartService {
         return new PageResponse<>(cartPage.getContent(), cartPage.getTotalPages(), cartPage.getTotalElements(), cartPage.isFirst(), cartPage.isLast(), cartPage.getSize(), cartPage.getNumberOfElements());
     }
 
+    @Transactional
     public void flushCart(UUID memberId) {
         cartRepository.flushCart(memberId);
     }
