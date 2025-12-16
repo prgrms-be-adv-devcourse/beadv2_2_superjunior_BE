@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.member.domain.EmailToken;
 import store._0982.member.domain.EmailTokenRepository;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Repository
@@ -28,8 +29,8 @@ public class EmailTokenRepositoryAdpater implements EmailTokenRepository {
     }
 
     @Override
-    public void deleteByEmail(String email) {
-        emailTokenJpaRepository.deleteByEmail(email);
+    public void deleteExpiredEmailTokens(OffsetDateTime now) {
+        emailTokenJpaRepository.deleteExpiredTokens(now);
     }
 
 }
