@@ -13,7 +13,7 @@ public class InternalAuthGatewayFilterFactory extends AbstractGatewayFilterFacto
 
     private final String internalToken;
 
-    public InternalAuthGatewayFilterFactory(@Value("${token.internal.secret") String internalToken) {
+    public InternalAuthGatewayFilterFactory(@Value("${token.internal.secret}") String internalToken) {
         super(Config.class);
         this.internalToken = internalToken;
     }
