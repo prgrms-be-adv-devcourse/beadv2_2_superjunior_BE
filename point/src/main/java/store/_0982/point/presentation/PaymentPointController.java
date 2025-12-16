@@ -19,6 +19,7 @@ import store._0982.point.application.PaymentPointService;
 import store._0982.point.application.RefundService;
 import store._0982.point.application.dto.PaymentPointCreateInfo;
 import store._0982.point.application.dto.PaymentPointHistoryInfo;
+import store._0982.point.application.dto.PaymentPointInfo;
 import store._0982.point.application.dto.PointRefundInfo;
 import store._0982.point.exception.PaymentClientException;
 import store._0982.point.presentation.dto.PointChargeConfirmRequest;
@@ -55,25 +56,20 @@ public class PaymentPointController {
         return new ResponseDto<>(HttpStatus.CREATED, info, "결제 요청 생성");
     }
 
-    // TODO: 결제 성공 / 실패 이후 리다이렉트할 링크 설정 필요 (RedirectView 형태로 반환)
     @Operation(summary = "포인트 충전 완료", description = "포인트 결제 및 충전 성공.")
     @ControllerLog
     @GetMapping("/confirm")
     public RedirectView confirmPayment(@ModelAttribute @Valid PointChargeConfirmRequest request) {
-        return handleExceptionWhenConfirmOrFail(() -> {
-            paymentPointService.confirmPayment(request.toCommand());
-            return new RedirectView(frontendUrl + PAYMENT_SUCCESS_ENDPOINT);
-        });
+        return handleExceptionWhenConfirmOrFail(() ->
+                paymentPointService.confirmPayment(request.toCommand()), true);
     }
 
     @Operation(summary = "포인트 결제 실패", description = "포인트 결제 실패시 정보 작성.")
     @ControllerLog
     @GetMapping("/fail")
     public RedirectView handlePaymentFailure(@ModelAttribute @Valid PointChargeFailRequest request) {
-        return handleExceptionWhenConfirmOrFail(() -> {
-            paymentPointService.handlePaymentFailure(request.toCommand());
-            return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
-        });
+        return handleExceptionWhenConfirmOrFail(() ->
+                paymentPointService.handlePaymentFailure(request.toCommand()), false);
     }
 
     @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
@@ -110,16 +106,28 @@ public class PaymentPointController {
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 충전 내역 상세 조회 성공");
     }
 
-    private RedirectView handleExceptionWhenConfirmOrFail(Supplier<RedirectView> supplier) {
+    private RedirectView handleExceptionWhenConfirmOrFail(Supplier<PaymentPointInfo> supplier, boolean isSuccess) {
         try {
-            return supplier.get();
+            PaymentPointInfo info = supplier.get();
+            String url = isSuccess ? createSuccessUrl(info.paymentPointId()) : createFailureUrl(info.failMessage());
+            return new RedirectView(url);
         } catch (CustomException e) {
             log.error(LogFormat.errorOf(e.getErrorCode().getHttpStatus(), e.getMessage()), e);
+            return new RedirectView(createFailureUrl(e.getMessage()));
         } catch (PaymentClientException e) {
             log.error(LogFormat.errorOf(e.getStatus(), e.getMessage()), e);
+            return new RedirectView(createFailureUrl(e.getMessage()));
         } catch (Exception e) {
             log.error(LogFormat.errorOf(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), e);
+            return new RedirectView(createFailureUrl("서버에서 에러가 발생했습니다."));
         }
-        return new RedirectView(frontendUrl + PAYMENT_FAIL_ENDPOINT);
+    }
+
+    private String createSuccessUrl(UUID paymentId) {
+        return String.format("%s%s?paymentId=%s", frontendUrl, PAYMENT_SUCCESS_ENDPOINT, paymentId);
+    }
+
+    private String createFailureUrl(String message) {
+        return String.format("%s%s?message=%s", frontendUrl, PAYMENT_FAIL_ENDPOINT, message);
     }
 }

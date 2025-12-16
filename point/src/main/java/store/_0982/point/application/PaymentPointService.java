@@ -55,7 +55,7 @@ public class PaymentPointService {
      */
     @ServiceLog
     @Transactional
-    public void confirmPayment(PointChargeConfirmCommand command) {
+    public PaymentPointInfo confirmPayment(PointChargeConfirmCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
@@ -73,24 +73,26 @@ public class PaymentPointService {
 
         memberPoint.addPoints(paymentPoint.getAmount());
         pointEventPublisher.publishPointRechargedEvent(paymentPoint);
+        return PaymentPointInfo.from(paymentPoint);
     }
 
     @ServiceLog
     @Transactional
-    public void handlePaymentFailure(PointChargeFailCommand command) {
+    public PaymentPointInfo handlePaymentFailure(PointChargeFailCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         switch (paymentPoint.getStatus()) {
             case COMPLETED, REFUNDED -> throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
             case FAILED -> {
-                return;
+                return PaymentPointInfo.from(paymentPoint);
             }
             case REQUESTED -> paymentPoint.markFailed(command.errorMessage());
         }
 
         PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
         paymentPointFailureRepository.save(failure);
+        return PaymentPointInfo.from(paymentPoint);
     }
 
     public PaymentPointHistoryInfo getPaymentHistory(UUID id, UUID memberId) {
