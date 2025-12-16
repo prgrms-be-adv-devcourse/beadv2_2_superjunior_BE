@@ -18,7 +18,6 @@ import store._0982.common.log.LogFormat;
 import store._0982.point.application.PaymentPointService;
 import store._0982.point.application.RefundService;
 import store._0982.point.application.dto.PaymentPointCreateInfo;
-import store._0982.point.application.dto.PaymentPointHistoryInfo;
 import store._0982.point.application.dto.PaymentPointInfo;
 import store._0982.point.application.dto.PointRefundInfo;
 import store._0982.point.exception.PaymentClientException;
@@ -87,22 +86,22 @@ public class PaymentPointController {
     @Operation(summary = "포인트 충전 내역 조회", description = "선택한 멤버의 포인트 충전 내역을 조회한다.")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public ResponseDto<PageResponse<PaymentPointHistoryInfo>> getPaymentHistories(
+    public ResponseDto<PageResponse<PaymentPointInfo>> getPaymentHistories(
             @RequestHeader(HeaderName.ID) UUID memberId,
             Pageable pageable
     ) {
-        PageResponse<PaymentPointHistoryInfo> page = paymentPointService.getPaymentHistories(memberId, pageable);
+        PageResponse<PaymentPointInfo> page = paymentPointService.getPaymentHistories(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, page, "포인트 충전 내역 조회 성공");
     }
 
     @Operation(summary = "포인트 충전 내역 상세 조회", description = "포인트 충전 내역의 상세 정보를 조회한다.")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public ResponseDto<PaymentPointHistoryInfo> getPaymentHistory(
+    public ResponseDto<PaymentPointInfo> getPaymentHistory(
             @PathVariable UUID id,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        PaymentPointHistoryInfo response = paymentPointService.getPaymentHistory(id, memberId);
+        PaymentPointInfo response = paymentPointService.getPaymentHistory(id, memberId);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 충전 내역 상세 조회 성공");
     }
 

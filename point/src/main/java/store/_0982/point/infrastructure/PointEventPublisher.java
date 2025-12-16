@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;

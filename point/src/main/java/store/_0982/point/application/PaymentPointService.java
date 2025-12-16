@@ -1,6 +1,7 @@
 package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import store._0982.point.domain.constant.PaymentPointStatus;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.PaymentPoint;
 import store._0982.point.domain.entity.PaymentPointFailure;
+import store._0982.point.domain.event.PointRechargedEvent;
 import store._0982.point.domain.repository.MemberPointRepository;
 import store._0982.point.domain.repository.PaymentPointFailureRepository;
 import store._0982.point.domain.repository.PaymentPointRepository;
@@ -26,10 +28,10 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class PaymentPointService {
     private final TossPaymentService tossPaymentService;
-    private final PointEventPublisher pointEventPublisher;
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
     private final PaymentPointFailureRepository paymentPointFailureRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     // TODO: 같은 orderId로 주문 생성이 동시에 여러 번 요청되었을 때, 낙관적 락이나 비관적 락을 이용할 것인가?
     @ServiceLog
@@ -43,9 +45,9 @@ public class PaymentPointService {
                 });
     }
 
-    public PageResponse<PaymentPointHistoryInfo> getPaymentHistories(UUID memberId, Pageable pageable) {
-        Page<PaymentPointHistoryInfo> page = paymentPointRepository.findAllByMemberId(memberId, pageable)
-                .map(PaymentPointHistoryInfo::from);
+    public PageResponse<PaymentPointInfo> getPaymentHistories(UUID memberId, Pageable pageable) {
+        Page<PaymentPointInfo> page = paymentPointRepository.findAllByMemberId(memberId, pageable)
+                .map(PaymentPointInfo::from);
         return PageResponse.from(page);
     }
 
@@ -72,7 +74,7 @@ public class PaymentPointService {
                 .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
 
         memberPoint.addPoints(paymentPoint.getAmount());
-        pointEventPublisher.publishPointRechargedEvent(paymentPoint);
+        applicationEventPublisher.publishEvent(PointRechargedEvent.from(paymentPoint));
         return PaymentPointInfo.from(paymentPoint);
     }
 
@@ -95,10 +97,10 @@ public class PaymentPointService {
         return PaymentPointInfo.from(paymentPoint);
     }
 
-    public PaymentPointHistoryInfo getPaymentHistory(UUID id, UUID memberId) {
+    public PaymentPointInfo getPaymentHistory(UUID id, UUID memberId) {
         PaymentPoint paymentPoint = paymentPointRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         paymentPoint.validate(memberId);
-        return PaymentPointHistoryInfo.from(paymentPoint);
+        return PaymentPointInfo.from(paymentPoint);
     }
 }
