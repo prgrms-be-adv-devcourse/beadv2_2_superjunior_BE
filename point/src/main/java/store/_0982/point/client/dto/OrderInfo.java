@@ -11,7 +11,8 @@ public record OrderInfo(
         UUID orderId,
         long price,
         Status status,
-        UUID memberId
+        UUID memberId,
+        int quantity
 ) {
     public enum Status {
         SCHEDULED,      // 시작전
@@ -35,7 +36,7 @@ public record OrderInfo(
     }
 
     private void validate(UUID memberId, UUID orderId, long amount) {
-        if (!this.memberId.equals(memberId) || !this.orderId.equals(orderId) || price != amount) {
+        if (!this.memberId.equals(memberId) || !this.orderId.equals(orderId) || price * quantity != amount) {
             throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
         }
     }
