@@ -10,7 +10,7 @@ public final class KafkaProperties {
     public static final int DEFAULT_PARTITIONS = 3;
     public static final int DEFAULT_REPLICAS = 1;
 
-    public static final int DEFAULT_CONSUMER_CONCURRENCY = 3;
+    public static final int DEFAULT_CONSUMER_CONCURRENCY = 1;
 
     public static final String DEFAULT_ACK = "all";
 

@@ -3,8 +3,8 @@ package store._0982.point.infrastructure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
-import store._0982.point.domain.PaymentPoint;
-import store._0982.point.domain.PaymentPointRepository;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.repository.PaymentPointRepository;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Optional;
@@ -29,5 +29,10 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     @Override
     public PaymentPoint save(PaymentPoint paymentPoint) {
         return paymentPointJpaRepository.save(paymentPoint);
+    }
+
+    @Override
+    public Optional<PaymentPoint> findById(UUID id) {
+        return paymentPointJpaRepository.findById(id);
     }
 }

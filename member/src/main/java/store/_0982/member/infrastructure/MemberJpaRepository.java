@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface MemberJpaRepository extends JpaRepository<Member, UUID> {
     Optional<Member> findByEmail(String email);
+
+    Optional<Member> findByName(String name);
 }

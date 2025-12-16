@@ -33,16 +33,20 @@ spec:
         app: kafka
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - containerPort: 9092
               name: kafka
             - containerPort: 9093
               name: controller
           env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xms384m -Xmx512m"
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
@@ -60,7 +64,7 @@ spec:
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-              value: "true"
+              value: "false"
             - name: CLUSTER_ID
               value: "MkU3OEVBNTcwNTJENDM2Qk"
           resources:

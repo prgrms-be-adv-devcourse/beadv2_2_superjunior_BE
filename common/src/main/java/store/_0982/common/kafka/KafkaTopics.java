@@ -1,5 +1,6 @@
 package store._0982.common.kafka;
 
+@SuppressWarnings("unused")
 public final class KafkaTopics {
     public static final String ORDER_CREATED = "order.created";
     public static final String ORDER_STATUS_CHANGED = "order.changed";
@@ -10,10 +11,15 @@ public final class KafkaTopics {
     public static final String PRODUCT_UPSERTED = "product.upserted";
     public static final String PRODUCT_DELETED = "product.deleted";
 
-    public static final String LOG_PUBLISHED = "log.published";
-
+    /**
+     * @deprecated 사용하지 않는 Kafka 토픽입니다. {@link KafkaTopics#GROUP_PURCHASE_CREATED}로 대체될 예정입니다.
+     */
+    @Deprecated(forRemoval = true)
     public static final String GROUP_PURCHASE_ADDED = "group-purchase.added";
     public static final String GROUP_PURCHASE_STATUS_CHANGED = "group-purchase.changed";
+
+    public static final String GROUP_PURCHASE_CREATED = "group-purchase.created";
+    public static final String GROUP_PURCHASE_CHANGED = "group-purchase.update";
 
     public static final String DAILY_SETTLEMENT_COMPLETED = "settlement.daily.completed";
     public static final String DAILY_SETTLEMENT_FAILED = "settlement.daily.failed";

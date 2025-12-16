@@ -3,17 +3,21 @@ package store._0982.product.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.log.ServiceLog;
 import store._0982.product.application.dto.ParticipateInfo;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseRepository;
-import store._0982.product.domain.GroupPurchaseStatus;
+import store._0982.product.client.MemberClient;
+import store._0982.product.exception.CustomErrorCode;
+import store._0982.product.domain.*;
 
 import java.util.UUID;
 
@@ -23,12 +27,18 @@ import java.util.UUID;
 public class ParticipateService {
 
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ProductRepository productRepository;
+
+    private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
+    private final KafkaTemplate<String, GroupPurchaseChangedEvent> notificationKafkaTemplate;
+    private final MemberClient memberClient;
 
     public GroupPurchase findGroupPurchaseById(UUID groupPurchaseId) {
         return groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
     }
 
+    @ServiceLog
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,
             maxAttempts = 3,
@@ -46,11 +56,19 @@ public class ParticipateService {
             );
         }
 
-        groupPurchaseRepository.save(groupPurchase);
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         if (groupPurchase.getStatus() == GroupPurchaseStatus.SUCCESS) {
-            // TODO : 판매자에게 공동구매 성공 알림 전송
+            GroupPurchaseChangedEvent notificationEvent = groupPurchase.toChangedEvent(GroupPurchaseChangedEvent.Status.SUCCESS, (long) groupPurchase.getCurrentQuantity() * groupPurchase.getDiscountedPrice());
+            notificationKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_STATUS_CHANGED, notificationEvent.getId().toString(), notificationEvent);
         }
+
+//        search kafka
+        Product product = productRepository.findById(groupPurchase.getProductId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
+        GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.INCREASE_PARTICIPATE, product.toEvent());
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(
                 groupPurchase.getStatus().name(),

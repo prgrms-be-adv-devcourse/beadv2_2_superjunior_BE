@@ -35,4 +35,9 @@ public class NotificationAdapter implements NotificationRepository {
     public Page<Notification> findByMemberIdAndStatus(UUID memberId, NotificationStatus status, Pageable pageable) {
         return notificationJpaRepository.findByMemberIdAndStatus(memberId, status, pageable);
     }
+
+    @Override
+    public void save(Notification notification) {
+        notificationJpaRepository.save(notification);
+    }
 }

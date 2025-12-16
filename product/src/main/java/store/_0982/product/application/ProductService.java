@@ -2,15 +2,19 @@ package store._0982.product.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.product.application.dto.ProductRegisterCommand;
-import store._0982.product.application.dto.ProductRegisterInfo;
-import store._0982.product.application.dto.ProductDetailInfo;
-import store._0982.product.application.dto.ProductUpdateCommand;
-import store._0982.product.application.dto.ProductUpdateInfo;
-import store._0982.product.common.exception.CustomErrorCode;
-import store._0982.product.common.exception.CustomException;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.common.log.ServiceLog;
+import store._0982.product.application.dto.*;
+import store._0982.product.exception.CustomErrorCode;
+import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.Product;
 import store._0982.product.domain.ProductRepository;
 
@@ -23,14 +27,22 @@ import java.util.UUID;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
+    private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
+    @ServiceLog
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         Product product = new Product(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
                 command.originalUrl(), command.sellerId());
 
-        Product savedProduct = productRepository.save(product);
+        Product savedProduct = productRepository.saveAndFlush(product);
+
+        //kafka
+        ProductEvent event = savedProduct.toEvent();
+        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED,event.getId().toString(), event);
+
         return ProductRegisterInfo.from(savedProduct);
     }
 
@@ -42,7 +54,18 @@ public class ProductService {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
         }
 
-        productRepository.delete(findProduct);
+        boolean isUsedInGroupPurchase = groupPurchaseRepository.existsByProductId(productId);
+
+        if (isUsedInGroupPurchase) {
+            // soft delete: 상태를 삭제로 변경
+            findProduct.softDelete();
+            productRepository.save(findProduct);
+        } else {
+            // hard delete
+            productRepository.delete(findProduct);
+        }
+        //kafka
+        kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.toEvent());
     }
 
     /**
@@ -58,6 +81,13 @@ public class ProductService {
         return ProductDetailInfo.from(product);
     }
 
+    public PageResponse<ProductListInfo> getProductListInfo(UUID sellerId, Pageable pageable) {
+        Page<Product> product = productRepository.findBySellerId(sellerId, pageable);
+
+        Page<ProductListInfo> products = product.map(ProductListInfo::from);
+
+        return PageResponse.from(products);
+    }
     /**
      * 상품 업데이트
      * @param productId 상품 id
@@ -75,6 +105,11 @@ public class ProductService {
                 command.description(),
                 command.stock(),
                 command.originalLink());
+
+        //kafka
+        Product updatedProduct = productRepository.saveAndFlush(product);
+        ProductEvent event = updatedProduct.toEvent();
+        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
 
         return ProductUpdateInfo.from(product);
     }

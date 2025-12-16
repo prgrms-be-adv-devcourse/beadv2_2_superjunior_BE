@@ -1,9 +1,10 @@
+#file: noinspection HttpUrlsUsage, SpringBootApplicationYaml, SpellCheckingInspection
 spring:
   application:
     name: gateway
 
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
 
   cloud:
     gateway:
@@ -17,29 +18,31 @@ spring:
                 - Path=/api/members/**
               filters:
                 - JwtAuth
-                - RewritePath=/api/members/(?<segment>.*), /api/members/${segment}
+
             - id: member-auth-api
               uri: lb://member
               predicates:
                 - Path=/api/auth/**
-              filters:
-                - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
+
+            - id: member-internal-api
+              uri: lb://member
+              predicates:
+                - Path=/internal/members/**
 
             - id: order-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**
+                - Path=/api/orders/**,/api/carts/**, /api/balances/**
               filters:
-                - RewritePath=/api/orders/(?<segment>.*), /${segment}
+                - JwtAuth
 
-            - id: cart-api
+            - id: order-internal-api
               uri: lb://order
               predicates:
-                - Path=/api/orders/**
-              filters:
-                - RewritePath=/api/orders/(?<segment>.*), /${segment}
+                - Path=/internal/orders/**
+
             - id: openapi
-              uri: http://${GATEWAY_HOSTNAME:localhost}:${server.port}
+              uri: ${GATEWAY_HOST:http://localhost:8000}
               predicates:
                 - Path=/v3/api-docs/**
               filters:
@@ -48,14 +51,54 @@ spring:
             - id: product-api
               uri: lb://product
               predicates:
-                - Path=/api/product/**
+                - Path=/api/products/**
               filters:
-                - RewritePath=/api/product/(?<segment>.*), /${segment}
+                - JwtAuth
+
+            - id: group-purchase-api
+              uri: lb://product
+              predicates:
+                - Path=/api/purchases/**
+              filters:
+                - JwtAuth
+
+            - id: group-purchase-internal-api
+              uri: lb://product
+              predicates:
+                - Path=/internal/purchases/**
+
+            - id: point-api
+              uri: lb://point
+              predicates:
+                - Path=/api/points/**, /api/payments/**
+              filters:
+                - JwtAuth
+
+            - id: point-internal-api
+              uri: lb://point
+              predicates:
+                - Path=/internal/points/**, /internal/payments/**
+
+            - id: elastic-search-api
+              uri: lb://elastic-search
+              predicates:
+                - Path=/api/searches/**, /internal/searches/**
+              filters:
+                - JwtAuth
+
+            - id: notification-api
+              uri: lb://notification
+              predicates:
+                - Path=/api/notifications/**, /internal/notifications/**
+              filters:
+                - JwtAuth
 
           discovery:
             locator:
               enabled: true
               lower-case-service-id: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 springdoc:
   swagger-ui:
@@ -65,8 +108,55 @@ springdoc:
         url: /v3/api-docs/member
       - name: order-service
         url: /v3/api-docs/order
+      - name: search-service
+        url: /v3/api-docs/elastic-search
+      - name: notification-service
+        url: /v3/api-docs/notification
+      - name: point-service
+        url: /v3/api-docs/point
+      - name: product-service
+        url: /v3/api-docs/product
+
     # 필요하면 경로도 커스터마이징 가능 (옵션)
     # path: /swagger-ui.html
 
 server:
   port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
+    health-check-url-path: /actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c  # 또는 b3
+
+gateway:
+  host: ${GATEWAY_HOST:http://localhost:8000}
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
+  refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
+
+frontend:
+  url: https://0982.vercel.app

@@ -1,0 +1,163 @@
+#file: noinspection SpellCheckingInspection
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  labels:
+    app: logstash
+data:
+  logstash.yml: |
+    http.host: 0.0.0.0
+    xpack.monitoring.enabled: false
+  jvm.options: |
+    -Xms128m
+    -Xmx256m
+  logstash.conf: |
+    input {
+      tcp {
+        port => 5000
+        codec => json
+      }
+    }
+
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch-service:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+      }
+    }
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logstash-pvc
+  labels:
+    app: logstash
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: local-path
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  labels:
+    app: logstash
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-131-196
+      initContainers:
+        - name: copy-defaults
+          image: docker.elastic.co/logstash/logstash:8.11.0
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c']
+          args:
+            - |
+              # 원본 설정 파일들을 emptyDir로 복사
+              cp -r /usr/share/logstash/config/* /config/
+              cp -r /usr/share/logstash/pipeline/* /pipeline/
+
+              # ConfigMap의 설정으로 덮어쓰기
+              cp /configmap/logstash.yml /config/logstash.yml
+              cp /configmap/jvm.options /config/jvm.options
+              cp /configmap/logstash.conf /pipeline/logstash.conf
+
+              echo "Configuration initialized successfully"
+          volumeMounts:
+            - name: logstash-config-map
+              mountPath: /configmap
+            - name: config-storage
+              mountPath: /config
+            - name: pipeline-storage
+              mountPath: /pipeline
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.11.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+              name: tcp-input
+            - containerPort: 9600
+              name: api
+          resources:
+            requests:
+              ephemeral-storage: "512Mi"
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              ephemeral-storage: "1Gi"
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: config-storage
+              mountPath: /usr/share/logstash/config
+            - name: pipeline-storage
+              mountPath: /usr/share/logstash/pipeline
+            - name: logstash-storage
+              mountPath: /usr/share/logstash/data
+          livenessProbe:
+            httpGet:
+              path: /_node/stats
+              port: 9600
+            initialDelaySeconds: 90
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /_node/stats
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: logstash-config-map
+          configMap:
+            name: logstash-config
+        - name: config-storage
+          emptyDir: {}
+        - name: pipeline-storage
+          emptyDir: {}
+        - name: logstash-storage
+          persistentVolumeClaim:
+            claimName: logstash-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash-service
+  labels:
+    app: logstash
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30500
+      protocol: TCP
+      name: tcp-input
+    - port: 9600
+      targetPort: 9600
+      nodePort: 30960
+      protocol: TCP
+      name: api
+  selector:
+    app: logstash

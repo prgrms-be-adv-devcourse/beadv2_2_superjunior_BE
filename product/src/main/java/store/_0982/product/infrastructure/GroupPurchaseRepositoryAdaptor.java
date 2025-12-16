@@ -4,12 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
+import store._0982.product.domain.GroupPurchaseStatus;
 
-import java.util.Optional;
-import java.util.UUID;
-
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,4 +45,39 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
         groupPurchaseJpaRepository.delete(groupPurchase);
     }
 
+    @Override
+    public GroupPurchase saveAndFlush(GroupPurchase groupPurchase) {
+        return groupPurchaseJpaRepository.saveAndFlush(groupPurchase);
+    }
+  
+    @Override
+    public List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status) {
+        return groupPurchaseJpaRepository.findByStatusAndSettledAtIsNull(status);
+    }
+
+    @Override
+    public List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList) {
+        return groupPurchaseJpaRepository.saveAll(groupPurchaseList);
+    }
+
+    @Override
+    @Transactional
+    public int openReadyGroupPurchases(OffsetDateTime now) {
+        return groupPurchaseJpaRepository.openReadyGroupPurchases(now);
+    }
+
+    @Override
+    public boolean existsByProductId(UUID productId) {
+        return groupPurchaseJpaRepository.existsByProductId((productId));
+    }
+
+    @Override
+    public List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now) {
+        return groupPurchaseJpaRepository.findAllByStatusAndStartDateBefore(status, now);
+    }
+
+    @Override
+    public List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds) {
+        return groupPurchaseJpaRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
+    }
 }

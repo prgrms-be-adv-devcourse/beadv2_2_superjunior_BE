@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "\"product\"")
+@Table(name = "\"product\"", schema = "product_schema")
 public class Product {
     @Id
     private UUID productId;
@@ -22,7 +23,7 @@ public class Product {
     private String name;
 
     @Column(name = "price", nullable = false)
-    private int price;
+    private Long price;
 
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -48,8 +49,11 @@ public class Product {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     public Product(String name,
-                   int price,
+                   Long price,
                    ProductCategory category,
                    String description,
                    int stock,
@@ -67,7 +71,7 @@ public class Product {
     }
 
     public void updateProduct(String name,
-                              int price,
+                              Long price,
                               ProductCategory category,
                               String description,
                               int stock,
@@ -78,5 +82,24 @@ public class Product {
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+    }
+
+    public void softDelete() {
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public ProductEvent toEvent() {
+        return new ProductEvent(
+                this.productId,
+                this.name,
+                this.price,
+                this.category.name(),
+                this.description,
+                this.stock,
+                this.originalUrl,
+                this.sellerId,
+                this.createdAt.toString(),
+                this.updatedAt != null ? this.updatedAt.toString() : null
+        );
     }
 }

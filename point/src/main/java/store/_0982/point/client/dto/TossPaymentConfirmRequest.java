@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record TossPaymentConfirmRequest(
         UUID orderId,
-        int amount,
+        long amount,
         String paymentKey
 ) {
     public static TossPaymentConfirmRequest from(PointChargeConfirmCommand command) {

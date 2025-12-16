@@ -14,7 +14,7 @@ import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPoint;
 import store._0982.point.exception.CustomErrorCode;
 import store._0982.point.exception.PaymentClientException;
 

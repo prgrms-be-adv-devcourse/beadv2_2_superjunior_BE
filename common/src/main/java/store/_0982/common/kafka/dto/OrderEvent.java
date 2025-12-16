@@ -1,33 +1,33 @@
 package store._0982.common.kafka.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.time.Clock;
 import java.util.UUID;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
+@SuppressWarnings("unused")
 public class OrderEvent extends BaseEvent {
-    private final UUID id;
-    private final UUID memberId;
-    private final long price;
-    private final int quantity;
-    private final String address;
-    private final String addressDetail;
-    private final String postalCode;
-    private final String status;    // Order의 status
+    private UUID id;
+    private UUID memberId;
+    private Status status;
+    private String productName;
 
-    public OrderEvent(Clock clock, UUID id, UUID memberId, long price, int quantity, String address,
-                      String addressDetail, String postalCode, String status) {
+    public OrderEvent(Clock clock, UUID id, UUID memberId, Status status, String productName) {
         super(clock);
         this.id = id;
         this.memberId = memberId;
-        this.price = price;
-        this.quantity = quantity;
-        this.address = address;
-        this.addressDetail = addressDetail;
-        this.postalCode = postalCode;
         this.status = status;
+        this.productName = productName;
+    }
+
+    public enum Status {
+        CREATED,
+        SUCCESS,
+        FAILED
     }
 }

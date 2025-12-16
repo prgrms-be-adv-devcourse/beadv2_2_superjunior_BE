@@ -7,10 +7,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
-import store._0982.member.common.dto.ResponseDto;
 import store._0982.member.presentation.dto.MemberLoginRequest;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,19 +22,17 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
+    //TODO: .setSecure
+    //setDomain은 필요 없음, 브라우저 입장에서는 발급받은 곳도 localhost:8000 쓰는 곳도 localhost:8000
+    //TODO: 소프트딜리트 확인, 로그인, refresh도
     public ResponseDto<Void> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
 
-
-        Cookie accessTokenCookie = new Cookie("accessToken", tokens.accessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/api");
+        Cookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken());
         response.addCookie(accessTokenCookie);
 
-        Cookie refreshTokenCookie = new Cookie("refreshToken", tokens.refreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/auth/refresh");
+        Cookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken());
         response.addCookie(refreshTokenCookie);
 
 
@@ -56,11 +56,38 @@ public class AuthController {
 
         String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-        Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/api");
+        Cookie accessTokenCookie = generateAccessTokenCookie(newAccessToken);
         response.addCookie(accessTokenCookie);
 
         return new ResponseDto<>(HttpStatus.OK, null, "토큰이 발급되었습니다.");
     }
+
+    @Operation(summary = "로그아웃", description = "accessToken과 refreshToken의 쿠키를 모두 만료시킵니다.")
+    @GetMapping("/logout")
+    public ResponseDto<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        List<Cookie> logoutCookies = authService.logout(request.getCookies());
+        logoutCookies.forEach(response::addCookie);
+        return new ResponseDto<>(HttpStatus.OK, null, "로그아웃이 완료되었습니다.");
+    }
+
+    private Cookie generateAccessTokenCookie(String accessToken) {
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/api");
+        accessTokenCookie.setMaxAge(60 * 60); // 1시간
+//        accessTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
+        return accessTokenCookie;
+    }
+
+    private Cookie generateRefreshTokenCookie(String refreshToken) {
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/api/auth/refresh");
+        refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60); //30일
+//        refreshTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
+        return refreshTokenCookie;
+    }
+
 }
+
+

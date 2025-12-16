@@ -4,17 +4,19 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.auth.Role;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "member", schema = "member_schema")
-public class Member {
+public class Member {           //TODO: Addresses 필드에 넣기 관계의 주인은 address
 
     @Id
     @Column(name = "member_id", nullable = false)
@@ -34,13 +36,10 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20, nullable = false)
-    private Role role = Role.CUSTOMER;
+    private Role role = Role.CONSUMER;
 
     @Column(name = "salt_key", length = 32, nullable = false)
     private String saltKey;
-
-    @Column(name = "point_balance", nullable = false)
-    private Integer pointBalance = 0;
 
     @Column(name = "image_url", length = 2048)
     private String imageUrl;
@@ -49,11 +48,13 @@ public class Member {
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at")
-    @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<Address> addresses = new ArrayList<>();
 
     public static Member create(String email, String name, String password, String phoneNumber) {
         Member member = new Member();
@@ -87,5 +88,9 @@ public class Member {
         this.updatedAt = OffsetDateTime.now();
     }
 
+    public void registerSeller() {
+        this.role = Role.SELLER;
+        this.updatedAt = OffsetDateTime.now();
+    }
 }
 

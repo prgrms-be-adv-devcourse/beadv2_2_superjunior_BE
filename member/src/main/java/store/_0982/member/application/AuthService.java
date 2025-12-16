@@ -1,55 +1,71 @@
 package store._0982.member.application;
 
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.application.dto.MemberLoginCommand;
 import store._0982.member.common.exception.CustomErrorCode;
-import store._0982.member.common.exception.CustomException;
 import store._0982.member.domain.Member;
 import store._0982.member.domain.MemberRepository;
 import store._0982.member.infrastructure.JwtProvider;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class AuthService {
     private final MemberRepository memberRepository;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
-
+    @Transactional
+    @ServiceLog
     public LoginTokens login(MemberLoginCommand memberLoginCommand) {
-        Member member = memberRepository.findByEmail(memberLoginCommand.email())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+        Member member = memberRepository.findByEmail(memberLoginCommand.email()).orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
 
-        if (!passwordEncoder.matches(member.getSaltKey() + memberLoginCommand.password(), member.getPassword())) {
-            throw new CustomException(CustomErrorCode.BAD_REQUEST);
-        }
+        checkPassword(member, memberLoginCommand.password());
 
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
 
-        //todo //redis에 등록해야함.
+        //TODO: //redis에 등록해야함.
 
         return new LoginTokens(accessToken, refreshToken);
     }
 
+    @ServiceLog
     public String refreshAccessToken(String refreshToken) {
         if (refreshToken == null) {
-            throw new CustomException(CustomErrorCode.BAD_REQUEST);
+            throw new CustomException(CustomErrorCode.NO_REFRESH_TOKEN);
         }
-        try{
+        try {
             UUID memberId = jwtProvider.getMemberIdFromToken(refreshToken);
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
+            Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(CustomErrorCode.BAD_REQUEST));
             return jwtProvider.generateAccessToken(member);
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new CustomException(CustomErrorCode.BAD_REQUEST);
         }
+    }
+
+    private void checkPassword(Member member, String password) {
+        if (!passwordEncoder.matches(member.getSaltKey() + password, member.getPassword())) {
+            throw new CustomException(CustomErrorCode.FAILED_LOGIN);
+        }
+    }
+
+    public List<Cookie> logout(Cookie[] cookies) {
+        List<Cookie> tokenCookieList = Arrays.stream(cookies).filter(cookie -> cookie.getName().contains("Token")).toList();
+        tokenCookieList.forEach(cookie -> cookie.setMaxAge(0));
+        return tokenCookieList;
     }
 }

@@ -2,6 +2,9 @@ dependencies {
     // 필요한 의존성 추가
     implementation project(':common')
 
+    //openfeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
     //DB
@@ -14,6 +17,14 @@ dependencies {
     implementation 'org.springframework.retry:spring-retry'
     implementation 'org.springframework:spring-aspects'
 
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Spring Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // Spring Cloud OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     //JWT
     //  implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     //  runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -25,4 +36,14 @@ dependencies {
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8087']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
+    }
 }

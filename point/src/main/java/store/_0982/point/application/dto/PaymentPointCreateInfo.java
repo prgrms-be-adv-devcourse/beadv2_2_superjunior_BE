@@ -1,7 +1,7 @@
 package store._0982.point.application.dto;
 
-import store._0982.point.domain.PaymentPoint;
-import store._0982.point.domain.PaymentPointStatus;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.constant.PaymentPointStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -10,7 +10,7 @@ public record PaymentPointCreateInfo(
         UUID paymentPointId,
         UUID memberId,
         UUID orderId,
-        int amount,
+        long amount,
         PaymentPointStatus status,
         OffsetDateTime createdAt,
         OffsetDateTime requestedAt

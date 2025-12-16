@@ -56,7 +56,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
       - kafka_data:/var/lib/kafka/data
@@ -69,7 +69,11 @@ services:
       retries: 5
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - elasticsearch-nori:8.18.8
     container_name: group-purchase-elasticsearch
     environment:
       - discovery.type=single-node
@@ -90,6 +94,30 @@ services:
       timeout: 10s
       retries: 5
 
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: group-purchase-logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx512m"
+      - xpack.monitoring.enabled=false
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    volumes:
+      - ./docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
+      - logstash_data:/usr/share/logstash/data
+    networks:
+      - group-purchase-network
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
 volumes:
   kafka_data:
     driver: local
@@ -98,6 +126,8 @@ volumes:
   redis_data:
     driver: local
   elasticsearch_data:
+    driver: local
+  logstash_data:
     driver: local
 
 networks:

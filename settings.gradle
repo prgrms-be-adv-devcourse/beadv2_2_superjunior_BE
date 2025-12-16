@@ -1,6 +1,6 @@
 rootProject.name = 'group-purchase'
 
-include 'config'
+//include 'config'
 include 'common'
 include 'discovery'
 include 'gateway'

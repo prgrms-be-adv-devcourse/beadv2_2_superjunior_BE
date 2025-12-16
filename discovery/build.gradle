@@ -1,8 +1,17 @@
 dependencies {
-    // 필요한 의존성 추가
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
 }
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8761']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
+    }
 }

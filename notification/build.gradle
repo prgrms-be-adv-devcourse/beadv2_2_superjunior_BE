@@ -10,8 +10,19 @@ dependencies {
 
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8084']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
+    }
 }

@@ -8,8 +8,8 @@ spring:
     time-zone: Asia/Seoul
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: none
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -17,4 +17,5 @@ spring:
           time_zone: Asia/Seoul
   batch:
     jdbc:
+      table-prefix: batch_product_schema.batch_
       initialize-schema: never

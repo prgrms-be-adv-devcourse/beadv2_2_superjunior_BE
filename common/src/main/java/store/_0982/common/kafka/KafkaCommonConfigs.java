@@ -10,6 +10,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import store._0982.common.kafka.dto.BaseEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.Map;
  *
  * @author Minhyung Kim
  */
+@SuppressWarnings("unused")
 public final class KafkaCommonConfigs {
     /**
      * {@link ProducerFactory}를 빈에 등록할 때 사용하는 메서드입니다.
@@ -38,7 +40,7 @@ public final class KafkaCommonConfigs {
      * @param bootStrapServers 브로커의 서버 주소
      * @return 기본 설정대로 생성된 {@link ProducerFactory}
      */
-    public static <V> ProducerFactory<String, V> defaultProducerFactory(String bootStrapServers) {
+    public static <V extends BaseEvent> ProducerFactory<String, V> defaultProducerFactory(String bootStrapServers) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -57,8 +59,10 @@ public final class KafkaCommonConfigs {
      * @param producerFactory 생성한 프로듀서 팩토리
      * @return 기본 설정대로 생성된 {@link KafkaTemplate}
      */
-    public static <V> KafkaTemplate<String, V> defaultKafkaTemplate(ProducerFactory<String, V> producerFactory) {
-        return new KafkaTemplate<>(producerFactory);
+    public static <V extends BaseEvent> KafkaTemplate<String, V> defaultKafkaTemplate(ProducerFactory<String, V> producerFactory) {
+        KafkaTemplate<String, V> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+        kafkaTemplate.setObservationEnabled(true);
+        return kafkaTemplate;
     }
 
     /**
@@ -68,7 +72,7 @@ public final class KafkaCommonConfigs {
      * @param groupId          컨슈머의 그룹 ID
      * @return 기본 설정대로 생성된 {@link ConsumerFactory}
      */
-    public static <V> ConsumerFactory<String, V> defaultConsumerFactory(String bootStrapServers, String groupId) {
+    public static <V extends BaseEvent> ConsumerFactory<String, V> defaultConsumerFactory(String bootStrapServers, String groupId) {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
         config.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -86,7 +90,7 @@ public final class KafkaCommonConfigs {
      * @param consumerFactory 생성한 컨슈머 팩토리
      * @return 기본 설정대로 생성된 {@link ConcurrentKafkaListenerContainerFactory}
      */
-    public static <V> ConcurrentKafkaListenerContainerFactory<String, V> defaultConcurrentKafkaListenerContainerFactory(
+    public static <V extends BaseEvent> ConcurrentKafkaListenerContainerFactory<String, V> defaultConcurrentKafkaListenerContainerFactory(
             ConsumerFactory<String, V> consumerFactory
     ) {
         ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();

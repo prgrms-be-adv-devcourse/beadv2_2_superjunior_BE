@@ -3,6 +3,8 @@ dependencies {
     implementation project(':common')
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
@@ -16,4 +18,14 @@ dependencies {
 
 bootJar {
     enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8086']
+        jvmFlags = ['-Xms128m', '-Xmx256m']
+    }
 }

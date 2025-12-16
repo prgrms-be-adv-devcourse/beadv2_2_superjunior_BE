@@ -1,8 +1,8 @@
 package store._0982.point.infrastructure;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import store._0982.point.domain.PaymentPoint;
-import store._0982.point.domain.PaymentPointFailure;
+import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.entity.PaymentPointFailure;
 
 import java.util.Optional;
 import java.util.UUID;

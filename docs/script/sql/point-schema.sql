@@ -1,4 +1,5 @@
-create schema point_schema;
+-- Create schema
+create schema if not exists point_schema;
 
 create table point_schema.payment_point
 (
@@ -11,7 +12,7 @@ create table point_schema.payment_point
             unique,
     payment_method   varchar(30),
     payment_key      varchar(50),
-    amount           integer                                not null,
+    amount           bigint                                 not null,
     status           varchar(20)                            not null
         constraint status_check
             check ((status)::text = ANY
@@ -67,7 +68,7 @@ create table point_schema.payment_point_failure
     payment_key      varchar(50),
     error_code       varchar(30),
     error_message    text,
-    amount           integer,
+    amount           bigint,
     raw_payload      text                                   not null,
     created_at       timestamp with time zone default now() not null
 );
@@ -95,11 +96,11 @@ alter table point_schema.payment_point_failure
 
 create table point_schema.member_point
 (
-    member_id       uuid                                   not null
-            constraint member_point_pk
-                primary key,
-    point_balance           integer,
-    last_used_at timestamp with time zone
+    member_id     uuid   not null
+        constraint member_point_pk
+            primary key,
+    point_balance bigint not null,
+    last_used_at  timestamp with time zone
 );
 
 comment on table point_schema.member_point is '회원별 보유 포인트';
@@ -107,3 +108,42 @@ comment on table point_schema.member_point is '회원별 보유 포인트';
 comment on column point_schema.member_point.member_id is '멤버 ID';
 
 comment on column point_schema.member_point.point_balance is '포인트 잔액';
+
+alter table point_schema.member_point
+    owner to postgres;
+
+create table point_schema.member_point_history
+(
+    id              uuid                                   not null
+        constraint member_point_history_pk
+            primary key,
+    member_id       uuid                                   not null,
+    status          varchar(20)                            not null,
+    amount          bigint                                 not null,
+    created_at      timestamp with time zone default now() not null,
+    idempotency_key uuid                                   not null
+        constraint member_point_history_pk_2
+            unique,
+    order_id        uuid                                   not null,
+    constraint member_point_history_pk_3
+        unique (order_id, status)
+);
+
+comment on table point_schema.member_point_history is '포인트 사용 및 반환 기록';
+
+comment on column point_schema.member_point_history.id is '포인트 기록 ID';
+
+comment on column point_schema.member_point_history.member_id is '멤버 ID';
+
+comment on column point_schema.member_point_history.status is '기록 상태';
+
+comment on column point_schema.member_point_history.amount is '포인트';
+
+comment on column point_schema.member_point_history.created_at is '생성일';
+
+comment on column point_schema.member_point_history.idempotency_key is '멱등키';
+
+comment on column point_schema.member_point_history.order_id is '주문 ID';
+
+alter table point_schema.member_point_history
+    owner to postgres;
