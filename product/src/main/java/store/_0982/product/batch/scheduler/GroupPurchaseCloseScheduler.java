@@ -18,7 +18,7 @@ public class GroupPurchaseCloseScheduler {
     private final JobLauncher jobLauncher;
     private final Job closeExpiredGroupPurchaseJob;
 
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void runBatch(){
         try{
             JobParameters params = new JobParametersBuilder()

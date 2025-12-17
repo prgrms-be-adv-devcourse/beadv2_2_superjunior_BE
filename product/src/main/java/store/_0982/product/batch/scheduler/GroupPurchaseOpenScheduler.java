@@ -17,7 +17,7 @@ public class GroupPurchaseOpenScheduler {
     private final JobLauncher jobLauncher;
     private final Job openGroupPurchaseJob;
 
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void runOpenJob(){
         try{
             log.info("공동구매 오픈 배치 시작");
