@@ -23,7 +23,7 @@ public record OrderInfo(
 
     public void validateReturnable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.SUCCESS) {
+        if (status != Status.FAILED) {
             throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
         }
     }
