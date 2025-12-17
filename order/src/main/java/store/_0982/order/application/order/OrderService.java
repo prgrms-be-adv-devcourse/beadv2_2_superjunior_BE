@@ -338,11 +338,14 @@ public class OrderService {
      * 주문 환불
      * @param groupPurchaseId
      */
+    @ServiceLog
     @Transactional
     public void returnOrder(UUID groupPurchaseId){
         List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
 
         log.info("환불 대상 주문 조회 완료 : groupPurchaseId = {}, count = {}", groupPurchaseId, orders.size());
+
+        List<Order> toUpdate = new ArrayList<>();
 
         int success = 0;
         int fail = 0;
@@ -365,6 +368,7 @@ public class OrderService {
                         )
                 );
                 order.markReturned();
+                toUpdate.add(order);
                 success++;
                 log.info("환불 완료 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
             }catch(Exception e){
@@ -372,6 +376,11 @@ public class OrderService {
                 log.error("환불 실패 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
                 // TODO : 환불 실패 처리 필요(재시도 큐? 관리자 알람?)
             }
+        }
+
+        if(!toUpdate.isEmpty()){
+            orderRepository.saveAll(toUpdate);
+            log.info("환불 상태 업데이트 완료 : 성공 = {}, 실패 = {}", success, fail);
         }
     }
 }

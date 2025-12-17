@@ -13,6 +13,9 @@ import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
 import store._0982.product.exception.CustomErrorCode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -22,11 +25,10 @@ public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
 
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
-
+        List<GroupPurchase> toUpdate = new ArrayList<>();
         
         for(GroupPurchaseResult result : chunk.getItems()){
-            GroupPurchase groupPurchase = groupPurchaseRepository.findById(result.groupPurchase().getGroupPurchaseId())
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+            GroupPurchase groupPurchase = result.groupPurchase();
 
             if(result.success()){
                 // 공동 구매 상태 변경
@@ -50,6 +52,9 @@ public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
                 );
                 log.info("공동 구매 실패 처리 완료 : groupPurchaseId - {}", groupPurchase.getGroupPurchaseId());
             }
+
+            toUpdate.add(groupPurchase);
         }
+        groupPurchaseRepository.saveAll(toUpdate);
     }
 }
