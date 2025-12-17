@@ -3,6 +3,7 @@ package store._0982.order.application.order;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
+import store._0982.order.event.dto.OrderCreatedEvent;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.application.order.dto.*;
@@ -41,6 +44,7 @@ public class OrderService {
     private final MemberClient memberClient;
     private final ProductClient productClient;
     private final PaymentClient paymentClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성
@@ -62,9 +66,6 @@ public class OrderService {
         // 공동 구매 참여
         participate(command);
 
-        // 포인트 차감 (예치금)
-        deductPoints(memberId, command, purchase.discountedPrice());
-
         // order 생성
         Order order = new Order(
                 command.quantity(),
@@ -79,6 +80,17 @@ public class OrderService {
         );
 
         Order savedOrder = orderRepository.save(order);
+
+
+        eventPublisher.publishEvent(
+                new OrderCreatedEvent(
+                        memberId,
+                        UUID.randomUUID(),
+                        savedOrder.getOrderId(),
+                        command.quantity() * purchase.discountedPrice()
+                )
+        );
+
         return OrderRegisterInfo.from(savedOrder);
     }
 
@@ -95,8 +107,8 @@ public class OrderService {
         validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
-        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cardIds());
-        if(carts.size() != command.cardIds().size()){
+        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
+        if(carts.size() != command.cartIds().size()){
             throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
         }
 
@@ -117,7 +129,9 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         // 공동 구매 리스트 조회
-        List<GroupPurchaseInfo> purchases = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+        ResponseDto<List<GroupPurchaseInfo>> response = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+
+        List<GroupPurchaseInfo> purchases = response.data();
 
         Map<UUID, GroupPurchaseInfo> purchasesMap = purchases.stream()
                 .collect(Collectors.toMap(
@@ -136,7 +150,7 @@ public class OrderService {
         });
 
         // 주문 생성
-        List<Order> orders = new ArrayList<>();
+        List<OrderRegisterInfo> results = new ArrayList<>();
 
         for(Cart cart : carts){
 
@@ -159,9 +173,6 @@ public class OrderService {
 
             participate(orderCommand);
 
-            // 포인트 차감
-            deductPoints(memberId, orderCommand, purchase.discountedPrice());
-
             // Order 생성
             Order order = new Order(
                     cart.getQuantity(),
@@ -175,18 +186,23 @@ public class OrderService {
                     cart.getGroupPurchaseId()
             );
 
-            orders.add(order);
-        }
+            Order savedOrder = orderRepository.save(order);
 
-        // 주문 저장
-        List<Order> savedOrders = orderRepository.saveAll(orders);
+            eventPublisher.publishEvent(
+                    new OrderCreatedEvent(
+                            memberId,
+                            UUID.randomUUID(),
+                            savedOrder.getOrderId(),
+                            orderCommand.quantity() * purchase.discountedPrice()
+                    )
+            );
+            results.add(OrderRegisterInfo.from(savedOrder));
+        }
 
         // 장바구니 비우기
         cartRepository.deleteAll(carts);
 
-        return savedOrders.stream()
-                .map(OrderRegisterInfo::from)
-                .toList();
+        return results;
     }
 
 
@@ -246,13 +262,13 @@ public class OrderService {
 
     }
 
-    private void deductPoints(UUID memberId, OrderRegisterCommand command, Long price) {
+    private void deductPoints(UUID memberId, UUID orderId, OrderRegisterCommand command, Long price) {
         Long totalAmount = price * command.quantity();
         log.info("가격 : {}, 수량 : {}, 총 가격 : {}", price, command.quantity(), totalAmount);
         try {
             paymentClient.deductPointsInternal(
                     memberId,
-                    new PointDeductRequest(UUID.randomUUID(), UUID.randomUUID(), totalAmount)
+                    new PointDeductRequest(UUID.randomUUID(), orderId, totalAmount)
             );
         } catch(FeignException.BadRequest e){
             log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
@@ -273,7 +289,7 @@ public class OrderService {
     public OrderDetailInfo getOrderById(UUID requesterID, UUID orderId) {
         Order order = orderRepository.findByOrderIdAndDeletedAtIsNull(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-
+        log.info("getOrderById - orderId: {}",orderId);
         if(!order.getMemberId().equals(requesterID)
                 && !order.getSellerId().equals(requesterID)){
             throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);

@@ -1,5 +1,6 @@
 package store._0982.member.domain;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 public interface EmailTokenRepository {
@@ -10,5 +11,5 @@ public interface EmailTokenRepository {
 
     Optional<EmailToken> findByEmail(String email);
 
-    void deleteByEmail(String email);
+    void deleteExpiredEmailTokens(OffsetDateTime now);
 }

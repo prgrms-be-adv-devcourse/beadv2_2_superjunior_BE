@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.common.exception.CustomException;
+import store._0982.product.batch.config.tasklet.event.GroupPurchaseUpdatedEvent;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
 import store._0982.product.domain.GroupPurchase;
@@ -22,6 +24,7 @@ import java.util.List;
 public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final OrderClient orderClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
@@ -54,6 +57,7 @@ public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
             }
 
             toUpdate.add(groupPurchase);
+            eventPublisher.publishEvent(new GroupPurchaseUpdatedEvent(groupPurchase.getGroupPurchaseId()));
         }
         groupPurchaseRepository.saveAll(toUpdate);
     }

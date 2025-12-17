@@ -5,13 +5,16 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.AuthService;
 import store._0982.member.application.dto.LoginTokens;
 import store._0982.member.presentation.dto.MemberLoginRequest;
 
+import java.time.Duration;
 import java.util.List;
 
 @RestController
@@ -22,19 +25,17 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
-    //TODO: .setSecure
-    //setDomain은 필요 없음, 브라우저 입장에서는 발급받은 곳도 localhost:8000 쓰는 곳도 localhost:8000
+    //setDomain은 필요 없음, 브라우저 입장에서는 발급 주소와 사용 위치 동일
     //TODO: 소프트딜리트 확인, 로그인, refresh도
     public ResponseDto<Void> login(@RequestBody MemberLoginRequest memberLoginRequest,
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
 
-        Cookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken());
-        response.addCookie(accessTokenCookie);
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
-        Cookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken());
-        response.addCookie(refreshTokenCookie);
-
+        ResponseCookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         return new ResponseDto<>(HttpStatus.OK, null, "로그인을 성공하였습니다.");
     }
@@ -56,8 +57,8 @@ public class AuthController {
 
         String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-        Cookie accessTokenCookie = generateAccessTokenCookie(newAccessToken);
-        response.addCookie(accessTokenCookie);
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(newAccessToken);
+        response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
         return new ResponseDto<>(HttpStatus.OK, null, "토큰이 발급되었습니다.");
     }
@@ -70,22 +71,25 @@ public class AuthController {
         return new ResponseDto<>(HttpStatus.OK, null, "로그아웃이 완료되었습니다.");
     }
 
-    private Cookie generateAccessTokenCookie(String accessToken) {
-        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/api");
-        accessTokenCookie.setMaxAge(60 * 60); // 1시간
-//        accessTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
-        return accessTokenCookie;
+    private ResponseCookie generateAccessTokenCookie(String accessToken) {
+        return ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .path("/api")
+                .maxAge(Duration.ofHours(1))   // 1시간
+                .sameSite("None")
+                .secure(true)                  // apigateway와 클라이언트 간 https 설정 후 사용
+                .build();
     }
 
-    private Cookie generateRefreshTokenCookie(String refreshToken) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/auth/refresh");
-        refreshTokenCookie.setMaxAge(30 * 24 * 60 * 60); //30일
-//        refreshTokenCookie.setSecure(true);    //apigateway와 클라이언트 간 https 설정 후 사용
-        return refreshTokenCookie;
+
+    private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
+        return ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .path("/api/auth/refresh")
+                .maxAge(Duration.ofDays(30))   // 30일
+                .sameSite("None")
+                .secure(true) // 필요 시 활성화
+                .build();
     }
 
 }

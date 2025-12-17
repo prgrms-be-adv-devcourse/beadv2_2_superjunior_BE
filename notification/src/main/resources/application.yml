@@ -20,6 +20,7 @@ spring:
         default_schema: notification_schema
         format_sql: true
         show_sql: false
+    open-in-view: false
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
