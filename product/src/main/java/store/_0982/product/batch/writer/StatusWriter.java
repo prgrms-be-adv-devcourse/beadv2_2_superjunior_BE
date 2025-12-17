@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.common.exception.CustomException;
+import store._0982.product.batch.config.tasklet.event.GroupPurchaseUpdatedEvent;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
 import store._0982.product.domain.GroupPurchase;
@@ -19,6 +21,7 @@ import store._0982.product.exception.CustomErrorCode;
 public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final OrderClient orderClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
@@ -50,6 +53,7 @@ public class StatusWriter implements ItemWriter<GroupPurchaseResult> {
                 );
                 log.info("공동 구매 실패 처리 완료 : groupPurchaseId - {}", groupPurchase.getGroupPurchaseId());
             }
+            eventPublisher.publishEvent(new GroupPurchaseUpdatedEvent(groupPurchase.getGroupPurchaseId()));
         }
     }
 }
