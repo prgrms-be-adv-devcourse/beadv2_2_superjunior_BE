@@ -17,7 +17,7 @@ public class DailySettlementScheduler {
     /**
      * 매일 01:00에 데일리 정산 실행
      */
-    @Scheduled(cron = "0 30 14 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 50 14 * * *", zone = "Asia/Seoul")
     public void scheduleDailySettlement() {
         String schedulerName = "DailySettlement";
         log.info(SettlementLogFormat.START, schedulerName);
