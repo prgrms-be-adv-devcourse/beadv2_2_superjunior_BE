@@ -11,6 +11,9 @@ import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Component
 @Slf4j
@@ -24,6 +27,7 @@ public class ReturnWriter implements ItemWriter<GroupPurchaseResult> {
         long successCount = 0;
         long failCount = 0;
 
+        List<GroupPurchase> toUpdate = new ArrayList<>();
         for (GroupPurchaseResult result : chunk.getItems()) {
             if(!result.success()){
                 failCount ++;
@@ -31,9 +35,11 @@ public class ReturnWriter implements ItemWriter<GroupPurchaseResult> {
 
             GroupPurchase groupPurchase = result.groupPurchase();
             groupPurchase.markAsReturned();
-            groupPurchaseRepository.save(groupPurchase);
+            toUpdate.add(groupPurchase);
             successCount++;
         }
+
+        groupPurchaseRepository.saveAll(toUpdate);
         log.info("환불 처리 완료 : 성공 = {}, 실패 = {}", successCount, failCount);
     }
 }
