@@ -3,7 +3,6 @@ package store._0982.order.application.order;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,21 +11,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
-import store._0982.order.event.dto.OrderCreatedEvent;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.order.application.order.dto.*;
-import store._0982.order.infrastructure.client.member.MemberClient;
-import store._0982.order.infrastructure.client.payment.PaymentClient;
-import store._0982.order.infrastructure.client.payment.dto.PointDeductRequest;
-import store._0982.order.infrastructure.client.payment.dto.PointReturnRequest;
-import store._0982.order.infrastructure.client.product.ProductClient;
 import store._0982.order.domain.cart.Cart;
 import store._0982.order.domain.cart.CartRepository;
 import store._0982.order.domain.order.Order;
 import store._0982.order.domain.order.OrderRepository;
 import store._0982.order.domain.order.OrderStatus;
 import store._0982.order.exception.CustomErrorCode;
+import store._0982.order.infrastructure.client.member.MemberClient;
+import store._0982.order.infrastructure.client.payment.PaymentClient;
+import store._0982.order.infrastructure.client.payment.dto.PointDeductRequest;
+import store._0982.order.infrastructure.client.payment.dto.PointReturnRequest;
+import store._0982.order.infrastructure.client.product.ProductClient;
 import store._0982.order.infrastructure.client.product.dto.*;
 
 import java.time.OffsetDateTime;
@@ -44,7 +42,6 @@ public class OrderService {
     private final MemberClient memberClient;
     private final ProductClient productClient;
     private final PaymentClient paymentClient;
-    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성
@@ -81,23 +78,15 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-
-        eventPublisher.publishEvent(
-                new OrderCreatedEvent(
-                        memberId,
-                        UUID.randomUUID(),
-                        savedOrder.getOrderId(),
-                        command.quantity() * purchase.discountedPrice()
-                )
-        );
-
+        deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * purchase.discountedPrice());
         return OrderRegisterInfo.from(savedOrder);
     }
 
     /**
      * 장바구니 주문 생성
+     *
      * @param memberId 고객
-     * @param command 주문 command
+     * @param command  주문 command
      * @return OrderRegisterInfo List
      */
     @Transactional
@@ -108,17 +97,17 @@ public class OrderService {
 
         // cartId 리스트로 장바구니 아이템들 조회
         List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
-        if(carts.size() != command.cartIds().size()){
+        if (carts.size() != command.cartIds().size()) {
             throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
         }
 
         // 장바구니가 해당 회원 것인지 확인
         carts.forEach(cart -> {
-            if(!cart.getMemberId().equals(memberId)){
+            if (!cart.getMemberId().equals(memberId)) {
                 throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
             }
 
-            if(cart.getQuantity() < 0){
+            if (cart.getQuantity() < 0) {
                 throw new CustomException(CustomErrorCode.INVALID_QUANTITY);
             }
         });
@@ -152,8 +141,7 @@ public class OrderService {
         // 주문 생성
         List<OrderRegisterInfo> results = new ArrayList<>();
 
-        for(Cart cart : carts){
-
+        for (Cart cart : carts) {
             GroupPurchaseInfo purchase = purchasesMap.get(cart.getGroupPurchaseId());
 
             if (purchase == null) {
@@ -188,14 +176,7 @@ public class OrderService {
 
             Order savedOrder = orderRepository.save(order);
 
-            eventPublisher.publishEvent(
-                    new OrderCreatedEvent(
-                            memberId,
-                            UUID.randomUUID(),
-                            savedOrder.getOrderId(),
-                            orderCommand.quantity() * purchase.discountedPrice()
-                    )
-            );
+            deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.discountedPrice());
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
@@ -204,7 +185,6 @@ public class OrderService {
 
         return results;
     }
-
 
 
     private void validateMember(UUID memberId) {
@@ -270,7 +250,7 @@ public class OrderService {
                     memberId,
                     new PointDeductRequest(UUID.randomUUID(), orderId, totalAmount)
             );
-        } catch(FeignException.BadRequest e){
+        } catch (FeignException.BadRequest e) {
             log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         } catch (FeignException e) {
@@ -282,16 +262,17 @@ public class OrderService {
 
     /**
      * 주문 상세 조회
+     *
      * @param requesterID 요청자
-     * @param orderId 주문 id
+     * @param orderId     주문 id
      * @return OrderDetailInfo
      */
     public OrderDetailInfo getOrderById(UUID requesterID, UUID orderId) {
         Order order = orderRepository.findByOrderIdAndDeletedAtIsNull(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-        log.info("getOrderById - orderId: {}",orderId);
-        if(!order.getMemberId().equals(requesterID)
-                && !order.getSellerId().equals(requesterID)){
+        log.info("getOrderById - orderId: {}", orderId);
+        if (!order.getMemberId().equals(requesterID)
+                && !order.getSellerId().equals(requesterID)) {
             throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
         }
 
@@ -300,6 +281,7 @@ public class OrderService {
 
     /**
      * 판매자 주문 목록 조회
+     *
      * @param sellerId 판매자 id
      * @param pageable pageable
      * @return OrderInfo
@@ -311,7 +293,7 @@ public class OrderService {
                 pageable.getPageSize(),
                 Sort.by(Sort.Direction.ASC, "createdAt"));
 
-        Page<Order> orders = orderRepository.findBySellerIdAndDeletedIsNull(sellerId,sortPageable);
+        Page<Order> orders = orderRepository.findBySellerIdAndDeletedIsNull(sellerId, sortPageable);
 
         Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
         return PageResponse.from(orderInfos);
@@ -319,12 +301,13 @@ public class OrderService {
 
     /**
      * 구매자 주문 목록 조회
+     *
      * @param memberId 구매자 id
      * @param pageable pageable
      * @return OrderInfo
      */
     public PageResponse<OrderInfo> getOrdersByConsumer(UUID memberId, Pageable pageable) {
-        Page<Order> orders = orderRepository.findByMemberIdAndDeletedIsNull(memberId,pageable);
+        Page<Order> orders = orderRepository.findByMemberIdAndDeletedIsNull(memberId, pageable);
 
         Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
         return PageResponse.from(orderInfos);
@@ -332,18 +315,19 @@ public class OrderService {
 
     /**
      * 주문 상태 변경
+     *
      * @param groupPurchaseId 공동구매 id
-     * @param orderStatus 주문 상태
+     * @param orderStatus     주문 상태
      */
     @Transactional
     public void updateOrderStatus(UUID groupPurchaseId, OrderStatus orderStatus) {
         List<Order> orders = orderRepository.findByGroupPurchaseIdAndDeletedAtIsNull(groupPurchaseId);
 
-        log.info("orderStatus : {}",orderStatus);
+        log.info("orderStatus : {}", orderStatus);
 
-        for(Order order : orders){
+        for (Order order : orders) {
 
-            log.info("orderId : {}",order.getOrderId());
+            log.info("orderId : {}", order.getOrderId());
             order.updateStatus(orderStatus);
         }
 
@@ -352,11 +336,12 @@ public class OrderService {
 
     /**
      * 주문 환불
+     *
      * @param groupPurchaseId
      */
     @ServiceLog
     @Transactional
-    public void returnOrder(UUID groupPurchaseId){
+    public void returnOrder(UUID groupPurchaseId) {
         List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
 
         log.info("환불 대상 주문 조회 완료 : groupPurchaseId = {}, count = {}", groupPurchaseId, orders.size());
@@ -366,15 +351,15 @@ public class OrderService {
         int success = 0;
         int fail = 0;
 
-        for(Order order : orders){
+        for (Order order : orders) {
 
-            if(order.isReturned()){
+            if (order.isReturned()) {
                 log.info("이미 환불된 주문 : {}", order.getOrderId());
                 continue;
             }
             Long amount = order.getPrice() * order.getQuantity();
 
-            try{
+            try {
                 paymentClient.returnPointsInternal(
                         order.getMemberId(),
                         new PointReturnRequest(
@@ -387,14 +372,14 @@ public class OrderService {
                 toUpdate.add(order);
                 success++;
                 log.info("환불 완료 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
-            }catch(Exception e){
+            } catch (Exception e) {
                 fail++;
                 log.error("환불 실패 : orderId = {}, memberId = {}, amount = {}", order.getOrderId(), order.getMemberId(), amount);
                 // TODO : 환불 실패 처리 필요(재시도 큐? 관리자 알람?)
             }
         }
 
-        if(!toUpdate.isEmpty()){
+        if (!toUpdate.isEmpty()) {
             orderRepository.saveAll(toUpdate);
             log.info("환불 상태 업데이트 완료 : 성공 = {}, 실패 = {}", success, fail);
         }
