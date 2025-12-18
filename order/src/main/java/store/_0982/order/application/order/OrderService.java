@@ -60,9 +60,6 @@ public class OrderService {
         // 공동 구매 존재 여부
         GroupPurchaseDetailInfo purchase = validateGroupPurchase(command.groupPurchaseId());
 
-        // 공동 구매 참여
-        participate(command);
-
         // order 생성
         Order order = new Order(
                 command.quantity(),
@@ -79,6 +76,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * purchase.discountedPrice());
+        participate(command);
         return OrderRegisterInfo.from(savedOrder);
     }
 
@@ -159,8 +157,6 @@ public class OrderService {
                     purchase.groupPurchaseId()
             );
 
-            participate(orderCommand);
-
             // Order 생성
             Order order = new Order(
                     cart.getQuantity(),
@@ -177,6 +173,7 @@ public class OrderService {
             Order savedOrder = orderRepository.save(order);
 
             deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.discountedPrice());
+            participate(orderCommand);
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
