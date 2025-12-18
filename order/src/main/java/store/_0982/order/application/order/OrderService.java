@@ -252,11 +252,10 @@ public class OrderService {
             );
         } catch (FeignException.BadRequest e) {
             log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
-            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
+            throw e;
         } catch (FeignException e) {
             log.error("포인트 차감 실패: memberId={}, amount={}", memberId, totalAmount, e);
-
-            // TODO: 포인트 차감 실패 시 공동 구매 참여 롤백
+            throw e;
         }
     }
 
