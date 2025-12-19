@@ -1,6 +1,6 @@
 #file: noinspection KubernetesUnknownValues, SpellCheckingInspection
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: notification
 spec:
@@ -36,12 +36,12 @@ spec:
           resources:
             requests:
               cpu: "100m"
-              memory: "128Mi"
-              ephemeral-storage: "256Mi"
-            limits:
-              cpu: "200m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8084
           readinessProbe:
