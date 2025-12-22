@@ -1,4 +1,4 @@
-package store._0982.notification.application;
+package store._0982.member.application.notification;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,10 +8,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementEvent;
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationRepository;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.domain.notification.NotificationType;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationRepository;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.NotificationType;
 
 import java.util.List;
 import java.util.UUID;

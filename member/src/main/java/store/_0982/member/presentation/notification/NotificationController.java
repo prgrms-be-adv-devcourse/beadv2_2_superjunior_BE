@@ -11,8 +11,8 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
-import store._0982.notification.application.notification.NotificationService;
-import store._0982.notification.application.notification.dto.NotificationInfo;
+import store._0982.member.application.notification.NotificationService;
+import store._0982.member.application.notification.dto.NotificationInfo;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package store._0982.notification.infrastructure;
+package store._0982.member.infrastructure.notification;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,9 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
-import store._0982.notification.domain.notification.*;
-import store._0982.notification.infrastructure.notification.NotificationAdapter;
-import store._0982.notification.infrastructure.notification.NotificationJpaRepository;
+import store._0982.member.domain.notification.*;
 
 import java.util.List;
 import java.util.Optional;

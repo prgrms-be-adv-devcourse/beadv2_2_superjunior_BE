@@ -1,4 +1,4 @@
-package store._0982.notification.application;
+package store._0982.member.application.notification;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,11 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
-import store._0982.notification.application.notification.NotificationService;
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationRepository;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.exception.notification.CustomErrorCode;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationRepository;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.exception.CustomErrorCode;
 
 import java.util.Optional;
 import java.util.UUID;

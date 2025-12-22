@@ -1,4 +1,4 @@
-package store._0982.notification.presentation;
+package store._0982.member.presentation.notification;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,12 +13,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
-import store._0982.notification.application.notification.NotificationService;
-import store._0982.notification.application.notification.dto.NotificationInfo;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.domain.notification.NotificationType;
-import store._0982.notification.presentation.notification.NotificationController;
+import store._0982.member.application.notification.NotificationService;
+import store._0982.member.application.notification.dto.NotificationInfo;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.NotificationType;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,7 +98,8 @@ class NotificationControllerTest {
                         "10,000원이 충전되었습니다.",
                         null,
                         NotificationStatus.SENT,
-                        UUID.randomUUID()
+                        UUID.randomUUID(),
+                        OffsetDateTime.now()
                 ),
                 new NotificationInfo(
                         UUID.randomUUID(),
@@ -108,7 +109,8 @@ class NotificationControllerTest {
                         "주문이 완료되었습니다.",
                         null,
                         NotificationStatus.READ,
-                        UUID.randomUUID()
+                        UUID.randomUUID(),
+                        OffsetDateTime.now()
                 )
         );
 
@@ -148,7 +150,8 @@ class NotificationControllerTest {
                         "10,000원이 충전되었습니다.",
                         null,
                         NotificationStatus.SENT,
-                        UUID.randomUUID()
+                        UUID.randomUUID(),
+                        OffsetDateTime.now()
                 )
         );
 

@@ -10,7 +10,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.member.dto.*;
-import store._0982.member.exception.member.CustomErrorCode;
+import store._0982.member.exception.CustomErrorCode;
 import store._0982.member.domain.member.*;
 
 import java.util.UUID;

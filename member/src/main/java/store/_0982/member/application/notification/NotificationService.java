@@ -7,11 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.notification.application.notification.dto.NotificationInfo;
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationRepository;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.exception.notification.CustomErrorCode;
+import store._0982.member.application.notification.dto.NotificationInfo;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationRepository;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.exception.CustomErrorCode;
 
 import java.util.UUID;
 

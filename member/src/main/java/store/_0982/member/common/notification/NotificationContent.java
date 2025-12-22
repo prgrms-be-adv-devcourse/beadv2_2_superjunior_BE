@@ -1,6 +1,7 @@
 package store._0982.member.common.notification;
 
-import store._0982.notification.domain.notification.NotificationType;
+
+import store._0982.member.domain.notification.NotificationType;
 
 public record NotificationContent(
         NotificationType type,

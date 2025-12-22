@@ -24,6 +24,12 @@ dependencies {
     //common 모듈
     implementation project(':common')
 
+    //notification
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'com.h2database:h2'
+
+
     jib {
         from {
             image = 'eclipse-temurin:17-jre'

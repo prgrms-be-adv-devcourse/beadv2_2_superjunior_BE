@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.member.dto.*;
-import store._0982.member.exception.member.CustomErrorCode;
+import store._0982.member.exception.CustomErrorCode;
 import store._0982.member.domain.member.Member;
 import store._0982.member.domain.member.MemberRepository;
 import store._0982.member.domain.member.Seller;

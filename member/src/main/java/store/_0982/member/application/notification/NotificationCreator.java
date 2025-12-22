@@ -1,11 +1,11 @@
 package store._0982.member.application.notification;
 
 import store._0982.common.kafka.dto.*;
-import store._0982.notification.common.notification.NotificationContent;
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationChannel;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.domain.notification.ReferenceType;
+import store._0982.member.common.notification.NotificationContent;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationChannel;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.ReferenceType;
 
 public final class NotificationCreator {
     public static Notification create(OrderEvent event, NotificationContent content, NotificationChannel channel) {

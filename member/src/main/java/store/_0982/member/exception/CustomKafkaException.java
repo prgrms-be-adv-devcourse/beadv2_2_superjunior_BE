@@ -1,4 +1,4 @@
-package store._0982.member.exception.notification;
+package store._0982.member.exception;
 
 import lombok.Getter;
 

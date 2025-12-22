@@ -1,4 +1,4 @@
-package store._0982.member.exception.member;
+package store._0982.member.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -60,7 +60,16 @@ public enum CustomErrorCode implements ErrorCode {
     NOT_EXIST_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     NOT_EXIST_SELLER(HttpStatus.NOT_FOUND, "존재하지 않는 판매자입니다."),
     NOT_EXIST_ADDRESS(HttpStatus.NOT_FOUND, "존재하지 않는 주소 정보입니다." ),
-    NOT_FOUND(HttpStatus.NOT_FOUND, "없는 리소스입니다.");
+    NOT_FOUND(HttpStatus.NOT_FOUND, "없는 리소스입니다."),
+
+
+    //Notification
+    CANNOT_READ(HttpStatus.BAD_REQUEST, "읽을 수 없는 알림입니다."),
+    // 403 Forbidden
+    NO_PERMISSION_TO_READ(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
+    // 404 Not found
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "알림을 찾을 수 없습니다.");
+
 
     private final HttpStatus httpStatus;
     private final String message;

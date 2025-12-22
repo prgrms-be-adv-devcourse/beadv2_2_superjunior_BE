@@ -1,8 +1,9 @@
 package store._0982.member.application.notification.dto;
 
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationStatus;
-import store._0982.notification.domain.notification.NotificationType;
+
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.NotificationType;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

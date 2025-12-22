@@ -1,4 +1,4 @@
-package store._0982.member.exception.member;
+package store._0982.member.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

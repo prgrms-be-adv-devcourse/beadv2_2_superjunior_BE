@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointEvent;
 import store._0982.common.log.ServiceLog;
-import store._0982.notification.common.notification.KafkaGroupIds;
-import store._0982.notification.common.notification.NotificationContent;
-import store._0982.notification.domain.notification.Notification;
-import store._0982.notification.domain.notification.NotificationChannel;
-import store._0982.notification.domain.notification.NotificationRepository;
-import store._0982.notification.domain.notification.NotificationType;
+import store._0982.member.common.notification.KafkaGroupIds;
+import store._0982.member.common.notification.NotificationContent;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.NotificationChannel;
+import store._0982.member.domain.notification.NotificationRepository;
+import store._0982.member.domain.notification.NotificationType;
 
 @Service
 @RequiredArgsConstructor

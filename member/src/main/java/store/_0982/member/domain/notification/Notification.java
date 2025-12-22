@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
-import store._0982.notification.exception.notification.CustomErrorCode;
+import store._0982.member.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
