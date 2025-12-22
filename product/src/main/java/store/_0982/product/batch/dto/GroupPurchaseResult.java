@@ -1,6 +1,6 @@
 package store._0982.product.batch.dto;
 
-import store._0982.product.domain.GroupPurchase;
+import store._0982.product.domain.grouppurchase.GroupPurchase;
 
 public record GroupPurchaseResult(
         GroupPurchase groupPurchase,

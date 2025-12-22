@@ -10,10 +10,10 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.product.batch.config.tasklet.event.GroupPurchaseUpdatedEvent;
 import store._0982.product.client.MemberClient;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseRepository;
-import store._0982.product.domain.Product;
-import store._0982.product.domain.ProductRepository;
+import store._0982.product.domain.grouppurchase.GroupPurchase;
+import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.product.domain.product.Product;
+import store._0982.product.domain.product.ProductRepository;
 import store._0982.product.exception.CustomErrorCode;
 
 @Component

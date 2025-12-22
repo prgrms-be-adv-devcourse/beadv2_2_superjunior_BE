@@ -13,8 +13,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.batch.processor.ReturnProcessor;
 import store._0982.product.batch.writer.ReturnWriter;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseStatus;
+import store._0982.product.domain.grouppurchase.GroupPurchase;
+import store._0982.product.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.util.Map;
 

@@ -9,9 +9,9 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.product.batch.config.tasklet.event.GroupPurchaseUpdatedEvent;
-import store._0982.product.domain.GroupPurchase;
-import store._0982.product.domain.GroupPurchaseRepository;
-import store._0982.product.domain.GroupPurchaseStatus;
+import store._0982.product.domain.grouppurchase.GroupPurchase;
+import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.product.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

@@ -6,11 +6,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import store._0982.product.batch.dto.GroupPurchaseResult;
 import store._0982.product.client.OrderClient;
-import store._0982.product.domain.GroupPurchase;
-
-import javax.swing.*;
-
-import javax.swing.*;
+import store._0982.product.domain.grouppurchase.GroupPurchase;
 
 @Slf4j
 @Component
