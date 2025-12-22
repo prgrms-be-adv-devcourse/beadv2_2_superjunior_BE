@@ -12,7 +12,7 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.product.application.grouppurchase.dto.*;
-import store._0982.product.client.MemberClient;
+import store._0982.product.infrastructure.client.member.MemberClient;
 import store._0982.product.domain.grouppurchase.GroupPurchase;
 import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.product.domain.grouppurchase.GroupPurchaseStatus;
