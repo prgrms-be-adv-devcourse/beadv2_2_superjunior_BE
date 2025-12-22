@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.order.grouppurchase.config.tasklet.OpenGroupPurchaseTasklet;
-import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 
 @Configuration
 @RequiredArgsConstructor

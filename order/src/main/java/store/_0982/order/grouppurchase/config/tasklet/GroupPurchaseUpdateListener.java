@@ -9,12 +9,12 @@ import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.order.grouppurchase.config.tasklet.event.GroupPurchaseUpdatedEvent;
-import store._0982.product.infrastructure.client.member.MemberClient;
-import store._0982.product.domain.grouppurchase.GroupPurchase;
-import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.product.domain.product.Product;
-import store._0982.product.domain.product.ProductRepository;
-import store._0982.product.exception.CustomErrorCode;
+import store._0982.commerce.infrastructure.client.member.MemberClient;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.product.Product;
+import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.commerce.exception.CustomErrorCode;
 
 @Component
 @RequiredArgsConstructor

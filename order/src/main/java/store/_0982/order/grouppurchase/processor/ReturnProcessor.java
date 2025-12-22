@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import store._0982.order.grouppurchase.dto.GroupPurchaseResult;
-import store._0982.product.infrastructure.client.order.OrderClient;
-import store._0982.product.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.infrastructure.client.order.OrderClient;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 
 @Component
 @Slf4j

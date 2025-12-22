@@ -8,8 +8,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.order.grouppurchase.dto.GroupPurchaseResult;
-import store._0982.product.domain.grouppurchase.GroupPurchase;
-import store._0982.product.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 
 import java.util.ArrayList;
 import java.util.List;
