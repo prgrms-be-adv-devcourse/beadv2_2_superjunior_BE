@@ -37,11 +37,6 @@ public class ParticipateService {
     private final KafkaTemplate<String, GroupPurchaseChangedEvent> notificationKafkaTemplate;
     private final MemberClient memberClient;
 
-    public GroupPurchase findGroupPurchaseById(UUID groupPurchaseId) {
-        return groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-    }
-
     @ServiceLog
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,

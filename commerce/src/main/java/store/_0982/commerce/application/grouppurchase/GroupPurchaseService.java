@@ -20,6 +20,7 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
+import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -107,12 +108,8 @@ public class GroupPurchaseService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupPurchaseInfo> getGroupPurchaseByIds(List<UUID> purchaseIds) {
-        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
-
-        return groupPurchases.stream()
-                .map(GroupPurchaseInfo::from)
-                .toList();
+    public List<GroupPurchase> getGroupPurchaseByIds(List<UUID> purchaseIds) {
+        return groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
     }
 
     @Transactional(readOnly = true)
