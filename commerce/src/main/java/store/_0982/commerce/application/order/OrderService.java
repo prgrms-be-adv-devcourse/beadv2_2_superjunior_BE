@@ -9,8 +9,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.ParticipateService;
+import store._0982.commerce.application.grouppurchase.dto.ParticipateInfo;
 import store._0982.commerce.application.order.dto.*;
-import store._0982.commerce.infrastructure.client.product.dto.*;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
@@ -25,7 +30,6 @@ import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointDeductRequest;
 import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest;
-import store._0982.commerce.infrastructure.client.product.ProductClient;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -40,9 +44,11 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ParticipateService participateService;
     private final MemberClient memberClient;
-    private final ProductClient productClient;
     private final PaymentClient paymentClient;
+    private final GroupPurchaseService groupPurchaseService;
 
     /**
      * 주문 생성
@@ -59,12 +65,12 @@ public class OrderService {
         validateMember(memberId);
 
         // 공동 구매 존재 여부
-        GroupPurchaseFeignDetailInfo purchase = validateGroupPurchase(command.groupPurchaseId());
+        GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
         // order 생성
         Order order = new Order(
                 command.quantity(),
-                purchase.discountedPrice(),
+                groupPurchase.getDiscountedPrice(),
                 memberId,
                 command.address(),
                 command.addressDetail(),
@@ -76,8 +82,8 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * purchase.discountedPrice());
-        participate(command);
+        deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
+        participate(groupPurchase, command);
         return OrderRegisterInfo.from(savedOrder);
     }
 
@@ -117,22 +123,20 @@ public class OrderService {
                 .collect(Collectors.toSet());
 
         // 공동 구매 리스트 조회
-        ResponseDto<List<GroupPurchaseFeignInfo>> response = productClient.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
+        List<GroupPurchase> groupPurchaseList = groupPurchaseService.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
 
-        List<GroupPurchaseFeignInfo> purchases = response.data();
-
-        Map<UUID, GroupPurchaseFeignInfo> purchasesMap = purchases.stream()
+        Map<UUID, GroupPurchase> purchasesMap = groupPurchaseList.stream()
                 .collect(Collectors.toMap(
-                        GroupPurchaseFeignInfo::groupPurchaseId,
+                        GroupPurchase::getGroupPurchaseId,
                         Function.identity()
                 ));
 
         // 각 공동 구매가 조건에 맞는지 확인
         purchasesMap.values().forEach(purchase -> {
-            if (purchase.status() != GroupPurchaseFeignStatus.OPEN) {
+            if (purchase.getStatus() != GroupPurchaseStatus.OPEN) {
                 throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
             }
-            if (purchase.endDate().isBefore(OffsetDateTime.now())) {
+            if (purchase.getEndDate().isBefore(OffsetDateTime.now())) {
                 throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
             }
         });
@@ -141,7 +145,7 @@ public class OrderService {
         List<OrderRegisterInfo> results = new ArrayList<>();
 
         for (Cart cart : carts) {
-            GroupPurchaseFeignInfo purchase = purchasesMap.get(cart.getGroupPurchaseId());
+            GroupPurchase purchase = purchasesMap.get(cart.getGroupPurchaseId());
 
             if (purchase == null) {
                 throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
@@ -154,27 +158,27 @@ public class OrderService {
                     command.addressDetail(),
                     command.postalCode(),
                     command.receiverName(),
-                    purchase.sellerId(),
-                    purchase.groupPurchaseId()
+                    purchase.getSellerId(),
+                    purchase.getGroupPurchaseId()
             );
 
             // Order 생성
             Order order = new Order(
                     cart.getQuantity(),
-                    purchase.discountedPrice(),
+                    purchase.getDiscountedPrice(),
                     memberId,
                     command.address(),
                     command.addressDetail(),
                     command.postalCode(),
                     command.receiverName(),
-                    purchase.sellerId(),
+                    purchase.getSellerId(),
                     cart.getGroupPurchaseId()
             );
 
             Order savedOrder = orderRepository.save(order);
 
-            deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.discountedPrice());
-            participate(orderCommand);
+            deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.getDiscountedPrice());
+            participate(purchase, orderCommand);
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
@@ -196,45 +200,28 @@ public class OrderService {
         }
     }
 
-    private GroupPurchaseFeignDetailInfo validateGroupPurchase(UUID groupPurchaseId) {
-        try {
-            // ResponseDto로 받기
-            GroupPurchaseFeignDetailInfo groupPurchase =
-                    productClient.getGroupPurchaseById(groupPurchaseId).data();
+    private GroupPurchase validateGroupPurchase(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
-            // 상태확인
-            if (groupPurchase.status() != GroupPurchaseFeignStatus.OPEN) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
-            }
-
-            // 종료시간 확인
-            if (groupPurchase.endDate().isBefore(OffsetDateTime.now())) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
-            }
-            return groupPurchase;
-
-        } catch (CustomException e) {
-            throw e;
-
-        } catch (FeignException.NotFound e) {
-            log.error("공동구매 없음: groupPurchaseId={}", groupPurchaseId);
-            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
-
-        } catch (FeignException e) {
-            log.error("공동구매 조회 실패: groupPurchaseId={}, message={}", groupPurchaseId, e.getMessage());
-            throw new RuntimeException("공동 구매 정보 조회 오류 발생");
+        // 상태확인
+        if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
         }
+
+        // 종료시간 확인
+        if (groupPurchase.getEndDate().isBefore(OffsetDateTime.now())) {
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
+        }
+        return groupPurchase;
+
     }
 
-    private void participate(OrderRegisterCommand command) {
+    private void participate(GroupPurchase groupPurchase, OrderRegisterCommand command) {
         // 공동 구매 참여
-        ParticipateFeignRequest participateFeignRequest = new ParticipateFeignRequest(command.quantity());
-        ParticipateFeignInfo participateFeignInfo = productClient.participate(
-                command.groupPurchaseId(),
-                participateFeignRequest
-        ).data();
+        ParticipateInfo result = participateService.participate(groupPurchase, command.quantity());
 
-        if (!participateFeignInfo.success()) {
+        if (!result.success()) {
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
         }
 

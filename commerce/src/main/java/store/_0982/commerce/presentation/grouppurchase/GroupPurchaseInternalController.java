@@ -27,35 +27,6 @@ import java.util.UUID;
 public class GroupPurchaseInternalController {
 
     private final GroupPurchaseService purchaseService;
-    private final ParticipateService participateService;
-
-    @ControllerLog
-    @Operation(summary = "공동구매 참여", description = "공동구매에 참여하여 참여자 수를 증가시킵니다. (Order 서비스 호출용)")
-    @PostMapping("/{purchaseId}/participate")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<ParticipateInfo> participate(
-            @PathVariable UUID purchaseId,
-            @Valid @RequestBody ParticipateRequest request) {
-        try {
-            GroupPurchase groupPurchase = participateService.findGroupPurchaseById(purchaseId);
-            ParticipateInfo result = participateService.participate(groupPurchase, request.quantity());
-
-            return new ResponseDto<>(HttpStatus.OK, result, result.message());
-        } catch (CustomException e) {
-            ParticipateInfo errorResult = ParticipateInfo.failure(e.getErrorCode().getHttpStatus().name(), 0, e.getMessage());
-            return new ResponseDto<>(HttpStatus.OK, errorResult, e.getMessage());
-        }
-    }
-
-    @Operation(summary = "공동구매 리스트 조회", description = "공동 구매 리스트 조회")
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<List<GroupPurchaseInfo>> getGroupPurchaseByIds(
-            @RequestParam("ids") List<UUID> ids) {
-        List<GroupPurchaseInfo> info = purchaseService.getGroupPurchaseByIds(ids);
-        return new ResponseDto<>(HttpStatus.OK, info, "공동구매 리스트가 조회되었습니다.");
-    }
-
 
     @GetMapping("/unsettled")
     @ResponseStatus(HttpStatus.OK)
