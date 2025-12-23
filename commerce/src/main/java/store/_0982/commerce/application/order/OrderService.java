@@ -187,7 +187,7 @@ public class OrderService {
 
     private void validateMember(UUID memberId) {
         try {
-            memberClient.getProfile(memberId);
+            memberClient.getMember(memberId);
         } catch (FeignException.NotFound e) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
         } catch (FeignException e) {
