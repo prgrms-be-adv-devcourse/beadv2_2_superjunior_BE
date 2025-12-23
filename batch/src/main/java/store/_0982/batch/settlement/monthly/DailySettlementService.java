@@ -1,4 +1,4 @@
-package store._0982.commerce.application.settlement;
+package store._0982.batch.settlement.monthly;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
