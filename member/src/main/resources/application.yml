@@ -56,7 +56,7 @@ management:
 
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.0
     propagation:
       type: w3c  # 또는 b3
 

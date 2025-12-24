@@ -19,7 +19,7 @@ spring:
       hibernate:
         default_schema: point_schema
         format_sql: true
-        show_sql: true
+        show_sql: false
     open-in-view: false
 
 springdoc:
@@ -53,7 +53,7 @@ management:
 
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.0
     propagation:
       type: w3c  # 또는 b3
 

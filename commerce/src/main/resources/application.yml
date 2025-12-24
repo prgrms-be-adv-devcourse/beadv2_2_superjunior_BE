@@ -54,9 +54,9 @@ management:
 
   tracing:
     sampling:
-      probability: 1.0
+      probability: 0.0
     propagation:
-      type: w3c  # 또는 b3
+      type: w3c # 또는 b3
 
 gateway:
   host: ${GATEWAY_HOST:http://localhost:8000}
