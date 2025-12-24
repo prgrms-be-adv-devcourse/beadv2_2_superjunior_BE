@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.elasticsearch.application.ProductSearchService;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
@@ -113,10 +114,10 @@ class ProductSearchControllerTest {
         // when & then
         mockMvc.perform(get("/api/searches/product/search")
                         .param("keyword", keyword)
-                        .param("sellerId", sellerId.toString())
                         .param("category", category)
                         .param("page", "0")
                         .param("size", "10")
+                        .header(HeaderName.ID, sellerId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
@@ -125,14 +126,28 @@ class ProductSearchControllerTest {
     }
 
     @Test
-    @DisplayName("category 없이 상품 문서 검색 성공")
+    @DisplayName("keyword 없이 상품 문서 검색 성공")
     void searchProductDocument_withoutCategory_success() throws Exception {
         // given
         UUID sellerId = UUID.randomUUID();
-        String keyword = "test";
+        String keyword = "";
+        String category = "KIDS";
+
+        ProductDocumentInfo doc = new ProductDocumentInfo(
+                "1",
+                "아이폰 테스트",
+                1_200_000L,
+                category,
+                "아이폰 설명",
+                10,
+                "https://example.com/product/1",
+                sellerId.toString(),
+                OffsetDateTime.now(),
+                OffsetDateTime.now()
+        );
 
         Page<ProductDocumentInfo> page = new PageImpl<>(
-                List.of(),
+                List.of(doc),
                 PageRequest.of(0, 10),
                 1
         );
@@ -150,12 +165,12 @@ class ProductSearchControllerTest {
 
         // when & then
         mockMvc.perform(get("/api/searches/product/search")
+                        .header(HeaderName.ID, sellerId)
                         .param("keyword", keyword)
-                        .param("sellerId", sellerId.toString())
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.content").isArray());
+                .andExpect(jsonPath("$.data.content[0].name").value("아이폰 테스트"));
     }
 }

@@ -111,6 +111,7 @@ class GroupPurchaseSearchServiceTest {
         verify(indexOperations, never()).delete();
     }
 
+    //test es 접속해서 하도록 수정 필요
     @Test
     @DisplayName("공동구매 문서 검색 성공")
     void searchGroupPurchaseDocument_success() {

@@ -115,6 +115,7 @@ class ProductSearchServiceTest {
         verify(indexOperations, never()).delete();
     }
 
+    //test es 접속해서 하도록 수정 필요
     @Test
     @DisplayName("상품 문서 검색 성공")
     void searchProductDocument_success() {
