@@ -31,39 +31,23 @@ jobs:
             echo "No TLS file changes"
           fi
 
-      - name: 설정 파일을 전달 받을 폴더 생성
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          script: |
-            sudo rm -rf /tmp/k8s-cert
-            mkdir -p /tmp/k8s-cert
+      - name: Kubectl 설치
+        uses: azure/setup-kubectl@v3
 
-      - name: 변경된 설정 파일을 EC2 인스턴스로 복사
+      - name: Kubeconfig 설정
+        shell: bash
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: 변경된 TLS 파일 배포
         if: steps.check-tls.outputs.changed == 'true'
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "docs/k8s/cert/tls.yml"
-          target: "/tmp/k8s-cert"
-          strip_components: 3
-          overwrite: true
-
-      - name: 인스턴스 접속 후 TLS 파일 적용
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          script: |
-            echo "Applying TLS..."
+        shell: bash
+        run: |
+          set -e
+          
+          echo "Applying TLS..."
             kubectl apply -f /tmp/k8s-cert/tls.yml \
               --kubeconfig=/etc/rancher/k3s/k3s.yaml
 
