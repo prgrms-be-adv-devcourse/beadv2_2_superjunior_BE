@@ -23,8 +23,6 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
-import java.util.UUID;
-
 @Slf4j
 @RequiredArgsConstructor
 @Service

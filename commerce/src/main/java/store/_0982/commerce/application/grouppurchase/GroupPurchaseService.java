@@ -20,18 +20,17 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Transactional
+@Transactional(readOnly = true)
 @Service
 @RequiredArgsConstructor
 public class GroupPurchaseService {
+
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
-
 
     private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
     private final MemberClient memberClient;
@@ -42,6 +41,7 @@ public class GroupPurchaseService {
      * @param command 생성할 command 데이터
      * @return PurchaseRegisterInfo
      */
+    @Transactional
     public GroupPurchaseInfo createGroupPurchase(UUID memberId, GroupPurchaseRegisterCommand command) {
 
         // 상품 있는지 확인
@@ -83,7 +83,6 @@ public class GroupPurchaseService {
         return GroupPurchaseInfo.from(saved);
     }
 
-    @Transactional(readOnly = true)
     public GroupPurchaseDetailInfo getGroupPurchaseById(UUID purchaseId) {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
@@ -94,7 +93,6 @@ public class GroupPurchaseService {
         return GroupPurchaseDetailInfo.from(findGroupPurchase, findProduct.getOriginalUrl(), findProduct.getPrice(), findProduct.getCategory());
     }
 
-    @Transactional(readOnly = true)
     public PageResponse<GroupPurchaseThumbnailInfo> getGroupPurchase(Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAll(pageable);
 
@@ -107,12 +105,10 @@ public class GroupPurchaseService {
         return PageResponse.from(groupPurchaseInfoPage);
     }
 
-    @Transactional(readOnly = true)
     public List<GroupPurchase> getGroupPurchaseByIds(List<UUID> purchaseIds) {
         return groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
     }
 
-    @Transactional(readOnly = true)
     public PageResponse<GroupPurchaseThumbnailInfo> getGroupPurchasesBySeller(UUID sellerId, Pageable pageable) {
         Page<GroupPurchase> groupPurchasePage = groupPurchaseRepository.findAllBySellerId(sellerId, pageable);
 
@@ -125,30 +121,13 @@ public class GroupPurchaseService {
         return PageResponse.from(groupPurchaseInfoPage);
     }
 
-    @ServiceLog
-    public void deleteGroupPurchase(UUID purchaseId, UUID memberId) {
-        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-
-        if (findGroupPurchase.getStatus() != GroupPurchaseStatus.SCHEDULED) {
-            throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
-        }
-        if (!findGroupPurchase.getSellerId().equals(memberId)) {
-            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
-        }
-        groupPurchaseRepository.delete(findGroupPurchase);
-
-        //search kafka
-        GroupPurchaseEvent event = findGroupPurchase.toEvent("", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE, null);
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED,event.getId().toString(), event);
-    }
-
     /**
      * 공동 구매 업데이트
      * @param memberId 로그인 유저
      * @param purchaseId 공동구매 Id
      * @return PurchaseDetailInfo
      */
+    @Transactional
     public GroupPurchaseInfo updateGroupPurchase(UUID memberId, UUID purchaseId, GroupPurchaseUpdateCommand command) {
 
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
@@ -189,7 +168,25 @@ public class GroupPurchaseService {
         return GroupPurchaseInfo.from(saved);
     }
 
-    @Transactional(readOnly = true)
+    @ServiceLog
+    @Transactional
+    public void deleteGroupPurchase(UUID purchaseId, UUID memberId) {
+        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (findGroupPurchase.getStatus() != GroupPurchaseStatus.SCHEDULED) {
+            throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
+        }
+        if (!findGroupPurchase.getSellerId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
+        }
+        groupPurchaseRepository.delete(findGroupPurchase);
+
+        //search kafka
+        GroupPurchaseEvent event = findGroupPurchase.toEvent("", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE, null);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED,event.getId().toString(), event);
+    }
+
     public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
         List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
                 .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
@@ -199,6 +196,7 @@ public class GroupPurchaseService {
                 .toList();
     }
 
+    @Transactional
     public void markAsSettled(UUID groupPurchaseId) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
@@ -210,6 +208,5 @@ public class GroupPurchaseService {
         groupPurchase.markAsSettled();
         groupPurchaseRepository.save(groupPurchase);
     }
-
 
 }

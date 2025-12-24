@@ -22,7 +22,6 @@ public class SellerBalanceController {
 
     private final SellerBalanceService sellerBalanceService;
 
-    @RequireRole({Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ResponseDto<SellerBalanceInfo> getBalance(
@@ -32,7 +31,6 @@ public class SellerBalanceController {
         return new ResponseDto<>(HttpStatus.OK, info, "조회되었습니다.");
     }
 
-    @RequireRole({Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/history")
     public ResponseDto<PageResponse<SellerBalanceHistoryInfo>> getBalanceHistory(

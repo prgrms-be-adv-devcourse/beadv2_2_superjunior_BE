@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Service
 public class ProductService {
 
@@ -31,6 +31,7 @@ public class ProductService {
     private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
     @ServiceLog
+    @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
         Product product = new Product(command.name(),
                 command.price(), command.category(),
@@ -46,6 +47,54 @@ public class ProductService {
         return ProductRegisterInfo.from(savedProduct);
     }
 
+    /**
+     * 상품 정보 조회
+     * @param productId 상품 id
+     * @return ProductDetailInfo
+     */
+    public ProductDetailInfo getProductInfo(UUID  productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        return ProductDetailInfo.from(product);
+    }
+
+    public PageResponse<ProductListInfo> getProductListInfo(UUID sellerId, Pageable pageable) {
+        Page<Product> product = productRepository.findBySellerId(sellerId, pageable);
+
+        Page<ProductListInfo> products = product.map(ProductListInfo::from);
+
+        return PageResponse.from(products);
+    }
+
+    /**
+     * 상품 업데이트
+     * @param productId 상품 id
+     * @param command 업데이트할 command 데이터
+     * @return ProductUpdateInfo
+     */
+    @Transactional
+    public ProductUpdateInfo updateProduct(UUID productId, ProductUpdateCommand command){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        product.updateProduct(
+                command.name(),
+                command.price(),
+                command.category(),
+                command.description(),
+                command.stock(),
+                command.originalLink());
+
+        //kafka
+        Product updatedProduct = productRepository.saveAndFlush(product);
+        ProductEvent event = updatedProduct.toEvent();
+        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
+
+        return ProductUpdateInfo.from(product);
+    }
+
+    @Transactional
     public void deleteProduct(UUID productId, UUID memberId) {
         Product findProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
@@ -68,49 +117,4 @@ public class ProductService {
         kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.toEvent());
     }
 
-    /**
-     * 상품 정보 조회
-     * @param productId 상품 id
-     * @return ProductDetailInfo
-     */
-    @Transactional(readOnly = true)
-    public ProductDetailInfo getProductInfo(UUID  productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-
-        return ProductDetailInfo.from(product);
-    }
-
-    public PageResponse<ProductListInfo> getProductListInfo(UUID sellerId, Pageable pageable) {
-        Page<Product> product = productRepository.findBySellerId(sellerId, pageable);
-
-        Page<ProductListInfo> products = product.map(ProductListInfo::from);
-
-        return PageResponse.from(products);
-    }
-    /**
-     * 상품 업데이트
-     * @param productId 상품 id
-     * @param command 업데이트할 command 데이터
-     * @return ProductUpdateInfo
-     */
-    public ProductUpdateInfo updateProduct(UUID productId, ProductUpdateCommand command){
-        Product product = productRepository.findById(productId)
-                .orElseThrow(()->new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-
-        product.updateProduct(
-                command.name(),
-                command.price(),
-                command.category(),
-                command.description(),
-                command.stock(),
-                command.originalLink());
-
-        //kafka
-        Product updatedProduct = productRepository.saveAndFlush(product);
-        ProductEvent event = updatedProduct.toEvent();
-        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
-
-        return ProductUpdateInfo.from(product);
-    }
 }
