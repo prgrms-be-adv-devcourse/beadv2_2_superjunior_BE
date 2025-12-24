@@ -68,11 +68,11 @@ spec:
           resources:
             requests:
               ephemeral-storage: "1Gi"
-              memory: "384Mi"
+              memory: "512Mi"
               cpu: "250m"
             limits:
               ephemeral-storage: "2Gi"
-              memory: "768Mi"
+              memory: "1Gi"
               cpu: "1000m"
           volumeMounts:
             - name: kafka-storage
