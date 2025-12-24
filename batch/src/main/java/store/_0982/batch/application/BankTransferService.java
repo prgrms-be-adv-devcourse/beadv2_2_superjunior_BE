@@ -1,4 +1,4 @@
-package store._0982.batch.application.settlement;
+package store._0982.batch.application;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

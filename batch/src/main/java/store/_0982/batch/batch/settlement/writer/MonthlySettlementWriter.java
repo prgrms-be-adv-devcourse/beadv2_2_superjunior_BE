@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.settlement.BankTransferService;
+import store._0982.batch.application.BankTransferService;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
 import store._0982.batch.infrastructure.client.member.MemberClient;
@@ -75,6 +75,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
             SellerBalanceHistory history = new SellerBalanceHistory(
                     settlement.getSellerId(),
                     settlement.getSettlementId(),
+                    null,
                     transferAmount,
                     SellerBalanceHistoryStatus.DEBIT
             );

@@ -42,12 +42,14 @@ public class SellerBalanceHistory {
     public SellerBalanceHistory(
             UUID memberId,
             UUID settlementId,
+            UUID groupPurchaseId,
             Long amount,
             SellerBalanceHistoryStatus status
     ) {
         this.historyId = UUID.randomUUID();
         this.memberId = memberId;
         this.settlementId = settlementId;
+        this.groupPurchaseId = groupPurchaseId;
         this.amount = amount;
         this.status = status;
     }

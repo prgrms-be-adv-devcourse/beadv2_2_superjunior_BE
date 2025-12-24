@@ -1,4 +1,4 @@
-package store._0982.batch.application.settlement;
+package store._0982.batch.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class SellerBalanceCommandService {
+public class SellerBalanceService {
 
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
@@ -18,7 +18,7 @@ public class SellerBalanceCommandService {
      * 판매자 balance 증가 및 이력 저장
      */
     @Transactional
-    public void increaseBalance(UUID sellerId, Long amount) {
+    public void increaseBalance(UUID sellerId, Long amount, UUID groupPurchaseId) {
         SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
                 .orElseGet(() -> new SellerBalance(sellerId));
 
@@ -26,7 +26,7 @@ public class SellerBalanceCommandService {
         sellerBalanceRepository.save(sellerBalance);
 
         sellerBalanceHistoryRepository.save(
-                new SellerBalanceHistory(sellerId, null, amount, SellerBalanceHistoryStatus.CREDIT)
+                new SellerBalanceHistory(sellerId, null, groupPurchaseId, amount, SellerBalanceHistoryStatus.CREDIT)
         );
     }
 }
