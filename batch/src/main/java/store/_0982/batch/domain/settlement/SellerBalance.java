@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
@@ -45,8 +46,8 @@ public class SellerBalance {
     }
 
     public void increaseBalance(Long amount) {
-//        if (amount < 0)
-//            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
+        if (amount < 0)
+            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
         this.settlementBalance += amount;
     }
 
