@@ -18,7 +18,7 @@ spec:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: gateway
-          image: minbros/gateway
+          image: minbros/gateway:latest
           imagePullPolicy: Always
           # 테스트용
           env:
@@ -74,5 +74,3 @@ spec:
       targetPort: 8000
       protocol: TCP
       name: http
-
-# SDFSDF

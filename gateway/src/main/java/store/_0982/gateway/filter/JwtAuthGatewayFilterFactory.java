@@ -5,24 +5,15 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
-import store._0982.gateway.common.exception.CustomErrorCode;
 import store._0982.gateway.domain.AuthMember;
 import store._0982.gateway.domain.Role;
+import store._0982.gateway.exception.CustomErrorCode;
+import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 
-import java.nio.charset.StandardCharsets;
-
-/**
- * 특정 라우트에서만 적용할 수 있는 JWT 인증 필터.
- * application.yml 의 filters 섹션에서 "JwtAuth" 로 참조할 수 있다.
- */
 @Component
 public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthGatewayFilterFactory.Config> { // GatewayFilterFactory 떼면 매핑 안됨.
 
@@ -56,9 +47,9 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
                 String role = claims.get("role", String.class);
                 authMember = new AuthMember(memberId, email, Role.valueOf(role));
             } catch (ExpiredJwtException e) {
-                return responseError(exchange, CustomErrorCode.EXPIRED);
+                return ExceptionHandler.responseException(exchange, CustomErrorCode.EXPIRED);
             } catch (JwtException | IllegalArgumentException e) {
-                return responseError(exchange, CustomErrorCode.INVALID);
+                return ExceptionHandler.responseException(exchange, CustomErrorCode.INVALID);
             }
 
             ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
@@ -79,18 +70,6 @@ public class JwtAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<Jw
         };
     }
 
-    private Mono<Void> responseError(ServerWebExchange exchange, CustomErrorCode errorCode) {
-        ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(errorCode.getHttpStatus());
-        byte[] bytes = errorCode.getMessage().getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = response.bufferFactory().wrap(bytes);
-        return response.writeWith(Mono.just(buffer));
-    }
-
     public static class Config {
-        /**
-         * 필터 동작 설정을 위한 Config.
-         * 현재는 비어있지만, 필요 시 requiredRole 등의 옵션을 추가할 수 있다.
-         */
     }
 }

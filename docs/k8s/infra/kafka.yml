@@ -34,19 +34,17 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
               name: kafka
             - containerPort: 9093
               name: controller
           env:
-            - name: KAFKA_HEAP_OPTS
-              value: "-Xms384m -Xmx512m"
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
@@ -70,11 +68,11 @@ spec:
           resources:
             requests:
               ephemeral-storage: "1Gi"
-              memory: "512Mi"
+              memory: "384Mi"
               cpu: "250m"
             limits:
               ephemeral-storage: "2Gi"
-              memory: "1Gi"
+              memory: "768Mi"
               cpu: "1000m"
           volumeMounts:
             - name: kafka-storage
@@ -116,3 +114,5 @@ spec:
       name: kafka
   selector:
     app: kafka
+
+# DDD

@@ -12,6 +12,7 @@ public class GroupPurchaseSearchQueryFactory {
     public NativeQuery createSearchQuery(
             String keyword,
             String status,
+            String memberId,
             String category,
             Pageable pageable
     ) {
@@ -40,6 +41,18 @@ public class GroupPurchaseSearchQueryFactory {
                                             .term(t -> t
                                                     .field("productDocumentEmbedded.category")
                                                     .value(category)
+                                            )
+                                    )
+                            ));
+                        }
+                        //sellerId 선택
+                        if (memberId != null && !memberId.isBlank()) {
+                            b.filter(f -> f.nested(n -> n
+                                    .path("productDocumentEmbedded")
+                                    .query(p -> p
+                                            .term(t -> t
+                                                    .field("productDocumentEmbedded.sellerId")
+                                                    .value(memberId)
                                             )
                                     )
                             ));
@@ -105,6 +118,18 @@ public class GroupPurchaseSearchQueryFactory {
                                         .term(t -> t
                                                 .field("productDocumentEmbedded.category")
                                                 .value(category)
+                                        )
+                                )
+                        ));
+                    }
+                    //sellerId 선택
+                    if (memberId != null && !memberId.isBlank()) {
+                        b.filter(f -> f.nested(n -> n
+                                .path("productDocumentEmbedded")
+                                .query(p -> p
+                                        .term(t -> t
+                                                .field("productDocumentEmbedded.sellerId")
+                                                .value(memberId)
                                         )
                                 )
                         ));

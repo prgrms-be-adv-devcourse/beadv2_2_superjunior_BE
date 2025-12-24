@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: notification
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: notification
@@ -18,7 +17,7 @@ spec:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: notification
-          image: minbros/notification
+          image: minbros/notification:latest
           imagePullPolicy: Always
           env:
             - name: SPRING_CLOUD_CONFIG_URI
@@ -36,7 +35,7 @@ spec:
                 name: notification-secret
           resources:
             requests:
-              cpu: "200m"
+              cpu: "100m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
             limits:

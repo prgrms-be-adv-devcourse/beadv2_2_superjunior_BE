@@ -34,7 +34,11 @@ public abstract class BaseExceptionHandler {
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {
         ErrorCode errorCode = e.getErrorCode();
         HttpStatus httpStatus = errorCode.getHttpStatus();
-        log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        if (errorCode instanceof DefaultErrorCode) {
+            log.error(LogFormat.errorOf(httpStatus, e.getMessage()));
+        } else {
+            log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        }
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
@@ -56,6 +60,7 @@ public abstract class BaseExceptionHandler {
             case HeaderName.ID -> new CustomException(DefaultErrorCode.NO_LOGIN_INFO);
             case HeaderName.EMAIL -> new CustomException(DefaultErrorCode.NO_EMAIL_INFO);
             case HeaderName.ROLE -> new CustomException(DefaultErrorCode.NO_ROLE_INFO);
+            case HeaderName.TOKEN -> new CustomException(DefaultErrorCode.NO_TOKEN_INFO);
             default -> new CustomException(DefaultErrorCode.REQUEST_HEADER_IS_NULL);
         };
         return handleCustomException(ex);

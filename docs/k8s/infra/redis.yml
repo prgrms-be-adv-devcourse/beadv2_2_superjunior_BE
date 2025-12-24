@@ -30,11 +30,11 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
         - name: redis
           image: redis:7-alpine
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
               name: redis
@@ -110,3 +110,5 @@ spec:
   resources:
     requests:
       storage: 2Gi
+
+# DDD

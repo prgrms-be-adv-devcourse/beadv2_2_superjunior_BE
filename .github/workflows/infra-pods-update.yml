@@ -28,80 +28,53 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED"
 
-      - name: Infra 설정 파일을 전달받을 폴더 생성
+      - name: Kubectl 설치
         if: steps.changed-files.outputs.files != ''
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          script: |
-            sudo rm -rf /tmp/k8s-infra
-            mkdir -p /tmp/k8s-infra
+        uses: azure/setup-kubectl@v3
 
-      - name: 변경된 Infra 설정 파일을 Bastion으로 복사
+      - name: Kubeconfig 설정
         if: steps.changed-files.outputs.files != ''
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          source: "docs/k8s/infra/*.yml"
-          target: "/tmp/k8s-infra"
-          strip_components: 3
-          overwrite: true
+        shell: bash
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
 
       - name: 변경된 Infra 리소스 적용
         if: steps.changed-files.outputs.files != ''
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.BASTION_HOST }}
-          username: ${{ secrets.BASTION_USER }}
-          key: ${{ secrets.BASTION_SSH_KEY }}
-          port: 22
-          command_timeout: '5m'
-          script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-
-            CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
-            echo "Applying changed infrastructure files..."
-
-            for file in $CHANGED_FILES; do
-              filename=$(basename "$file")
-              if [ -f "/tmp/k8s-infra/$filename" ]; then
-                echo "Applying $filename..."
-                kubectl apply -f "/tmp/k8s-infra/$filename"
-                echo "$filename applied successfully"
-              fi
-            done
-
-            echo "Waiting for deployments to be ready..."
-
-            if echo "$CHANGED_FILES" | grep -q "redis.yml"; then
-              echo "Waiting for redis deployment..."
-              kubectl rollout status deployment/redis --timeout=3m || true
-            fi
-
-            if echo "$CHANGED_FILES" | grep -q "postgres.yml"; then
-              echo "Waiting for postgres deployment..."
-              kubectl rollout status deployment/postgres --timeout=3m || true
-            fi
-
-            if echo "$CHANGED_FILES" | grep -q "kafka.yml"; then
-              echo "Waiting for kafka deployment..."
-              kubectl rollout status deployment/kafka --timeout=3m || true
-            fi
-
-            if echo "$CHANGED_FILES" | grep -q "elastic-search.yml"; then
-              echo "Waiting for elasticsearch deployment..."
-              kubectl rollout status deployment/elasticsearch --timeout=3m || true
-            fi
-
-            if echo "$CHANGED_FILES" | grep -q "logstash.yml"; then
-              echo "Waiting for logstash deployment..."
-              kubectl rollout status deployment/logstash --timeout=3m || true
-            fi
-
-            echo "Infrastructure update completed!"
+        shell: bash
+        run: |
+          set -e
+          
+          CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
+          echo "Applying changed infrastructure files..."
+          
+          for file in $CHANGED_FILES; do
+            echo "Applying $file..."
+            kubectl apply -f "$file"
+            echo "$file applied successfully"
+          done
+          
+          echo "Waiting for deployments to be ready..."
+          
+          if echo "$CHANGED_FILES" | grep -q "redis.yml"; then
+          echo "Waiting for redis deployment..."
+          kubectl rollout status deployment/redis --timeout=5m || true
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "postgres.yml"; then
+          echo "Waiting for postgres deployment..."
+          kubectl rollout status deployment/postgres --timeout=5m || true
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "kafka.yml"; then
+          echo "Waiting for kafka deployment..."
+          kubectl rollout status deployment/kafka --timeout=5m || true
+          fi
+          
+          if echo "$CHANGED_FILES" | grep -q "elastic-search.yml"; then
+          echo "Waiting for elasticsearch deployment..."
+          kubectl rollout status deployment/elasticsearch --timeout=5m || true
+          fi
+          
+          echo "Infrastructure update completed!"
