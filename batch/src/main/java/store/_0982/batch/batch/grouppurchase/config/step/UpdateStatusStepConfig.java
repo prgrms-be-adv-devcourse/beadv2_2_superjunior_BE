@@ -16,8 +16,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResult;
 import store._0982.batch.batch.grouppurchase.processor.StatusProcessor;
 import store._0982.batch.batch.grouppurchase.writer.StatusWriter;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Map;

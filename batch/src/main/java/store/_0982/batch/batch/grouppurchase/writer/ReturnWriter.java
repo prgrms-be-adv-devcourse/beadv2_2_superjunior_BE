@@ -6,10 +6,10 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
+import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResult;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReturnWriter implements ItemWriter<GroupPurchaseResult> {
     private final GroupPurchaseRepository groupPurchaseRepository;
-    private final ProducerFactory<String, GroupPurchaseEvent> groupPurchaseProducerFactory;
 
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
