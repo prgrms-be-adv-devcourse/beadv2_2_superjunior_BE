@@ -30,13 +30,13 @@ class ProductSearchServiceTest {
     private ElasticsearchOperations operations;
 
     @Mock
-    private ProductSearchQueryFactory queryFactory;
+    private ProductSearchQueryFactory productSearchQueryFactory;
 
     @Mock
     private IndexOperations indexOperations;
 
     @InjectMocks
-    private ProductSearchService service;
+    private ProductSearchService productSearchService;
 
     @Test
     @DisplayName("상품 인덱스 생성 성공")
@@ -55,7 +55,7 @@ class ProductSearchServiceTest {
                 .thenReturn(Document.create());
 
         // when
-        service.createProductIndex();
+        productSearchService.createProductIndex();
 
         // then
         verify(indexOperations).create(any(Document.class));
@@ -72,7 +72,7 @@ class ProductSearchServiceTest {
                 .thenReturn(true);
 
         // when
-        service.createProductIndex();
+        productSearchService.createProductIndex();
 
         // then
         verify(indexOperations, never()).create(any());
@@ -93,7 +93,7 @@ class ProductSearchServiceTest {
                 .thenReturn(true);
 
         // when
-        service.deleteProductIndex();
+        productSearchService.deleteProductIndex();
 
         // then
         verify(indexOperations).delete();
@@ -109,53 +109,77 @@ class ProductSearchServiceTest {
                 .thenReturn(false);
 
         // when
-        service.deleteProductIndex();
+        productSearchService.deleteProductIndex();
 
         // then
         verify(indexOperations, never()).delete();
     }
 
-    //test es 접속해서 하도록 수정 필요
     @Test
-    @DisplayName("상품 문서 검색 성공")
-    void searchProductDocument_success() {
+    @DisplayName("상품 검색 시 검색 결과를 PageResponse로 반환한다")
+    void search_product_document_success() {
         // given
-        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "아이폰";
         UUID sellerId = UUID.randomUUID();
         String category = "KIDS";
+        Pageable pageable = PageRequest.of(0, 10);
 
         NativeQuery query = mock(NativeQuery.class);
 
-        when(queryFactory.build(keyword, sellerId, category, pageable))
-                .thenReturn(query);
-
         ProductDocument document = ProductDocument.builder()
-                .productId("p-1")
+                .productId("product-id")
                 .name("아이폰 15")
-                .category(category)
+                .price(1_200_000L)
+                .category("KIDS")
                 .sellerId(sellerId.toString())
                 .build();
 
-        SearchHit<ProductDocument> hit = mock(SearchHit.class);
-        when(hit.getContent()).thenReturn(document);
+        SearchHit<ProductDocument> hit = new SearchHit<>(
+                "product-index",
+                "product-id",
+                null,
+                1.0f,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                document
+        );
 
-        SearchHits<ProductDocument> searchHits = mock(SearchHits.class);
-        when(searchHits.getSearchHits()).thenReturn(List.of(hit));
-        when(searchHits.getTotalHits()).thenReturn(1L);
+        SearchHits<ProductDocument> searchHits =
+                new SearchHitsImpl<>(
+                        1L,
+                        TotalHitsRelation.EQUAL_TO,
+                        1.0f,
+                        null,
+                        null,
+                        null,
+                        List.of(hit),
+                        null,
+                        null,
+                        null
+                );
+
+        when(productSearchQueryFactory.build(keyword, sellerId, category, pageable))
+                .thenReturn(query);
 
         when(operations.search(query, ProductDocument.class))
                 .thenReturn(searchHits);
 
         // when
         PageResponse<ProductDocumentInfo> response =
-                service.searchProductDocument(keyword, sellerId, category, pageable);
+                productSearchService.searchProductDocument(
+                        keyword, sellerId, category, pageable
+                );
 
         // then
+        assertThat(response).isNotNull();
         assertThat(response.content()).hasSize(1);
         assertThat(response.content().get(0).name()).isEqualTo("아이폰 15");
 
-        verify(queryFactory).build(keyword, sellerId, category, pageable);
+        verify(productSearchQueryFactory).build(keyword, sellerId, category, pageable);
         verify(operations).search(query, ProductDocument.class);
     }
 }
