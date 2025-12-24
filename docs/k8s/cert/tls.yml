@@ -45,7 +45,6 @@ metadata:
   name: 0982-store-ingress
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: default-https-redirect@kubernetescrd
-    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: 0982.store
