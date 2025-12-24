@@ -8,10 +8,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.grouppurchase.config.tasklet.event.GroupPurchaseUpdatedEvent;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResult;
-import store._0982.commerce.infrastructure.client.order.OrderClient;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.batch.infrastructure.client.order.OrderClient;
 
 import java.util.ArrayList;
 import java.util.List;

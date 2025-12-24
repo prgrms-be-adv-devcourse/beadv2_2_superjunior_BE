@@ -5,16 +5,16 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.batch.domain.product.Product;
+import store._0982.batch.domain.product.ProductRepository;
+import store._0982.batch.exception.CustomErrorCode;
+import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.batch.batch.grouppurchase.config.tasklet.event.GroupPurchaseUpdatedEvent;
-import store._0982.commerce.infrastructure.client.member.MemberClient;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.exception.CustomErrorCode;
 
 @Component
 @RequiredArgsConstructor
