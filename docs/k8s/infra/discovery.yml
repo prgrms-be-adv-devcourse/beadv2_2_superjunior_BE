@@ -1,4 +1,4 @@
-#file: noinspection KubernetesUnknownValues,SpellCheckingInspection
+#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,12 +14,12 @@ spec:
         app: discovery
     spec:
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       automountServiceAccountToken: false
       containers:
         - name: discovery
-          image: minbros/discovery
-          imagePullPolicy: Never
+          image: minbros/discovery:latest
+          imagePullPolicy: Always
           # 테스트용
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE

@@ -1,0 +1,121 @@
+#file: noinspection SpellCheckingInspection
+name: 'Deploy Private Service'
+description: 'Deploy a service to private instance via Bastion proxy'
+inputs:
+  service-name:
+    description: 'Service name (e.g., discovery, search)'
+    required: true
+  module-name:
+    description: 'Gradle module name (defaults to service-name)'
+    required: false
+  image-name:
+    description: 'Docker image name (e.g., minbros/discovery)'
+    required: true
+  deployment-name:
+    description: 'K8s deployment name (defaults to service-name)'
+    required: false
+  manifest-path:
+    description: 'Path to k8s manifest file'
+    required: true
+  dockerhub-username:
+    description: 'Docker Hub username'
+    required: true
+  dockerhub-token:
+    description: 'Docker Hub token'
+    required: true
+  kubeconfig:
+    description: 'Kubeconfig file content (base64 encoded)'
+    required: true
+  rollout-timeout:
+    description: 'Rollout timeout'
+    required: false
+    default: '5m'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: JDK 17 설정
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'gradle'
+
+    - name: Gradle 실행 권한 부여
+      shell: bash
+      run: chmod +x ./gradlew
+
+    - name: Docker Hub 로그인
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.dockerhub-username }}
+        password: ${{ inputs.dockerhub-token }}
+
+    - name: 버전 태그 생성
+      id: version
+      shell: bash
+      run: |
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        echo "tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+        echo "Image tag: $SHORT_SHA"
+
+    - name: Jib로 Docker 이미지 빌드 및 Push
+      shell: bash
+      run: |
+        MODULE="${{ inputs.module-name }}"
+        if [ -z "$MODULE" ]; then
+          MODULE="${{ inputs.service-name }}"
+        fi
+        ./gradlew :${MODULE}:jib \
+          -Djib.to.image=${{ inputs.dockerhub-username }}/${{ inputs.service-name }} \
+          -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
+          -Djib.to.auth.username=${{ inputs.dockerhub-username }} \
+          -Djib.to.auth.password=${{ inputs.dockerhub-token }}
+
+    - name: K8s 매니페스트 변경 확인
+      if: inputs.manifest-path != ''
+      id: check-manifest
+      shell: bash
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "${{ inputs.manifest-path }}"; then
+          echo "changed=true" >> $GITHUB_OUTPUT
+        else
+          echo "changed=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Kubectl 설치
+      uses: azure/setup-kubectl@v3
+
+    - name: Kubeconfig 설정
+      shell: bash
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ inputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: K8s 리소스 적용
+      if: inputs.manifest-path != '' && steps.check-manifest.outputs.changed == 'true'
+      shell: bash
+      run: |
+        MANIFEST_FILE="${{ inputs.manifest-path }}"
+        echo "Applying $MANIFEST_FILE..."
+        kubectl apply -f "$MANIFEST_FILE"
+        echo "${{ inputs.service-name }} manifest applied successfully"
+
+    - name: 배포
+      shell: bash
+      run: |
+        DEPLOYMENT="${{ inputs.deployment-name }}"
+        if [ -z "$DEPLOYMENT" ]; then
+          DEPLOYMENT="${{ inputs.service-name }}"
+        fi
+
+        echo "Updating deployment..."
+        kubectl set image deployment/$DEPLOYMENT \
+          $DEPLOYMENT=${{ inputs.image-name }}:${{ steps.version.outputs.tag }}
+
+        echo "Waiting for rollout..."
+        kubectl rollout status deployment/$DEPLOYMENT \
+          --timeout=${{ inputs.rollout-timeout }}
+
+        echo "${{ inputs.service-name }} Server deployed successfully with version ${{ steps.version.outputs.tag }}"
