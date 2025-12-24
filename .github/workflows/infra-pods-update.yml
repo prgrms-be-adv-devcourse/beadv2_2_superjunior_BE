@@ -7,7 +7,6 @@ on:
       - feature/ci-cd-*test
     paths:
       - 'docs/k8s/infra/*.yml'
-      - '!docs/k8s/infra/config.yml'
       - '!docs/k8s/infra/discovery.yml'
       - '.github/workflows/infra-pods-update.yml'
 
@@ -23,7 +22,7 @@ jobs:
       - name: 변경된 파일 탐색
         id: changed-files
         run: |
-          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/config\.yml' | grep -v 'docs/k8s/infra/discovery\.yml' | tr '\n' ' ' || echo "")
+          CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'docs/k8s/infra/.*\.yml$' | grep -v 'docs/k8s/infra/discovery\.yml' | tr '\n' ' ' || echo "")
           echo "files=$CHANGED" >> $GITHUB_OUTPUT
           echo "Changed files:"
           echo "$CHANGED"

@@ -24,8 +24,6 @@ spec:
             - secretRef:
                 name: member-secret
           env:
-            - name: SPRING_CLOUD_CONFIG_URI
-              value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
             - name: EUREKA_INSTANCE_HOSTNAME
@@ -33,16 +31,16 @@ spec:
             - name: GATEWAY_HOST
               value: "http://gateway-service:8000"
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "http://kafka-service:9092"
+              value: "kafka-service:9092"
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
-              ephemeral-storage: "512Mi"
+              memory: "384Mi"
+              ephemeral-storage: "768Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
-              ephemeral-storage: "1Gi"
+              memory: "768Mi"
+              ephemeral-storage: "1.5Gi"
           ports:
             - containerPort: 8083
           readinessProbe:

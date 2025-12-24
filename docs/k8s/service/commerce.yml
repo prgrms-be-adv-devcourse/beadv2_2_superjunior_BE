@@ -1,27 +1,29 @@
-#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
+#file: noinspection KubernetesUnknownValues
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notification
+  name: commerce
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      app: notification
+      app: commerce
   template:
     metadata:
       labels:
-        app: notification
+        app: commerce
     spec:
       automountServiceAccountToken: false
       nodeSelector:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
-        - name: notification
-          image: minbros/notification:latest
+        - name: commerce
+          image: minbros/commerce:latest
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: commerce-secret
           env:
-            - name: SPRING_CLOUD_CONFIG_URI
-              value: "http://config-service:8888"
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
             - name: EUREKA_INSTANCE_HOSTNAME
@@ -30,24 +32,21 @@ spec:
               value: "http://gateway-service:8000"
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
-          envFrom:
-            - secretRef:
-                name: notification-secret
           resources:
             requests:
-              cpu: "100m"
-              memory: "256Mi"
-              ephemeral-storage: "512Mi"
+              cpu: "200m"
+              memory: "384Mi"
+              ephemeral-storage: "768Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
-              ephemeral-storage: "1Gi"
+              memory: "768Mi"
+              ephemeral-storage: "1.5Gi"
           ports:
-            - containerPort: 8084
+            - containerPort: 8087
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: 8084
+              port: 8087
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -55,7 +54,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8084
+              port: 8087
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
@@ -64,13 +63,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: notification-service
+  name: commerce-service
 spec:
-  type: ClusterIP
   selector:
-    app: notification
+    app: commerce
   ports:
-    - port: 8084
-      targetPort: 8084
-      protocol: TCP
-      name: http
+    - port: 8087
+      targetPort: 8087
+  type: ClusterIP
