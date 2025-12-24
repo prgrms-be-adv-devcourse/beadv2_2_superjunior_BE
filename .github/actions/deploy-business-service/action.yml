@@ -87,7 +87,7 @@ runs:
       shell: bash
       run: |
         mkdir -p $HOME/.kube
-        echo "${{ inputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
+        echo "${{ inputs.kubeconfig }}" > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
 
     - name: K8s 리소스 적용

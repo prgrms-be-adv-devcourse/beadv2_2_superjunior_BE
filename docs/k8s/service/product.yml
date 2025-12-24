@@ -18,7 +18,7 @@ spec:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: product
-          image: minbros/product
+          image: minbros/product:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
