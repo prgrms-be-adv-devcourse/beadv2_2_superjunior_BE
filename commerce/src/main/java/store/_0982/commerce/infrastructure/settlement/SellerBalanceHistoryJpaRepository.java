@@ -8,5 +8,7 @@ import store._0982.commerce.domain.settlement.SellerBalanceHistory;
 import java.util.UUID;
 
 public interface SellerBalanceHistoryJpaRepository extends JpaRepository<SellerBalanceHistory, UUID> {
+
     Page<SellerBalanceHistory> findAllByMemberId(UUID memberId, Pageable pageable);
+
 }
