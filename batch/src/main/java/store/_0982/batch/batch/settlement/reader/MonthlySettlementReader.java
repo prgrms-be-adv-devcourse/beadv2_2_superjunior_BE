@@ -6,7 +6,7 @@ import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
-import store._0982.batch.domain.settlement.SellerBalance;
+import store._0982.batch.domain.sellerbalance.SellerBalance;
 
 import java.util.Map;
 

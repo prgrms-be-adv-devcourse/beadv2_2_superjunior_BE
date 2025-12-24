@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.domain.settlement.SellerBalanceHistory;
-import store._0982.batch.domain.settlement.SellerBalanceHistoryRepository;
+import store._0982.batch.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
 
 import java.util.UUID;
 

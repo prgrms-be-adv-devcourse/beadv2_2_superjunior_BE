@@ -6,6 +6,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 import store._0982.batch.application.settlement.BankTransferService;
+import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
@@ -75,7 +76,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
                     settlement.getSellerId(),
                     settlement.getSettlementId(),
                     transferAmount,
-                    BalanceHistoryStatus.DEBIT
+                    SellerBalanceHistoryStatus.DEBIT
             );
             sellerBalanceHistoryRepository.save(history);
 

@@ -1,4 +1,4 @@
-package store._0982.batch.domain.settlement;
+package store._0982.batch.domain.sellerbalance;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -25,12 +25,15 @@ public class SellerBalanceHistory {
     @Column(name = "settlement_id")
     private UUID settlementId;
 
+    @Column(name = "group_purchase_id")
+    private UUID groupPurchaseId;
+
     @Column(name = "amount", nullable = false)
     private Long amount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 10)
-    private BalanceHistoryStatus status;
+    private SellerBalanceHistoryStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -40,7 +43,7 @@ public class SellerBalanceHistory {
             UUID memberId,
             UUID settlementId,
             Long amount,
-            BalanceHistoryStatus status
+            SellerBalanceHistoryStatus status
     ) {
         this.historyId = UUID.randomUUID();
         this.memberId = memberId;

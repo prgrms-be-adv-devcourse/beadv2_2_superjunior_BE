@@ -16,7 +16,7 @@ import store._0982.batch.batch.settlement.reader.LowBalanceReader;
 import store._0982.batch.batch.settlement.reader.MonthlySettlementReader;
 import store._0982.batch.batch.settlement.writer.LowBalanceNotificationWriter;
 import store._0982.batch.batch.settlement.writer.MonthlySettlementWriter;
-import store._0982.batch.domain.settlement.SellerBalance;
+import store._0982.batch.domain.sellerbalance.SellerBalance;
 import store._0982.batch.domain.settlement.Settlement;
 
 @RequiredArgsConstructor

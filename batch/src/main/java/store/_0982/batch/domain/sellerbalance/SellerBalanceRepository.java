@@ -1,4 +1,4 @@
-package store._0982.batch.domain.settlement;
+package store._0982.batch.domain.sellerbalance;
 
 import java.util.List;
 import java.util.Optional;

@@ -3,7 +3,7 @@ package store._0982.batch.application.settlement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.batch.domain.settlement.*;
+import store._0982.batch.domain.sellerbalance.*;
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public class SellerBalanceCommandService {
         sellerBalanceRepository.save(sellerBalance);
 
         sellerBalanceHistoryRepository.save(
-                new SellerBalanceHistory(sellerId, null, amount, BalanceHistoryStatus.CREDIT)
+                new SellerBalanceHistory(sellerId, null, amount, SellerBalanceHistoryStatus.CREDIT)
         );
     }
 }
