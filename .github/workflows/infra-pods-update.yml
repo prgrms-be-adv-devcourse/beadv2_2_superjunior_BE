@@ -43,7 +43,7 @@ jobs:
       - name: 변경된 Infra 리소스 적용
         if: steps.changed-files.outputs.files != ''
         shell: bash
-        run: |          
+        run: |
           set -e
           
           CHANGED_FILES="${{ steps.changed-files.outputs.files }}"
@@ -51,9 +51,9 @@ jobs:
           
           for file in $CHANGED_FILES; do
           filename=$(basename "$file")
-          if [ -f "/tmp/k8s-infra/$filename" ]; then
+          if [ -f "/docs/k8s/infra/$filename" ]; then
           echo "Applying $filename..."
-          kubectl apply -f "/tmp/k8s-infra/$filename"
+          kubectl apply -f "/docs/k8s/infra/$filename"
           echo "$filename applied successfully"
           fi
           done

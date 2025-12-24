@@ -114,5 +114,3 @@ spec:
       name: kafka
   selector:
     app: kafka
-
-# DDD
