@@ -7,10 +7,10 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/group_purchase?currentSchema=notification_schema}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    url: ${MEMBER_DATABASE_URL}
-    username: ${MEMBER_POSTGRES_USERNAME}
-    password: ${MEMBER_POSTGRES_PASSWORD}
 
   jpa:
     hibernate:
@@ -19,7 +19,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: false
+        show-sql: false
     open-in-view: false
 
   mail:
@@ -75,6 +75,8 @@ jwt:
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
 
-logstash:
-  host: ${LOGSTASH_HOST}
-  port: ${LOGSTASH_PORT}
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+  default-flat-param-object: true
