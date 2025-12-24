@@ -29,11 +29,11 @@ jobs:
           echo "$CHANGED"
 
       - name: Kubectl 설치
-        if: steps.changed-files.outputs.changed == ''
+        if: steps.changed-files.outputs.files != ''
         uses: azure/setup-kubectl@v3
 
       - name: Kubeconfig 설정
-        if: steps.changed-files.outputs.changed == ''
+        if: steps.changed-files.outputs.files != ''
         shell: bash
         run: |
           mkdir -p $HOME/.kube
@@ -50,12 +50,9 @@ jobs:
           echo "Applying changed infrastructure files..."
           
           for file in $CHANGED_FILES; do
-          filename=$(basename "$file")
-          if [ -f "/docs/k8s/infra/$filename" ]; then
-          echo "Applying $filename..."
-          kubectl apply -f "/docs/k8s/infra/$filename"
-          echo "$filename applied successfully"
-          fi
+            echo "Applying $file..."
+            kubectl apply -f "$file"
+            echo "$file applied successfully"
           done
           
           echo "Waiting for deployments to be ready..."
@@ -78,11 +75,6 @@ jobs:
           if echo "$CHANGED_FILES" | grep -q "elastic-search.yml"; then
           echo "Waiting for elasticsearch deployment..."
           kubectl rollout status deployment/elasticsearch --timeout=5m || true
-          fi
-          
-          if echo "$CHANGED_FILES" | grep -q "logstash.yml"; then
-          echo "Waiting for logstash deployment..."
-          kubectl rollout status deployment/logstash --timeout=5m || true
           fi
           
           echo "Infrastructure update completed!"
