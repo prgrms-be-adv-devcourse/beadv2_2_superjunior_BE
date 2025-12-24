@@ -13,7 +13,7 @@ on:
       - 'elastic-search/**'
       - 'docs/k8s/infra/discovery.yml'
       - 'docs/k8s/service/search.yml'
-      - '.github/workflows/private-services-deploy.yml'
+      - 'infra-services-deploy.yml'
 
 jobs:
   detect-changes:
@@ -58,17 +58,14 @@ jobs:
           fetch-depth: 0
 
       - name: Discovery 배포
-        uses: ./.github/actions/deploy-private-service
+        uses: ./.github/actions/deploy-infra-service
         with:
           service-name: discovery
           image-name: ${{ secrets.DOCKERHUB_USERNAME }}/discovery
           manifest-path: docs/k8s/infra/discovery.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
-          private-host: ${{ secrets.PRIVATE_HOST }}
-          private-user: ${{ secrets.PRIVATE_USER }}
-          private-ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
   # Search 배포
   deploy-search:
@@ -82,15 +79,12 @@ jobs:
           fetch-depth: 0
 
       - name: Search 배포
-        uses: ./.github/actions/deploy-private-service
+        uses: ./.github/actions/deploy-infra-service
         with:
           service-name: search
           module-name: elastic-search
           image-name: ${{ secrets.DOCKERHUB_USERNAME }}/search
           manifest-path: docs/k8s/service/search.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
-          private-host: ${{ secrets.PRIVATE_HOST }}
-          private-user: ${{ secrets.PRIVATE_USER }}
-          private-ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

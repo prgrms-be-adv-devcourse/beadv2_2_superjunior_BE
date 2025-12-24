@@ -32,11 +32,11 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
         - name: postgres
           image: postgres:15-alpine
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
           envFrom:
@@ -45,11 +45,11 @@ spec:
           resources:
             requests:
               ephemeral-storage: "1Gi"
-              memory: "256Mi"
+              memory: "512Mi"
               cpu: "250m"
             limits:
               ephemeral-storage: "2Gi"
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
           volumeMounts:
             - name: postgres-storage
@@ -73,3 +73,5 @@ spec:
     - port: 5432
       targetPort: 5432
       nodePort: 30432
+
+# DDD

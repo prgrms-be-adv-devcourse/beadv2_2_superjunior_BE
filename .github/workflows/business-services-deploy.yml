@@ -17,7 +17,7 @@ on:
       - 'settings.gradle'
       - 'docs/k8s/service/*.yml'
       - '!docs/k8s/service/search.yml'
-      - '.github/workflows/public-services-deploy.yml'
+      - 'business-services-deploy.yml'
 
 jobs:
   detect-changes:
@@ -94,15 +94,13 @@ jobs:
           fetch-depth: 0
 
       - name: Gateway 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: gateway
           manifest-path: docs/k8s/service/gateway.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
   # Member 배포
   deploy-member:
@@ -116,15 +114,13 @@ jobs:
           fetch-depth: 0
 
       - name: Member 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: member
           manifest-path: docs/k8s/service/member.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
   # Notification 배포
   deploy-notification:
@@ -138,15 +134,13 @@ jobs:
           fetch-depth: 0
 
       - name: Notification 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: notification
           manifest-path: docs/k8s/service/notification.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
   # Point 배포
   deploy-point:
@@ -160,15 +154,13 @@ jobs:
           fetch-depth: 0
 
       - name: Point 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: point
           manifest-path: docs/k8s/service/point.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
   # Order 배포
   deploy-order:
@@ -182,15 +174,13 @@ jobs:
           fetch-depth: 0
 
       - name: Order 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: order
           manifest-path: docs/k8s/service/order.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
   # Product 배포
   deploy-product:
@@ -204,12 +194,10 @@ jobs:
           fetch-depth: 0
 
       - name: Product 배포
-        uses: ./.github/actions/deploy-public-service
+        uses: ./.github/actions/deploy-business-service
         with:
           service-name: product
           manifest-path: docs/k8s/service/product.yml
-          bastion-host: ${{ secrets.BASTION_HOST }}
-          bastion-user: ${{ secrets.BASTION_USER }}
-          bastion-ssh-key: ${{ secrets.BASTION_SSH_KEY }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}

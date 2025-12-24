@@ -18,7 +18,7 @@ spec:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: point
-          image: minbros/point
+          image: minbros/point:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
@@ -75,3 +75,5 @@ spec:
     - port: 8086
       targetPort: 8086
   type: ClusterIP
+
+# DDD
