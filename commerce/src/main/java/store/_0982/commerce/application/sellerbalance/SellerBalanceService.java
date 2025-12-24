@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
-import store._0982.commerce.domain.settlement.SellerBalance;
-import store._0982.commerce.domain.settlement.SellerBalanceHistory;
-import store._0982.commerce.domain.settlement.SellerBalanceHistoryRepository;
-import store._0982.commerce.domain.settlement.SellerBalanceRepository;
+import store._0982.commerce.domain.sellerbalance.SellerBalance;
+import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
+import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 
 import java.util.UUID;
 

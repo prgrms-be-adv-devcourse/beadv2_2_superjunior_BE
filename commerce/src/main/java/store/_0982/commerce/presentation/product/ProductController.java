@@ -10,8 +10,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
-import store._0982.common.auth.RequireRole;
-import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
@@ -36,7 +34,6 @@ public class ProductController {
     @ControllerLog
     @Operation(summary = "상품 등록", description = "판매자가 새로운 상품을 등록한다.")
     @PostMapping
-    @RequireRole({Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<ProductRegisterInfo> createProduct(
             @RequestHeader(HeaderName.ID) UUID memberId,
@@ -69,7 +66,6 @@ public class ProductController {
     @Operation(summary = "내가 등록한 상품 조회(판매자)", description = "내가 등록한 상품 목록을 조회 합니다.")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @RequireRole({Role.SELLER, Role.ADMIN})
     public ResponseDto<PageResponse<ProductListInfo>> getProductListInfo(
             @RequestHeader(HeaderName.ID) UUID memberId,
             @PageableDefault(

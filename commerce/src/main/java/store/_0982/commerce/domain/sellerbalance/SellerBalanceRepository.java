@@ -1,14 +1,11 @@
-package store._0982.commerce.domain.settlement;
+package store._0982.commerce.domain.sellerbalance;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface SellerBalanceRepository {
 
     Optional<SellerBalance> findByMemberId(UUID sellerId);
-
-    List<SellerBalance> findAllByMemberIdIn(List<UUID> memberIds);
 
     void save(SellerBalance sellerBalance);
 
