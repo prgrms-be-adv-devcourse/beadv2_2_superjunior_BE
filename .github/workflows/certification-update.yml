@@ -48,7 +48,6 @@ jobs:
           set -e
           
           echo "Applying TLS..."
-            kubectl apply -f /tmp/k8s-cert/tls.yml \
-              --kubeconfig=/etc/rancher/k3s/k3s.yaml
+            kubectl apply -f /tmp/k8s-cert/tls.yml
 
             echo "TLS successfully applied"
