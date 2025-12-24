@@ -17,7 +17,7 @@ class GroupPurchaseSearchQueryFactoryTest {
     private final GroupPurchaseSearchQueryFactory factory = new GroupPurchaseSearchQueryFactory();
 
     @Test
-    @DisplayName("keyword가 비어있으면 match_all + status/category/seller 필터 조합을 만든다")
+    @DisplayName("keyword가 비어있으면 match_all + status/category/seller 필터 조합 생성")
     void create_matchAllQuery_success() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
@@ -51,10 +51,10 @@ class GroupPurchaseSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("keyword가 있으면 phrase/prefix/fuzzy/match should와 status 필터를 포함한다")
+    @DisplayName("keyword가 있으면 phrase/prefix/fuzzy/match should과 status 필터 포함")
     void create_keywordQuery_success() {
         // given
-        String keyword = "아이폰";
+        String keyword = "테스트";
         String status = "CLOSED";
         Pageable pageable = PageRequest.of(1, 5);
 
@@ -84,7 +84,7 @@ class GroupPurchaseSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("status가 비어있으면 status 필터를 추가하지 않는다")
+    @DisplayName("status가 비어있으면 status 필터 추가되지 않음")
     void create_withoutStatus_success() {
         // given
         String keyword = "test";
@@ -108,7 +108,7 @@ class GroupPurchaseSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("category가 비어있으면 nested category 필터를 추가하지 않는다")
+    @DisplayName("category가 비어있으면 nested category 필터 추가되지 않음")
     void create_withoutCategory_success() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
@@ -131,10 +131,10 @@ class GroupPurchaseSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("keyword가 있고 category와 sellerId가 있으면 nested 필터가 모두 포함된다")
+    @DisplayName("keyword가 있고 category와 sellerId가 있으면 nested 필터 포함")
     void create_keywordWithCategoryAndSeller_success() {
         // given
-        String keyword = "헤드폰";
+        String keyword = "키워드";
         String status = "OPEN";
         String memberId = UUID.randomUUID().toString();
         String category = "ELECTRONICS";
@@ -167,7 +167,7 @@ class GroupPurchaseSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("모든 필터와 keyword가 비어있으면 순수 match_all만 생성된다")
+    @DisplayName("모든 필터와 keyword가 비어있으면 순수 match_all 생성")
     void create_pureMatchAll_success() {
         // given
         Pageable pageable = PageRequest.of(3, 4);

@@ -17,7 +17,7 @@ class ProductSearchQueryFactoryTest {
     private final ProductSearchQueryFactory factory = new ProductSearchQueryFactory();
 
     @Test
-    @DisplayName("keyword가 비어있으면 match_all + sellerId 필터 쿼리를 만든다")
+    @DisplayName("keyword가 비어있으면 match_all + sellerId 필터 쿼리 생성")
     void build_matchAllQuery_success() {
         // given
         UUID sellerId = UUID.randomUUID();
@@ -39,7 +39,7 @@ class ProductSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("keyword가 있으면 phrase/prefix/fuzzy/match should와 sellerId, category 필터를 포함한다")
+    @DisplayName("keyword가 있으면 phrase/prefix/fuzzy/match should과 sellerId, category 필터 포함")
     void build_keywordQuery_success() {
         // given
         String keyword = "test";
@@ -69,7 +69,7 @@ class ProductSearchQueryFactoryTest {
     }
 
     @Test
-    @DisplayName("category가 비어있으면 category 필터는 포함하지 않는다")
+    @DisplayName("category가 비어있으면 category 필터가 추가되지 않음")
     void build_withoutCategory_success() {
         // given
         UUID sellerId = UUID.randomUUID();

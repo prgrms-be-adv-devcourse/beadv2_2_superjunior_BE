@@ -78,15 +78,15 @@ class ProductSearchControllerTest {
     void searchProductDocument_success() throws Exception {
         // given
         UUID sellerId = UUID.randomUUID();
-        String keyword = "아이폰";
+        String keyword = "테스트";
         String category = "KIDS";
 
         ProductDocumentInfo doc = new ProductDocumentInfo(
                 "1",
-                "아이폰 테스트",
+                "테스트상품",
                 1_200_000L,
                 category,
-                "아이폰 설명",
+                "테스트상품설명",
                 10,
                 "https://example.com/product/1",
                 sellerId.toString(),
@@ -122,7 +122,14 @@ class ProductSearchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("상품 문서 검색 완료."))
-                .andExpect(jsonPath("$.data.content[0].name").value("아이폰 테스트"));
+                .andExpect(jsonPath("$.data.content[0].name").value("테스트상품"));
+
+        verify(productSearchService).searchProductDocument(
+                eq(keyword),
+                eq(sellerId),
+                eq(category),
+                any(Pageable.class)
+        );
     }
 
     @Test
@@ -135,10 +142,10 @@ class ProductSearchControllerTest {
 
         ProductDocumentInfo doc = new ProductDocumentInfo(
                 "1",
-                "아이폰 테스트",
+                "테스트상품",
                 1_200_000L,
                 category,
-                "아이폰 설명",
+                "테스트상품설명",
                 10,
                 "https://example.com/product/1",
                 sellerId.toString(),
@@ -171,6 +178,25 @@ class ProductSearchControllerTest {
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.content[0].name").value("아이폰 테스트"));
+                .andExpect(jsonPath("$.data.content[0].name").value("테스트상품"));
+
+        verify(productSearchService).searchProductDocument(
+                eq(keyword),
+                eq(sellerId),
+                isNull(),
+                any(Pageable.class)
+        );
+    }
+
+    @Test
+    @DisplayName("sellerId 헤더 누락 시 400 응답")
+    void searchProductDocument_withoutSellerIdHeader_badRequest() throws Exception {
+        mockMvc.perform(get("/api/searches/product/search")
+                        .param("keyword", "test")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isUnauthorized());
+
+        Mockito.verifyNoInteractions(productSearchService);
     }
 }

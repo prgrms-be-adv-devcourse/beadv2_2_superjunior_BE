@@ -69,18 +69,18 @@ class GroupPurchaseSearchControllerTest {
     @DisplayName("모든 공동구매 문서 검색 성공 - keyword + status 포함")
     void searchAllGroupPurchaseDocument_success() throws Exception {
         // given
-        String keyword = "아이폰";
+        String keyword = "테스트";
         String status = "OPEN";
         String category = "";
 
         GroupPurchaseDocumentInfo doc =
                 new GroupPurchaseDocumentInfo(
                         "gp-1",                 // groupPurchaseId
-                        "애플공식스토어",          // sellerName
+                        "샘플판매자",            // sellerName
                         10,                     // minQuantity
                         100,                    // maxQuantity
-                        "아이폰 공동구매",          // title
-                        "아이폰 공동구매 설명",     // description
+                        "테스트공동구매",        // title
+                        "공동구매 설명",         // description
                         1_000_000L,             // discountedPrice
                         "OPEN",                 // status
                         "2025-01-01",            // startDate
@@ -132,7 +132,7 @@ class GroupPurchaseSearchControllerTest {
 
         ProductEvent event = new ProductEvent(
                 UUID.randomUUID(),
-                "아이폰",
+                "테스트상품",
                 5L,
                 "HOME",
                 "description",
@@ -141,16 +141,16 @@ class GroupPurchaseSearchControllerTest {
                 sellerId,
                 OffsetDateTime.now().toString(),
                 OffsetDateTime.now().toString()
-                );
+        );
 
         GroupPurchaseDocumentInfo doc =
                 new GroupPurchaseDocumentInfo(
                         "gp-1",                 // groupPurchaseId
-                        "애플공식스토어",          // sellerName
+                        "샘플판매자",            // sellerName
                         10,                     // minQuantity
                         100,                    // maxQuantity
-                        "아이폰 공동구매",          // title
-                        "아이폰 공동구매 설명",     // description
+                        "테스트공동구매",        // title
+                        "공동구매 설명",         // description
                         1_000_000L,             // discountedPrice
                         "OPEN",                 // status
                         "2025-01-01",            // startDate
@@ -159,7 +159,7 @@ class GroupPurchaseSearchControllerTest {
                         OffsetDateTime.now(),   // updatedAt
                         5,                      // currentQuantity
                         null,
-                        ProductDocumentEmbedded.from(event)// productEvent
+                        ProductDocumentEmbedded.from(event) // productEvent
                 );
 
         Page<GroupPurchaseDocumentInfo> page =
@@ -176,7 +176,7 @@ class GroupPurchaseSearchControllerTest {
                 eq(keyword),
                 isNull(),
                 eq(sellerId),
-               eq(""),
+                eq(""),
                 any(Pageable.class)
         )).thenReturn(response);
 
