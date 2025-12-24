@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.settlement;
+package store._0982.commerce.domain.sellerbalance;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,7 +30,7 @@ public class SellerBalanceHistory {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 10)
-    private BalanceHistoryStatus status;
+    private SellerBalanceHistoryStatus status;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

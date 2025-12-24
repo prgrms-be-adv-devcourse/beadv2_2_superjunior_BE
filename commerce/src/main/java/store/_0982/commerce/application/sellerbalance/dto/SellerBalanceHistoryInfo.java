@@ -1,7 +1,7 @@
 package store._0982.commerce.application.sellerbalance.dto;
 
-import store._0982.commerce.domain.settlement.BalanceHistoryStatus;
-import store._0982.commerce.domain.settlement.SellerBalanceHistory;
+import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
+import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -11,7 +11,7 @@ public record SellerBalanceHistoryInfo(
         UUID memberId,
         UUID settlementId,
         Long amount,
-        BalanceHistoryStatus status,
+        SellerBalanceHistoryStatus status,
         OffsetDateTime createdAt
 ) {
     public static SellerBalanceHistoryInfo from(SellerBalanceHistory history) {

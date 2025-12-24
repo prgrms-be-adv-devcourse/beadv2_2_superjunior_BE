@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.settlement;
+package store._0982.commerce.domain.sellerbalance;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

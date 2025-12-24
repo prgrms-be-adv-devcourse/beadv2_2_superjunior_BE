@@ -1,7 +1,7 @@
 package store._0982.commerce.infrastructure.settlement;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import store._0982.commerce.domain.settlement.SellerBalance;
+import store._0982.commerce.domain.sellerbalance.SellerBalance;
 
 import java.util.Optional;
 import java.util.UUID;
