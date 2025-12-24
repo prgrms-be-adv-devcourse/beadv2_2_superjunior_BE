@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.log.ServiceLog;
 import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.application.cart.dto.CartAddCommand;
 import store._0982.commerce.application.cart.dto.CartDeleteCommand;
@@ -56,12 +55,6 @@ public class CartService {
     @Transactional
     public void flushCart(UUID memberId) {
         cartRepository.flushCart(memberId);
-    }
-
-    @Transactional
-    @ServiceLog
-    public void cleanUpZeroCarts() {
-        cartRepository.deleteAllZeroQuantity();
     }
 
     private void checkOwner(Cart cart, UUID memberId) {

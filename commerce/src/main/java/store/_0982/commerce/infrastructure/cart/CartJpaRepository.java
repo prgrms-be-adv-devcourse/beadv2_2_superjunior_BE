@@ -13,9 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CartJpaRepository extends JpaRepository<Cart, UUID> {
-    @Modifying
-    @Query("delete from Cart c where c.quantity <= 0")
-    void deleteAllZeroQuantity();
 
     Optional<Cart> findByMemberIdAndGroupPurchaseId(@Param("memberId") UUID memberId, @Param("groupPurchaseId") UUID groupPurchaseId);
 

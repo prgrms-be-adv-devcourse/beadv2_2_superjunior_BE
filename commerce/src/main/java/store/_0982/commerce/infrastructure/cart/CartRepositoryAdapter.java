@@ -22,11 +22,6 @@ public class CartRepositoryAdapter implements CartRepository {
         return cartJpaRepository.save(cart);
     }
 
-    @Override
-    public void deleteAllZeroQuantity() {
-        cartJpaRepository.deleteAllZeroQuantity();
-    }
-
     public Optional<Cart> findByMemberIdAndGroupPurchaseId(UUID memberId, UUID groupPurchaseId) {
         return cartJpaRepository.findByMemberIdAndGroupPurchaseId(memberId, groupPurchaseId);
     }

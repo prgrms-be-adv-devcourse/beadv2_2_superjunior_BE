@@ -10,8 +10,6 @@ import java.util.UUID;
 public interface CartRepository {
     Cart save(Cart cart);
 
-    void deleteAllZeroQuantity();
-
     Optional<Cart> findByMemberIdAndGroupPurchaseId(UUID memberId, UUID groupPurchaseId);
 
     Optional<Cart> findById(UUID cartId);
