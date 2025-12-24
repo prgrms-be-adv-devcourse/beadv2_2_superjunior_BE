@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import store._0982.commerce.event.dto.OrderCreatedEvent;
+import store._0982.commerce.application.order.dto.OrderCreatedEvent;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointDeductRequest;
 
