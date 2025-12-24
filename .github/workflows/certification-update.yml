@@ -48,6 +48,6 @@ jobs:
           set -e
           
           echo "Applying TLS..."
-            kubectl apply -f /tmp/k8s-cert/tls.yml
+            kubectl apply -f tls.yml
 
             echo "TLS successfully applied"
