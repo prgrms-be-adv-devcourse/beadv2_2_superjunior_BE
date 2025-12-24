@@ -122,3 +122,5 @@ spec:
       name: transport
   selector:
     app: elasticsearch
+
+# DDD
