@@ -1,5 +1,6 @@
 package store._0982.elasticsearch.application;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +22,18 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Import(KafkaTestConfig.class)
 @ActiveProfiles("test")
 @EmbeddedKafka(
         partitions = 1,
-        topics = KafkaTopics.PRODUCT_UPSERTED
+        topics = {
+                KafkaTopics.PRODUCT_UPSERTED,
+                KafkaTopics.PRODUCT_DELETED
+        }
 )
 class ProductEventListenerTest {
 
@@ -42,6 +45,11 @@ class ProductEventListenerTest {
 
     @Autowired
     private KafkaTestProbe probe;
+
+    @BeforeEach
+    void setUp() {
+        probe.reset();
+    }
 
     @Test
     @DisplayName("PRODUCT_UPSERTED 이벤트 수신 시 상품 문서 저장")
@@ -65,7 +73,7 @@ class ProductEventListenerTest {
 
         when(productRepository.save(any(ProductDocument.class)))
                 .thenAnswer(invocation -> {
-                    probe.markConsumed(); // 🔥 Kafka 메시지 소비 확인
+                    probe.markConsumed(); // Kafka 메시지 소비 확인
                     return invocation.getArgument(0);
                 });
 
@@ -78,5 +86,33 @@ class ProductEventListenerTest {
 
         verify(productRepository).save(any(ProductDocument.class));
         verify(productRepository, never()).deleteById(any());
+    }
+
+    @Test
+    @DisplayName("PRODUCT_DELETED 이벤트 수신 시 상품 문서 삭제")
+    void product_delete_event_consumed_and_deleted() throws Exception {
+        // given
+        UUID productId = UUID.randomUUID();
+
+        ProductEvent event = new ProductEvent(
+                productId,
+                null, null, null, null, null, null, null,
+                null, null
+        );
+
+        doAnswer(invocation -> {
+            probe.markConsumed();
+            return null;
+        }).when(productRepository).deleteById(anyString());
+
+        // when
+        kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, event).get();
+
+        // then
+        boolean consumed = probe.await(10, TimeUnit.SECONDS);
+        assertThat(consumed).isTrue();
+
+        verify(productRepository).deleteById(productId.toString());
+        verify(productRepository, never()).save(any());
     }
 }

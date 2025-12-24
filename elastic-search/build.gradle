@@ -29,3 +29,8 @@ jib {
         ports = ['8082']
     }
 }
+// 카프카 병렬테스트 오류 방지
+test {
+    maxParallelForks = 1
+}
+
