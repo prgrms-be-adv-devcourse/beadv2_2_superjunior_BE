@@ -210,6 +210,33 @@ class ProductControllerTest {
         }
 
         @Test
+        @DisplayName("가격이 0 이면 400 에러가 발생합니다. (경계값)")
+        void createProduct_zeroPrice() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+            ProductRegisterRequest request = new ProductRegisterRequest(
+                    "테스트 상품",
+                    0L,
+                    ProductCategory.FOOD,
+                    "맛있는 테스트 상품입니다.",
+                    100,
+                    "https://example.com/image.jpg"
+            );
+
+            // when & then
+            mockMvc.perform(
+                            post("/api/products")
+                                    .header(HeaderName.ID, memberId.toString())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request))
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
+
+            verify(productService, never()).createProduct(any());
+        }
+
+        @Test
         @DisplayName("재고가 0 이하이면 400 에러가 발생합니다.")
         void createProduct_invalidStock() throws Exception {
             // given
@@ -220,6 +247,60 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     -10,
+                    "https://example.com/image.jpg"
+            );
+
+            // when & then
+            mockMvc.perform(
+                            post("/api/products")
+                                    .header(HeaderName.ID, memberId.toString())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request))
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
+
+            verify(productService, never()).createProduct(any());
+        }
+
+        @Test
+        @DisplayName("재고가 0 이면 400 에러가 발생합니다. (경계값)")
+        void createProduct_zeroStock() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+            ProductRegisterRequest request = new ProductRegisterRequest(
+                    "테스트 상품",
+                    10000L,
+                    ProductCategory.FOOD,
+                    "맛있는 테스트 상품입니다.",
+                    0,
+                    "https://example.com/image.jpg"
+            );
+
+            // when & then
+            mockMvc.perform(
+                            post("/api/products")
+                                    .header(HeaderName.ID, memberId.toString())
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request))
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400));
+
+            verify(productService, never()).createProduct(any());
+        }
+
+        @Test
+        @DisplayName("설명이 blank이면 400 에러가 발생합니다.")
+        void createProduct_blankDescription() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+            ProductRegisterRequest request = new ProductRegisterRequest(
+                    "테스트 상품",
+                    10000L,
+                    ProductCategory.FOOD,
+                    "",
+                    100,
                     "https://example.com/image.jpg"
             );
 
