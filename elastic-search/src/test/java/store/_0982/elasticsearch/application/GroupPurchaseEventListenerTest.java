@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Import(KafkaTestConfig.class)
-@ActiveProfiles("test")
+@ActiveProfiles("kafka")
 @EmbeddedKafka(
         partitions = 1,
         topics = {

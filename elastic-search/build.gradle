@@ -39,11 +39,7 @@ jib {
     }
 }
 
-// 카프카 병렬 테스트 오류 방지 + integration 테스트 기본 제외
+// 카프카 병렬 테스트 오류 방지
 test {
     maxParallelForks = 1
-
-    useJUnitPlatform {
-        excludeTags "integration"
-    }
 }
