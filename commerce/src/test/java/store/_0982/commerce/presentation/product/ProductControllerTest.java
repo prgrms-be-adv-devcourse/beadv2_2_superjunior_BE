@@ -21,7 +21,9 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -315,6 +317,89 @@ class ProductControllerTest {
                     .andExpect(jsonPath("$.status").value(400));
 
             verify(productService, never()).createProduct(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("상품 삭제 API")
+    class DeleteProductTest {
+
+        @Test
+        @DisplayName("상품을 삭제합니다.")
+        void deleteProduct_success() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+            UUID productId = UUID.randomUUID();
+
+            doNothing().when(productService).deleteProduct(productId, memberId);
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/products/{productId}", productId)
+                                    .header(HeaderName.ID, memberId.toString())
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.message").value("상품이 삭제되었습니다."))
+                    .andExpect(jsonPath("$.data").isEmpty());
+
+            verify(productService, times(1)).deleteProduct(eq(productId), eq(memberId));
+        }
+
+        @Test
+        @DisplayName("memberId 헤더가 없으면 401 에러가 발생합니다.")
+        void deleteProduct_missingMemberId() throws Exception {
+            // given
+            UUID productId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/products/{productId}", productId)
+                    )
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("로그인 정보가 없습니다."));
+
+            verify(productService, never()).deleteProduct(any(), any());
+        }
+
+        @Test
+        @DisplayName("잘못된 memberId UUID 형식이면 400 에러가 발생합니다.")
+        void deleteProduct_invalidMemberUUID() throws Exception {
+            // given
+            UUID productId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/products/{productId}", productId)
+                                    .header(HeaderName.ID, "uuid")
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(productService, never()).deleteProduct(any(), any());
+        }
+
+        @Test
+        @DisplayName("잘못된 productId UUID 형식이면 400 에러가 발생합니다.")
+        void deleteProduct_invalidProductUUID() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/products/{productId}", "uuid")
+                                    .header(HeaderName.ID, memberId.toString())
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(productService, never()).deleteProduct(any(), any());
         }
     }
 }
