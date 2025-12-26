@@ -99,7 +99,6 @@ class SellerBalanceControllerTest {
             mockMvc.perform(
                             get("/api/balances")
                                     .header(HeaderName.ID, memberId.toString())
-                                    .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value(200))
@@ -110,6 +109,35 @@ class SellerBalanceControllerTest {
 
             verify(sellerBalanceService, times(1))
                     .getBalance(memberId);
+        }
+
+        @Test
+        @DisplayName("memberId 헤더가 없으면 401 에러가 발생합니다.")
+        void getBalance_missingMemberId() throws Exception {
+            // when & then
+            mockMvc.perform(get("/api/balances"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("로그인 정보가 없습니다."));
+
+            verify(sellerBalanceService, never()).getBalance(any());
+        }
+
+        @Test
+        @DisplayName("잘못된 UUID 형식이면 400 에러가 발생합니다.")
+        void getBalance_invalidUUID() throws Exception {
+            // when & then
+            mockMvc.perform(
+                            get("/api/balances")
+                                    .header(HeaderName.ID, "uuid")
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(sellerBalanceService, never()).getBalance(any());
         }
     }
 
@@ -200,7 +228,6 @@ class SellerBalanceControllerTest {
                                     .header(HeaderName.ID, memberId.toString())
                                     .param("page", "0")
                                     .param("size", "20")
-                                    .contentType(MediaType.APPLICATION_JSON)
                     )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.content").isArray())
@@ -249,6 +276,41 @@ class SellerBalanceControllerTest {
 
             verify(sellerBalanceService, times(1))
                     .getBalanceHistory(eq(memberId), any(Pageable.class));
+        }
+
+        @Test
+        @DisplayName("memberId 헤더가 없으면 401 에러가 발생합니다.")
+        void getBalanceHistory_missingMemberId() throws Exception {
+            // when & then
+            mockMvc.perform(
+                            get("/api/balances/history")
+                                    .param("page", "0")
+                                    .param("size", "20")
+                    )
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("로그인 정보가 없습니다."));
+
+            verify(sellerBalanceService, never()).getBalanceHistory(any(), any());
+        }
+
+        @Test
+        @DisplayName("잘못된 UUID 형식이면 400 에러가 발생합니다.")
+        void getBalanceHistory_invalidUUID() throws Exception {
+            // when & then
+            mockMvc.perform(
+                            get("/api/balances/history")
+                                    .header(HeaderName.ID, "invalid-uuid")
+                                    .param("page", "0")
+                                    .param("size", "20")
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(sellerBalanceService, never()).getBalanceHistory(any(), any());
         }
     }
 }
