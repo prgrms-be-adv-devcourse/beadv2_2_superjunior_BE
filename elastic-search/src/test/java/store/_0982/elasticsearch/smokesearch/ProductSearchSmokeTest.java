@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.integration;
+package store._0982.elasticsearch.smokesearch;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -15,21 +16,24 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.ProductSearchService;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.domain.ProductDocument;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@Tag("integration")
+@Tag("smoke")
 @SpringBootTest(classes = {
         ElasticsearchTestContext.class
 })
 @ActiveProfiles("search")
 @Testcontainers
-class ProductSearchSmokeIntegrationTest {
+class ProductSearchSmokeTest {
     private static final String SELLER_ID = "11111111-1111-1111-1111-111111111111";
     private static final String OTHER_SELLER_ID = "22222222-2222-2222-2222-222222222222";
     private static final String CATEGORY = "KIDS";
@@ -134,4 +138,24 @@ class ProductSearchSmokeIntegrationTest {
                 .containsExactlyInAnyOrder("p-1", "p-3", "p-4");
     }
 
+    @Test
+    @DisplayName("sellerId가 null이면 SELLER_ID_ISNULL 에러가 발생한다")
+    void product_search_fail_when_seller_id_is_null() {
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        assertThatThrownBy(() ->
+                service.searchProductDocument(
+                        KEYWORD,
+                        null,
+                        CATEGORY,
+                        pageRequest
+                )
+        )
+                .isInstanceOf(CustomException.class)
+                .satisfies(exception -> {
+                    CustomException e = (CustomException) exception;
+                    assertThat(e.getErrorCode()).isEqualTo(CustomErrorCode.SELLER_ID_ISNULL);
+                    assertThat(e.getErrorCode().getHttpStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    assertThat(e.getMessage()).contains("판매자 ID가 비어있습니다.");
+                });
+    }
 }

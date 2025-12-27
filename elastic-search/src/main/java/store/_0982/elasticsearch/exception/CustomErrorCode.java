@@ -10,6 +10,7 @@ import store._0982.common.exception.ErrorCode;
 public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
+    SELLER_ID_ISNULL(HttpStatus.BAD_REQUEST,"판매자 ID가 비어있습니다."),
 
     // 401 Unauthorized
 

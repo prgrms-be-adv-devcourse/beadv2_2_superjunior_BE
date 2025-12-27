@@ -134,7 +134,7 @@ class ProductSearchControllerTest {
 
     @Test
     @DisplayName("keyword 없이 상품 문서 검색 성공")
-    void searchProductDocument_withoutCategory_success() throws Exception {
+    void searchProductDocument_withoutKeyword_success() throws Exception {
         // given
         UUID sellerId = UUID.randomUUID();
         String keyword = "";
