@@ -172,8 +172,14 @@ class SellerBalanceControllerTest {
                     )
             );
 
-            PageResponse<SellerBalanceHistoryInfo> pageResponse = PageResponse.from(
-                    new PageImpl<>(histories, PageRequest.of(0, 20), 2)
+            PageResponse<SellerBalanceHistoryInfo> pageResponse = new PageResponse<>(
+                    histories,
+                    1,
+                    2L,
+                    true,
+                    true,
+                    20,
+                    2
             );
 
             when(sellerBalanceService.getBalanceHistory(eq(memberId), any(Pageable.class)))
@@ -254,8 +260,14 @@ class SellerBalanceControllerTest {
                     )
             );
 
-            PageResponse<SellerBalanceHistoryInfo> pageResponse = PageResponse.from(
-                    new PageImpl<>(histories, PageRequest.of(1, 10), 15)
+            PageResponse<SellerBalanceHistoryInfo> pageResponse = new PageResponse<>(
+                    histories,
+                    2,
+                    15L,
+                    false,
+                    true,
+                    10,
+                    1
             );
 
             when(sellerBalanceService.getBalanceHistory(eq(memberId), any(Pageable.class)))
