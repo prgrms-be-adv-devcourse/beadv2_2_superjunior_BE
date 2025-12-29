@@ -67,8 +67,8 @@ public class OrderService {
         // 공동 구매 존재 여부
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
-        // order 생성
-        Order order = new Order(
+        // Order 생성
+        Order order = Order.pending(
                 command.quantity(),
                 groupPurchase.getDiscountedPrice(),
                 memberId,
@@ -80,12 +80,29 @@ public class OrderService {
                 command.groupPurchaseId()
         );
 
+        // order 생성
         Order savedOrder = orderRepository.save(order);
 
-        deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
-        participate(groupPurchase, command);
+        boolean pointDeducted = false;
+        try{
+            ParticipateInfo participateInfo = participateService.participate(groupPurchase, command.quantity());
+            if(!participateInfo.success()){
+                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
+            }
+
+            // 포인트 차감
+            deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
+            pointDeducted = true;
+            savedOrder.confirm();
+        }catch (CustomException e){
+            // 실패시 보상
+            compensate(savedOrder, memberId, pointDeducted);
+            throw e;
+        }
+
         return OrderRegisterInfo.from(savedOrder);
     }
+
 
     /**
      * 장바구니 주문 생성
@@ -163,7 +180,7 @@ public class OrderService {
             );
 
             // Order 생성
-            Order order = new Order(
+            Order order = Order.pending(
                     cart.getQuantity(),
                     purchase.getDiscountedPrice(),
                     memberId,
@@ -237,11 +254,20 @@ public class OrderService {
             );
         } catch (FeignException.BadRequest e) {
             log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
-            throw e;
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         } catch (FeignException e) {
             log.error("포인트 차감 실패: memberId={}, amount={}", memberId, totalAmount, e);
             throw e;
         }
+    }
+
+    private void compensate(Order order, UUID memberId, boolean pointDeducted){
+        if(pointDeducted){
+            paymentClient.returnPointsInternal(memberId,
+                    new PointReturnRequest(UUID.randomUUID(), order.getOrderId(), order.getPrice() * order.getQuantity()));
+        }
+
+        order.cancel();
     }
 
     /**

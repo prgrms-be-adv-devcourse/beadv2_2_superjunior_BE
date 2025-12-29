@@ -56,7 +56,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 404 Not Found
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
-    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 공동구매를 찾을 수 없습니다."),
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다.");
 
