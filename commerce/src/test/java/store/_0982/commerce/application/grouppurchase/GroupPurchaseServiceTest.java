@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -21,6 +22,7 @@ import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -29,8 +31,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class GroupPurchaseServiceTest {
@@ -40,6 +42,12 @@ class GroupPurchaseServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
+
+    @Mock
+    private store._0982.commerce.infrastructure.client.member.MemberClient memberClient;
 
     @InjectMocks
     private GroupPurchaseService groupPurchaseService;
@@ -401,6 +409,99 @@ class GroupPurchaseServiceTest {
             assertThatThrownBy(() -> groupPurchaseService.getGroupPurchasesBySeller(sellerId, pageable))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining("상품을 찾을 수 없습니다");
+        }
+    }
+
+    @Nested
+    @DisplayName("공동구매 삭제 Service")
+    class DeleteGroupPurchaseTest {
+
+        @Test
+        @DisplayName("공동구매를 삭제한다")
+        void deleteGroupPurchase_success() {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+            UUID memberId = UUID.randomUUID();
+
+            GroupPurchaseEvent mockEvent = mock(GroupPurchaseEvent.class);
+            when(mockEvent.getId()).thenReturn(purchaseId);
+
+            GroupPurchase groupPurchase = mock(GroupPurchase.class);
+            when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.SCHEDULED);
+            when(groupPurchase.getSellerId()).thenReturn(memberId);
+            when(groupPurchase.toEvent(any(), any(), any())).thenReturn(mockEvent);
+
+            when(groupPurchaseRepository.findById(purchaseId))
+                    .thenReturn(Optional.of(groupPurchase));
+
+            // when
+            groupPurchaseService.deleteGroupPurchase(purchaseId, memberId);
+
+            // then
+            verify(groupPurchaseRepository, times(1)).findById(purchaseId);
+            verify(groupPurchaseRepository, times(1)).delete(groupPurchase);
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 공동구매를 삭제하면 예외가 발생한다")
+        void deleteGroupPurchase_groupPurchaseNotFound() {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+            UUID memberId = UUID.randomUUID();
+
+            when(groupPurchaseRepository.findById(purchaseId))
+                    .thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> groupPurchaseService.deleteGroupPurchase(purchaseId, memberId))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining("공동구매를 찾을 수 없습니다");
+
+            verify(groupPurchaseRepository, never()).delete(any());
+        }
+
+        @Test
+        @DisplayName("SCHEDULED 상태가 아닌 공동구매를 삭제하면 예외가 발생한다")
+        void deleteGroupPurchase_notScheduledStatus() {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+            UUID memberId = UUID.randomUUID();
+
+            GroupPurchase groupPurchase = mock(GroupPurchase.class);
+            when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.OPEN);
+
+            when(groupPurchaseRepository.findById(purchaseId))
+                    .thenReturn(Optional.of(groupPurchase));
+
+            // when & then
+            assertThatThrownBy(() -> groupPurchaseService.deleteGroupPurchase(purchaseId, memberId))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining("공동 구매가 OPEN 상태입니다");
+
+            verify(groupPurchaseRepository, never()).delete(any());
+        }
+
+        @Test
+        @DisplayName("본인의 공동구매가 아니면 삭제할 수 없다")
+        void deleteGroupPurchase_notOwner() {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+            UUID memberId = UUID.randomUUID();
+            UUID otherSellerId = UUID.randomUUID();
+
+            GroupPurchase groupPurchase = mock(GroupPurchase.class);
+            when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.SCHEDULED);
+            when(groupPurchase.getSellerId()).thenReturn(otherSellerId);
+
+            when(groupPurchaseRepository.findById(purchaseId))
+                    .thenReturn(Optional.of(groupPurchase));
+
+            // when & then
+            assertThatThrownBy(() -> groupPurchaseService.deleteGroupPurchase(purchaseId, memberId))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining("본인이 등록한 공동구매만 삭제할 수 있습니다");
+
+            verify(groupPurchaseRepository, never()).delete(any());
         }
     }
 }
