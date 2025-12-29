@@ -115,24 +115,3 @@ spec:
       name: kafka
   selector:
     app: kafka
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: kafka-service-external
-  namespace: default
-  labels:
-    app: kafka
-spec:
-  type: NodePort
-  ports:
-    - port: 9092
-      targetPort: 9092
-      nodePort: 30092
-      protocol: TCP
-      name: kafka
-  selector:
-    app: kafka
-
-# DDD
