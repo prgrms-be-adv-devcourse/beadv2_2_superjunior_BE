@@ -13,6 +13,7 @@ import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInf
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 
 import java.time.OffsetDateTime;
@@ -20,7 +21,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -433,6 +436,90 @@ class GroupPurchaseControllerTest {
                     .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
 
             verify(groupPurchaseService, never()).getGroupPurchasesBySeller(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("공동구매 삭제 API")
+    class DeleteGroupPurchaseTest {
+
+        @Test
+        @DisplayName("공동구매를 삭제합니다.")
+        void deleteGroupPurchase_success() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+            UUID purchaseId = UUID.randomUUID();
+
+            doNothing().when(groupPurchaseService).deleteGroupPurchase(purchaseId, memberId);
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/purchases/{purchaseId}", purchaseId)
+                                    .header(HeaderName.ID, memberId.toString())
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value(200))
+                    .andExpect(jsonPath("$.message").value("공동구매가 삭제되었습니다"))
+                    .andExpect(jsonPath("$.data").isEmpty());
+
+            verify(groupPurchaseService, times(1))
+                    .deleteGroupPurchase(purchaseId, memberId);
+        }
+
+        @Test
+        @DisplayName("memberId 헤더가 없으면 401 에러가 발생합니다.")
+        void deleteGroupPurchase_missingMemberId() throws Exception {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/purchases/{purchaseId}", purchaseId)
+                    )
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("로그인 정보가 없습니다."));
+
+            verify(groupPurchaseService, never()).deleteGroupPurchase(any(), any());
+        }
+
+        @Test
+        @DisplayName("잘못된 memberId UUID 형식이면 400 에러가 발생합니다.")
+        void deleteGroupPurchase_invalidMemberUUID() throws Exception {
+            // given
+            UUID purchaseId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/purchases/{purchaseId}", purchaseId)
+                                    .header(HeaderName.ID, "uuid")
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(groupPurchaseService, never()).deleteGroupPurchase(any(), any());
+        }
+
+        @Test
+        @DisplayName("잘못된 purchaseId UUID 형식이면 400 에러가 발생합니다.")
+        void deleteGroupPurchase_invalidPurchaseUUID() throws Exception {
+            // given
+            UUID memberId = UUID.randomUUID();
+
+            // when & then
+            mockMvc.perform(
+                            delete("/api/purchases/{purchaseId}", "uuid")
+                                    .header(HeaderName.ID, memberId.toString())
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.data").isEmpty())
+                    .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
+
+            verify(groupPurchaseService, never()).deleteGroupPurchase(any(), any());
         }
     }
 }
