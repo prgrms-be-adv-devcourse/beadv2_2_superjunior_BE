@@ -7,8 +7,13 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-    //noinspection VulnerableLibrariesLocal
+    //ㅍnoinspection VulnerableLibrariesLocal
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.14'
+
+    // R2DBC
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    implementation 'org.postgresql:r2dbc-postgresql'
+
 }
 
 bootJar {
