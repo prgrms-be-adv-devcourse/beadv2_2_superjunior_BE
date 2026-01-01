@@ -39,7 +39,48 @@ jib {
     }
 }
 
-// 카프카 병렬 테스트 오류 방지
+//jacoco
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        html.required = true
+        xml.required = true
+        csv.required = false
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+            excludes = [
+                    'store._0982.elasticsearch.ElasticSearchApplication*',
+                    'store._0982.elasticsearch.presentation.dto.*',
+                    'store._0982.elasticsearch.application.dto.*',
+                    'store._0982.elasticsearch.config.*',
+                    'store._0982.elasticsearch.exception.*',
+                    'store._0982.elasticsearch.domain.*',
+                    'store._0982.elasticsearch.*Document*'
+            ]
+        }
+    }
+}
+
 test {
+    // 카프카 병렬 테스트 오류 방지
     maxParallelForks = 1
+    // jacoco
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }

@@ -46,6 +46,7 @@ public final class KafkaCommonConfigs {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
+        config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
         config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRY_ATTEMPTS);
         config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
