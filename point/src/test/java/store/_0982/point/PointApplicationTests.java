@@ -1,11 +1,11 @@
 package store._0982.point;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 
 @SpringBootTest
-@Disabled("통합 테스트는 인프라 구동 시에만 실행")
+@EmbeddedKafka
 class PointApplicationTests {
 
     @Test

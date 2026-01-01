@@ -14,6 +14,10 @@ dependencies {
 
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    testRuntimeOnly 'com.h2database:h2'
+
+    testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:1.1.15'
 }
 
 bootJar {

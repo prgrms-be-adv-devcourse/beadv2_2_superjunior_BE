@@ -9,4 +9,6 @@ public interface MemberPointRepository {
     Optional<MemberPoint> findById(UUID memberId);
 
     MemberPoint save(MemberPoint afterPayment);
+
+    void deleteAll();
 }
