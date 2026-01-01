@@ -37,4 +37,9 @@ public class MemberPointHistoryRepositoryAdapter implements MemberPointHistoryRe
     public void deleteAll() {
         historyJpaRepository.deleteAll();
     }
+
+    @Override
+    public MemberPointHistory saveAndFlush(MemberPointHistory memberPointHistory) {
+        return historyJpaRepository.saveAndFlush(memberPointHistory);
+    }
 }

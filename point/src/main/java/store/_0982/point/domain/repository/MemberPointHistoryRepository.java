@@ -15,4 +15,6 @@ public interface MemberPointHistoryRepository {
     long count();
 
     void deleteAll();
+
+    MemberPointHistory saveAndFlush(MemberPointHistory memberPointHistory);
 }

@@ -1,7 +1,9 @@
 package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
@@ -23,6 +25,7 @@ import store._0982.point.exception.CustomErrorCode;
 import java.util.UUID;
 import java.util.function.Function;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -49,10 +52,14 @@ public class MemberPointService {
                     }
 
                     long amount = command.amount();
-                    memberPoint.deductPoints(amount);
-                    MemberPointHistory history = memberPointHistoryRepository.save(MemberPointHistory.used(memberId, command));
-                    applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
-                    return MemberPointInfo.from(memberPoint);
+                    try {
+                        MemberPointHistory history = memberPointHistoryRepository.saveAndFlush(MemberPointHistory.used(memberId, command));
+                        memberPoint.deductPoints(amount);
+                        applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
+                        return MemberPointInfo.from(memberPoint);
+                    } catch (DataIntegrityViolationException e) {
+                        return MemberPointInfo.from(memberPoint);
+                    }
                 }
         );
     }
@@ -72,10 +79,15 @@ public class MemberPointService {
                     OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
                     orderInfo.validateReturnable(memberId, orderId, amount);
 
-                    memberPoint.addPoints(amount);
-                    MemberPointHistory history = memberPointHistoryRepository.save(MemberPointHistory.returned(memberId, command));
-                    applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
-                    return MemberPointInfo.from(memberPoint);
+                    try {
+                        MemberPointHistory history = memberPointHistoryRepository.saveAndFlush(MemberPointHistory.returned(memberId, command));
+                        memberPoint.addPoints(amount);
+                        applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
+                        return MemberPointInfo.from(memberPoint);
+                    } catch (DataIntegrityViolationException e) {
+                        log.warn("concurrency");
+                        return MemberPointInfo.from(memberPoint);
+                    }
                 }
         );
     }
