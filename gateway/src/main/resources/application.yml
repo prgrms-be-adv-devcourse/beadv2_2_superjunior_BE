@@ -2,6 +2,17 @@
 spring:
   application:
     name: gateway
+  data:
+    redis:
+      host: ${GATEWAY_REDIS_HOST:localhost}   # 실제 Redis 호스트
+      port: ${GATEWAY_REDIS_PORT:6379}
+      database: ${GATEWAY_REDIS_DATABASE:0}
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+
 
   config:
     import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
@@ -15,8 +26,6 @@ spring:
               uri: lb://member
               predicates:
                 - Path=/api/members/**
-              filters:
-                - JwtAuth
 
             - id: member-internal-api
               uri: lb://member
@@ -34,8 +43,6 @@ spring:
               uri: lb://notification
               predicates:
                 - Path=/api/notifications/**
-              filters:
-                - JwtAuth
 
             - id: notification-internal-api
               uri: lb://notification
@@ -48,8 +55,6 @@ spring:
               uri: lb://order
               predicates:
                 - Path=/api/orders/**, /api/carts/**, /api/balances/**
-              filters:
-                - JwtAuth
 
             - id: order-internal-api
               uri: lb://order
@@ -62,8 +67,6 @@ spring:
               uri: lb://product
               predicates:
                 - Path=/api/products/**, /api/purchases/**
-              filters:
-                - JwtAuth
 
             - id: product-internal-api
               uri: lb://product
@@ -76,8 +79,6 @@ spring:
               uri: lb://point
               predicates:
                 - Path=/api/points/**, /api/payments/**
-              filters:
-                - JwtAuth
 
             - id: point-internal-api
               uri: lb://point
@@ -90,8 +91,6 @@ spring:
               uri: lb://elastic-search
               predicates:
                 - Path=/api/searches/**
-              filters:
-                - JwtAuth
 
             - id: elastic-search-internal-api
               uri: lb://elastic-search

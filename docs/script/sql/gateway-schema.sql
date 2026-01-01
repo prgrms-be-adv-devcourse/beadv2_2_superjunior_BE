@@ -1,5 +1,9 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+CREATE SCHEMA gateway_schema;
+
+SET search_path TO gateway_schema;
+
 CREATE TABLE gateway_route (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     http_method varchar(10),
@@ -9,6 +13,7 @@ CREATE TABLE gateway_route (
 );
 
 INSERT INTO gateway_route (http_method, endpoint, roles)
+VALUES
 -- member / MemberController
 ('POST', '/api/members', 'GUEST'),
 ('DELETE', '/api/members', 'CONSUMER,SELLER'),

@@ -13,7 +13,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table("gateway_route")
+@Table(name = "gateway_route", schema = "gateway_schema")
 public class GatewayRoute {
 
     @Id

@@ -1,7 +1,7 @@
 package store._0982.gateway.domain;
 
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 public interface GatewayRouteRepository {
-    Optional<GatewayRoute> findByMethodAndEndpoint(String httpMethod, String endpoint);
+    Mono<GatewayRoute> findByMethodAndEndpoint(String httpMethod, String endpoint);
 }
