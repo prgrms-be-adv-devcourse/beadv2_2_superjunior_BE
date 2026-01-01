@@ -39,7 +39,7 @@ class MemberPointServiceConcurrencyTest {
     private static final int BALANCE = 100_000;
     private static final int AMOUNT = 1_000;
     private static final int THREAD_COUNT = 10;
-    
+
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
             .build();
@@ -135,7 +135,7 @@ class MemberPointServiceConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        for (PointDeductCommand command: commands) {
+        for (PointDeductCommand command : commands) {
             executorService.submit(() -> {
                 try {
                     readyLatch.countDown();
@@ -221,7 +221,7 @@ class MemberPointServiceConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        for (PointReturnCommand command: commands) {
+        for (PointReturnCommand command : commands) {
             executorService.submit(() -> {
                 try {
                     readyLatch.countDown();
