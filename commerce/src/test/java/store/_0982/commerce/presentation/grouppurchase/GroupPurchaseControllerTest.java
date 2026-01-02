@@ -21,32 +21,17 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
-import store._0982.common.HeaderName;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -57,6 +42,9 @@ class GroupPurchaseControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private GroupPurchaseService groupPurchaseService;
@@ -546,12 +534,6 @@ class GroupPurchaseControllerTest {
             verify(groupPurchaseService, never()).deleteGroupPurchase(any(), any());
         }
     }
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockitoBean
-    private GroupPurchaseService groupPurchaseService;
 
     @Test
     @DisplayName("공동구매를 생성합니다.")

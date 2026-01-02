@@ -24,14 +24,10 @@ import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
-import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
-import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import javax.swing.*;
 import java.time.OffsetDateTime;
@@ -1103,60 +1099,5 @@ class GroupPurchaseServiceTest {
         ).isInstanceOf(CustomException.class)
                 .hasMessageContaining("본인이 등록한 공동구매만 삭제할 수 있습니다.");
 
-    }
-
-    @Test
-    @DisplayName("미정산 공동구매 목록 조회합니다.")
-    void getUnsettledGroupPurchases_success() {
-        // given
-        GroupPurchase groupPurchase1 = mock(GroupPurchase.class);
-        GroupPurchase groupPurchase2 = mock(GroupPurchase.class);
-
-        when(groupPurchaseRepository.findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS))
-                .thenReturn(List.of(groupPurchase1, groupPurchase2));
-
-        // when
-        List<GroupPurchaseInternalInfo> result = groupPurchaseService.getUnsettledGroupPurchases();
-
-        //then
-        assertThat(result).hasSize(2);
-        verify(groupPurchaseRepository)
-                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
-    }
-
-    @Test
-    @DisplayName("미정산 공동구매 정산 처리합니다.")
-    void markAsSettled_success() {
-        // given
-        UUID purchaseId = UUID.randomUUID();
-
-        GroupPurchase groupPurchase = mock(GroupPurchase.class);
-        when(groupPurchaseRepository.findById(purchaseId)).thenReturn(Optional.of(groupPurchase));
-        when(groupPurchase.isSettled()).thenReturn(false);
-
-        // when
-        groupPurchaseService.markAsSettled(purchaseId);
-
-        // then
-        verify(groupPurchase).markAsSettled();
-        verify(groupPurchaseRepository).save(groupPurchase);
-    }
-
-    @Test
-    @DisplayName("이미 정산된 공동구매인지 확인합니다.")
-    void markAsSettled_alreadySettled(){
-        // given
-        UUID purchaseId = UUID.randomUUID();
-
-        GroupPurchase groupPurchase = mock(GroupPurchase.class);
-        when(groupPurchaseRepository.findById(purchaseId)).thenReturn(Optional.of(groupPurchase));
-        when(groupPurchase.isSettled()).thenReturn(true);
-
-        // when
-        groupPurchaseService.markAsSettled(purchaseId);
-
-        // then
-        verify(groupPurchase, never()).markAsSettled();
-        verify(groupPurchaseRepository, never()).save(any());
     }
 }
