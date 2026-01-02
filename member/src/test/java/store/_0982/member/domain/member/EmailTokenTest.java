@@ -30,12 +30,13 @@ class EmailTokenTest {
 
     @Test
     @DisplayName("이메일 토큰을 갱신하면 토큰 값과 만료 시간이 변경된다")
-    void refresh_success() {
+    void refresh_success() throws InterruptedException {
         // given
         EmailToken token = EmailToken.create("test@example.com");
         String oldToken = token.getToken();
         OffsetDateTime oldExpiredAt = token.getExpiredAt();
 
+        Thread.sleep(1_100L);
         // when
         token.refresh();
 
@@ -89,4 +90,3 @@ class EmailTokenTest {
         field.set(target, value);
     }
 }
-
