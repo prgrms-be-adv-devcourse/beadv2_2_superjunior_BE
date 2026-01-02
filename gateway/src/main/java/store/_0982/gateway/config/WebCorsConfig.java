@@ -12,7 +12,7 @@ import java.util.List;
 @Configuration
 public class WebCorsConfig {
 
-    @Value("${frontend.url}")
+    @Value("${frontend.url:localhost}")
     private String frontendUrl;
 
     @Bean
