@@ -1,26 +1,12 @@
 #file: noinspection SpellCheckingInspection
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: elasticsearch-pvc
-  labels:
-    app: elasticsearch
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storageClassName: local-path
-
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: elasticsearch
   labels:
     app: elasticsearch
 spec:
+  serviceName: "elasticsearch-service"
   replicas: 1
   selector:
     matchLabels:
@@ -33,6 +19,7 @@ spec:
       automountServiceAccountToken: false
       nodeSelector:
         kubernetes.io/hostname: ip-10-0-0-244
+      terminationGracePeriodSeconds: 120
       initContainers:
         - name: install-nori-plugin
           image: elasticsearch:8.18.8
@@ -59,24 +46,33 @@ spec:
               value: "single-node"
             - name: xpack.security.enabled
               value: "false"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
             - name: cluster.name
               value: "group-purchase-cluster"
             - name: node.name
               value: "group-purchase-node"
           resources:
             requests:
+              ephemeral-storage: "1Gi"
+              memory: "700Mi"
+              cpu: "250m"
+            limits:
               ephemeral-storage: "2Gi"
               memory: "1Gi"
               cpu: "500m"
-            limits:
-              ephemeral-storage: "3Gi"
-              memory: "1.5Gi"
-              cpu: "1000m"
           volumeMounts:
             - name: elasticsearch-storage
               mountPath: /usr/share/elasticsearch/data
             - name: plugins
               mountPath: /usr/share/elasticsearch/plugins
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "sleep 15"
           livenessProbe:
             httpGet:
               path: /_cluster/health
@@ -94,11 +90,18 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
       volumes:
-        - name: elasticsearch-storage
-          persistentVolumeClaim:
-            claimName: elasticsearch-pvc
         - name: plugins
           emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi
 
 ---
 apiVersion: v1
@@ -108,19 +111,16 @@ metadata:
   labels:
     app: elasticsearch
 spec:
-  type: NodePort
+  type: ClusterIP
+  clusterIP: None
   ports:
     - port: 9200
       targetPort: 9200
-      nodePort: 30920
       protocol: TCP
       name: http
     - port: 9300
       targetPort: 9300
-      nodePort: 30930
       protocol: TCP
       name: transport
   selector:
     app: elasticsearch
-
-# DDD

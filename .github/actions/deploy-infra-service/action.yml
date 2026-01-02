@@ -68,7 +68,7 @@ runs:
         fi
         ./gradlew :${MODULE}:jib \
           -Djib.to.image=${{ inputs.dockerhub-username }}/${{ inputs.service-name }} \
-          -Djib.to.tags=${{ steps.version.outputs.tag }},latest \
+          -Djib.to.tags=${{ steps.version.outputs.tag }} \
           -Djib.to.auth.username=${{ inputs.dockerhub-username }} \
           -Djib.to.auth.password=${{ inputs.dockerhub-token }}
 
@@ -105,6 +105,8 @@ runs:
     - name: 배포
       shell: bash
       run: |
+        set -e
+        
         DEPLOYMENT="${{ inputs.deployment-name }}"
         if [ -z "$DEPLOYMENT" ]; then
           DEPLOYMENT="${{ inputs.service-name }}"

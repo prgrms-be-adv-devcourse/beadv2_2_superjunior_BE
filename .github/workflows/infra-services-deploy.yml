@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: Private Services Deploy
+name: Infra Services Deploy
 on:
   push:
     branches:

@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: Public Services Deploy
+name: Business Services Deploy
 on:
   push:
     branches:
@@ -8,10 +8,8 @@ on:
     paths:
       - 'gateway/**'
       - 'member/**'
-      - 'notification/**'
       - 'point/**'
-      - 'order/**'
-      - 'product/**'
+      - 'commerce/**'
       - 'common/**'
       - 'build.gradle'
       - 'settings.gradle'
@@ -25,10 +23,8 @@ jobs:
     outputs:
       gateway: ${{ steps.filter.outputs.gateway }}
       member: ${{ steps.filter.outputs.member }}
-      notification: ${{ steps.filter.outputs.notification }}
       point: ${{ steps.filter.outputs.point }}
-      order: ${{ steps.filter.outputs.order }}
-      product: ${{ steps.filter.outputs.product }}
+      commerce: ${{ steps.filter.outputs.commerce }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -54,13 +50,6 @@ jobs:
             echo "member=false" >> $GITHUB_OUTPUT
           fi
 
-          # Notification
-          if echo "$CHANGED_FILES" | grep -qE '^(notification/|common/|build\.gradle|settings\.gradle|docs/k8s/service/notification\.yml)'; then
-            echo "notification=true" >> $GITHUB_OUTPUT
-          else
-            echo "notification=false" >> $GITHUB_OUTPUT
-          fi
-
           # Point
           if echo "$CHANGED_FILES" | grep -qE '^(point/|common/|build\.gradle|settings\.gradle|docs/k8s/service/point\.yml)'; then
             echo "point=true" >> $GITHUB_OUTPUT
@@ -68,18 +57,11 @@ jobs:
             echo "point=false" >> $GITHUB_OUTPUT
           fi
 
-          # Order
-          if echo "$CHANGED_FILES" | grep -qE '^(order/|common/|build\.gradle|settings\.gradle|docs/k8s/service/order\.yml)'; then
-            echo "order=true" >> $GITHUB_OUTPUT
+          # Commerce
+          if echo "$CHANGED_FILES" | grep -qE '^(commerce/|common/|build\.gradle|settings\.gradle|docs/k8s/service/commerce\.yml)'; then
+            echo "commerce=true" >> $GITHUB_OUTPUT
           else
-            echo "order=false" >> $GITHUB_OUTPUT
-          fi
-
-          # Product
-          if echo "$CHANGED_FILES" | grep -qE '^(product/|common/|build\.gradle|settings\.gradle|docs/k8s/service/product\.yml)'; then
-            echo "product=true" >> $GITHUB_OUTPUT
-          else
-            echo "product=false" >> $GITHUB_OUTPUT
+            echo "commerce=false" >> $GITHUB_OUTPUT
           fi
 
   # Gateway 배포
@@ -104,7 +86,7 @@ jobs:
 
   # Member 배포
   deploy-member:
-    needs: [detect-changes, deploy-gateway]
+    needs: [ detect-changes, deploy-gateway ]
     if: always() && needs.detect-changes.outputs.member == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -122,29 +104,9 @@ jobs:
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-  # Notification 배포
-  deploy-notification:
-    needs: [detect-changes, deploy-member]
-    if: always() && needs.detect-changes.outputs.notification == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Notification 배포
-        uses: ./.github/actions/deploy-business-service
-        with:
-          service-name: notification
-          manifest-path: docs/k8s/service/notification.yml
-          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
   # Point 배포
   deploy-point:
-    needs: [detect-changes, deploy-notification]
+    needs: [ detect-changes, deploy-member ]
     if: always() && needs.detect-changes.outputs.point == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -162,10 +124,10 @@ jobs:
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
-  # Order 배포
-  deploy-order:
-    needs: [detect-changes, deploy-point]
-    if: always() && needs.detect-changes.outputs.order == 'true'
+  # Commerce 배포
+  deploy-commerce:
+    needs: [ detect-changes, deploy-point ]
+    if: always() && needs.detect-changes.outputs.commerce == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
@@ -173,31 +135,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Order 배포
+      - name: Commerce 배포
         uses: ./.github/actions/deploy-business-service
         with:
-          service-name: order
-          manifest-path: docs/k8s/service/order.yml
-          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-
-  # Product 배포
-  deploy-product:
-    needs: [detect-changes, deploy-order]
-    if: always() && needs.detect-changes.outputs.product == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Product 배포
-        uses: ./.github/actions/deploy-business-service
-        with:
-          service-name: product
-          manifest-path: docs/k8s/service/product.yml
+          service-name: commerce
+          manifest-path: docs/k8s/service/commerce.yml
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}

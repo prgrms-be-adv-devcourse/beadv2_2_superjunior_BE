@@ -1,28 +1,13 @@
 #file: noinspection SpellCheckingInspection
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: kafka-pvc
-  namespace: default
-  labels:
-    app: kafka
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
-  storageClassName: local-path
-
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: kafka
   namespace: default
   labels:
     app: kafka
 spec:
+  serviceName: "kafka-service"
   replicas: 1
   selector:
     matchLabels:
@@ -35,6 +20,7 @@ spec:
       automountServiceAccountToken: false
       nodeSelector:
         kubernetes.io/hostname: ip-10-0-0-244
+      terminationGracePeriodSeconds: 30
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
@@ -65,18 +51,27 @@ spec:
               value: "false"
             - name: CLUSTER_ID
               value: "MkU3OEVBNTcwNTJENDM2Qk"
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xms256m -Xmx256m"
           resources:
             requests:
-              ephemeral-storage: "1Gi"
-              memory: "384Mi"
-              cpu: "250m"
+              ephemeral-storage: "500Mi"
+              memory: "256Mi"
+              cpu: "100m"
             limits:
-              ephemeral-storage: "2Gi"
-              memory: "768Mi"
-              cpu: "1000m"
+              ephemeral-storage: "1Gi"
+              memory: "512Mi"
+              cpu: "500m"
           volumeMounts:
             - name: kafka-storage
               mountPath: /var/lib/kafka/data
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "sleep 10"
           livenessProbe:
             tcpSocket:
               port: 9092
@@ -91,10 +86,16 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-      volumes:
-        - name: kafka-storage
-          persistentVolumeClaim:
-            claimName: kafka-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi
 
 ---
 apiVersion: v1
@@ -105,14 +106,12 @@ metadata:
   labels:
     app: kafka
 spec:
-  type: NodePort
+  type: ClusterIP
+  clusterIP: None
   ports:
     - port: 9092
       targetPort: 9092
-      nodePort: 30092
       protocol: TCP
       name: kafka
   selector:
     app: kafka
-
-# DDD
