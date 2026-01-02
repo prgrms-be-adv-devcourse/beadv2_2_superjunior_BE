@@ -84,19 +84,20 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         boolean pointDeducted = false;
+        boolean participated = false;
         try{
             ParticipateInfo participateInfo = participateService.participate(groupPurchase, command.quantity());
             if(!participateInfo.success()){
                 throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
             }
-
+            participated = true;
             // 포인트 차감
             deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
             pointDeducted = true;
             savedOrder.confirm();
         }catch (CustomException e){
             // 실패시 보상
-            compensate(savedOrder, memberId, pointDeducted);
+            compensate(savedOrder, memberId, command.groupPurchaseId(), command.quantity(), pointDeducted, participated);
             throw e;
         }
 
@@ -261,13 +262,31 @@ public class OrderService {
         }
     }
 
-    private void compensate(Order order, UUID memberId, boolean pointDeducted){
-        if(pointDeducted){
-            paymentClient.returnPointsInternal(memberId,
-                    new PointReturnRequest(UUID.randomUUID(), order.getOrderId(), order.getPrice() * order.getQuantity()));
+    private void compensate(Order order, UUID memberId, UUID groupPurchaseId, int quantity, boolean pointDeducted, boolean participated){
+        // 참여 취소
+        if(participated){
+            try{
+                participateService.cancelParticipate(groupPurchaseId, quantity);
+
+            }catch (Exception e){
+                log.error("공동구매 참여 취소 실패 - groupPurchaseId = {}, quantity = {}", groupPurchaseId, quantity);
+            }
         }
 
+        // 포인트 환불
+        if(pointDeducted){
+            try{
+                paymentClient.returnPointsInternal(memberId,
+                        new PointReturnRequest(UUID.randomUUID(), order.getOrderId(), order.getPrice() * order.getQuantity()));
+
+            } catch(Exception e){
+                log.error("포인트 환불 실패 - memberId = {}, amount : {}", memberId, order.getPrice() * order.getQuantity());
+            }
+       }
+
         order.cancel();
+        orderRepository.save(order);
+        log.info("order 상태 {}", order.getStatus() );
     }
 
     /**

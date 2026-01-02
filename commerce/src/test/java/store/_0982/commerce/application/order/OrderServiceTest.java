@@ -1,6 +1,7 @@
 package store._0982.commerce.application.order;
 
 import feign.FeignException;
+import feign.Request;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,8 +33,10 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 
 import javax.xml.stream.FactoryConfigurationError;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -154,6 +157,45 @@ class OrderServiceTest {
     }
 
     @Test
+    @DisplayName("주문 실패 - 참여 실패")
+    void createOrder_participateFail() {
+        UUID memberId = UUID.randomUUID();
+        UUID purchaseId = UUID.randomUUID();
+
+        GroupPurchase groupPurchase = mock(GroupPurchase.class);
+        when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.OPEN);
+        when(groupPurchase.getEndDate()).thenReturn(OffsetDateTime.now().plusDays(1));
+        when(orderRepository.save(any(Order.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(memberClient.getMember(memberId)).thenReturn(mock(ResponseDto.class));
+        when(groupPurchaseRepository.findById(purchaseId)).thenReturn(Optional.of(groupPurchase));
+
+        when(participateService.participate(any(), anyInt()))
+                .thenReturn(ParticipateInfo.failure("OPEN",0,"마감"));
+        verify(paymentClient, never())
+                .deductPointsInternal(any(), any());
+
+        OrderRegisterCommand command = new OrderRegisterCommand(
+                1,"","","","",
+                UUID.randomUUID(),
+                purchaseId
+        );
+
+        // when & then
+        assertThatThrownBy(() -> orderService.createOrder(memberId, command))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining("공동구매 참여 인원이 최대입니다.");
+
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository, times(2)).save(captor.capture());
+
+        Order savedOrder = captor.getValue();
+
+        assertThat(savedOrder.getStatus())
+                .isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
     @DisplayName("주문 실패 - 포인트 부족 -> CANCELLED")
     void createOrder_pointNotEnough() {
         // given
@@ -170,8 +212,25 @@ class OrderServiceTest {
 
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
+        when(participateService.participate(any(), anyInt()))
+                .thenReturn(ParticipateInfo.success("OPEN",10, "성공"));
+
+        FeignException.BadRequest badRequest =
+                new FeignException.BadRequest(
+                        "포인트 부족",
+                        Request.create(
+                                Request.HttpMethod.POST,
+                                "/points/deduct",
+                                Map.of(),
+                                null,
+                                StandardCharsets.UTF_8,
+                                null
+                        ),
+                        null,
+                        null
+                );
         when(paymentClient.deductPointsInternal(any(), any()))
-                .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+                .thenThrow(badRequest);
 
         OrderRegisterCommand command = new OrderRegisterCommand(
                 2,
@@ -192,50 +251,12 @@ class OrderServiceTest {
         // then
         verify(orderRepository, times(2)).save(captor.capture());
 
-        Order lastSavedOrder = captor.getValue();
+        Order cancelledOrder = captor.getAllValues().get(1);
 
-        assertThat(lastSavedOrder.getStatus())
+        assertThat(cancelledOrder.getStatus())
                 .isEqualTo(OrderStatus.CANCELLED);
-    }
 
-    @Test
-    @DisplayName("주문 실패 - 참여 실패")
-    void createOrder_participateFail() {
-        UUID memberId = UUID.randomUUID();
-        UUID purchaseId = UUID.randomUUID();
-
-        GroupPurchase groupPurchase = mock(GroupPurchase.class);
-        when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.OPEN);
-        when(groupPurchase.getEndDate()).thenReturn(OffsetDateTime.now().plusDays(1));
-        when(orderRepository.save(any(Order.class)))
-                .thenAnswer(inv -> inv.getArgument(0));
-        when(memberClient.getMember(memberId)).thenReturn(mock(ResponseDto.class));
-        when(groupPurchaseRepository.findById(purchaseId)).thenReturn(Optional.of(groupPurchase));
-
-        when(participateService.participate(any(), anyInt()))
-                .thenReturn(ParticipateInfo.failure("FULL",0,"마감"));
-        when(paymentClient.deductPointsInternal(
-                eq(memberId),
-                any(PointDeductRequest.class)
-        )).thenReturn(mock(ResponseDto.class));
-
-        OrderRegisterCommand command = new OrderRegisterCommand(
-                1,"","","","",
-                UUID.randomUUID(),
-                purchaseId
-        );
-
-        // when & then
-        assertThatThrownBy(() -> orderService.createOrder(memberId, command))
-                .isInstanceOf(CustomException.class);
-
-        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository, times(2)).save(captor.capture());
-
-        Order savedOrder = captor.getValue();
-
-        assertThat(savedOrder.getStatus())
-                .isEqualTo(OrderStatus.CANCELLED);
+        verify(participateService, times(1)).cancelParticipate(purchaseId, 2);
     }
 
     @Test

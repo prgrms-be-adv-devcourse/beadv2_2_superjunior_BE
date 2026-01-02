@@ -111,6 +111,14 @@ public class GroupPurchase {
         return true;
     }
 
+    public void decreaseQuantity(int quantity){
+        this.currentQuantity = this.currentQuantity - quantity;
+
+        if(this.status == GroupPurchaseStatus.SUCCESS && this.currentQuantity < this.maxQuantity){
+            this.status = GroupPurchaseStatus.OPEN;
+        }
+    }
+
     private boolean canParticipate(int quantity) {
         return status == GroupPurchaseStatus.OPEN
                 && (this.currentQuantity + quantity <= this.maxQuantity);

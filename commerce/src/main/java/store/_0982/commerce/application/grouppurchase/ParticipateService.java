@@ -23,6 +23,8 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
+import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -81,6 +83,18 @@ public class ParticipateService {
                 groupPurchase.getRemainingQuantity(),
                 "현재 참여자가 많아 잠시 후 다시 시도해주세요."
         );
+    }
+
+    @ServiceLog
+    @Transactional
+    public void cancelParticipate(UUID groupPurchaseId, int quantity){
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        groupPurchase.decreaseQuantity(quantity);
+        groupPurchaseRepository.save(groupPurchase);
+
+        log.info("공동 구매 참여 취소 완료 - groupPurchaseId = {}, quantity = {}", groupPurchaseId, quantity);
     }
 
 }

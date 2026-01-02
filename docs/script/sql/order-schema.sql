@@ -10,7 +10,7 @@ create table order_schema."order"
     status         varchar(20)              default 'SCHEDULED'::character varying not null
         constraint status_check
             check ((status)::text = ANY
-                   (ARRAY [('SCHEDULED'::character varying)::text, ('IN_PROGRESS'::character varying)::text, ('SUCCESS'::character varying)::text, ('FAILED'::character varying)::text])),
+                   (ARRAY [('SCHEDULED'::character varying)::text, ('IN_PROGRESS'::character varying)::text, ('SUCCESS'::character varying)::text, ('FAILED'::character varying)::text, ('PENDING'::character varying)::text, ('CONFIRMED'::character varying)::text, ('CANCELLED'::character varying)::text])),
     member_id      uuid                                                            not null,
     address        varchar(100)                                                    not null,
     address_detail varchar(100)                                                    not null,
