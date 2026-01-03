@@ -12,9 +12,5 @@ public interface MemberPointHistoryRepository {
 
     boolean existsByOrderIdAndStatus(UUID orderId, MemberPointHistoryStatus status);
 
-    long count();
-
-    void deleteAll();
-
     MemberPointHistory saveAndFlush(MemberPointHistory memberPointHistory);
 }

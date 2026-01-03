@@ -8,7 +8,6 @@ import store._0982.point.domain.repository.MemberPointRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @RequiredArgsConstructor
 @Repository
 public class MemberPointRepositoryAdapter implements MemberPointRepository {
@@ -23,10 +22,5 @@ public class MemberPointRepositoryAdapter implements MemberPointRepository {
     @Override
     public MemberPoint save(MemberPoint afterPayment) {
         return memberPointJpaRepository.save(afterPayment);
-    }
-
-    @Override
-    public void deleteAll() {
-        memberPointJpaRepository.deleteAll();
     }
 }

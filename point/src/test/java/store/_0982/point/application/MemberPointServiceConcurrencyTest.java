@@ -14,8 +14,8 @@ import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.MemberPoint;
-import store._0982.point.domain.repository.MemberPointHistoryRepository;
-import store._0982.point.domain.repository.MemberPointRepository;
+import store._0982.point.infrastructure.MemberPointHistoryJpaRepository;
+import store._0982.point.infrastructure.MemberPointJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.util.List;
@@ -40,10 +40,10 @@ class MemberPointServiceConcurrencyTest extends BaseConcurrencyTest {
     private MemberPointService memberPointService;
 
     @Autowired
-    private MemberPointRepository memberPointRepository;
+    private MemberPointJpaRepository memberPointRepository;
 
     @Autowired
-    private MemberPointHistoryRepository memberPointHistoryRepository;
+    private MemberPointHistoryJpaRepository memberPointHistoryRepository;
 
     @MockitoBean
     private OrderServiceClient orderServiceClient;

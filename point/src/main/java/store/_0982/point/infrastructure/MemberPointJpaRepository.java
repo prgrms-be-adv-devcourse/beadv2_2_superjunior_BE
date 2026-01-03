@@ -5,5 +5,5 @@ import store._0982.point.domain.entity.MemberPoint;
 
 import java.util.UUID;
 
-interface MemberPointJpaRepository extends JpaRepository<MemberPoint,UUID> {
+public interface MemberPointJpaRepository extends JpaRepository<MemberPoint,UUID> {
 }

@@ -29,16 +29,6 @@ public class MemberPointHistoryRepositoryAdapter implements MemberPointHistoryRe
     }
 
     @Override
-    public long count() {
-        return historyJpaRepository.count();
-    }
-
-    @Override
-    public void deleteAll() {
-        historyJpaRepository.deleteAll();
-    }
-
-    @Override
     public MemberPointHistory saveAndFlush(MemberPointHistory memberPointHistory) {
         return historyJpaRepository.saveAndFlush(memberPointHistory);
     }
