@@ -107,7 +107,7 @@ class MemberPointServiceTest {
 
             when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
             when(memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(memberPointHistoryRepository.save(any(MemberPointHistory.class))).thenReturn(history);
+            when(memberPointHistoryRepository.saveAndFlush(any(MemberPointHistory.class))).thenReturn(history);
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
             // when
@@ -142,7 +142,7 @@ class MemberPointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.pointBalance()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(memberPointHistoryRepository, never()).save(any());
+            verify(memberPointHistoryRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -168,7 +168,7 @@ class MemberPointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.pointBalance()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(memberPointHistoryRepository, never()).save(any());
+            verify(memberPointHistoryRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -205,11 +205,11 @@ class MemberPointServiceTest {
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
             MemberPointHistory history = MemberPointHistory.returned(memberId, command);
-            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.SUCCESS, memberId, 1);
+            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.FAILED, memberId, 1);
 
             when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
             when(memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(memberPointHistoryRepository.save(any(MemberPointHistory.class))).thenReturn(history);
+            when(memberPointHistoryRepository.saveAndFlush(any(MemberPointHistory.class))).thenReturn(history);
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when
@@ -244,7 +244,7 @@ class MemberPointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.pointBalance()).isEqualTo(5000); // 반환되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(memberPointHistoryRepository, never()).save(any());
+            verify(memberPointHistoryRepository, never()).saveAndFlush(any());
         }
 
         @Test

@@ -28,8 +28,9 @@ import java.util.function.Function;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class MemberPointService {
+
     private final MemberPointRepository memberPointRepository;
     private final MemberPointHistoryRepository memberPointHistoryRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -37,11 +38,12 @@ public class MemberPointService {
 
     public MemberPointInfo getPoints(UUID memberId) {
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
         return MemberPointInfo.from(memberPoint);
     }
 
     @ServiceLog
+    @Transactional
     public MemberPointInfo deductPoints(UUID memberId, PointDeductCommand command) {
         return processPointOperation(
                 memberId,
@@ -65,6 +67,7 @@ public class MemberPointService {
     }
 
     @ServiceLog
+    @Transactional
     public MemberPointInfo returnPoints(UUID memberId, PointReturnCommand command) {
         return processPointOperation(
                 memberId,
