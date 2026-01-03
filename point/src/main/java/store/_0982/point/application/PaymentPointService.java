@@ -2,6 +2,7 @@ package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,16 +34,23 @@ public class PaymentPointService {
     private final PaymentPointFailureRepository paymentPointFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    // TODO: 같은 orderId로 주문 생성이 동시에 여러 번 요청되었을 때, 낙관적 락이나 비관적 락을 이용할 것인가?
     @ServiceLog
     @Transactional
     public PaymentPointCreateInfo createPaymentPoint(PaymentPointCommand command, UUID memberId) {
-        return paymentPointRepository.findByOrderId(command.orderId())
+        UUID orderId = command.orderId();
+        return paymentPointRepository.findByOrderId(orderId)
                 .map(PaymentPointCreateInfo::from)
                 .orElseGet(() -> {
-                    PaymentPoint paymentPoint = PaymentPoint.create(memberId, command.orderId(), command.amount());
-                    return PaymentPointCreateInfo.from(paymentPointRepository.save(paymentPoint));
+                    try {
+                        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, command.amount());
+                        return PaymentPointCreateInfo.from(paymentPointRepository.saveAndFlush(paymentPoint));
+                    } catch (DataIntegrityViolationException e) {
+                        return paymentPointRepository.findByOrderId(orderId)
+                                .map(PaymentPointCreateInfo::from)
+                                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_CREATION_FAILED));
+                    }
                 });
+
     }
 
     public PageResponse<PaymentPointInfo> getPaymentHistories(UUID memberId, Pageable pageable) {

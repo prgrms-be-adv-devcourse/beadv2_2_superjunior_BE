@@ -66,7 +66,7 @@ class PaymentPointServiceTest {
             PaymentPointCommand command = new PaymentPointCommand(orderId, 10000);
 
             when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
-            when(paymentPointRepository.save(any(PaymentPoint.class)))
+            when(paymentPointRepository.saveAndFlush(any(PaymentPoint.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // when
@@ -76,7 +76,7 @@ class PaymentPointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.orderId()).isEqualTo(orderId);
             assertThat(result.amount()).isEqualTo(10000);
-            verify(paymentPointRepository).save(any(PaymentPoint.class));
+            verify(paymentPointRepository).saveAndFlush(any(PaymentPoint.class));
         }
 
         @Test
@@ -96,7 +96,7 @@ class PaymentPointServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.orderId()).isEqualTo(orderId);
-            verify(paymentPointRepository, never()).save(any());
+            verify(paymentPointRepository, never()).saveAndFlush(any());
         }
     }
 

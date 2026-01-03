@@ -29,10 +29,10 @@ public class PaymentPoint {
     @Column(name = "pg_order_id", nullable = false, unique = true)
     private UUID pgOrderId;
 
-    @Column(name = "payment_method", nullable = false, length = 30)
+    @Column(name = "payment_method", length = 30)
     private String paymentMethod;
 
-    @Column(name = "payment_key", nullable = false, length = 50)
+    @Column(name = "payment_key", length = 50)
     private String paymentKey;
 
     @Column(nullable = false)

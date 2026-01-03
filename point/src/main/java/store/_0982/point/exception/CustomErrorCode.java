@@ -36,6 +36,7 @@ public enum CustomErrorCode implements ErrorCode {
     NOT_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "환불할 수 없는 상태입니다."),
 
     // 500 Internal Server Error
+    PAYMENT_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 생성 중 오류가 발생했습니다."),
     PAYMENT_COMPLETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 승인 중 오류가 발생했습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
