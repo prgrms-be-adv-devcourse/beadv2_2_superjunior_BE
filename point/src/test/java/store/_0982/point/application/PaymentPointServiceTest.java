@@ -6,12 +6,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.*;
+import store._0982.point.application.dto.PaymentPointCommand;
+import store._0982.point.application.dto.PaymentPointCreateInfo;
+import store._0982.point.application.dto.PointChargeConfirmCommand;
+import store._0982.point.application.dto.PointChargeFailCommand;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.PaymentPoint;
 import store._0982.point.domain.entity.PaymentPointFailure;
+import store._0982.point.domain.event.PointRechargedEvent;
 import store._0982.point.domain.repository.MemberPointRepository;
 import store._0982.point.domain.repository.PaymentPointFailureRepository;
 import store._0982.point.domain.repository.PaymentPointRepository;
@@ -33,9 +38,6 @@ class PaymentPointServiceTest {
     private TossPaymentService tossPaymentService;
 
     @Mock
-    private PointEventPublisher pointEventPublisher;
-
-    @Mock
     private PaymentPointRepository paymentPointRepository;
 
     @Mock
@@ -43,6 +45,9 @@ class PaymentPointServiceTest {
 
     @Mock
     private PaymentPointFailureRepository paymentPointFailureRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private PaymentPointService paymentPointService;
@@ -119,13 +124,14 @@ class PaymentPointServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
         when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
+        doNothing().when(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
 
         // when
         paymentPointService.confirmPayment(command);
 
         // then
         assertThat(memberPoint.getPointBalance()).isEqualTo(10000);
-        verify(pointEventPublisher).publishPointRechargedEvent(paymentPoint);
+        verify(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
     }
 
     @Test

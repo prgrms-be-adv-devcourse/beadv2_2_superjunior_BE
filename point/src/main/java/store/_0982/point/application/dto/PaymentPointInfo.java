@@ -12,18 +12,20 @@ public record PaymentPointInfo(
         UUID orderId,
         String paymentMethod,
         String paymentKey,
+        String failMessage,
         long amount,
         PaymentPointStatus status,
         OffsetDateTime createdAt,
         OffsetDateTime requestedAt
 ) {
-    public static PaymentPointInfo from(PaymentPoint paymentPoint){
+    public static PaymentPointInfo from(PaymentPoint paymentPoint) {
         return new PaymentPointInfo(
                 paymentPoint.getId(),
                 paymentPoint.getMemberId(),
                 paymentPoint.getPgOrderId(),
                 paymentPoint.getPaymentMethod(),
                 paymentPoint.getPaymentKey(),
+                paymentPoint.getFailMessage(),
                 paymentPoint.getAmount(),
                 paymentPoint.getStatus(),
                 paymentPoint.getCreatedAt(),

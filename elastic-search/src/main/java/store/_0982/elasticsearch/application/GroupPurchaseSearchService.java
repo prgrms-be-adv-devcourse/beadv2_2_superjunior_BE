@@ -15,6 +15,8 @@ import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
+import java.util.UUID;
+
 
 @RequiredArgsConstructor
 @Service
@@ -47,18 +49,35 @@ public class GroupPurchaseSearchService {
     public PageResponse<GroupPurchaseDocumentInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
+            UUID memberId,
             String category,
             Pageable pageable
     ) {
-        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, category, pageable);
+        String sellerId = memberId != null ? memberId.toString() : null;
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
         SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
 
         SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
-
         Page<GroupPurchaseDocumentInfo> mappedPage = searchPage
                 .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
+        return PageResponse.from(mappedPage);
+    }
 
+    @ServiceLog
+    public PageResponse<GroupPurchaseDocumentInfo> searchAllGroupPurchaseDocument(
+            String keyword,
+            String status,
+            String category,
+            Pageable pageable
+    ) {
+        NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
+
+        SearchHits<GroupPurchaseDocument> hits = operations.search(query, GroupPurchaseDocument.class);
+
+        SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
+        Page<GroupPurchaseDocumentInfo> mappedPage = searchPage
+                .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
         return PageResponse.from(mappedPage);
     }
 }

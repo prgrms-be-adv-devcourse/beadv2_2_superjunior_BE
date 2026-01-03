@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.MemberPointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
@@ -14,6 +15,8 @@ import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.MemberPointHistory;
+import store._0982.point.domain.event.PointDeductedEvent;
+import store._0982.point.domain.event.PointReturnedEvent;
 import store._0982.point.domain.repository.MemberPointHistoryRepository;
 import store._0982.point.domain.repository.MemberPointRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -36,7 +39,7 @@ class MemberPointServiceTest {
     private MemberPointHistoryRepository memberPointHistoryRepository;
 
     @Mock
-    private PointEventPublisher pointEventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
     private OrderServiceClient orderServiceClient;
@@ -95,13 +98,12 @@ class MemberPointServiceTest {
         memberPoint.addPoints(10000);
 
         PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
-        OrderInfo orderInfo = mock(OrderInfo.class);
         MemberPointHistory history = MemberPointHistory.used(memberId, command);
 
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
         when(memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-        when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
         when(memberPointHistoryRepository.save(any(MemberPointHistory.class))).thenReturn(history);
+        doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
         // when
         MemberPointInfo result = memberPointService.deductPoints(memberId, command);
@@ -109,8 +111,7 @@ class MemberPointServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.pointBalance()).isEqualTo(5000);
-        verify(orderInfo).validateDeductible(memberId, orderId, 5000);
-        verify(pointEventPublisher).publishPointDeductedEvent(any(MemberPointHistory.class));
+        verify(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
     }
 
     @Test
@@ -167,13 +168,13 @@ class MemberPointServiceTest {
         memberPoint.addPoints(5000);
 
         PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
-        OrderInfo orderInfo = mock(OrderInfo.class);
         MemberPointHistory history = MemberPointHistory.returned(memberId, command);
+        OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.SUCCESS, memberId, 1);
 
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.of(memberPoint));
         when(memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-        when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
         when(memberPointHistoryRepository.save(any(MemberPointHistory.class))).thenReturn(history);
+        when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
         // when
         MemberPointInfo result = memberPointService.returnPoints(memberId, command);
@@ -181,8 +182,7 @@ class MemberPointServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.pointBalance()).isEqualTo(8000);
-        verify(orderInfo).validateReturnable(memberId, orderId, 3000);
-        verify(pointEventPublisher).publishPointReturnedEvent(any(MemberPointHistory.class));
+        verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
     }
 
     @Test

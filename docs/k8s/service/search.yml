@@ -15,11 +15,11 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
         - name: search
           image: minbros/search:latest
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           env:
             - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
               value: "http://admin:admin@discovery-service:8761/eureka"
@@ -75,4 +75,4 @@ spec:
       protocol: TCP
       name: http
 
-######
+# DD
