@@ -27,8 +27,8 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     }
 
     @Override
-    public PaymentPoint save(PaymentPoint paymentPoint) {
-        return paymentPointJpaRepository.save(paymentPoint);
+    public PaymentPoint saveAndFlush(PaymentPoint paymentPoint) {
+        return paymentPointJpaRepository.saveAndFlush(paymentPoint);
     }
 
     @Override

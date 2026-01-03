@@ -7,6 +7,6 @@ import store._0982.point.domain.entity.PaymentPointFailure;
 import java.util.Optional;
 import java.util.UUID;
 
-interface PaymentPointFailureJpaRepository extends JpaRepository<PaymentPointFailure, UUID> {
+public interface PaymentPointFailureJpaRepository extends JpaRepository<PaymentPointFailure, UUID> {
     Optional<PaymentPointFailure> findByPaymentPoint(PaymentPoint paymentPoint);
 }

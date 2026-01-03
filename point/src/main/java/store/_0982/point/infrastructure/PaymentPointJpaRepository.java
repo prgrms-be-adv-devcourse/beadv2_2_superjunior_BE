@@ -8,7 +8,7 @@ import store._0982.point.domain.entity.PaymentPoint;
 import java.util.Optional;
 import java.util.UUID;
 
-interface PaymentPointJpaRepository extends JpaRepository<PaymentPoint, UUID> {
+public interface PaymentPointJpaRepository extends JpaRepository<PaymentPoint, UUID> {
     Page<PaymentPoint> findAllByMemberId(UUID memberId, Pageable pageable);
 
     Optional<PaymentPoint> findByPgOrderId(UUID orderId);
