@@ -1,24 +1,41 @@
 spring:
-  application:
-    name: commerce-test
-
   datasource:
-    driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
     username: sa
     password:
 
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-test.sql
+
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
-        show_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+gateway:
+  host: http://localhost:8000
+
+token:
+  internal:
+    secret: test-secret-key
+
+kafka:
+  bootstrap-servers: localhost:9092
 
 eureka:
   client:
     enabled: false
-    register-with-eureka: false
-    fetch-registry: false
