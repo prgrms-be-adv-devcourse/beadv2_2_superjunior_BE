@@ -37,8 +37,9 @@ public class GroupPurchaseService {
 
     /**
      * 공동 구매 생성
+     *
      * @param memberId 로그인 유저
-     * @param command 생성할 command 데이터
+     * @param command  생성할 command 데이터
      * @return PurchaseRegisterInfo
      */
     @Transactional
@@ -49,16 +50,16 @@ public class GroupPurchaseService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
         // 상품이 신청한 사람의 상품이 맞는지 확인
-        if(!product.getSellerId().equals(memberId)){
+        if (!product.getSellerId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
         }
 
         // 입력값 검증
-        if(command.minQuantity() > command.maxQuantity()){
+        if (command.minQuantity() > command.maxQuantity()) {
             throw new CustomException(CustomErrorCode.INVALID_QUANTITY_RANGE);
         }
 
-        if(command.startDate().isAfter(command.endDate())){
+        if (command.startDate().isAfter(command.endDate())) {
             throw new CustomException(CustomErrorCode.INVALID_DATE_RANGE);
         }
         GroupPurchase groupPurchase = new GroupPurchase(
@@ -78,7 +79,7 @@ public class GroupPurchaseService {
         //kafka
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CREATED,event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CREATED, event.getId().toString(), event);
 
         return GroupPurchaseInfo.from(saved);
     }
@@ -123,7 +124,8 @@ public class GroupPurchaseService {
 
     /**
      * 공동 구매 업데이트
-     * @param memberId 로그인 유저
+     *
+     * @param memberId   로그인 유저
      * @param purchaseId 공동구매 Id
      * @return PurchaseDetailInfo
      */
@@ -138,12 +140,12 @@ public class GroupPurchaseService {
         }
 
         // 공동 구매가 OPEN 상태일 때 일부 필드 변경 불가
-        if(findGroupPurchase.getStatus().equals(GroupPurchaseStatus.OPEN) 
-        && (!Objects.equals(findGroupPurchase.getMaxQuantity(), command.maxQuantity())||
-            !Objects.equals(findGroupPurchase.getDiscountedPrice(), command.discountedPrice())||
-            !Objects.equals(findGroupPurchase.getProductId(), command.productId()))){
-                throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
-            }
+        if (findGroupPurchase.getStatus().equals(GroupPurchaseStatus.OPEN)
+                && (!Objects.equals(findGroupPurchase.getMaxQuantity(), command.maxQuantity()) ||
+                !Objects.equals(findGroupPurchase.getDiscountedPrice(), command.discountedPrice()) ||
+                !Objects.equals(findGroupPurchase.getProductId(), command.productId()))) {
+            throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
+        }
 
         findGroupPurchase.updateGroupPurchase(
                 command.minQuantity(),
@@ -156,7 +158,7 @@ public class GroupPurchaseService {
                 command.productId()
         );
 
-        GroupPurchase saved =  groupPurchaseRepository.saveAndFlush(findGroupPurchase);
+        GroupPurchase saved = groupPurchaseRepository.saveAndFlush(findGroupPurchase);
 
         //search kafka
         Product product = productRepository.findById(saved.getProductId())
@@ -184,29 +186,6 @@ public class GroupPurchaseService {
 
         //search kafka
         GroupPurchaseEvent event = findGroupPurchase.toEvent("", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE, null);
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED,event.getId().toString(), event);
+        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
     }
-
-    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
-        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
-                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
-
-        return unsettledGroupPurchases.stream()
-                .map(GroupPurchaseInternalInfo::from)
-                .toList();
-    }
-
-    @Transactional
-    public void markAsSettled(UUID groupPurchaseId) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-
-        if (groupPurchase.isSettled()) {
-            return;
-        }
-
-        groupPurchase.markAsSettled();
-        groupPurchaseRepository.save(groupPurchase);
-    }
-
 }
