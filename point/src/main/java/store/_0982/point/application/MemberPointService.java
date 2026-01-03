@@ -85,7 +85,6 @@ public class MemberPointService {
                         applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
                         return MemberPointInfo.from(memberPoint);
                     } catch (DataIntegrityViolationException e) {
-                        log.warn("concurrency");
                         return MemberPointInfo.from(memberPoint);
                     }
                 }

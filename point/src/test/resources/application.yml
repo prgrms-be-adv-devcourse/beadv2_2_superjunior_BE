@@ -40,3 +40,4 @@ frontend:
 logging:
   level:
     root: warn
+    org.apache.kafka.test.TestUtils: off
