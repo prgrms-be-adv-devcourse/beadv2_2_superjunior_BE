@@ -63,7 +63,7 @@ public class Order {
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
-    public Order(
+    private Order(
             int quantity,
             Long price,
             UUID memberId,
@@ -77,20 +77,44 @@ public class Order {
         this.quantity = quantity;
         this.price = price;
         this.memberId = memberId;
-        this.status = OrderStatus.IN_PROGRESS;
+        this.status = OrderStatus.PENDING;
         this.address = address;
         this.addressDetail = addressDetail;
         this.postalCode = postalCode;
         this.receiverName = receiverName;
         this.sellerId = sellerId;
         this.groupPurchaseId = groupPurchaseId;
+    }
 
+    public static Order pending(
+            int quantity,
+            Long price,
+            UUID memberId,
+            String address,
+            String addressDetail,
+            String postalCode,
+            String receiverName,
+            UUID sellerId,
+            UUID groupPurchaseId) {
+        return new Order(
+                quantity,
+                price,
+                memberId,
+                address,
+                addressDetail,
+                postalCode,
+                receiverName,
+                sellerId,
+                groupPurchaseId
+        );
     }
 
     // 상태 변경
     public void updateStatus(OrderStatus newStatus){
         validateStatus(this.status, newStatus );
         this.status = newStatus;
+
+
     }
 
     // 상태 전환 검증
@@ -106,22 +130,52 @@ public class Order {
                 }
             }
             case SUCCESS, FAILED ->
-                throw new IllegalStateException("현재 상태 " + current + " 변경 불가능");
-
+                    throw new IllegalStateException("현재 상태 " + current + " 변경 불가능");
         }
     }
 
-    // 환불 완료
-    public void markReturned(){
-        if(this.returnedAt != null){
-            throw new IllegalStateException("이미 환불된 건입니다.");
+    // 상태 전이
+    public void confirm(){
+        if(this.status != OrderStatus.PENDING){
+            throw new IllegalStateException("Order 상태 CONFIRMED 불가 status : " + status);
         }
-        this.returnedAt = OffsetDateTime.now();
+        this.status = OrderStatus.CONFIRMED;
+    }
+
+    public void markSuccess() {
+        if(this.status != OrderStatus.CONFIRMED){
+            throw new IllegalStateException("CONFIRMED 상태에서 SUCCESS로 변경 가능");
+        }
+        this.status = OrderStatus.SUCCESS;
+    }
+
+    public void markFailed() {
+        if(this.status != OrderStatus.CONFIRMED){
+            throw new IllegalStateException("CONFIRMED 상태에서 FAILED로 변경 가능");
+        }
+        this.status = OrderStatus.FAILED;
+    }
+
+    public void cancel() {
+        if(this.status != OrderStatus.PENDING && this.status != OrderStatus.CONFIRMED){
+            throw new IllegalStateException("PENDING과 CONFIRMED에서만 CANCEL 가능");
+        }
+        this.status = OrderStatus.CANCELLED;
     }
 
     // 환불 여부
     public boolean isReturned(){
         return this.returnedAt != null;
     }
+
+    // 환불 완료
+    public void markReturned(){
+        if(this.isReturned()){
+            throw new IllegalStateException("이미 환불된 건입니다.");
+        }
+        this.returnedAt = OffsetDateTime.now();
+    }
+
+
 
 }
