@@ -15,20 +15,6 @@ spec:
             class: traefik
 
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: 0982-store-tls
-spec:
-  secretName: 0982-store-secret
-  issuerRef:
-    name: letsencrypt
-    kind: ClusterIssuer
-  commonName: 0982.store
-  dnsNames:
-    - 0982.store
-
----
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -45,6 +31,7 @@ metadata:
   name: 0982-store-ingress
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: default-https-redirect@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt
 spec:
   rules:
     - host: 0982.store
@@ -60,6 +47,4 @@ spec:
   tls:
     - hosts:
         - 0982.store
-      secretName: 0982-store-secret
-
-# DDD
+      secretName: 0982-store-tls
