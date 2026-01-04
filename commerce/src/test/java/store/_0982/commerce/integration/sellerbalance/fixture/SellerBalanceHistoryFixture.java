@@ -1,4 +1,4 @@
-package store._0982.commerce.fixture;
+package store._0982.commerce.integration.sellerbalance.fixture;
 
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;

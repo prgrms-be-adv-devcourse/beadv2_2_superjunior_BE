@@ -14,8 +14,8 @@ import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
-import store._0982.commerce.fixture.SellerBalanceFixture;
-import store._0982.commerce.fixture.SellerBalanceHistoryFixture;
+import store._0982.commerce.integration.sellerbalance.fixture.SellerBalanceFixture;
+import store._0982.commerce.integration.sellerbalance.fixture.SellerBalanceHistoryFixture;
 import store._0982.common.HeaderName;
 
 import java.util.UUID;
