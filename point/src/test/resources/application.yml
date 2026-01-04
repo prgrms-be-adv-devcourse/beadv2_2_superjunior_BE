@@ -3,20 +3,17 @@ spring:
   application:
     name: point-test
 
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS point_schema
-    username: sa
-    password:
-
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     properties:
       hibernate:
+        default_schema: point_schema
+        hbm2ddl:
+          create_namespaces: true
         format_sql: true
         show_sql: false
+    open-in-view: false
 
 eureka:
   client:
@@ -41,3 +38,9 @@ logging:
   level:
     root: warn
     org.apache.kafka.test.TestUtils: off
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
