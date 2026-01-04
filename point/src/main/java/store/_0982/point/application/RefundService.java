@@ -2,6 +2,7 @@ package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.PointRefundCommand;
@@ -27,6 +28,7 @@ public class RefundService {
     private final MemberPointRepository memberPointRepository;
 
     @ServiceLog
+    @Transactional
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
