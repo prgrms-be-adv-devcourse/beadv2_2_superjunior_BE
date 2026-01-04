@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("SellerBalance 통합 테스트")
-class SellerBalanceControllerIntegrationTest {
+class SellerBalanceIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
