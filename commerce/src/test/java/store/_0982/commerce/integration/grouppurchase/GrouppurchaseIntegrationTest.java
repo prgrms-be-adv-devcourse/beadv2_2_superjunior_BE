@@ -15,12 +15,19 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.common.HeaderName;
+import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -277,6 +284,139 @@ class GrouppurchaseIntegrationTest {
         // when & then
         mockMvc.perform(
                         get("/api/purchases/seller/" + invalidSellerId)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("SCHEDULED 상태의 공동구매를 삭제한다")
+    void deleteGroupPurchase_success() throws Exception {
+        // given
+        Product product = productRepository.saveAndFlush(new Product(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
+                50, 100, "삭제할 공동구매", "설명",
+                5000L, now.plusDays(1), now.plusDays(7),
+                testMemberId, product.getProductId()));
+        UUID purchaseId = groupPurchase.getGroupPurchaseId();
+
+        // when & then - HTTP 응답 검증
+        mockMvc.perform(
+                        delete("/api/purchases/" + purchaseId)
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("공동구매가 삭제되었습니다"));
+
+        // then - DB에서 삭제 검증
+        assertThat(groupPurchaseRepository.findById(purchaseId)).isEmpty();
+
+        // then - Kafka 이벤트 발행 검증
+        verify(groupPurchaseKafkaTemplate).send(
+                eq(KafkaTopics.GROUP_PURCHASE_CHANGED),
+                eq(purchaseId.toString()),
+                any(GroupPurchaseEvent.class)
+        );
+    }
+
+    @Test
+    @DisplayName("OPEN 상태의 공동구매는 삭제할 수 없다")
+    void deleteGroupPurchase_openStatus() throws Exception {
+        // given
+        Product product = productRepository.saveAndFlush(new Product(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GroupPurchase groupPurchase = new GroupPurchase(
+                50, 100, "OPEN 공동구매", "설명",
+                5000L, now.minusDays(1), now.plusDays(7),
+                testMemberId, product.getProductId());
+        groupPurchase.updateStatus(store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus.OPEN);
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/purchases/" + groupPurchase.getGroupPurchaseId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("다른 판매자의 공동구매는 삭제할 수 없다")
+    void deleteGroupPurchase_forbidden() throws Exception {
+        // given - 다른 판매자의 상품 및 공동구매 생성
+        UUID otherSeller = UUID.randomUUID();
+        Product product = productRepository.saveAndFlush(new Product(
+                "다른 판매자 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", otherSeller));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
+                50, 100, "다른 판매자 공동구매", "설명",
+                5000L, now.plusDays(1), now.plusDays(7),
+                otherSeller, product.getProductId()));
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/purchases/" + groupPurchase.getGroupPurchaseId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 공동구매 삭제 시 404 에러를 반환한다")
+    void deleteGroupPurchase_notFound() throws Exception {
+        // given
+        UUID nonExistentPurchaseId = UUID.randomUUID();
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/purchases/" + nonExistentPurchaseId)
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("공동구매 삭제 시 헤더에 Member ID가 없으면 401 에러를 반환한다")
+    void deleteGroupPurchase_missingMemberId() throws Exception {
+        // given - 공동구매 생성
+        Product product = productRepository.saveAndFlush(new Product(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
+                50, 100, "공동구매", "설명",
+                5000L, now.plusDays(1), now.plusDays(7),
+                testMemberId, product.getProductId()));
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/purchases/" + groupPurchase.getGroupPurchaseId())
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("공동구매 삭제 시 잘못된 UUID 형식이면 400 에러를 반환한다")
+    void deleteGroupPurchase_invalidUUID() throws Exception {
+        // given - 잘못된 UUID 형식
+        String invalidPurchaseId = "uuid";
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/purchases/" + invalidPurchaseId)
+                                .header(HeaderName.ID, testMemberId.toString())
                 )
                 .andDo(print())
                 .andExpect(status().isBadRequest());
