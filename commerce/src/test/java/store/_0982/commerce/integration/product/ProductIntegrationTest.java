@@ -13,6 +13,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
@@ -21,12 +23,15 @@ import store._0982.common.HeaderName;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
 
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -39,13 +44,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProductIntegrationTest {
 
     @MockitoBean
-    private KafkaTemplate<String, ProductEvent> kafkaTemplate;
+    private KafkaTemplate<String, ProductEvent> productKafkaTemplate;
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private GroupPurchaseRepository groupPurchaseRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -105,7 +113,7 @@ class ProductIntegrationTest {
         assertThat(savedProduct.getSellerId()).isEqualTo(testMemberId);
 
         // then - Kafka 이벤트 발행 검증
-        verify(kafkaTemplate).send(
+        verify(productKafkaTemplate).send(
                 eq(KafkaTopics.PRODUCT_UPSERTED),
                 eq(savedProduct.getProductId().toString()),
                 any(ProductEvent.class)
@@ -183,5 +191,135 @@ class ProductIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.originalUrl").isEmpty());
+    }
+
+    @Test
+    @DisplayName("공동구매에 사용되지 않은 상품은 하드 삭제된다")
+    void deleteProduct_hardDelete_success() throws Exception {
+        // given - 상품 생성
+        Product product = new Product(
+                "삭제할 상품",
+                10000L,
+                ProductCategory.BEAUTY,
+                "테스트용 상품",
+                100,
+                "https://example.com/product",
+                testMemberId
+        );
+        Product savedProduct = productRepository.saveAndFlush(product);
+        UUID productId = savedProduct.getProductId();
+
+        // when & then - HTTP 응답 검증
+        mockMvc.perform(
+                        delete("/api/products/" + productId)
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("상품이 삭제되었습니다."));
+
+        // then - DB에서 하드 삭제 검증
+        Optional<Product> deletedProduct = productRepository.findById(productId);
+        assertThat(deletedProduct).isEmpty();
+
+        // then - Kafka 이벤트 발행 검증
+        verify(productKafkaTemplate).send(
+                eq(KafkaTopics.PRODUCT_DELETED),
+                eq(productId.toString()),
+                any(ProductEvent.class)
+        );
+    }
+
+    @Test
+    @DisplayName("공동구매에 사용된 상품은 소프트 삭제된다")
+    void deleteProduct_softDelete_success() throws Exception {
+        // given - 상품 생성
+        Product product = new Product(
+                "소프트 삭제할 상품",
+                10000L,
+                ProductCategory.BEAUTY,
+                "테스트용 상품",
+                100,
+                "https://example.com/product",
+                testMemberId
+        );
+        Product savedProduct = productRepository.save(product);
+
+        // given - 공동구매 생성 (상품이 사용됨)
+        GroupPurchase groupPurchase = new GroupPurchase(
+                50,
+                100,
+                "테스트 공동구매",
+                "공동구매 설명",
+                5000L,
+                OffsetDateTime.now().plusDays(1),
+                OffsetDateTime.now().plusDays(7),
+                testMemberId,
+                savedProduct.getProductId()
+        );
+        groupPurchaseRepository.save(groupPurchase);
+
+        // when & then - HTTP 응답 검증
+        mockMvc.perform(
+                        delete("/api/products/" + savedProduct.getProductId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("상품이 삭제되었습니다."));
+
+        // then - DB에서 소프트 삭제 검증
+        Optional<Product> deletedProduct = productRepository.findById(savedProduct.getProductId());
+        assertThat(deletedProduct).isPresent();
+        assertThat(deletedProduct.get().getDeletedAt()).isNotNull();
+
+        // then - Kafka 이벤트 발행 검증
+        verify(productKafkaTemplate).send(
+                eq(KafkaTopics.PRODUCT_DELETED),
+                eq(savedProduct.getProductId().toString()),
+                any(ProductEvent.class)
+        );
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 상품 삭제 시 404 에러를 반환한다")
+    void deleteProduct_notFound() throws Exception {
+        // given
+        UUID nonExistentProductId = UUID.randomUUID();
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/products/" + nonExistentProductId)
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("다른 판매자의 상품 삭제 시 403 에러를 반환한다")
+    void deleteProduct_forbidden() throws Exception {
+        // given - 다른 판매자의 상품 생성
+        UUID otherSellerId = UUID.randomUUID();
+        Product product = new Product(
+                "다른 판매자 상품",
+                10000L,
+                ProductCategory.BEAUTY,
+                "테스트용 상품",
+                100,
+                "https://example.com/product",
+                otherSellerId
+        );
+        Product savedProduct = productRepository.save(product);
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/products/" + savedProduct.getProductId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isForbidden());
     }
 }
