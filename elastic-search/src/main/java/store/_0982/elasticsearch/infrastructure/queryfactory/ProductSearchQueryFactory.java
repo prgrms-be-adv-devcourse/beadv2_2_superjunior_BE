@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.stereotype.Component;
+import store._0982.common.exception.CustomException;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 
 import java.util.UUID;
 
@@ -12,6 +14,10 @@ import java.util.UUID;
 public class ProductSearchQueryFactory {
 
     public NativeQuery build(String keyword, UUID sellerId, String category, Pageable pageable) {
+
+        if (sellerId == null) {
+            throw new CustomException(CustomErrorCode.SELLER_ID_ISNULL);
+        }
 
         if (keyword == null || keyword.isBlank()) {
             return buildMatchAllQuery(sellerId, category, pageable);

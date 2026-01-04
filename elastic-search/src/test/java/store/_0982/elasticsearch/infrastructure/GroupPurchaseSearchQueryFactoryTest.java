@@ -14,11 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class GroupPurchaseSearchQueryFactoryTest {
 
-    private final GroupPurchaseSearchQueryFactory factory =
-            new GroupPurchaseSearchQueryFactory();
+    private final GroupPurchaseSearchQueryFactory factory = new GroupPurchaseSearchQueryFactory();
 
     @Test
-    @DisplayName("keyword가 null이면 match_all + status 필터 쿼리가 생성된다")
+    @DisplayName("keyword가 비어있으면 match_all + status/category/seller 필터 조합 생성")
     void create_matchAllQuery_success() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
@@ -41,24 +40,28 @@ class GroupPurchaseSearchQueryFactoryTest {
         assertThat(q)
                 .contains("match_all")
                 .contains("status")
-                .contains(status);
+                .contains(status)
+                .contains("productDocumentEmbedded.category")
+                .contains(category)
+                .contains("productDocumentEmbedded.sellerId")
+                .contains(memberId);
 
-        // pageable
         assertThat(query.getPageable().getPageSize()).isEqualTo(10);
         assertThat(query.getPageable().getPageNumber()).isZero();
     }
 
     @Test
-    @DisplayName("keyword가 있으면 phrase, prefix, fuzzy, match 등이 포함된 bool 쿼리가 생성된다")
+    @DisplayName("keyword가 있으면 phrase/prefix/fuzzy/match should과 status 필터 포함")
     void create_keywordQuery_success() {
         // given
-        String keyword = "아이폰";
+        String keyword = "테스트";
+        String status = "CLOSED";
         Pageable pageable = PageRequest.of(1, 5);
 
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
-                null,
+                status,
                 null,
                 null,
                 pageable
@@ -68,29 +71,74 @@ class GroupPurchaseSearchQueryFactoryTest {
         String q = Objects.requireNonNull(query.getQuery()).toString();
 
         assertThat(q)
-                // should 절
                 .contains("match_phrase")
                 .contains("match_phrase_prefix")
                 .contains("fuzziness")
-                .contains("AUTO")
                 .contains("match")
-                // minimumShouldMatch
+                .contains("status")
+                .contains(status)
                 .contains("minimum_should_match");
 
-        // pageable
         assertThat(query.getPageable().getPageSize()).isEqualTo(5);
         assertThat(query.getPageable().getPageNumber()).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("keyword와 status가 함께 있으면 should 쿼리 + status 필터가 생성된다")
-    void create_keywordAndStatus_success() {
+    @DisplayName("status가 비어있으면 status 필터 추가되지 않음")
+    void create_withoutStatus_success() {
         // given
-        String keyword = "갤럭시";
-        String status = "CLOSED";
-        String  memberId = UUID.randomUUID().toString();
-        String category = "HOME";
-        Pageable pageable = PageRequest.of(0, 20);
+        String keyword = "test";
+        Pageable pageable = PageRequest.of(0, 15);
+
+        // when
+        NativeQuery query = factory.createSearchQuery(
+                keyword,
+                "",
+                null,
+                null,
+                pageable
+        );
+
+        // then
+        String q = Objects.requireNonNull(query.getQuery()).toString();
+
+        assertThat(q)
+                .doesNotContain("status")
+                .contains("match_phrase");
+    }
+
+    @Test
+    @DisplayName("category가 비어있으면 nested category 필터 추가되지 않음")
+    void create_withoutCategory_success() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        NativeQuery query = factory.createSearchQuery(
+                null,
+                "OPEN",
+                null,
+                "",
+                pageable
+        );
+
+        // then
+        String q = Objects.requireNonNull(query.getQuery()).toString();
+
+        assertThat(q)
+                .doesNotContain("productDocumentEmbedded.category")
+                .contains("match_all");
+    }
+
+    @Test
+    @DisplayName("keyword가 있고 category와 sellerId가 있으면 nested 필터 포함")
+    void create_keywordWithCategoryAndSeller_success() {
+        // given
+        String keyword = "키워드";
+        String status = "OPEN";
+        String memberId = UUID.randomUUID().toString();
+        String category = "ELECTRONICS";
+        Pageable pageable = PageRequest.of(0, 8);
 
         // when
         NativeQuery query = factory.createSearchQuery(
@@ -105,25 +153,31 @@ class GroupPurchaseSearchQueryFactoryTest {
         String q = Objects.requireNonNull(query.getQuery()).toString();
 
         assertThat(q)
-                .contains("should")
+                .contains("match_phrase")
+                .contains("productDocumentEmbedded.category")
+                .contains(category)
+                .contains("productDocumentEmbedded.sellerId")
+                .contains(memberId)
                 .contains("status")
                 .contains(status)
                 .contains("minimum_should_match");
+
+        assertThat(query.getPageable().getPageSize()).isEqualTo(8);
+        assertThat(query.getPageable().getPageNumber()).isZero();
     }
 
     @Test
-    @DisplayName("status가 없으면 status 필터는 추가되지 않는다")
-    void create_withoutStatus_success() {
+    @DisplayName("모든 필터와 keyword가 비어있으면 순수 match_all 생성")
+    void create_pureMatchAll_success() {
         // given
-        String keyword = "test";
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(3, 4);
 
         // when
         NativeQuery query = factory.createSearchQuery(
-                keyword,
-                null,
-                null,
-                null,
+                "",
+                "",
+                "",
+                "",
                 pageable
         );
 
@@ -131,7 +185,12 @@ class GroupPurchaseSearchQueryFactoryTest {
         String q = Objects.requireNonNull(query.getQuery()).toString();
 
         assertThat(q)
+                .contains("match_all")
                 .doesNotContain("status")
-                .contains("match_phrase");
+                .doesNotContain("productDocumentEmbedded.category")
+                .doesNotContain("productDocumentEmbedded.sellerId");
+
+        assertThat(query.getPageable().getPageSize()).isEqualTo(4);
+        assertThat(query.getPageable().getPageNumber()).isEqualTo(3);
     }
 }
