@@ -23,7 +23,7 @@ public class PaymentPointFailureService {
     @ServiceLog
     @Transactional
     public PaymentPointInfo handlePaymentFailure(PointChargeFailCommand command) {
-        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderIdWithLock(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         switch (paymentPoint.getStatus()) {
