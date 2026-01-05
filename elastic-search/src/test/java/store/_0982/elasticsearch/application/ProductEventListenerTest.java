@@ -13,12 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
 import store._0982.elasticsearch.application.support.KafkaTestProbe;
 import store._0982.elasticsearch.config.KafkaTestConfig;
 import store._0982.elasticsearch.domain.ProductDocument;
 import store._0982.elasticsearch.infrastructure.ProductRepository;
-
-import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -87,16 +86,11 @@ class ProductEventListenerTest {
         assertThat(consumed).isTrue();
 
         ProductDocument saved = captureSavedProductDocument();
-        assertThat(saved.getProductId()).isEqualTo(productId.toString());
-        assertThat(saved.getSellerId()).isEqualTo(sellerId.toString());
-        assertThat(saved.getName()).isEqualTo(event.getName());
-        assertThat(saved.getPrice()).isEqualTo(event.getPrice());
-        assertThat(saved.getCategory()).isEqualTo(event.getCategory());
-        assertThat(saved.getDescription()).isEqualTo(event.getDescription());
-        assertThat(saved.getStock()).isEqualTo(event.getStock());
-        assertThat(saved.getOriginalUrl()).isEqualTo(event.getOriginalUrl());
-        assertThat(saved.getCreatedAt()).isEqualTo(OffsetDateTime.parse(event.getCreatedAt()));
-        assertThat(saved.getUpdatedAt()).isEqualTo(OffsetDateTime.parse(event.getUpdatedAt()));
+        ProductDocument document = ProductDocumentCommand.from(event).toDocument();
+
+        assertThat(saved)
+                .usingRecursiveComparison()
+                        .isEqualTo(document);
 
         verify(productRepository, never()).deleteById(any());
     }
