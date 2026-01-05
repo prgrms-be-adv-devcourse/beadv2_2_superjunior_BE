@@ -1,7 +1,9 @@
 package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,15 +16,14 @@ import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PaymentPointStatus;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.PaymentPoint;
-import store._0982.point.domain.entity.PaymentPointFailure;
 import store._0982.point.domain.event.PointRechargedEvent;
 import store._0982.point.domain.repository.MemberPointRepository;
-import store._0982.point.domain.repository.PaymentPointFailureRepository;
 import store._0982.point.domain.repository.PaymentPointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -30,19 +31,25 @@ public class PaymentPointService {
     private final TossPaymentService tossPaymentService;
     private final PaymentPointRepository paymentPointRepository;
     private final MemberPointRepository memberPointRepository;
-    private final PaymentPointFailureRepository paymentPointFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    // TODO: 같은 orderId로 주문 생성이 동시에 여러 번 요청되었을 때, 낙관적 락이나 비관적 락을 이용할 것인가?
     @ServiceLog
     @Transactional
     public PaymentPointCreateInfo createPaymentPoint(PaymentPointCommand command, UUID memberId) {
-        return paymentPointRepository.findByOrderId(command.orderId())
+        UUID orderId = command.orderId();
+        return paymentPointRepository.findByOrderId(orderId)
                 .map(PaymentPointCreateInfo::from)
                 .orElseGet(() -> {
-                    PaymentPoint paymentPoint = PaymentPoint.create(memberId, command.orderId(), command.amount());
-                    return PaymentPointCreateInfo.from(paymentPointRepository.save(paymentPoint));
+                    try {
+                        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, command.amount());
+                        return PaymentPointCreateInfo.from(paymentPointRepository.saveAndFlush(paymentPoint));
+                    } catch (DataIntegrityViolationException e) {
+                        return paymentPointRepository.findByOrderId(orderId)
+                                .map(PaymentPointCreateInfo::from)
+                                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_CREATION_FAILED));
+                    }
                 });
+
     }
 
     public PageResponse<PaymentPointInfo> getPaymentHistories(UUID memberId, Pageable pageable) {
@@ -51,10 +58,6 @@ public class PaymentPointService {
         return PageResponse.from(page);
     }
 
-    /*
-    TODO: 결제 승인 도중 에러가 발생하면, 그냥 에러를 반환해서 클라이언트가 실패 처리를 요청하게 할까,
-          아니면 서버에서 바로 실패 처리를 진행할까?
-     */
     @ServiceLog
     @Transactional
     public PaymentPointInfo confirmPayment(PointChargeConfirmCommand command) {
@@ -65,35 +68,19 @@ public class PaymentPointService {
             throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
         }
 
-        TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(paymentPoint, command);
-        paymentPoint.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
-
         UUID memberId = paymentPoint.getMemberId();
-        // 처음 결제 승인 시 보유 포인트 0인 객체를 미리 생성
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
-                .orElseGet(() -> memberPointRepository.save(new MemberPoint(memberId)));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        memberPoint.addPoints(paymentPoint.getAmount());
-        applicationEventPublisher.publishEvent(PointRechargedEvent.from(paymentPoint));
-        return PaymentPointInfo.from(paymentPoint);
-    }
-
-    @ServiceLog
-    @Transactional
-    public PaymentPointInfo handlePaymentFailure(PointChargeFailCommand command) {
-        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-
-        switch (paymentPoint.getStatus()) {
-            case COMPLETED, REFUNDED -> throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
-            case FAILED -> {
-                return PaymentPointInfo.from(paymentPoint);
-            }
-            case REQUESTED -> paymentPoint.markFailed(command.errorMessage());
+        TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(paymentPoint, command);
+        try {
+            paymentPoint.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
+            memberPoint.addPoints(paymentPoint.getAmount());
+            applicationEventPublisher.publishEvent(PointRechargedEvent.from(paymentPoint));
+        } catch (Exception e) {
+            rollbackPayment(command, paymentPoint);
         }
 
-        PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
-        paymentPointFailureRepository.save(failure);
         return PaymentPointInfo.from(paymentPoint);
     }
 
@@ -102,5 +89,15 @@ public class PaymentPointService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         paymentPoint.validate(memberId);
         return PaymentPointInfo.from(paymentPoint);
+    }
+
+    private void rollbackPayment(PointChargeConfirmCommand command, PaymentPoint paymentPoint) {
+        try {
+            tossPaymentService.cancelPayment(paymentPoint, new PointRefundCommand(command.orderId(), "System Error"));
+        } catch (Exception refundEx) {
+            log.error("[Service] Failed to rollback payment", refundEx);
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
+        }
+        throw new CustomException(CustomErrorCode.PAYMENT_PROCESS_FAILED_REFUNDED);
     }
 }

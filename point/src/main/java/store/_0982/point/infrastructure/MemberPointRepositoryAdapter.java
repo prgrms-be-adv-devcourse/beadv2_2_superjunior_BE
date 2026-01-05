@@ -8,7 +8,6 @@ import store._0982.point.domain.repository.MemberPointRepository;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @RequiredArgsConstructor
 @Repository
 public class MemberPointRepositoryAdapter implements MemberPointRepository {

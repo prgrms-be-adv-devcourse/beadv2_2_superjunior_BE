@@ -2,6 +2,7 @@ package store._0982.point.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.point.domain.constant.MemberPointHistoryStatus;
 import store._0982.point.domain.entity.MemberPointHistory;
 import store._0982.point.domain.repository.MemberPointHistoryRepository;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class MemberPointHistoryAdapter implements MemberPointHistoryRepository {
+public class MemberPointHistoryRepositoryAdapter implements MemberPointHistoryRepository {
     private final MemberPointHistoryJpaRepository historyJpaRepository;
 
     @Override
@@ -20,5 +21,15 @@ public class MemberPointHistoryAdapter implements MemberPointHistoryRepository {
     @Override
     public boolean existsByIdempotencyKey(UUID idempotencyKey) {
         return historyJpaRepository.existsByIdempotencyKey(idempotencyKey);
+    }
+
+    @Override
+    public boolean existsByOrderIdAndStatus(UUID orderId, MemberPointHistoryStatus status) {
+        return historyJpaRepository.existsByOrderIdAndStatus(orderId, status);
+    }
+
+    @Override
+    public MemberPointHistory saveAndFlush(MemberPointHistory memberPointHistory) {
+        return historyJpaRepository.saveAndFlush(memberPointHistory);
     }
 }

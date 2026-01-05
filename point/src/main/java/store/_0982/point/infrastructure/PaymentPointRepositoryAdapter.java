@@ -27,8 +27,13 @@ public class PaymentPointRepositoryAdapter implements PaymentPointRepository {
     }
 
     @Override
-    public PaymentPoint save(PaymentPoint paymentPoint) {
-        return paymentPointJpaRepository.save(paymentPoint);
+    public Optional<PaymentPoint> findByOrderIdWithLock(UUID orderId) {
+        return paymentPointJpaRepository.readByPgOrderId(orderId);
+    }
+
+    @Override
+    public PaymentPoint saveAndFlush(PaymentPoint paymentPoint) {
+        return paymentPointJpaRepository.saveAndFlush(paymentPoint);
     }
 
     @Override

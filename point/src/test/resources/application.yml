@@ -1,0 +1,46 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  application:
+    name: point-test
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        default_schema: point_schema
+        hbm2ddl:
+          create_namespaces: true
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+
+kafka:
+  bootstrap-servers: ${spring.embedded.kafka.brokers}
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY:"abcd"}
+
+frontend:
+  url: https://0982.vercel.app
+
+logging:
+  level:
+    root: warn
+    org.apache.kafka.test.TestUtils: off
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false

@@ -7,17 +7,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
+import store._0982.point.application.PaymentPointFailureService;
 import store._0982.point.application.PaymentPointService;
-import store._0982.point.application.RefundService;
+import store._0982.point.application.PointRefundService;
 import store._0982.point.application.dto.*;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.domain.constant.PaymentPointStatus;
@@ -43,32 +43,20 @@ class PaymentPointControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockitoBean
     private PaymentPointService paymentPointService;
 
-    @Autowired
-    private RefundService refundService;
+    @MockitoBean
+    private PaymentPointFailureService paymentPointFailureService;
+
+    @MockitoBean
+    private PointRefundService pointRefundService;
+
+    @MockitoBean
+    private OrderServiceClient orderServiceClient;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public PaymentPointService paymentPointService() {
-            return mock(PaymentPointService.class);
-        }
-
-        @Bean
-        public RefundService refundService() {
-            return mock(RefundService.class);
-        }
-
-        @Bean
-        public OrderServiceClient orderServiceClient() {
-            return mock(OrderServiceClient.class);
-        }
-    }
 
     @BeforeEach
     void resetMocks() {
@@ -167,7 +155,7 @@ class PaymentPointControllerTest {
         // given
         UUID orderId = UUID.randomUUID();
 
-        when(paymentPointService.handlePaymentFailure(any(PointChargeFailCommand.class)))
+        when(paymentPointFailureService.handlePaymentFailure(any(PointChargeFailCommand.class)))
                 .thenReturn(any(PaymentPointInfo.class));
 
         // when & then
@@ -182,7 +170,7 @@ class PaymentPointControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
-        verify(paymentPointService).handlePaymentFailure(any());
+        verify(paymentPointFailureService).handlePaymentFailure(any());
     }
 
     @Test
@@ -205,7 +193,7 @@ class PaymentPointControllerTest {
                 OffsetDateTime.now()
         );
 
-        when(refundService.refundPaymentPoint(eq(memberId), any())).thenReturn(info);
+        when(pointRefundService.refundPaymentPoint(eq(memberId), any())).thenReturn(info);
 
         // when & then
         mockMvc.perform(post("/api/payments/refund")
@@ -218,7 +206,7 @@ class PaymentPointControllerTest {
                 .andExpect(jsonPath("$.data.orderId").value(orderId.toString()))
                 .andExpect(jsonPath("$.data.amount").value(10000));
 
-        verify(refundService).refundPaymentPoint(eq(memberId), any());
+        verify(pointRefundService).refundPaymentPoint(eq(memberId), any());
     }
 
     @Test
