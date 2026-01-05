@@ -50,6 +50,9 @@ public enum CustomErrorCode implements ErrorCode {
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
     CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
 
+    // 409 Conflict
+    CONCURRENT_PARTICIPATION_CONFLICT(HttpStatus.CONFLICT, "현재 참여자가 많습니다. 잠시 후 다시 시도해주세요."),
+
     // 403 Forbidden
     ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN,"본인의 주문내역만 조회할 수 있습니다."),
     NOT_CART_OWNER(HttpStatus.FORBIDDEN, "카트에 대한 권한이 없습니다."),
