@@ -10,6 +10,7 @@ import store._0982.common.exception.ErrorCode;
 public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
+    SELLER_ID_ISNULL(HttpStatus.BAD_REQUEST,"판매자 ID가 비어있습니다."),
 
     // 401 Unauthorized
 
@@ -22,13 +23,10 @@ public enum CustomErrorCode implements ErrorCode {
     ALREADY_EXIST_INDEX(HttpStatus.CONFLICT, "이미 존재하는 인덱스입니다."),
 
     // 500 Internal Server Error
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다.");
-
-    // 502 Bad Gateway
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
     // 503 Service Unavailable
-
-    // 504
+    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
