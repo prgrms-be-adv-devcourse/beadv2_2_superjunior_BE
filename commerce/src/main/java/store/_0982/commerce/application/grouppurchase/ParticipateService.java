@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseParticipatedEvent;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -38,5 +38,4 @@ public class ParticipateService {
                 new GroupPurchaseParticipatedEvent(savedGroupPurchase, sellerName, product)
         );
     }
-
 }
