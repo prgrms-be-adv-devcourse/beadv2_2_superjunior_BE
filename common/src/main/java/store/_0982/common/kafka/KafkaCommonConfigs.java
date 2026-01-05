@@ -1,5 +1,7 @@
 package store._0982.common.kafka;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -8,6 +10,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import store._0982.common.kafka.dto.BaseEvent;
@@ -33,6 +36,7 @@ import java.util.Map;
  * @author Minhyung Kim
  */
 @SuppressWarnings("unused")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KafkaCommonConfigs {
     /**
      * {@link ProducerFactory}를 빈에 등록할 때 사용하는 메서드입니다.
@@ -46,8 +50,11 @@ public final class KafkaCommonConfigs {
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
-        config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRY_ATTEMPTS);
+        config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRIES);
+        config.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, KafkaProperties.DELIVERY_TIMEOUT_MS);
         config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
+        config.put(ProducerConfig.BATCH_SIZE_CONFIG, KafkaProperties.DEFAULT_BATCH_SIZE);
+        config.put(ProducerConfig.LINGER_MS_CONFIG, KafkaProperties.DEFAULT_LINGER_MS);
         config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
         return new DefaultKafkaProducerFactory<>(config);
@@ -79,7 +86,7 @@ public final class KafkaCommonConfigs {
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, KafkaProperties.DEFAULT_AUTO_OFFSET_RESET);
-        config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, KafkaProperties.DEFAULT_ENABLE_AUTO_COMMIT);
+        config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         config.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(config);
     }
@@ -97,6 +104,7 @@ public final class KafkaCommonConfigs {
         factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(KafkaProperties.DEFAULT_CONSUMER_CONCURRENCY);
         factory.getContainerProperties().setObservationEnabled(true);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         return factory;
     }
 
@@ -131,8 +139,5 @@ public final class KafkaCommonConfigs {
                 .partitions(partitions)
                 .replicas(replicas)
                 .build();
-    }
-
-    private KafkaCommonConfigs() {
     }
 }
