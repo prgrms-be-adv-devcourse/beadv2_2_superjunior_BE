@@ -16,8 +16,9 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ControllerLog;
 import store._0982.common.log.LogFormat;
+import store._0982.point.application.PaymentPointFailureService;
 import store._0982.point.application.PaymentPointService;
-import store._0982.point.application.RefundService;
+import store._0982.point.application.PointRefundService;
 import store._0982.point.application.dto.PaymentPointCreateInfo;
 import store._0982.point.application.dto.PaymentPointInfo;
 import store._0982.point.application.dto.PointRefundInfo;
@@ -35,11 +36,13 @@ import java.util.function.Supplier;
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentPointController {
+
     private static final String PAYMENT_SUCCESS_ENDPOINT = "/point/charge/success";
     private static final String PAYMENT_FAIL_ENDPOINT = "/point/charge/fail";
 
     private final PaymentPointService paymentPointService;
-    private final RefundService refundService;
+    private final PaymentPointFailureService paymentPointFailureService;
+    private final PointRefundService pointRefundService;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -69,7 +72,7 @@ public class PaymentPointController {
     @GetMapping("/fail")
     public RedirectView handlePaymentFailure(@ModelAttribute @Valid PointChargeFailRequest request) {
         return handleExceptionWhenConfirmOrFail(() ->
-                paymentPointService.handlePaymentFailure(request.toCommand()), false);
+                paymentPointFailureService.handlePaymentFailure(request.toCommand()), false);
     }
 
     @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
@@ -80,7 +83,7 @@ public class PaymentPointController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody @Valid PointRefundRequest request
     ) {
-        PointRefundInfo info = refundService.refundPaymentPoint(memberId, request.toCommand());
+        PointRefundInfo info = pointRefundService.refundPaymentPoint(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 결제 환불 완료");
     }
 

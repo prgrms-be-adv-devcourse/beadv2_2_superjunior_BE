@@ -38,6 +38,7 @@ public enum CustomErrorCode implements ErrorCode {
     // 500 Internal Server Error
     PAYMENT_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 생성 중 오류가 발생했습니다."),
     PAYMENT_COMPLETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 승인 중 오류가 발생했습니다."),
+    PAYMENT_PROCESS_FAILED_REFUNDED(HttpStatus.INTERNAL_SERVER_ERROR, "시스템 오류로 결제가 취소되었습니다. (자동 환불 완료)"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
     // 502 Bad Gateway
@@ -46,7 +47,7 @@ public enum CustomErrorCode implements ErrorCode {
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
 
-    // 504
+    // 504 Gateway Timeout
     PAYMENT_API_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "결제 API 호출이 주어진 시간에 완료되지 않았습니다.");
 
     private final HttpStatus httpStatus;

@@ -12,14 +12,11 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PaymentPointCommand;
 import store._0982.point.application.dto.PaymentPointCreateInfo;
 import store._0982.point.application.dto.PointChargeConfirmCommand;
-import store._0982.point.application.dto.PointChargeFailCommand;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.MemberPoint;
 import store._0982.point.domain.entity.PaymentPoint;
-import store._0982.point.domain.entity.PaymentPointFailure;
 import store._0982.point.domain.event.PointRechargedEvent;
 import store._0982.point.domain.repository.MemberPointRepository;
-import store._0982.point.domain.repository.PaymentPointFailureRepository;
 import store._0982.point.domain.repository.PaymentPointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -43,9 +40,6 @@ class PaymentPointServiceTest {
 
     @Mock
     private MemberPointRepository memberPointRepository;
-
-    @Mock
-    private PaymentPointFailureRepository paymentPointFailureRepository;
 
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
@@ -184,40 +178,6 @@ class PaymentPointServiceTest {
             assertThatThrownBy(() -> paymentPointService.confirmPayment(command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
-        }
-    }
-
-    @Nested
-    @DisplayName("결제 실패")
-    class HandlePaymentFailure {
-
-        @Test
-        @DisplayName("결제 실패 정보를 저장한다")
-        void handlePaymentFailure_success() {
-            // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
-
-            PointChargeFailCommand command = new PointChargeFailCommand(
-                    orderId,
-                    "test_payment_key",
-                    "PAYMENT_FAILED",
-                    "카드 승인 실패",
-                    10000L,
-                    "{}"
-            );
-
-            PaymentPointFailure failure = PaymentPointFailure.from(paymentPoint, command);
-
-            when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
-            when(paymentPointFailureRepository.save(any(PaymentPointFailure.class))).thenReturn(failure);
-
-            // when
-            paymentPointService.handlePaymentFailure(command);
-
-            // then
-            verify(paymentPointFailureRepository).save(any(PaymentPointFailure.class));
         }
     }
 }
