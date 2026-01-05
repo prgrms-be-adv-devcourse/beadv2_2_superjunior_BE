@@ -5,21 +5,27 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 import store._0982.elasticsearch.domain.ProductDocument;
+import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.infrastructure.queryfactory.ProductSearchQueryFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -34,6 +40,9 @@ class ProductSearchServiceTest {
 
     @Mock
     private IndexOperations indexOperations;
+
+    @Spy
+    private ElasticsearchExceptionTranslator exceptionTranslator = new ElasticsearchExceptionTranslator();
 
     @InjectMocks
     private ProductSearchService productSearchService;
@@ -181,5 +190,138 @@ class ProductSearchServiceTest {
 
         verify(productSearchQueryFactory).build(keyword, sellerId, category, pageable);
         verify(operations).search(query, ProductDocument.class);
+    }
+
+    @Test
+    @DisplayName("SERVICE_UNAVAILABLE 예외 처리")
+    void search_product_document_service_unavailable() {
+        // given
+        String keyword = "keyword";
+        UUID sellerId = UUID.randomUUID();
+        String category = "KIDS";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(productSearchQueryFactory.build(keyword, sellerId, category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, ProductDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"));
+
+        // when & then
+        assertThatThrownBy(() -> productSearchService.searchProductDocument(keyword, sellerId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    @DisplayName("INTERNAL_SERVER_ERROR 예외 처리")
+    void search_product_document_internal_server_error() {
+        // given
+        String keyword = "keyword";
+        UUID sellerId = UUID.randomUUID();
+        String category = "KIDS";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(productSearchQueryFactory.build(keyword, sellerId, category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, ProductDocument.class))
+                .thenThrow(new RuntimeException("boom"));
+
+        // when & then
+        assertThatThrownBy(() -> productSearchService.searchProductDocument(keyword, sellerId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.INTERNAL_SERVER_ERROR);
+    }
+    @Test
+    @DisplayName("SERVICE_UNAVAILABLE 오류 발생 시 재시도")
+    void search_product_document_retries_on_service_unavailable() {
+        // given
+        String keyword = "keyword";
+        UUID sellerId = UUID.randomUUID();
+        String category = "KIDS";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(productSearchQueryFactory.build(keyword, sellerId, category, pageable))
+                .thenReturn(query);
+
+        ProductDocument document = ProductDocument.builder()
+                .productId("product-id")
+                .name("product-1")
+                .price(1_200_000L)
+                .category("KIDS")
+                .sellerId(sellerId.toString())
+                .build();
+
+        SearchHit<ProductDocument> hit = new SearchHit<>(
+                "product-index",
+                "product-id",
+                null,
+                1.0f,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                document
+        );
+
+        SearchHits<ProductDocument> searchHits =
+                new SearchHitsImpl<>(
+                        1L,
+                        TotalHitsRelation.EQUAL_TO,
+                        1.0f,
+                        null,
+                        null,
+                        null,
+                        List.of(hit),
+                        null,
+                        null,
+                        null
+                );
+
+        when(operations.search(query, ProductDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenReturn(searchHits);
+
+        // when
+        PageResponse<ProductDocumentInfo> response =
+                productSearchService.searchProductDocument(keyword, sellerId, category, pageable);
+
+        // then
+        assertThat(response.content()).hasSize(1);
+        verify(operations, times(2)).search(query, ProductDocument.class);
+    }
+    @Test
+    @DisplayName("재시도 횟수 소진 시 SERVICE_UNAVAILABLE")
+    void search_product_document_retry_exhausted_returns_service_unavailable() {
+        // given
+        String keyword = "keyword";
+        UUID sellerId = UUID.randomUUID();
+        String category = "KIDS";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(productSearchQueryFactory.build(keyword, sellerId, category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, ProductDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenThrow(new DataAccessResourceFailureException("ES down"));
+
+        // when & then
+        assertThatThrownBy(() -> productSearchService.searchProductDocument(keyword, sellerId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);
+
+        verify(operations, times(3)).search(query, ProductDocument.class);
     }
 }

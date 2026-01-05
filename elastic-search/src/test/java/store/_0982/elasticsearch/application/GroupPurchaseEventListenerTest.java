@@ -14,10 +14,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.support.KafkaTestProbe;
 import store._0982.elasticsearch.config.KafkaTestConfig;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
 import java.util.UUID;
@@ -53,7 +53,7 @@ class GroupPurchaseEventListenerTest {
         probe.reset();
     }
 
-    private final ProductEvent productEvent = new ProductEvent( UUID.randomUUID(),
+    private final ProductEvent productEvent = new ProductEvent(UUID.randomUUID(),
             "아이폰 15",
             1_200_000L,
             "KIDS",
@@ -70,7 +70,7 @@ class GroupPurchaseEventListenerTest {
         // given
         UUID id = UUID.randomUUID();
 
-        GroupPurchaseEvent event = new GroupPurchaseEvent( id, // id
+        GroupPurchaseEvent event = new GroupPurchaseEvent(id, // id
                 1, // minQuantity
                 10, // maxQuantity
                 "공동구매 제목", // title
@@ -84,7 +84,7 @@ class GroupPurchaseEventListenerTest {
                 "2025-01-01T00:00:00+09:00", // updatedAt
                 3, // currentQuantity p
                 productEvent, // productEvent
-                GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE );
+                GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE);
 
         when(groupPurchaseRepository.save(any(GroupPurchaseDocument.class)))
                 .thenAnswer(invocation -> {
@@ -194,29 +194,9 @@ class GroupPurchaseEventListenerTest {
     }
 
     private void assertGroupPurchaseDocument(GroupPurchaseDocument saved, GroupPurchaseEvent event) {
-        assertThat(saved.getGroupPurchaseId()).isEqualTo(event.getId().toString());
-        assertThat(saved.getSellerName()).isEqualTo(event.getSellerName());
-        assertThat(saved.getMinQuantity()).isEqualTo(event.getMinQuantity());
-        assertThat(saved.getMaxQuantity()).isEqualTo(event.getMaxQuantity());
-        assertThat(saved.getTitle()).isEqualTo(event.getTitle());
-        assertThat(saved.getDescription()).isEqualTo(event.getDescription());
-        assertThat(saved.getDiscountedPrice()).isEqualTo(event.getDiscountedPrice());
-        assertThat(saved.getStatus()).isEqualTo(event.getStatus());
-        assertThat(saved.getStartDate()).isEqualTo(event.getStartDate());
-        assertThat(saved.getEndDate()).isEqualTo(event.getEndDate());
-        assertThat(saved.getCurrentQuantity()).isEqualTo(event.getCurrentQuantity());
-        assertThat(saved.getCreatedAt()).isEqualTo(java.time.OffsetDateTime.parse(event.getCreatedAt()));
-        assertThat(saved.getUpdatedAt()).isEqualTo(java.time.OffsetDateTime.parse(event.getUpdatedAt()));
-
-        ProductDocumentEmbedded embedded = saved.getProductDocumentEmbedded();
-        assertThat(embedded.getProductId()).isEqualTo(event.getProductEvent().getId().toString());
-        assertThat(embedded.getCategory()).isEqualTo(event.getProductEvent().getCategory());
-        assertThat(embedded.getPrice()).isEqualTo(event.getProductEvent().getPrice());
-        assertThat(embedded.getOriginalUrl()).isEqualTo(event.getProductEvent().getOriginalUrl());
-        assertThat(embedded.getSellerId()).isEqualTo(event.getProductEvent().getSellerId().toString());
-
-        long expectedDiscountRate = Math.round(((double) (event.getProductEvent().getPrice() - event.getDiscountedPrice())
-                / event.getProductEvent().getPrice()) * 100);
-        assertThat(saved.getDiscountRate()).isEqualTo(expectedDiscountRate);
+        GroupPurchaseDocument document = GroupPurchaseDocumentCommand.from(event).toDocument();
+        assertThat(saved)
+                .usingRecursiveComparison()
+                .isEqualTo(document);
     }
 }

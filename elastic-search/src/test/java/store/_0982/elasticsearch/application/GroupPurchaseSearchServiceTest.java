@@ -5,22 +5,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
+import store._0982.elasticsearch.exception.CustomErrorCode;
+import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +41,9 @@ class GroupPurchaseSearchServiceTest {
 
     @Mock
     private IndexOperations indexOperations;
+
+    @Spy
+    private ElasticsearchExceptionTranslator exceptionTranslator = new ElasticsearchExceptionTranslator();
 
     @InjectMocks
     private GroupPurchaseSearchService service;
@@ -265,5 +274,149 @@ class GroupPurchaseSearchServiceTest {
                 .createSearchQuery(keyword, status, null, category, pageable);
         verify(operations)
                 .search(query, GroupPurchaseDocument.class);
+    }
+
+    @Test
+    @DisplayName("SERVICE_UNAVAILABLE 예외 처리")
+    void search_group_purchase_document_SERVICE_UNAVAILABLE() {
+        // given
+        String keyword = "keyword";
+        String status = "OPEN";
+        UUID memberId = UUID.randomUUID();
+        String category = "DIGITAL";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, GroupPurchaseDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"));
+
+        // when & then
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    @DisplayName("INTERNAL_SERVER_ERROR 예외 처리")
+    void search_group_purchase_document_INTERNAL_SERVER_ERROR() {
+        // given
+        String keyword = "keyword";
+        String status = "OPEN";
+        UUID memberId = UUID.randomUUID();
+        String category = "DIGITAL";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, GroupPurchaseDocument.class))
+                .thenThrow(new RuntimeException("boom"));
+
+        // when & then
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.INTERNAL_SERVER_ERROR);
+    }
+    @Test
+    @DisplayName("SERVICE_UNAVAILABLE 발생 시 재시도")
+    void search_group_purchase_document_retries_on_SERVICE_UNAVAILABLE() {
+        // given
+        String keyword = "keyword";
+        String status = "OPEN";
+        UUID memberId = UUID.randomUUID();
+        String category = "DIGITAL";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+                .thenReturn(query);
+
+        GroupPurchaseDocument document = GroupPurchaseDocument.builder()
+                .groupPurchaseId("gp-1")
+                .title("group-purchase")
+                .status("OPEN")
+                .productDocumentEmbedded(
+                        new ProductDocumentEmbedded(
+                                "product-1",
+                                "DIGITAL",
+                                1_200_000L,
+                                "https://img.url",
+                                memberId.toString()
+                        )
+                )
+                .build();
+
+        SearchHit<GroupPurchaseDocument> hit = new SearchHit<>(
+                "group-purchase-index",
+                "gp-1",
+                null,
+                1.0f,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                document
+        );
+
+        SearchHits<GroupPurchaseDocument> searchHits =
+                new SearchHitsImpl<>(
+                        1L,
+                        TotalHitsRelation.EQUAL_TO,
+                        1.0f,
+                        null,
+                        null,
+                        null,
+                        List.of(hit),
+                        null,
+                        null,
+                        null
+                );
+
+        when(operations.search(query, GroupPurchaseDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenReturn(searchHits);
+
+        // when
+        PageResponse<GroupPurchaseDocumentInfo> response =
+                service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable);
+
+        // then
+        assertThat(response.content()).hasSize(1);
+        verify(operations, times(2)).search(query, GroupPurchaseDocument.class);
+    }
+    @Test
+    @DisplayName("Retry exhausted returns SERVICE_UNAVAILABLE")
+    void search_group_purchase_document_retry_exhausted_returns_service_unavailable() {
+        // given
+        String keyword = "keyword";
+        String status = "OPEN";
+        UUID memberId = UUID.randomUUID();
+        String category = "DIGITAL";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        NativeQuery query = mock(NativeQuery.class);
+        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+                .thenReturn(query);
+
+        when(operations.search(query, GroupPurchaseDocument.class))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenThrow(new DataAccessResourceFailureException("ES down"))
+                .thenThrow(new DataAccessResourceFailureException("ES down"));
+
+        // when & then
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+                .isInstanceOf(CustomException.class)
+                .extracting("errorCode")
+                .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);
+
+        verify(operations, times(3)).search(query, GroupPurchaseDocument.class);
     }
 }
