@@ -12,6 +12,8 @@ public interface PaymentPointRepository {
 
     Optional<PaymentPoint> findByOrderId(UUID orderId);
 
+    Optional<PaymentPoint> findByOrderIdWithLock(UUID orderId);
+
     Optional<PaymentPoint> findById(UUID id);
 
     PaymentPoint saveAndFlush(PaymentPoint paymentPoint);

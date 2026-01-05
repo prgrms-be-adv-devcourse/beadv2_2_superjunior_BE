@@ -30,7 +30,7 @@ public class RefundService {
     @ServiceLog
     @Transactional
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
-        PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
+        PaymentPoint paymentPoint = paymentPointRepository.findByOrderIdWithLock(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
         if (!paymentPoint.getMemberId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
