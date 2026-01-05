@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -41,6 +43,12 @@ public class SellerBalance {
         this.balanceId = UUID.randomUUID();
         this.memberId = sellerId;
         this.settlementBalance = 0L;
+    }
+
+    public void increaseBalance(Long amount) {
+        if (amount < 0)
+            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
+        this.settlementBalance += amount;
     }
 
 }

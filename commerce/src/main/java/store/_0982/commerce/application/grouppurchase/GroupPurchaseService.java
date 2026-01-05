@@ -12,8 +12,6 @@ import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeleted
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -23,6 +21,7 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -193,5 +192,30 @@ public class GroupPurchaseService {
         eventPublisher.publishEvent(
                 new GroupPurchaseDeletedEvent(findGroupPurchase)
         );
+    }
+
+    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
+        OffsetDateTime twoWeeksAgo = OffsetDateTime.now().minusWeeks(2);
+
+        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
+                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
+
+        return unsettledGroupPurchases.stream()
+                .filter(gp -> gp.getEndDate().isBefore(twoWeeksAgo))
+                .map(GroupPurchaseInternalInfo::from)
+                .toList();
+    }
+
+    @Transactional
+    public void markAsSettled(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (groupPurchase.isSettled()) {
+            return;
+        }
+
+        groupPurchase.markAsSettled();
+        groupPurchaseRepository.save(groupPurchase);
     }
 }

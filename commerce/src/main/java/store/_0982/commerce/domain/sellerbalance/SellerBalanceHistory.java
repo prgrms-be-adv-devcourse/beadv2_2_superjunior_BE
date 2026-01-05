@@ -25,6 +25,9 @@ public class SellerBalanceHistory {
     @Column(name = "settlement_id")
     private UUID settlementId;
 
+    @Column(name = "group_purchase_id")
+    private UUID groupPurchaseId;
+
     @Column(name = "amount", nullable = false)
     private Long amount;
 
@@ -36,4 +39,18 @@ public class SellerBalanceHistory {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    public SellerBalanceHistory(
+            UUID memberId,
+            UUID settlementId,
+            UUID groupPurchaseId,
+            Long amount,
+            SellerBalanceHistoryStatus status
+    ) {
+        this.historyId = UUID.randomUUID();
+        this.memberId = memberId;
+        this.settlementId = settlementId;
+        this.groupPurchaseId = groupPurchaseId;
+        this.amount = amount;
+        this.status = status;
+    }
 }

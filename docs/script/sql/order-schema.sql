@@ -15,7 +15,7 @@ create table order_schema."order"
     address        varchar(100)                                                    not null,
     address_detail varchar(100)                                                    not null,
     postal_code    varchar(50)                                                     not null,
-    receiver_name  varchar(100),
+    receiver_name  varchar(100)                                                    not null,
     seller_id      uuid                                                            not null,
     group_purchase_id     uuid                                                     not null,
     created_at     timestamp with time zone default now()                          not null,
@@ -68,8 +68,7 @@ create table order_schema.shopping_cart
     group_purchase_id uuid              not null,
     quantity          integer default 1 not null,
     created_at     timestamp with time zone default now()                          not null,
-    updated_at     timestamp with time zone,
-    deleted_at     timestamp with time zone
+    updated_at     timestamp with time zone
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
@@ -82,11 +81,9 @@ comment on column order_schema.shopping_cart.group_purchase_id is '공동 구매
 
 comment on column order_schema.shopping_cart.quantity is '수량';
 
-comment on column order_schema."order".created_at is '등록 시각';
+comment on column order_schema.shopping_cart.created_at is '등록 시각';
 
-comment on column order_schema."order".updated_at is '수정 시각';
-
-comment on column order_schema."order".deleted_at is '삭제 시각';
+comment on column order_schema.shopping_cart.updated_at is '수정 시각';
 
 alter table order_schema.shopping_cart
     owner to postgres;
@@ -167,6 +164,7 @@ create table order_schema.seller_balance_history
         constraint seller_balance_history_pk primary key,
     member_id          uuid                                       not null,
     settlement_id      uuid                                               ,
+    group_purchase_id  uuid                                               ,
     amount             bigint                                     not null,
     created_at         timestamp with time zone    default now()  not null,
     status             varchar(10)                                not null
@@ -177,6 +175,10 @@ comment on table order_schema.seller_balance_history is '판매자 정산 잔액
 comment on column order_schema.seller_balance_history.history_id is 'history id';
 
 comment on column order_schema.seller_balance_history.member_id is '멤버 id';
+
+comment on column order_schema.seller_balance_history.settlement_id is '정산 ID';
+
+comment on column order_schema.seller_balance_history.group_purchase_id is '공동구매 ID';
 
 comment on column order_schema.seller_balance_history.amount is '증감된 금액';
 
