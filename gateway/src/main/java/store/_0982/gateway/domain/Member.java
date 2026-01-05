@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
 
@@ -18,4 +19,5 @@ public class Member {
     public static Member createGuest(){
         return new Member(null, Role.GUEST);
     }
+
 }

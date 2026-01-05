@@ -17,9 +17,8 @@ public class MemberRedisCache implements MemberCache {
     private final ReactiveRedisTemplate<String, Member> redisTemplate;
 
     @Override
-    public Optional<Member> findById(UUID id) {
-        Mono<Member> mono = redisTemplate.opsForValue().get(buildKey(id));
-        return mono.blockOptional();
+    public Mono<Member> findById(UUID id) {
+         return redisTemplate.opsForValue().get(buildKey(id));
     }
 
     private String buildKey(UUID id) {

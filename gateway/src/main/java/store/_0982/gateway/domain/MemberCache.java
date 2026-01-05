@@ -1,8 +1,9 @@
 package store._0982.gateway.domain;
 
-import java.util.Optional;
+import reactor.core.publisher.Mono;
+
 import java.util.UUID;
 
 public interface MemberCache {
-    Optional<Member> findById(UUID id);
+    Mono<Member> findById(UUID id);
 }

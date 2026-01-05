@@ -25,79 +25,22 @@ spring:
             - id: member-api
               uri: lb://member
               predicates:
-                - Path=/api/members/**
+                - Path=/api/members/**, /api/auth/**, /api/notifications/**
 
-            - id: member-internal-api
-              uri: lb://member
+            - id: commerce-api
+              uri: lb://commerce
               predicates:
-                - Path=/internal/members/**
-              filters:
-                - InternalAuth
-
-            - id: member-auth-api
-              uri: lb://member
-              predicates:
-                - Path=/api/auth/**
-
-            - id: notification-api
-              uri: lb://notification
-              predicates:
-                - Path=/api/notifications/**
-
-            - id: notification-internal-api
-              uri: lb://notification
-              predicates:
-                - Path=/internal/notifications/**
-              filters:
-                - InternalAuth
-
-            - id: order-api
-              uri: lb://order
-              predicates:
-                - Path=/api/orders/**, /api/carts/**, /api/balances/**
-
-            - id: order-internal-api
-              uri: lb://order
-              predicates:
-                - Path=/internal/orders/**, /internal/carts/**, /internal/balances/**
-              filters:
-                - InternalAuth
-
-            - id: product-api
-              uri: lb://product
-              predicates:
-                - Path=/api/products/**, /api/purchases/**
-
-            - id: product-internal-api
-              uri: lb://product
-              predicates:
-                - Path=/internal/products/**, /internal/purchases/**
-              filters:
-                - InternalAuth
+                - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
 
             - id: point-api
               uri: lb://point
               predicates:
                 - Path=/api/points/**, /api/payments/**
 
-            - id: point-internal-api
-              uri: lb://point
-              predicates:
-                - Path=/internal/points/**, /internal/payments/**
-              filters:
-                - InternalAuth
-
             - id: elastic-search-api
               uri: lb://elastic-search
               predicates:
                 - Path=/api/searches/**
-
-            - id: elastic-search-internal-api
-              uri: lb://elastic-search
-              predicates:
-                - Path=/internal/searches/**
-              filters:
-                - InternalAuth
 
             - id: openapi
               uri: ${GATEWAY_HOST:http://localhost:8000}
@@ -119,16 +62,12 @@ springdoc:
     urls:
       - name: member-service
         url: /v3/api-docs/member
-      - name: order-service
-        url: /v3/api-docs/order
+      - name: commerce-service
+        url: /v3/api-docs/commerce
       - name: search-service
         url: /v3/api-docs/elastic-search
-      - name: notification-service
-        url: /v3/api-docs/notification
       - name: point-service
         url: /v3/api-docs/point
-      - name: product-service
-        url: /v3/api-docs/product
 
     # 필요하면 경로도 커스터마이징 가능 (옵션)
     # path: /swagger-ui.html

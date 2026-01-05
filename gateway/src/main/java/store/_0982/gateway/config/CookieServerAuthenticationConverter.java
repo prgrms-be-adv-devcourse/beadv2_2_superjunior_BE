@@ -9,8 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-import store._0982.gateway.exception.CustomErrorCode;
-import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 
 import java.util.Collections;
@@ -30,10 +28,9 @@ public class CookieServerAuthenticationConverter implements ServerAuthentication
         HttpCookie accessTokenCookie = exchange.getRequest()
                 .getCookies()
                 .getFirst("accessToken");
-
         // 쿠키가 없거나 비어 있으면 인증 시도하지 않음 (익명으로 처리)
         if (accessTokenCookie == null || accessTokenCookie.getValue().isBlank()) {
-            return Mono.empty();
+            return Mono.just(new MemberAuthenticationToken());
         }
 
         String token = accessTokenCookie.getValue();
@@ -49,8 +46,7 @@ public class CookieServerAuthenticationConverter implements ServerAuthentication
             return Mono.just(authentication);
 
         } catch (JwtException | IllegalArgumentException e) {
-            return ExceptionHandler.responseException(exchange, CustomErrorCode.INVALID)
-                    .then(Mono.empty());
+            return Mono.error(e);
         }
     }
 
@@ -61,6 +57,13 @@ public class CookieServerAuthenticationConverter implements ServerAuthentication
         MemberAuthenticationToken(UUID memberId) {
             super(Collections.emptyList());
             this.memberId = memberId;
+            setAuthenticated(true);
+        }
+
+        MemberAuthenticationToken() {
+            super(Collections.emptyList());
+            //authentication.map(Authentication::getPrinciple)이 null이면 에러가 남
+            this.memberId = UUID.randomUUID();
             setAuthenticated(true);
         }
 
