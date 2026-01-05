@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RefundServiceTest {
+class PointRefundServiceTest {
 
     @Mock
     private TossPaymentService tossPaymentService;
@@ -40,7 +40,7 @@ class RefundServiceTest {
     private MemberPointRepository memberPointRepository;
 
     @InjectMocks
-    private RefundService refundService;
+    private PointRefundService pointRefundService;
 
     @Test
     @DisplayName("포인트 환불을 성공적으로 처리한다")
@@ -78,7 +78,7 @@ class RefundServiceTest {
         when(tossPaymentService.cancelPayment(any(), any())).thenReturn(response);
 
         // when
-        PointRefundInfo result = refundService.refundPaymentPoint(memberId, command);
+        PointRefundInfo result = pointRefundService.refundPaymentPoint(memberId, command);
 
         // then
         assertThat(result).isNotNull();
@@ -99,7 +99,7 @@ class RefundServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> refundService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pointRefundService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ORDER_NOT_FOUND.getMessage());
     }
@@ -118,7 +118,7 @@ class RefundServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when & then
-        assertThatThrownBy(() -> refundService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pointRefundService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_OWNER_MISMATCH.getMessage());
     }
@@ -137,7 +137,7 @@ class RefundServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when & then
-        assertThatThrownBy(() -> refundService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pointRefundService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.NOT_COMPLETED_PAYMENT.getMessage());
     }
@@ -157,7 +157,7 @@ class RefundServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when
-        PointRefundInfo result = refundService.refundPaymentPoint(memberId, command);
+        PointRefundInfo result = pointRefundService.refundPaymentPoint(memberId, command);
 
         // then
         assertThat(result).isNotNull();
@@ -180,7 +180,7 @@ class RefundServiceTest {
         when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when & then
-        assertThatThrownBy(() -> refundService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pointRefundService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.REFUND_NOT_ALLOWED.getMessage());
     }
@@ -200,7 +200,7 @@ class RefundServiceTest {
         when(memberPointRepository.findById(memberId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> refundService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pointRefundService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
     }

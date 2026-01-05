@@ -25,7 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class RefundServiceConcurrencyTest extends BaseConcurrencyTest {
+class PointRefundServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private static final int INITIAL_BALANCE = 50_000;
     private static final int PAYMENT_AMOUNT = 10_000;
@@ -35,7 +35,7 @@ class RefundServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private RefundService refundService;
+    private PointRefundService pointRefundService;
 
     @Autowired
     private PaymentPointJpaRepository paymentPointRepository;
@@ -92,7 +92,7 @@ class RefundServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(response);
 
         // when
-        runSynchronizedTask(() -> refundService.refundPaymentPoint(memberId, command));
+        runSynchronizedTask(() -> pointRefundService.refundPaymentPoint(memberId, command));
 
         // then
         validate();
@@ -128,7 +128,7 @@ class RefundServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(response);
 
         // when
-        runSynchronizedTasks(commands, command -> refundService.refundPaymentPoint(memberId, command));
+        runSynchronizedTasks(commands, command -> pointRefundService.refundPaymentPoint(memberId, command));
 
         // then
         validate();

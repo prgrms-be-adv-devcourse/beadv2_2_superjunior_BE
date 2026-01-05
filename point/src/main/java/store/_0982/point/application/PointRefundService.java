@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class RefundService {
+public class PointRefundService {
     private static final int REFUND_PERIOD_DAYS = 7;
 
     private final TossPaymentService tossPaymentService;
