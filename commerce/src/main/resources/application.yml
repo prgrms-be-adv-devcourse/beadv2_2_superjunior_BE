@@ -25,13 +25,6 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
-  batch:
-    jdbc:
-      table-prefix: batch_product_schema.batch_
-      initialize-schema: never
-    job:
-      enabled: false
-
 server:
   port: 8087
 
