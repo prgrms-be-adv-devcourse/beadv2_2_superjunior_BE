@@ -13,15 +13,11 @@ import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.grouppurchase.dto.ParticipateInfo;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.domain.cart.Cart;
+import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.dto.ResponseDto;
-import store._0982.common.exception.CustomException;
-import store._0982.common.log.ServiceLog;
-import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
@@ -30,6 +26,9 @@ import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointDeductRequest;
 import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -258,7 +257,7 @@ public class OrderService {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         } catch (FeignException e) {
             log.error("포인트 차감 실패: memberId={}, amount={}", memberId, totalAmount, e);
-            throw e;
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 

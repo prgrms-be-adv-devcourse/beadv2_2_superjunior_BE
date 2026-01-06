@@ -1,0 +1,12 @@
+#file: noinspection SpringBootApplicationYaml, SpellCheckingInspection, HttpUrlsUsage
+spring:
+  datasource:
+    url: ${PRODUCT_DATABASE_URL:jdbc:postgresql://localhost:5433/group_purchase?currentSchema=product_schema&options=-c%20TimeZone=Asia/Seoul}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME:postgres}
+    password: ${PRODUCT_DATABASE_PASSWORD:postgres1234}
+
+  kafka:
+    bootstrap-servers: dummy:9092
+    admin:
+      enabled: false
