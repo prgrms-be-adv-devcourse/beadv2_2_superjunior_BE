@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
+import store._0982.elasticsearch.application.GroupPurchaseReindexService;
 
 @Slf4j
 @Component
@@ -17,7 +18,6 @@ public class GroupPurchaseReindexRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!properties.isEnabled()) {
-            log.info("GroupPurchase reindex disabled. Set reindex.group-purchase.enabled=true to run.");
             return;
         }
         reindexService.reindex();

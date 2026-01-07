@@ -23,6 +23,7 @@ public enum CustomErrorCode implements ErrorCode {
     ALREADY_EXIST_INDEX(HttpStatus.CONFLICT, "이미 존재하는 인덱스입니다."),
 
     // 500 Internal Server Error
+    REINDEX_COUNT_MISMATCH(HttpStatus.INTERNAL_SERVER_ERROR, "재색인 결과 수가 일치하지 않습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
     // 503 Service Unavailable

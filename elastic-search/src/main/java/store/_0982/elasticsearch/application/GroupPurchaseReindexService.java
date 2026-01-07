@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.reindex;
+package store._0982.elasticsearch.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +12,23 @@ import org.springframework.data.elasticsearch.core.index.Settings;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
 import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
+import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseReindexSummary;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
+import store._0982.elasticsearch.exception.CustomErrorCode;
+import store._0982.elasticsearch.infrastructure.reindex.GroupPurchaseReindexRepository;
+import store._0982.elasticsearch.infrastructure.reindex.GroupPurchaseReindexRow;
+import store._0982.elasticsearch.reindex.GroupPurchaseReindexProperties;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -32,86 +42,112 @@ public class GroupPurchaseReindexService {
 
     private static final String INDEX_SUFFIX_PATTERN = "yyyyMMddHHmmss";
 
-    private static final String REINDEX_SQL = """
-            select
-                gp.group_purchase_id,
-                gp.title,
-                gp.description,
-                gp.status,
-                gp.start_date,
-                gp.end_date,
-                gp.min_quantity,
-                gp.max_quantity,
-                gp.discounted_price,
-                gp.current_quantity,
-                gp.created_at,
-                gp.updated_at,
-                p.product_id,
-                p.category,
-                p.price,
-                p.original_url,
-                p.seller_id
-            from product_schema.group_purchase gp
-            join product_schema.product p on p.product_id = gp.product_id
-            order by gp.group_purchase_id
-            limit ? offset ?
-            """;
-
-    private final JdbcTemplate jdbcTemplate;
     private final ElasticsearchOperations operations;
     private final GroupPurchaseReindexProperties properties;
+    private final GroupPurchaseReindexRepository reindexRepository;
 
+    @ServiceLog
     public void reindex() {
         String aliasName = properties.getAlias();
         String newIndex = createIndexWithMapping(aliasName);
-        log.info("Start GroupPurchase reindex to index={}", newIndex);
 
+        reindexAll(newIndex);
+
+        if (properties.isSwitchAlias()) {
+            switchAlias(aliasName, newIndex);
+        }
+    }
+
+    @ServiceLog
+    public String createIndex() {
+        return createIndexWithMapping(properties.getAlias());
+    }
+
+    @ServiceLog
+    public GroupPurchaseReindexInfo reindexAll(String targetIndex) {
+        String indexName;
+        if (targetIndex == null || targetIndex.isBlank()) {
+            indexName = createIndex();
+        }
+        else{
+            indexName = targetIndex;
+        }
+        long indexed = reindexAllByIndex(indexName);
+        return new GroupPurchaseReindexInfo(indexName, indexed);
+    }
+
+    public long reindexIncremental(String indexName, OffsetDateTime since) {
+        return reindexIncrementalByIndex(indexName, since);
+    }
+
+    @ServiceLog
+    public GroupPurchaseReindexInfo reindexIncrementalAndMaybeSwitch(String indexName, OffsetDateTime since, boolean autoSwitch) {
+        if (!autoSwitch) {
+            return new GroupPurchaseReindexInfo(indexName, reindexIncremental(indexName, since));
+        }
+        long indexed = reindexIncremental(indexName, since);
+        long sourceCount = countSource();
+        long targetCount = countTargetIndex(indexName);
+        if (sourceCount != targetCount) {
+            throw new CustomException(CustomErrorCode.REINDEX_COUNT_MISMATCH);
+        }
+        switchAlias(properties.getAlias(), indexName);
+        return new GroupPurchaseReindexInfo(indexName, indexed);
+    }
+
+    @ServiceLog
+    public GroupPurchaseTotalReindexInfo reindexFullAndIncremental(boolean autoSwitch) {
+        String indexName = createIndex();
+        OffsetDateTime since = OffsetDateTime.now();
+        long fullIndexed = reindexAll(indexName).indexed();
+        long incrementalIndexed = reindexIncremental(indexName, since);
+        long sourceCount = countSource();
+        long targetCount = countTargetIndex(indexName);
+        boolean switched = false;
+        if (autoSwitch) {
+            if (sourceCount != targetCount) {
+                throw new CustomException(CustomErrorCode.REINDEX_COUNT_MISMATCH);
+            }
+            switchAlias(properties.getAlias(), indexName);
+            switched = true;
+        }
+        GroupPurchaseReindexSummary summary = new GroupPurchaseReindexSummary(indexName, fullIndexed, incrementalIndexed, switched);
+        return GroupPurchaseTotalReindexInfo.from(summary);
+    }
+
+    public long countTargetIndex(String indexName) {
+        operations.indexOps(IndexCoordinates.of(indexName)).refresh();
+        return operations.count(Query.findAll(), GroupPurchaseDocument.class, IndexCoordinates.of(indexName));
+    }
+
+    public long countSource() {
+        return reindexRepository.countSource();
+    }
+
+    private long reindexAllByIndex(String indexName) {
+        return reindexByFetcher(indexName, reindexRepository::fetchAllRows);
+    }
+
+    private long reindexIncrementalByIndex(String indexName, OffsetDateTime since) {
+        return reindexByFetcher(indexName, (limit, offset) -> reindexRepository.fetchIncrementalRows(since, limit, offset));
+    }
+
+    private long reindexByFetcher(String indexName, RowFetcher fetcher) {
         int batchSize = properties.getBatchSize();
         long offset = 0;
         long total = 0;
 
         while (true) {
-            List<GroupPurchaseReindexRow> rows = fetchRows(batchSize, offset);
+            List<GroupPurchaseReindexRow> rows = fetcher.fetch(batchSize, offset);
             if (rows.isEmpty()) {
                 break;
             }
-            bulkIndex(newIndex, rows);
+            bulkIndex(indexName, rows);
             total += rows.size();
             offset += batchSize;
-            log.info("Reindex progress: indexed={}", total);
+            log.debug("Reindex progress: indexed={}", total);
         }
-
-        if (properties.isSwitchAlias()) {
-            switchAlias(aliasName, newIndex);
-        }
-        log.info("GroupPurchase reindex completed. indexed={}", total);
-    }
-
-    private List<GroupPurchaseReindexRow> fetchRows(int batchSize, long offset) {
-        return jdbcTemplate.query(
-                REINDEX_SQL,
-                (rs, rowNum) -> new GroupPurchaseReindexRow(
-                        rs.getObject("group_purchase_id", UUID.class),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getString("status"),
-                        rs.getObject("start_date", OffsetDateTime.class),
-                        rs.getObject("end_date", OffsetDateTime.class),
-                        rs.getInt("min_quantity"),
-                        rs.getInt("max_quantity"),
-                        rs.getLong("discounted_price"),
-                        rs.getInt("current_quantity"),
-                        rs.getObject("created_at", OffsetDateTime.class),
-                        rs.getObject("updated_at", OffsetDateTime.class),
-                        rs.getObject("product_id", UUID.class),
-                        rs.getString("category"),
-                        rs.getLong("price"),
-                        rs.getString("original_url"),
-                        rs.getObject("seller_id", UUID.class)
-                ),
-                batchSize,
-                offset
-        );
+        return total;
     }
 
     private String createIndexWithMapping(String aliasName) {
@@ -139,6 +175,8 @@ public class GroupPurchaseReindexService {
     }
 
     private GroupPurchaseDocument toDocument(GroupPurchaseReindexRow row) {
+        OffsetDateTime startDate = toOffsetDateTime(row.startDate());
+        OffsetDateTime endDate = toOffsetDateTime(row.endDate());
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(row.groupPurchaseId().toString())
                 .sellerName(null)
@@ -148,10 +186,10 @@ public class GroupPurchaseReindexService {
                 .description(row.description())
                 .discountedPrice(row.discountedPrice())
                 .status(row.status())
-                .startDate(row.startDate() != null ? row.startDate().toString() : null)
-                .endDate(row.endDate() != null ? row.endDate().toString() : null)
-                .createdAt(row.createdAt())
-                .updatedAt(row.updatedAt())
+                .startDate(startDate != null ? startDate.toString() : null)
+                .endDate(endDate != null ? endDate.toString() : null)
+                .createdAt(toOffsetDateTime(row.createdAt()))
+                .updatedAt(toOffsetDateTime(row.updatedAt()))
                 .currentQuantity(row.currentQuantity())
                 .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
@@ -174,6 +212,13 @@ public class GroupPurchaseReindexService {
         return Math.round(((double) (price - discountedPrice) / price) * 100);
     }
 
+    private OffsetDateTime toOffsetDateTime(java.time.Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
+
     private void switchAlias(String aliasName, String newIndex) {
         IndexOperations aliasOps = operations.indexOps(IndexCoordinates.of(aliasName));
         Map<String, Set<org.springframework.data.elasticsearch.core.index.AliasData>> aliasMap = aliasOps.getAliases(aliasName);
@@ -193,24 +238,9 @@ public class GroupPurchaseReindexService {
         operations.indexOps(IndexCoordinates.of(newIndex)).alias(actions);
     }
 
-    private record GroupPurchaseReindexRow(
-            UUID groupPurchaseId,
-            String title,
-            String description,
-            String status,
-            OffsetDateTime startDate,
-            OffsetDateTime endDate,
-            int minQuantity,
-            int maxQuantity,
-            long discountedPrice,
-            int currentQuantity,
-            OffsetDateTime createdAt,
-            OffsetDateTime updatedAt,
-            UUID productId,
-            String category,
-            Long price,
-            String originalUrl,
-            UUID sellerId
-    ) {
+    @FunctionalInterface
+    private interface RowFetcher {
+        List<GroupPurchaseReindexRow> fetch(int limit, long offset);
     }
+
 }
