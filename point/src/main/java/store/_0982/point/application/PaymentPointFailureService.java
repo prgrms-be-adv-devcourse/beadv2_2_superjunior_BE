@@ -13,6 +13,8 @@ import store._0982.point.domain.repository.PaymentPointFailureRepository;
 import store._0982.point.domain.repository.PaymentPointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentPointFailureService {
@@ -22,10 +24,11 @@ public class PaymentPointFailureService {
 
     @ServiceLog
     @Transactional
-    public PaymentPointInfo handlePaymentFailure(PointChargeFailCommand command) {
+    public PaymentPointInfo handlePaymentFailure(PointChargeFailCommand command, UUID memberId) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderIdWithLock(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
+        paymentPoint.validate(memberId);
         switch (paymentPoint.getStatus()) {
             case COMPLETED, REFUNDED -> throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
             case FAILED -> {

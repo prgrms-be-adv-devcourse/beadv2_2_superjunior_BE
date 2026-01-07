@@ -60,7 +60,7 @@ public class PaymentPointService {
 
     @ServiceLog
     @Transactional
-    public PaymentPointInfo confirmPayment(PointChargeConfirmCommand command) {
+    public PaymentPointInfo confirmPayment(PointChargeConfirmCommand command, UUID memberId) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
@@ -68,7 +68,6 @@ public class PaymentPointService {
             throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
         }
 
-        UUID memberId = paymentPoint.getMemberId();
         MemberPoint memberPoint = memberPointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 

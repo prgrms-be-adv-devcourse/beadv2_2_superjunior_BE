@@ -1,6 +1,5 @@
 package store._0982.point.presentation;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,20 +58,24 @@ public class PaymentPointController {
         return new ResponseDto<>(HttpStatus.CREATED, info, "결제 요청 생성");
     }
 
-    @Hidden
     @ControllerLog
-    @GetMapping("/confirm")
-    public RedirectView confirmPayment(@ModelAttribute @Valid PointChargeConfirmRequest request) {
+    @PostMapping("/confirm")
+    public RedirectView confirmPayment(
+            @RequestBody @Valid PointChargeConfirmRequest request,
+            @RequestHeader(HeaderName.ID) UUID memberId
+    ) {
         return handleExceptionWhenConfirmOrFail(() ->
-                paymentPointService.confirmPayment(request.toCommand()), true);
+                paymentPointService.confirmPayment(request.toCommand(), memberId), true);
     }
 
-    @Hidden
     @ControllerLog
-    @GetMapping("/fail")
-    public RedirectView handlePaymentFailure(@ModelAttribute @Valid PointChargeFailRequest request) {
+    @PostMapping("/fail")
+    public RedirectView handlePaymentFailure(
+            @RequestBody @Valid PointChargeFailRequest request,
+            @RequestHeader(HeaderName.ID) UUID memberId
+    ) {
         return handleExceptionWhenConfirmOrFail(() ->
-                paymentPointFailureService.handlePaymentFailure(request.toCommand()), false);
+                paymentPointFailureService.handlePaymentFailure(request.toCommand(), memberId), false);
     }
 
     @Operation(summary = "포인트 환불", description = "기존 포인트 결제를 환불.")
