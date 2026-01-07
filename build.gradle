@@ -59,19 +59,3 @@ subprojects {
         useJUnitPlatform()
     }
 }
-
-//project(':config') {
-//    dependencies {
-//        configurations.configureEach {
-//            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-//        }
-//    }
-//}
-
-project(':discovery') {
-    dependencies {
-        configurations.configureEach {
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-        }
-    }
-}
