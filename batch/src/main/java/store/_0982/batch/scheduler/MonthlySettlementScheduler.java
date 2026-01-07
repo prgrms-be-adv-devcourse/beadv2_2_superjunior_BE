@@ -6,7 +6,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import store._0982.batch.domain.settlement.SettlementLogFormat;
 
@@ -23,7 +22,7 @@ public class MonthlySettlementScheduler {
     /**
      * 매월 1일 02:00에 월별 정산 배치 실행
      */
-    @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
+    // @Scheduled(cron = "0 0 2 1 * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() {
         String schedulerName = "MonthlySettlement";
         log.info(SettlementLogFormat.START, schedulerName);

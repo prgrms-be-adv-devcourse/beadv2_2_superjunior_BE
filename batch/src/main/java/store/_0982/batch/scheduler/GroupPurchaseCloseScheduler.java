@@ -6,7 +6,6 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
@@ -18,7 +17,7 @@ public class GroupPurchaseCloseScheduler {
     private final JobLauncher jobLauncher;
     private final Job closeExpiredGroupPurchaseJob;
 
-    @Scheduled(cron = "0 0 * * * *")
+    // @Scheduled(cron = "0 0 * * * *")
     public void runBatch(){
         try{
             JobParameters params = new JobParametersBuilder()
