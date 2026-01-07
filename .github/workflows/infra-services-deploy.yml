@@ -9,9 +9,7 @@ on:
       - 'common/**'
       - 'build.gradle'
       - 'settings.gradle'
-      - 'discovery/**'
       - 'elastic-search/**'
-      - 'docs/k8s/infra/discovery.yml'
       - 'docs/k8s/service/search.yml'
       - 'infra-services-deploy.yml'
 
@@ -19,7 +17,6 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      discovery: ${{ steps.filter.outputs.discovery }}
       search: ${{ steps.filter.outputs.search }}
     steps:
       - name: 코드 체크아웃
@@ -32,13 +29,6 @@ jobs:
         run: |
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
-          # Discovery
-          if echo "$CHANGED_FILES" | grep -qE '^(discovery/|build\.gradle|settings\.gradle|docs/k8s/infra/discovery\.yml)'; then
-            echo "discovery=true" >> $GITHUB_OUTPUT
-          else
-            echo "discovery=false" >> $GITHUB_OUTPUT
-          fi
-
           # Search
           if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
             echo "search=true" >> $GITHUB_OUTPUT
@@ -46,30 +36,9 @@ jobs:
             echo "search=false" >> $GITHUB_OUTPUT
           fi
 
-  # Discovery 배포
-  deploy-discovery:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.discovery == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 코드 체크아웃
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Discovery 배포
-        uses: ./.github/actions/deploy-infra-service
-        with:
-          service-name: discovery
-          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/discovery
-          manifest-path: docs/k8s/infra/discovery.yml
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-
   # Search 배포
   deploy-search:
-    needs: [detect-changes, deploy-discovery]
+    needs: detect-changes
     if: always() && needs.detect-changes.outputs.search == 'true'
     runs-on: ubuntu-latest
     steps:
