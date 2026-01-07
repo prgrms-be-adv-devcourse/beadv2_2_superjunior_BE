@@ -28,6 +28,12 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: true
+
 management:
   endpoints:
     web:
