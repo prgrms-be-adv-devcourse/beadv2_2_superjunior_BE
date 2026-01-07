@@ -11,6 +11,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
     SELLER_ID_ISNULL(HttpStatus.BAD_REQUEST,"판매자 ID가 비어있습니다."),
+    INDEX_NAME_ISNULL(HttpStatus.BAD_REQUEST, "indexName이 비어있습니다."),
 
     // 401 Unauthorized
 

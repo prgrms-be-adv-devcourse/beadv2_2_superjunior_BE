@@ -17,18 +17,16 @@ import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
-import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexSummary;
+import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
-import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
-import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRepository;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.reindex.GroupPurchaseReindexProperties;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +75,9 @@ public class GroupPurchaseReindexService {
 
     @ServiceLog
     public GroupPurchaseReindexInfo reindexIncrementalAndMaybeSwitch(String indexName, OffsetDateTime since, boolean autoSwitch) {
+        if (indexName == null || indexName.isBlank()) {
+            throw new CustomException(CustomErrorCode.INDEX_NAME_ISNULL);
+        }
         if (!autoSwitch) {
             return new GroupPurchaseReindexInfo(indexName, reindexIncrementalByIndex(indexName, since));
         }
@@ -163,55 +164,10 @@ public class GroupPurchaseReindexService {
         List<IndexQuery> queries = rows.stream()
                 .map(row -> new IndexQueryBuilder()
                         .withId(row.groupPurchaseId().toString())
-                        .withObject(toDocument(row))
+                        .withObject(GroupPurchaseDocument.fromReindexRow(row))
                         .build())
                 .toList();
         operations.bulkIndex(queries, IndexCoordinates.of(indexName));
-    }
-
-    private GroupPurchaseDocument toDocument(GroupPurchaseReindexRow row) {
-        OffsetDateTime startDate = toOffsetDateTime(row.startDate());
-        OffsetDateTime endDate = toOffsetDateTime(row.endDate());
-        return GroupPurchaseDocument.builder()
-                .groupPurchaseId(row.groupPurchaseId().toString())
-                .sellerName(null)
-                .minQuantity(row.minQuantity())
-                .maxQuantity(row.maxQuantity())
-                .title(row.title())
-                .description(row.description())
-                .discountedPrice(row.discountedPrice())
-                .status(row.status())
-                .startDate(startDate != null ? startDate.toString() : null)
-                .endDate(endDate != null ? endDate.toString() : null)
-                .createdAt(toOffsetDateTime(row.createdAt()))
-                .updatedAt(toOffsetDateTime(row.updatedAt()))
-                .currentQuantity(row.currentQuantity())
-                .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
-                .productDocumentEmbedded(new ProductDocumentEmbedded(
-                        row.productId().toString(),
-                        row.category(),
-                        row.price(),
-                        row.originalUrl(),
-                        row.sellerId().toString()
-                ))
-                .build();
-    }
-
-    private long calculateDiscountRate(Long price, Long discountedPrice) {
-        if (price == null || discountedPrice == null) {
-            return 0L;
-        }
-        if (price <= 0 || discountedPrice >= price) {
-            return 0L;
-        }
-        return Math.round(((double) (price - discountedPrice) / price) * 100);
-    }
-
-    private OffsetDateTime toOffsetDateTime(java.time.Instant instant) {
-        if (instant == null) {
-            return null;
-        }
-        return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
     }
 
     private void switchAlias(String aliasName, String newIndex) {

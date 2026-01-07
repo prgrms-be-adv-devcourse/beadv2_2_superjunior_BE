@@ -5,8 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 @Builder
 @Getter
@@ -61,4 +64,49 @@ public class GroupPurchaseDocument {
 
     @Field(type = FieldType.Nested)
     private ProductDocumentEmbedded productDocumentEmbedded;
+
+    public static GroupPurchaseDocument fromReindexRow(GroupPurchaseReindexRow row) {
+        OffsetDateTime startDate = toOffsetDateTime(row.startDate());
+        OffsetDateTime endDate = toOffsetDateTime(row.endDate());
+        return GroupPurchaseDocument.builder()
+                .groupPurchaseId(row.groupPurchaseId().toString())
+                .sellerName(null)
+                .minQuantity(row.minQuantity())
+                .maxQuantity(row.maxQuantity())
+                .title(row.title())
+                .description(row.description())
+                .discountedPrice(row.discountedPrice())
+                .status(row.status())
+                .startDate(startDate != null ? startDate.toString() : null)
+                .endDate(endDate != null ? endDate.toString() : null)
+                .createdAt(toOffsetDateTime(row.createdAt()))
+                .updatedAt(toOffsetDateTime(row.updatedAt()))
+                .currentQuantity(row.currentQuantity())
+                .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
+                .productDocumentEmbedded(new ProductDocumentEmbedded(
+                        row.productId().toString(),
+                        row.category(),
+                        row.price(),
+                        row.originalUrl(),
+                        row.sellerId().toString()
+                ))
+                .build();
+    }
+
+    private static OffsetDateTime toOffsetDateTime(Instant instant) {
+        if (instant == null) {
+            return null;
+        }
+        return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
+
+    private static long calculateDiscountRate(Long price, Long discountedPrice) {
+        if (price == null || discountedPrice == null) {
+            return 0L;
+        }
+        if (price <= 0 || discountedPrice >= price) {
+            return 0L;
+        }
+        return Math.round(((double) (price - discountedPrice) / price) * 100);
+    }
 }

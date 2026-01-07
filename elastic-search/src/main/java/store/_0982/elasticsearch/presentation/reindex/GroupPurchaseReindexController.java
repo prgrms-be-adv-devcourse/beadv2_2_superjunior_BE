@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store._0982.common.dto.ResponseDto;
-import store._0982.common.exception.CustomException;
-import store._0982.common.exception.DefaultErrorCode;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
@@ -30,9 +28,9 @@ public class GroupPurchaseReindexController {
     @Operation(summary = "새 인덱스 생성", description = "매핑/세팅 적용된 새 인덱스를 생성한다.")
     @ControllerLog
     @PostMapping("/index")
-    public ResponseDto<GroupPurchaseReindexInfo> createIndex() {
+    public ResponseDto<String> createIndex() {
         String indexName = reindexService.createIndex();
-        return new ResponseDto<>(HttpStatus.CREATED, new GroupPurchaseReindexInfo(indexName, 0), "생성 완료");
+        return new ResponseDto<>(HttpStatus.CREATED, indexName, "생성 완료");
     }
 
     @Operation(summary = "전체 재색인", description = "RDB 데이터를 새 인덱스로 전체 재색인한다.")
@@ -53,16 +51,13 @@ public class GroupPurchaseReindexController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime since,
             @RequestParam(defaultValue = "false") boolean autoSwitch
     ) {
-        if (targetIndex == null || targetIndex.isBlank()) {
-            throw new CustomException(DefaultErrorCode.INVALID_PARAMETER);
-        }
         GroupPurchaseReindexInfo reindexInfo = reindexService.reindexIncrementalAndMaybeSwitch(targetIndex, since, autoSwitch);
         return new ResponseDto<>(HttpStatus.OK, reindexInfo, "증분 재색인 완료");
     }
 
-    @Operation(summary = "원클릭 재색인", description = "새 인덱스 생성 후 전체/증분 재색인을 순서대로 실행한다.")
+    @Operation(summary = "재색인 사이클 실행", description = "새 인덱스 생성 후 전체/증분 재색인을 순서대로 실행 후 새로 생성한 인덱스를 alias로 설정한다.")
     @ControllerLog
-    @PostMapping("/total")
+    @PostMapping
     public ResponseDto<GroupPurchaseTotalReindexInfo> reindexAllInOne(
             @RequestParam(defaultValue = "true") boolean autoSwitch
     ) {
