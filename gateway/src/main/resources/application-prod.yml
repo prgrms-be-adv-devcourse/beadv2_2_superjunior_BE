@@ -1,0 +1,109 @@
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: member-api
+              uri: http://member-service:8083
+              predicates:
+                - Path=/api/members/**, /api/auth/**, /api/notifications/**
+              filters:
+                - JwtAuth
+
+            - id: member-docs
+              uri: http://member-service:8083
+              predicates:
+                - Path=/v3/api-docs/member
+              filters:
+                - RewritePath=/v3/api-docs/member, /v3/api-docs
+
+            - id: commerce-api
+              uri: http://commerce-service:8087
+              predicates:
+                - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
+              filters:
+                - JwtAuth
+
+            - id: commerce-docs
+              uri: http://commerce-service:8087
+              predicates:
+                - Path=/v3/api-docs/commerce
+              filters:
+                - RewritePath=/v3/api-docs/commerce, /v3/api-docs
+
+            - id: point-api
+              uri: http://point-service:8086
+              predicates:
+                - Path=/api/points/**, /api/payments/**
+              filters:
+                - JwtAuth
+
+            - id: point-docs
+              uri: http://point-service:8086
+              predicates:
+                - Path=/v3/api-docs/point
+              filters:
+                - RewritePath=/v3/api-docs/point, /v3/api-docs
+
+            - id: search-api
+              uri: http://search-service:8082
+              predicates:
+                - Path=/api/searches/**
+              filters:
+                - JwtAuth
+
+            - id: search-docs
+              uri: http://search-service:8082
+              predicates:
+                - Path=/v3/api-docs/search
+              filters:
+                - RewritePath=/v3/api-docs/search, /v3/api-docs
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+springdoc:
+  swagger-ui:
+    # Gateway Swagger UI에서 선택할 수 있는 문서 목록
+    urls:
+      - name: member-service
+        url: /v3/api-docs/member
+      - name: commerce-service
+        url: /v3/api-docs/commerce
+      - name: search-service
+        url: /v3/api-docs/search
+      - name: point-service
+        url: /v3/api-docs/point
+
+    # 필요하면 경로도 커스터마이징 가능 (옵션)
+    # path: /swagger-ui.html
+
+server:
+  port: 8000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  tracing:
+    sampling:
+      probability: 0.0
+    propagation:
+      type: w3c  # 또는 b3
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+
+jwt:
+  secret: ${JWT_SECRET}
+
+frontend:
+  url: https://0982.vercel.app
