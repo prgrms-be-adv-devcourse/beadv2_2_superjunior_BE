@@ -1,23 +1,27 @@
 package store._0982.elasticsearch.infrastructure.reindex;
 
 import org.springframework.stereotype.Repository;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRepository;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
 @Repository
-public class GroupPurchaseReindexRepository {
+public class GroupPurchaseReindexRepositoryAdapter implements GroupPurchaseReindexRepository {
 
     private final GroupPurchaseReindexJpaRepository repository;
 
-    public GroupPurchaseReindexRepository(GroupPurchaseReindexJpaRepository repository) {
+    public GroupPurchaseReindexRepositoryAdapter(GroupPurchaseReindexJpaRepository repository) {
         this.repository = repository;
     }
 
+    @Override
     public long countSource() {
         return repository.countSource();
     }
 
+    @Override
     public List<GroupPurchaseReindexRow> fetchAllRows(int limit, long offset) {
         return repository.findAllRows(limit, offset)
                 .stream()
@@ -25,6 +29,7 @@ public class GroupPurchaseReindexRepository {
                 .toList();
     }
 
+    @Override
     public List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, long offset) {
         return repository.findIncrementalRows(since, limit, offset)
                 .stream()

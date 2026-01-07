@@ -1,4 +1,6 @@
-package store._0982.elasticsearch.infrastructure.reindex;
+package store._0982.elasticsearch.domain.reindex;
+
+import store._0982.elasticsearch.infrastructure.reindex.GroupPurchaseReindexProjection;
 
 import java.time.Instant;
 import java.util.UUID;

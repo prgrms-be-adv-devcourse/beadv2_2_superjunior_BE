@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.presentation;
+package store._0982.elasticsearch.presentation.reindex;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,7 +15,7 @@ import store._0982.common.exception.DefaultErrorCode;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
-import store._0982.elasticsearch.application.GroupPurchaseReindexService;
+import store._0982.elasticsearch.application.reindex.GroupPurchaseReindexService;
 
 import java.time.OffsetDateTime;
 

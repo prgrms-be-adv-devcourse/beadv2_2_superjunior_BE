@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.application;
+package store._0982.elasticsearch.application.reindex;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +22,8 @@ import store._0982.elasticsearch.application.dto.GroupPurchaseReindexSummary;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
 import store._0982.elasticsearch.exception.CustomErrorCode;
-import store._0982.elasticsearch.infrastructure.reindex.GroupPurchaseReindexRepository;
-import store._0982.elasticsearch.infrastructure.reindex.GroupPurchaseReindexRow;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRepository;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
 import store._0982.elasticsearch.reindex.GroupPurchaseReindexProperties;
 
 import java.time.LocalDateTime;
@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @Slf4j
 @Service

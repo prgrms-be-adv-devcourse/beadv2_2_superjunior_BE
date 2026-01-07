@@ -1,4 +1,4 @@
-package store._0982.elasticsearch.infrastructure.reindex;
+package store._0982.elasticsearch.domain.reindex;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

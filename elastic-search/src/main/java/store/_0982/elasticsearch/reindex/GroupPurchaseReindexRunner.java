@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import store._0982.elasticsearch.application.GroupPurchaseReindexService;
+import store._0982.elasticsearch.application.reindex.GroupPurchaseReindexService;
 
 @Slf4j
 @Component

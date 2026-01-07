@@ -3,6 +3,7 @@ package store._0982.elasticsearch.infrastructure.reindex;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
+import store._0982.elasticsearch.domain.reindex.GroupPurchaseReadEntity;
 
 import java.time.OffsetDateTime;
 import java.util.List;
