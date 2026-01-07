@@ -101,7 +101,7 @@ public class ProductService {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
         }
 
-        List<GroupPurchaseStatus> groupPurchaseStatuses = List.of(GroupPurchaseStatus.SUCCESS, GroupPurchaseStatus.FAILED);
+        List<GroupPurchaseStatus> groupPurchaseStatuses = List.of(GroupPurchaseStatus.SCHEDULED, GroupPurchaseStatus.OPEN);
         if (groupPurchaseRepository.existsByProductIdAndStatusIn(productId, groupPurchaseStatuses)) {
             throw new CustomException(CustomErrorCode.PRODUCT_ACTIVE_GROUP_PURCHASE_EXISTS);
         }
