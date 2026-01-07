@@ -2,15 +2,12 @@ package store._0982.commerce.application.product;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.product.dto.*;
-import store._0982.commerce.application.product.event.ProductCreatedEvent;
-import store._0982.commerce.application.product.event.ProductDeletedEvent;
-import store._0982.commerce.application.product.event.ProductUpdatedEvent;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
@@ -19,6 +16,7 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -30,7 +28,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
 
-    private final ApplicationEventPublisher eventPublisher;
+    // private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
@@ -43,7 +41,7 @@ public class ProductService {
         Product savedProduct = productRepository.saveAndFlush(product);
 
         // 검색 서비스용 Kafka 이벤트 발행
-        eventPublisher.publishEvent(new ProductCreatedEvent(savedProduct));
+        // eventPublisher.publishEvent(new ProductCreatedEvent(savedProduct));
 
         return ProductRegisterInfo.from(savedProduct);
     }
@@ -88,8 +86,8 @@ public class ProductService {
                 command.originalLink());
 
         // 검색 서비스용 Kafka 이벤트 발행
-        Product updatedProduct = productRepository.saveAndFlush(product);
-        eventPublisher.publishEvent(new ProductUpdatedEvent(updatedProduct));
+        // Product updatedProduct = productRepository.saveAndFlush(product);
+        // eventPublisher.publishEvent(new ProductUpdatedEvent(updatedProduct));
 
         return ProductUpdateInfo.from(product);
     }
@@ -101,6 +99,11 @@ public class ProductService {
 
         if (!findProduct.getSellerId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
+        }
+
+        List<GroupPurchaseStatus> groupPurchaseStatuses = List.of(GroupPurchaseStatus.SUCCESS, GroupPurchaseStatus.FAILED);
+        if (groupPurchaseRepository.existsByProductIdAndStatusIn(productId, groupPurchaseStatuses)) {
+            throw new CustomException(CustomErrorCode.PRODUCT_ACTIVE_GROUP_PURCHASE_EXISTS);
         }
 
         boolean isUsedInGroupPurchase = groupPurchaseRepository.existsByProductId(productId);
@@ -115,7 +118,7 @@ public class ProductService {
         }
 
         // 검색 서비스용 Kafka 이벤트 발행
-        eventPublisher.publishEvent(new ProductDeletedEvent(findProduct));
+        // eventPublisher.publishEvent(new ProductDeletedEvent(findProduct));
     }
 
 }
