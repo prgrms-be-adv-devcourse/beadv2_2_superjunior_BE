@@ -28,13 +28,6 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
-  batch:
-    jdbc:
-      table-prefix: batch_order_schema.batch_
-      initialize-schema: never
-    job:
-      enabled: false
-
 management:
   endpoints:
     web:
@@ -52,7 +45,3 @@ gateway:
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
