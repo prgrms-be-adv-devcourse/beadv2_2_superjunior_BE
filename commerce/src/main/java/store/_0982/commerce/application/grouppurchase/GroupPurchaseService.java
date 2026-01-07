@@ -1,16 +1,17 @@
 package store._0982.commerce.application.grouppurchase;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.dto.*;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCreatedEvent;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -20,6 +21,7 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -32,7 +34,7 @@ public class GroupPurchaseService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
 
-    private final KafkaTemplate<String, GroupPurchaseEvent> upsertKafkaTemplate;
+    private final ApplicationEventPublisher eventPublisher;
     private final MemberClient memberClient;
 
     /**
@@ -76,10 +78,11 @@ public class GroupPurchaseService {
 
         GroupPurchase saved = groupPurchaseRepository.saveAndFlush(groupPurchase);
 
-        //kafka
+        // 검색 서비스용 Kafka 이벤트 발행
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CREATED, event.getId().toString(), event);
+        eventPublisher.publishEvent(
+                new GroupPurchaseCreatedEvent(saved, sellerName, product)
+        );
 
         return GroupPurchaseInfo.from(saved);
     }
@@ -160,12 +163,13 @@ public class GroupPurchaseService {
 
         GroupPurchase saved = groupPurchaseRepository.saveAndFlush(findGroupPurchase);
 
-        //search kafka
+        // 검색 서비스용 Kafka 이벤트 발행
         Product product = productRepository.findById(saved.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseEvent event = saved.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE, product.toEvent());
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
+        eventPublisher.publishEvent(
+                new GroupPurchaseUpdatedEvent(saved, sellerName, product)
+        );
 
         return GroupPurchaseInfo.from(saved);
     }
@@ -184,8 +188,34 @@ public class GroupPurchaseService {
         }
         groupPurchaseRepository.delete(findGroupPurchase);
 
-        //search kafka
-        GroupPurchaseEvent event = findGroupPurchase.toEvent("", GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE, null);
-        upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
+        // 검색 서비스용 Kafka 이벤트 발행
+        eventPublisher.publishEvent(
+                new GroupPurchaseDeletedEvent(findGroupPurchase)
+        );
+    }
+
+    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
+        OffsetDateTime twoWeeksAgo = OffsetDateTime.now().minusWeeks(2);
+
+        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
+                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
+
+        return unsettledGroupPurchases.stream()
+                .filter(gp -> gp.getEndDate().isBefore(twoWeeksAgo))
+                .map(GroupPurchaseInternalInfo::from)
+                .toList();
+    }
+
+    @Transactional
+    public void markAsSettled(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        if (groupPurchase.isSettled()) {
+            return;
+        }
+
+        groupPurchase.markAsSettled();
+        groupPurchaseRepository.save(groupPurchase);
     }
 }

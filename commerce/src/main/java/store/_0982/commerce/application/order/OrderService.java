@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
-import store._0982.commerce.application.grouppurchase.dto.ParticipateInfo;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
@@ -62,7 +62,7 @@ public class OrderService {
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
         // 주문자 존재 여부
-        validateMember(memberId);
+        String memberName = validateMember(memberId);
 
         // 공동 구매 존재 여부
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
@@ -83,7 +83,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
-        participate(groupPurchase, command);
+        participate(command.groupPurchaseId(), command, memberName);
         return OrderRegisterInfo.from(savedOrder);
     }
 
@@ -98,7 +98,7 @@ public class OrderService {
     @ServiceLog
     public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
         // 주문자 존재 여부
-        validateMember(memberId);
+        String memberName = validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
         List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
@@ -178,7 +178,7 @@ public class OrderService {
             Order savedOrder = orderRepository.save(order);
 
             deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.getDiscountedPrice());
-            participate(purchase, orderCommand);
+            participate(cart.getGroupPurchaseId(), orderCommand, memberName);
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
@@ -189,9 +189,10 @@ public class OrderService {
     }
 
 
-    private void validateMember(UUID memberId) {
+    private String validateMember(UUID memberId) {
         try {
-            memberClient.getMember(memberId);
+            ResponseDto<ProfileInfo> member = memberClient.getMember(memberId);
+            return member.data().name();
         } catch (FeignException.NotFound e) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
         } catch (FeignException e) {
@@ -217,14 +218,8 @@ public class OrderService {
 
     }
 
-    private void participate(GroupPurchase groupPurchase, OrderRegisterCommand command) {
-        // 공동 구매 참여
-        ParticipateInfo result = participateService.participate(groupPurchase, command.quantity());
-
-        if (!result.success()) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
-        }
-
+    private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
+        participateService.participate(groupPurchaseId, command.quantity(), name);
     }
 
     private void deductPoints(UUID memberId, UUID orderId, OrderRegisterCommand command, Long price) {
