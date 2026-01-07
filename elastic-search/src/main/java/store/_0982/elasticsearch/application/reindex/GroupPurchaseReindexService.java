@@ -75,16 +75,12 @@ public class GroupPurchaseReindexService {
         return new GroupPurchaseReindexInfo(indexName, indexed);
     }
 
-    public long reindexIncremental(String indexName, OffsetDateTime since) {
-        return reindexIncrementalByIndex(indexName, since);
-    }
-
     @ServiceLog
     public GroupPurchaseReindexInfo reindexIncrementalAndMaybeSwitch(String indexName, OffsetDateTime since, boolean autoSwitch) {
         if (!autoSwitch) {
-            return new GroupPurchaseReindexInfo(indexName, reindexIncremental(indexName, since));
+            return new GroupPurchaseReindexInfo(indexName, reindexIncrementalByIndex(indexName, since));
         }
-        long indexed = reindexIncremental(indexName, since);
+        long indexed = reindexIncrementalByIndex(indexName, since);
         long sourceCount = countSource();
         long targetCount = countTargetIndex(indexName);
         if (sourceCount != targetCount) {
@@ -99,7 +95,7 @@ public class GroupPurchaseReindexService {
         String indexName = createIndex();
         OffsetDateTime since = OffsetDateTime.now();
         long fullIndexed = reindexAll(indexName).indexed();
-        long incrementalIndexed = reindexIncremental(indexName, since);
+        long incrementalIndexed = reindexIncrementalByIndex(indexName, since);
         long sourceCount = countSource();
         long targetCount = countTargetIndex(indexName);
         boolean switched = false;
