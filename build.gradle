@@ -38,8 +38,6 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
         implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
