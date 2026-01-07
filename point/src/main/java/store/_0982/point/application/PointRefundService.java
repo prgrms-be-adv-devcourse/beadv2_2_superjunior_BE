@@ -32,10 +32,8 @@ public class PointRefundService {
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderIdWithLock(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-        if (!paymentPoint.getMemberId().equals(memberId)) {
-            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
-        }
 
+        paymentPoint.validate(memberId);
         switch (paymentPoint.getStatus()) {
             case COMPLETED -> {
                 // 정상 상태

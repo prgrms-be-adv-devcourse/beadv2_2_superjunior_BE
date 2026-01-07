@@ -64,6 +64,7 @@ public class PaymentPointService {
         PaymentPoint paymentPoint = paymentPointRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
+        paymentPoint.validate(memberId);
         if (paymentPoint.getStatus() == PaymentPointStatus.COMPLETED) {
             throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
         }

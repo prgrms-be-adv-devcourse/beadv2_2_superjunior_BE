@@ -1,5 +1,6 @@
 package store._0982.point.application;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,15 @@ class PaymentPointServiceTest {
     @InjectMocks
     private PaymentPointService paymentPointService;
 
+    private UUID memberId;
+    private UUID orderId;
+
+    @BeforeEach
+    void setUp() {
+        memberId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
+    }
+
     @Nested
     @DisplayName("주문 생성")
     class CreatePaymentPoint {
@@ -55,8 +65,6 @@ class PaymentPointServiceTest {
         @DisplayName("포인트 충전 주문을 생성한다")
         void createPaymentPoint_success() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
             PaymentPointCommand command = new PaymentPointCommand(orderId, 10000);
 
             when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
@@ -77,8 +85,6 @@ class PaymentPointServiceTest {
         @DisplayName("이미 존재하는 주문번호로 생성 요청 시 기존 정보를 반환한다")
         void createPaymentPoint_returnExisting() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
             PaymentPointCommand command = new PaymentPointCommand(orderId, 10000);
 
             PaymentPoint existingPayment = PaymentPoint.create(memberId, orderId, 10000);
@@ -102,8 +108,6 @@ class PaymentPointServiceTest {
         @DisplayName("결제 승인을 완료하고 포인트를 충전한다")
         void confirmPayment_success() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
             PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
 
             PointChargeConfirmCommand command = new PointChargeConfirmCommand(
@@ -131,7 +135,7 @@ class PaymentPointServiceTest {
             doNothing().when(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
 
             // when
-            paymentPointService.confirmPayment(command);
+            paymentPointService.confirmPayment(command, memberId);
 
             // then
             assertThat(memberPoint.getPointBalance()).isEqualTo(10000);
@@ -142,7 +146,6 @@ class PaymentPointServiceTest {
         @DisplayName("존재하지 않는 주문으로 승인 요청 시 예외가 발생한다")
         void confirmPayment_fail_whenPaymentNotFound() {
             // given
-            UUID orderId = UUID.randomUUID();
             PointChargeConfirmCommand command = new PointChargeConfirmCommand(
                     orderId,
                     10000,
@@ -152,7 +155,7 @@ class PaymentPointServiceTest {
             when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> paymentPointService.confirmPayment(command))
+            assertThatThrownBy(() -> paymentPointService.confirmPayment(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
         }
@@ -161,8 +164,6 @@ class PaymentPointServiceTest {
         @DisplayName("이미 승인된 주문으로 재승인 시 예외가 발생한다")
         void confirmPayment_fail_whenAlreadyCompleted() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
             PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
             paymentPoint.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
 
@@ -175,7 +176,7 @@ class PaymentPointServiceTest {
             when(paymentPointRepository.findByOrderId(orderId)).thenReturn(Optional.of(paymentPoint));
 
             // when & then
-            assertThatThrownBy(() -> paymentPointService.confirmPayment(command))
+            assertThatThrownBy(() -> paymentPointService.confirmPayment(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
         }

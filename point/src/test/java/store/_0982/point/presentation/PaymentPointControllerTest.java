@@ -21,7 +21,9 @@ import store._0982.point.application.PointRefundService;
 import store._0982.point.application.dto.*;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.domain.constant.PaymentPointStatus;
+import store._0982.point.presentation.dto.PointChargeConfirmRequest;
 import store._0982.point.presentation.dto.PointChargeCreateRequest;
+import store._0982.point.presentation.dto.PointChargeFailRequest;
 import store._0982.point.presentation.dto.PointRefundRequest;
 
 import java.time.OffsetDateTime;
@@ -59,7 +61,7 @@ class PaymentPointControllerTest {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    void resetMocks() {
+    void setUp() {
         Mockito.reset(paymentPointService);
     }
 
@@ -101,14 +103,16 @@ class PaymentPointControllerTest {
     @DisplayName("포인트 충전을 완료한다")
     void confirmPayment() throws Exception {
         // given
+        UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        PointChargeConfirmRequest request = new PointChargeConfirmRequest(orderId, 10000, "test_payment_key");
 
         PaymentPointInfo paymentPointInfo = new PaymentPointInfo(
                 UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                memberId,
+                orderId,
                 "카드",
-                "test-payment-key",
+                "test_payment_key",
                 null,
                 10000,
                 PaymentPointStatus.COMPLETED,
@@ -116,61 +120,61 @@ class PaymentPointControllerTest {
                 OffsetDateTime.now()
         );
 
-        when(paymentPointService.confirmPayment(any(PointChargeConfirmCommand.class))).thenReturn(paymentPointInfo);
+        when(paymentPointService.confirmPayment(any(PointChargeConfirmCommand.class), eq(memberId))).thenReturn(paymentPointInfo);
 
         // when & then
-        mockMvc.perform(get("/api/payments/confirm")
-                        .param("paymentKey", "test_payment_key")
-                        .param("orderId", orderId.toString())
-                        .param("amount", "10000")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(HeaderName.ID, memberId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern(SUCCESS_URL_PATTERN));
 
-        verify(paymentPointService).confirmPayment(any());
+        verify(paymentPointService).confirmPayment(any(), eq(memberId));
     }
 
     @Test
     @DisplayName("포인트 충전 완료 중 에러가 발생한다")
     void confirmPayment_fail() throws Exception {
         // given
+        UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        PointChargeConfirmRequest request = new PointChargeConfirmRequest(orderId, 10000, "test_payment_key");
 
-        doThrow(new RuntimeException("임의 에러")).when(paymentPointService).confirmPayment(any());
+        doThrow(new RuntimeException("임의 에러")).when(paymentPointService).confirmPayment(any(), eq(memberId));
 
-        mockMvc.perform(get("/api/payments/confirm")
-                        .param("paymentKey", "test_payment_key")
-                        .param("orderId", orderId.toString())
-                        .param("amount", "10000")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/api/payments/confirm")
+                        .header(HeaderName.ID, memberId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
-        verify(paymentPointService).confirmPayment(any());
+        verify(paymentPointService).confirmPayment(any(), eq(memberId));
     }
 
     @Test
     @DisplayName("포인트 결제 실패를 처리한다")
     void handlePaymentFailure() throws Exception {
         // given
+        UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
+        PointChargeFailRequest request = new PointChargeFailRequest(
+                orderId, "test_payment_key", "PAYMENT_FAILED", "카드 승인 실패", 10000, "{}"
+        );
 
-        when(paymentPointFailureService.handlePaymentFailure(any(PointChargeFailCommand.class)))
-                .thenReturn(any(PaymentPointInfo.class));
+        when(paymentPointFailureService.handlePaymentFailure(any(PointChargeFailCommand.class), eq(memberId)))
+                .thenReturn(mock(PaymentPointInfo.class));
 
         // when & then
-        mockMvc.perform(get("/api/payments/fail")
-                        .param("errorCode", "PAYMENT_FAILED")
-                        .param("errorMessage", "카드 승인 실패")
-                        .param("orderId", orderId.toString())
-                        .param("paymentKey", "test_payment_key")
-                        .param("amount", "10000")
-                        .param("rawPayload", "{}")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post("/api/payments/fail")
+                        .header(HeaderName.ID, memberId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
-        verify(paymentPointFailureService).handlePaymentFailure(any());
+        verify(paymentPointFailureService).handlePaymentFailure(any(), eq(memberId));
     }
 
     @Test

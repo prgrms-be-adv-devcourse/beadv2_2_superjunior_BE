@@ -65,7 +65,7 @@ class PaymentPointFailureServiceTest {
         when(paymentPointFailureRepository.save(any(PaymentPointFailure.class))).thenReturn(failure);
 
         // when
-        paymentPointFailureService.handlePaymentFailure(command);
+        paymentPointFailureService.handlePaymentFailure(command, memberId);
 
         // then
         verify(paymentPointFailureRepository).save(any(PaymentPointFailure.class));
@@ -90,7 +90,7 @@ class PaymentPointFailureServiceTest {
         when(paymentPointRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when
-        paymentPointFailureService.handlePaymentFailure(command);
+        paymentPointFailureService.handlePaymentFailure(command, memberId);
 
         // then
         verify(paymentPointFailureRepository, never()).save(any(PaymentPointFailure.class));
@@ -116,7 +116,7 @@ class PaymentPointFailureServiceTest {
         when(paymentPointRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(paymentPoint));
 
         // when & then
-        assertThatThrownBy(() -> paymentPointFailureService.handlePaymentFailure(command))
+        assertThatThrownBy(() -> paymentPointFailureService.handlePaymentFailure(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.CANNOT_HANDLE_FAILURE.getMessage());
     }
@@ -137,7 +137,7 @@ class PaymentPointFailureServiceTest {
         when(paymentPointRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> paymentPointFailureService.handlePaymentFailure(command))
+        assertThatThrownBy(() -> paymentPointFailureService.handlePaymentFailure(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
     }
