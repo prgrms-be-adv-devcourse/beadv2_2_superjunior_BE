@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 
 @Builder
 @Getter
-@Document(indexName = "group-purchase-index", createIndex = false)
+@Document(indexName = "group-purchase", createIndex = false)
 // kafka 형식 맞춰서 수정 필요
 public class GroupPurchaseDocument {
 
