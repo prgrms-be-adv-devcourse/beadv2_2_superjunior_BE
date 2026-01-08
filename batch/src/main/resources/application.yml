@@ -9,10 +9,12 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   datasource:
-    url: ${ORDER_SPRING_DATASOURCE_URL}
+    url: ${BATCH_SPRING_DATASOURCE_URL}
     driver-class-name: org.postgresql.Driver
-    username: ${ORDER_SPRING_DATASOURCE_USERNAME}
-    password: ${ORDER_SPRING_DATASOURCE_PASSWORD}
+    username: ${BATCH_SPRING_DATASOURCE_USERNAME}
+    password: ${BATCH_SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema
 
   jackson:
     time-zone: Asia/Seoul
@@ -32,7 +34,7 @@ spring:
     jdbc:
       initialize-schema: never
     job:
-      enabled: true
+      enabled: false
 
 management:
   endpoints:
