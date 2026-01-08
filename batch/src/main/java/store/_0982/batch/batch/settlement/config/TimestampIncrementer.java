@@ -6,7 +6,6 @@ import org.springframework.batch.core.JobParametersIncrementer;
 
 /**
  * 타임스탬프 기반 JobParametersIncrementer
- * K8s CronJob 환경에서 매 실행마다 자동으로 유니크한 파라미터 생성
  */
 public class TimestampIncrementer implements JobParametersIncrementer {
 
