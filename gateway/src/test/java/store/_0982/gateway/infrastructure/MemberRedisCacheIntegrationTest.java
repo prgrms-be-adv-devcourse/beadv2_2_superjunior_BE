@@ -26,23 +26,21 @@ class MemberRedisCacheIntegrationTest extends AbstractIntegrationTest {
         UUID memberId = UUID.randomUUID();
         Member member = Member.createGuest();
 
-        Mono<Boolean> write = redisTemplate.opsForValue()
-                .set("member:" + memberId, member);
-        write.block();
+        redisTemplate.opsForValue().set("member:" + memberId, member).block();
 
-        Optional<Member> result = memberRedisCache.findById(memberId);
+        Member result = memberRedisCache.findById(memberId).block();
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getRole()).isEqualTo(Role.GUEST);
+        assertThat(result).isNotNull();
+        assertThat(result.getRole()).isEqualTo(Role.GUEST);
     }
 
     @Test
     void findById_returnsEmptyWhenMemberNotInRedis() {
         UUID memberId = UUID.randomUUID();
 
-        Optional<Member> result = memberRedisCache.findById(memberId);
+        Optional<Member> result = memberRedisCache.findById(memberId).blockOptional();
 
         assertThat(result).isEmpty();
     }
-}
 
+}

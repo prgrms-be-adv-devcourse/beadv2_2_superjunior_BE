@@ -27,19 +27,17 @@ public class RouteAuthorizationManager implements ReactiveAuthorizationManager<A
         return authentication
                 .map(Authentication::getPrincipal)
                 .ofType(UUID.class)
-                .flatMap(memberId -> Mono.justOrEmpty(memberCache.findById(memberId)))
+                .flatMap(memberCache::findById)
                 .defaultIfEmpty(Member.createGuest())
                 .flatMap(member -> {
                     String method = exchange.getRequest().getMethod().name();
                     String path = exchange.getRequest().getURI().getPath();
-
                     return gatewayRouteRepository
                             .findByMethodAndEndpoint(method, path)
                             .map(gatewayRoute -> {
                                 if (gatewayRoute == null || gatewayRoute.getRoles() == null) {
                                     return new AuthorizationDecision(false);
                                 }
-
                                 boolean allowed = gatewayRoute.getRoles().contains(member.getRole().name());
                                 return new AuthorizationDecision(allowed);
                             })
