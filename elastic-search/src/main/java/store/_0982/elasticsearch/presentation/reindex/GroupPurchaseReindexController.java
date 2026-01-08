@@ -6,14 +6,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
+import store._0982.elasticsearch.application.GroupPurchaseEventListener;
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
 import store._0982.elasticsearch.application.reindex.GroupPurchaseReindexService;
+import store._0982.elasticsearch.presentation.dto.GroupPurchaseDocumentRequest;
 
 import java.time.OffsetDateTime;
 
@@ -24,6 +28,7 @@ import java.time.OffsetDateTime;
 public class GroupPurchaseReindexController {
 
     private final GroupPurchaseReindexService reindexService;
+    private final GroupPurchaseEventListener eventListener;
 
     @Operation(summary = "새 인덱스 생성", description = "매핑/세팅 적용된 새 인덱스를 생성한다.")
     @ControllerLog
@@ -63,5 +68,15 @@ public class GroupPurchaseReindexController {
     ) {
         GroupPurchaseTotalReindexInfo summary = reindexService.reindexFullAndIncremental(autoSwitch);
         return new ResponseDto<>(HttpStatus.OK, summary, "재색인 사이클 완료");
+    }
+
+    @Operation(summary = "Test document upsert", description = "Stores a document into Elasticsearch for testing.")
+    @ControllerLog
+    @PostMapping("/document")
+    public ResponseDto<GroupPurchaseDocumentInfo> saveDocument(
+            @RequestBody GroupPurchaseDocumentRequest request
+    ) {
+        GroupPurchaseDocumentInfo info = eventListener.saveGroupPurchaseDocument(request.toCommand());
+        return new ResponseDto<>(HttpStatus.CREATED, info, "Document saved");
     }
 }

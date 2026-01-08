@@ -41,9 +41,9 @@ public class GroupPurchaseEventListener {
         }
     }
 
-    public void saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
+    public GroupPurchaseDocumentInfo saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
         try {
-            GroupPurchaseDocumentInfo.from(groupPurchaseRepository.save(command.toDocument()));
+            return GroupPurchaseDocumentInfo.from(groupPurchaseRepository.save(command.toDocument()));
         } catch (Exception e) {
             throw exceptionTranslator.translate(e);
         }

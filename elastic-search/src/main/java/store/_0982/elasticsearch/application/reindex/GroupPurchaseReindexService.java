@@ -82,7 +82,7 @@ public class GroupPurchaseReindexService {
             return new GroupPurchaseReindexInfo(indexName, reindexIncrementalByIndex(indexName, since));
         }
         long indexed = reindexIncrementalByIndex(indexName, since);
-        long sourceCount = countSource();
+        long sourceCount = reindexRepository.countSource();
         long targetCount = countTargetIndex(indexName);
         if (sourceCount != targetCount) {
             throw new CustomException(CustomErrorCode.REINDEX_COUNT_MISMATCH);
@@ -97,7 +97,7 @@ public class GroupPurchaseReindexService {
         OffsetDateTime since = OffsetDateTime.now();
         long fullIndexed = reindexAll(indexName).indexed();
         long incrementalIndexed = reindexIncrementalByIndex(indexName, since);
-        long sourceCount = countSource();
+        long sourceCount = reindexRepository.countSource();
         long targetCount = countTargetIndex(indexName);
         boolean switched = false;
         if (autoSwitch) {
@@ -114,10 +114,6 @@ public class GroupPurchaseReindexService {
     public long countTargetIndex(String indexName) {
         operations.indexOps(IndexCoordinates.of(indexName)).refresh();
         return operations.count(Query.findAll(), GroupPurchaseDocument.class, IndexCoordinates.of(indexName));
-    }
-
-    public long countSource() {
-        return reindexRepository.countSource();
     }
 
     private long reindexAllByIndex(String indexName) {
@@ -141,7 +137,6 @@ public class GroupPurchaseReindexService {
             bulkIndex(indexName, rows);
             total += rows.size();
             offset += batchSize;
-            log.debug("Reindex progress: indexed={}", total);
         }
         return total;
     }
@@ -149,10 +144,6 @@ public class GroupPurchaseReindexService {
     private String createIndexWithMapping(String aliasName) {
         String newIndex = aliasName + "-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern(INDEX_SUFFIX_PATTERN));
         IndexOperations indexOps = operations.indexOps(IndexCoordinates.of(newIndex));
-
-        if (indexOps.exists()) {
-            throw new IllegalStateException("index already exists: " + newIndex);
-        }
 
         Settings settings = indexOps.createSettings(GroupPurchaseDocument.class);
         Document mapping = indexOps.createMapping(GroupPurchaseDocument.class);
@@ -189,6 +180,7 @@ public class GroupPurchaseReindexService {
         operations.indexOps(IndexCoordinates.of(newIndex)).alias(actions);
     }
 
+    //전체 재색인과 증분 재색인은 입력값만 다를 뿐 동일한 배치 로직을 수행하므로 추상화
     @FunctionalInterface
     private interface RowFetcher {
         List<GroupPurchaseReindexRow> fetch(int limit, long offset);
