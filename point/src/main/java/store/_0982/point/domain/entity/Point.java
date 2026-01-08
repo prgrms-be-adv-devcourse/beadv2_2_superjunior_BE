@@ -33,11 +33,11 @@ public class Point {
         this.pointBalance = 0;
     }
 
-    public void addPoints(long pointBalance) {
+    public void add(long pointBalance) {
         this.pointBalance += pointBalance;
     }
 
-    public void deductPoints(long pointBalance) {
+    public void deduct(long pointBalance) {
         refund(pointBalance);
         lastUsedAt = OffsetDateTime.now();
     }

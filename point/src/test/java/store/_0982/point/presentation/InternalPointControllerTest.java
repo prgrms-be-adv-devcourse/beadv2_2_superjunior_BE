@@ -47,7 +47,7 @@ class InternalPointControllerTest {
 
     @Test
     @DisplayName("내부 API로 포인트를 차감한다")
-    void deductPoints() throws Exception {
+    void deduct() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();

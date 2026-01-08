@@ -30,13 +30,13 @@ class PointTest {
 
     @Test
     @DisplayName("포인트를 추가한다")
-    void addPoints() {
+    void add() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.addPoints(10000);
+        point.add(10000);
 
         // then
         assertThat(point.getPointBalance()).isEqualTo(10000);
@@ -44,15 +44,15 @@ class PointTest {
 
     @Test
     @DisplayName("포인트를 여러 번 추가한다")
-    void addPointsMultipleTimes() {
+    void addMultipleTimes() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.addPoints(5000);
-        point.addPoints(3000);
-        point.addPoints(2000);
+        point.add(5000);
+        point.add(3000);
+        point.add(2000);
 
         // then
         assertThat(point.getPointBalance()).isEqualTo(10000);
@@ -60,14 +60,14 @@ class PointTest {
 
     @Test
     @DisplayName("포인트를 차감한다")
-    void deductPoints() {
+    void deduct() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(10000);
+        point.add(10000);
 
         // when
-        point.deductPoints(5000);
+        point.deduct(5000);
 
         // then
         assertThat(point.getPointBalance()).isEqualTo(5000);
@@ -76,14 +76,14 @@ class PointTest {
 
     @Test
     @DisplayName("포인트 차감 시 잔액이 부족하면 예외가 발생한다")
-    void deductPoints_fail_whenInsufficientBalance() {
+    void deduct_fail_whenInsufficientBalance() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(5000);
+        point.add(5000);
 
         // when & then
-        assertThatThrownBy(() -> point.deductPoints(10000))
+        assertThatThrownBy(() -> point.deduct(10000))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
     }
@@ -94,7 +94,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(10000);
+        point.add(10000);
 
         // when
         point.refund(3000);
@@ -109,7 +109,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(5000);
+        point.add(5000);
 
         // when & then
         assertThatThrownBy(() -> point.refund(10000))
@@ -119,14 +119,14 @@ class PointTest {
 
     @Test
     @DisplayName("0 포인트 차감은 성공한다")
-    void deductPoints_zero() {
+    void deduct_zero() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(10000);
+        point.add(10000);
 
         // when
-        point.deductPoints(0);
+        point.deduct(0);
 
         // then
         assertThat(point.getPointBalance()).isEqualTo(10000);
@@ -135,13 +135,13 @@ class PointTest {
 
     @Test
     @DisplayName("0 포인트 추가는 성공한다")
-    void addPoints_zero() {
+    void add_zero() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.addPoints(0);
+        point.add(0);
 
         // then
         assertThat(point.getPointBalance()).isZero();

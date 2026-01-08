@@ -56,7 +56,7 @@ public class MemberPointService {
                     long amount = command.amount();
                     try {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.used(memberId, command));
-                        point.deductPoints(amount);
+                        point.deduct(amount);
                         applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
                         return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {
@@ -84,7 +84,7 @@ public class MemberPointService {
 
                     try {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.returned(memberId, command));
-                        point.addPoints(amount);
+                        point.add(amount);
                         applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
                         return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {

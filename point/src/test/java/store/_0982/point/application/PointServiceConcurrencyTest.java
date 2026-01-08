@@ -60,7 +60,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
         memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.addPoints(BALANCE);
+        point.add(BALANCE);
         memberPointRepository.save(point);
     }
 

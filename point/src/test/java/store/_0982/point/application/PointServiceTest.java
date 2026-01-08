@@ -59,7 +59,7 @@ class PointServiceTest {
             // given
             UUID memberId = UUID.randomUUID();
             Point point = new Point(memberId);
-            point.addPoints(10000);
+            point.add(10000);
 
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
 
@@ -93,14 +93,14 @@ class PointServiceTest {
 
         @Test
         @DisplayName("포인트를 차감한다")
-        void deductPoints_success() {
+        void deduct_success() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.addPoints(10000);
+            point.add(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
             PointHistory history = PointHistory.used(memberId, command);
@@ -121,14 +121,14 @@ class PointServiceTest {
 
         @Test
         @DisplayName("네트워크 장애 등에 의한 중복 차감 요청은 멱등성 키로 중복 처리하지 않는다")
-        void deductPoints_idempotent() {
+        void deduct_idempotent() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.addPoints(10000);
+            point.add(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -147,14 +147,14 @@ class PointServiceTest {
 
         @Test
         @DisplayName("사용자 실수 등에 의한 중복 차감 요청은 주문 검사로 중복 처리하지 않는다")
-        void deductPoints_duplicate() {
+        void deduct_duplicate() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.addPoints(10000);
+            point.add(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -173,7 +173,7 @@ class PointServiceTest {
 
         @Test
         @DisplayName("존재하지 않는 회원의 포인트 차감 시 예외가 발생한다")
-        void deductPoints_fail_whenMemberNotFound() {
+        void deduct_fail_whenMemberNotFound() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
@@ -201,7 +201,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.addPoints(5000);
+            point.add(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
             PointHistory history = PointHistory.returned(memberId, command);
@@ -230,7 +230,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.addPoints(5000);
+            point.add(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
 

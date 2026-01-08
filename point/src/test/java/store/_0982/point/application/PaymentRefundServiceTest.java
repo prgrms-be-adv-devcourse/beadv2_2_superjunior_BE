@@ -62,7 +62,7 @@ class PaymentRefundServiceTest {
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
         Point point = new Point(memberId);
-        point.addPoints(10000);
+        point.add(10000);
 
         TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
                 10000,
