@@ -3,6 +3,7 @@ package store._0982.elasticsearch.application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
@@ -10,12 +11,19 @@ import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentIdInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -25,6 +33,8 @@ public class GroupPurchaseSearchService {
     private final ElasticsearchOperations operations;
     private final GroupPurchaseSearchQueryFactory groupPurchaseSearchQueryFactory;
     private final ElasticsearchExceptionTranslator exceptionTranslator;
+    private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
+
     private static final long[] SEARCH_RETRY_DELAYS_MS = {200L, 500L};
 
     public void createGroupPurchaseIndex() {
@@ -56,7 +66,7 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public PageResponse<GroupPurchaseDocumentIdInfo> searchGroupPurchaseDocument(
+    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
             UUID memberId,
@@ -68,10 +78,7 @@ public class GroupPurchaseSearchService {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-
-            SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
-            Page<GroupPurchaseDocumentIdInfo> mappedPage = searchPage
-                    .map(hit -> GroupPurchaseDocumentIdInfo.from(hit.getId()));
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
         } catch (CustomException e) {
             throw e;
@@ -81,7 +88,7 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public PageResponse<GroupPurchaseDocumentIdInfo> searchAllGroupPurchaseDocument(
+    public PageResponse<GroupPurchaseSearchInfo> searchAllGroupPurchaseDocument(
             String keyword,
             String status,
             String category,
@@ -91,10 +98,7 @@ public class GroupPurchaseSearchService {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-
-            SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
-            Page<GroupPurchaseDocumentIdInfo> mappedPage = searchPage
-                    .map(hit -> GroupPurchaseDocumentIdInfo.from(hit.getId()));
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
         } catch (CustomException e) {
             throw e;
@@ -121,5 +125,30 @@ public class GroupPurchaseSearchService {
             }
         }
         throw exceptionTranslator.translate(new IllegalStateException("search retry exhausted"));
+    }
+
+    private Page<GroupPurchaseSearchInfo> toSearchResultPage(SearchHits<GroupPurchaseDocument> hits, Pageable pageable) {
+        if (hits.getSearchHits().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
+        }
+
+        List<UUID> ids = hits.getSearchHits()
+                .stream()
+                .map(hit -> UUID.fromString(hit.getId()))
+                .toList();
+
+        List<GroupPurchaseSearchRow> rows = groupPurchaseSearchRepository.findAllByIds(ids);
+        Map<UUID, GroupPurchaseSearchRow> rowMap = rows.stream()
+                .collect(Collectors.toMap(GroupPurchaseSearchRow::groupPurchaseId, Function.identity()));
+
+        List<GroupPurchaseSearchInfo> ordered = new ArrayList<>(ids.size());
+        for (UUID id : ids) {
+            GroupPurchaseSearchRow row = rowMap.get(id);
+            if (row != null) {
+                ordered.add(GroupPurchaseSearchInfo.from(row));
+            }
+        }
+
+        return new PageImpl<>(ordered, pageable, hits.getTotalHits());
     }
 }

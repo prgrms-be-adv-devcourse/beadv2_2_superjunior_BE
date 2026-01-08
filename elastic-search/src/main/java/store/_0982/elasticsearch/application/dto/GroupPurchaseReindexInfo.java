@@ -2,6 +2,9 @@ package store._0982.elasticsearch.application.dto;
 
 public record GroupPurchaseReindexInfo(
         String indexName,
-        Long indexed
+        Long indexed,
+        Long fullIndexed,
+        Long incrementalIndexed,
+        boolean switched
 ) {
 }

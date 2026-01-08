@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
-import store._0982.elasticsearch.application.dto.GroupPurchaseReindexSummary;
-import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRepository;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
@@ -70,7 +68,7 @@ public class GroupPurchaseReindexService {
             indexName = targetIndex;
         }
         long indexed = reindexAllByIndex(indexName);
-        return new GroupPurchaseReindexInfo(indexName, indexed);
+        return new GroupPurchaseReindexInfo(indexName, indexed, null, null, false);
     }
 
     @ServiceLog
@@ -79,7 +77,7 @@ public class GroupPurchaseReindexService {
             throw new CustomException(CustomErrorCode.INDEX_NAME_ISNULL);
         }
         if (!autoSwitch) {
-            return new GroupPurchaseReindexInfo(indexName, reindexIncrementalByIndex(indexName, since));
+            return new GroupPurchaseReindexInfo(indexName, reindexIncrementalByIndex(indexName, since), null, null, false);
         }
         long indexed = reindexIncrementalByIndex(indexName, since);
         long sourceCount = reindexRepository.countSource();
@@ -88,11 +86,11 @@ public class GroupPurchaseReindexService {
             throw new CustomException(CustomErrorCode.REINDEX_COUNT_MISMATCH);
         }
         switchAlias(properties.getAlias(), indexName);
-        return new GroupPurchaseReindexInfo(indexName, indexed);
+        return new GroupPurchaseReindexInfo(indexName, indexed, null, null, true);
     }
 
     @ServiceLog
-    public GroupPurchaseTotalReindexInfo reindexFullAndIncremental(boolean autoSwitch) {
+    public GroupPurchaseReindexInfo reindexFullAndIncremental(boolean autoSwitch) {
         String indexName = createIndex();
         OffsetDateTime since = OffsetDateTime.now();
         long fullIndexed = reindexAll(indexName).indexed();
@@ -107,8 +105,7 @@ public class GroupPurchaseReindexService {
             switchAlias(properties.getAlias(), indexName);
             switched = true;
         }
-        GroupPurchaseReindexSummary summary = new GroupPurchaseReindexSummary(indexName, fullIndexed, incrementalIndexed, switched);
-        return GroupPurchaseTotalReindexInfo.from(summary);
+        return new GroupPurchaseReindexInfo(indexName, null, fullIndexed, incrementalIndexed, switched);
     }
 
     public long countTargetIndex(String indexName) {

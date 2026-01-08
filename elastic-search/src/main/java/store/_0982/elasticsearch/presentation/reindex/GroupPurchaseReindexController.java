@@ -15,7 +15,6 @@ import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseEventListener;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseReindexInfo;
-import store._0982.elasticsearch.application.dto.GroupPurchaseTotalReindexInfo;
 import store._0982.elasticsearch.application.reindex.GroupPurchaseReindexService;
 import store._0982.elasticsearch.presentation.dto.GroupPurchaseDocumentRequest;
 
@@ -63,10 +62,10 @@ public class GroupPurchaseReindexController {
     @Operation(summary = "재색인 사이클 실행", description = "새 인덱스 생성 후 전체/증분 재색인을 순서대로 실행 후 새로 생성한 인덱스를 alias로 설정한다.")
     @ControllerLog
     @PostMapping
-    public ResponseDto<GroupPurchaseTotalReindexInfo> reindexAllInOne(
+    public ResponseDto<GroupPurchaseReindexInfo> reindexAllInOne(
             @RequestParam(defaultValue = "true") boolean autoSwitch
     ) {
-        GroupPurchaseTotalReindexInfo summary = reindexService.reindexFullAndIncremental(autoSwitch);
+        GroupPurchaseReindexInfo summary = reindexService.reindexFullAndIncremental(autoSwitch);
         return new ResponseDto<>(HttpStatus.OK, summary, "재색인 사이클 완료");
     }
 
