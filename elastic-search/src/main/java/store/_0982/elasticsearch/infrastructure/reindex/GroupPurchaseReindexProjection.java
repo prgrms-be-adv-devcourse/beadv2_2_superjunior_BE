@@ -8,17 +8,7 @@ public interface GroupPurchaseReindexProjection {
     String getTitle();
     String getDescription();
     String getStatus();
-    Instant getStartDate();
-    Instant getEndDate();
-    int getMinQuantity();
-    int getMaxQuantity();
-    long getDiscountedPrice();
-    int getCurrentQuantity();
-    Instant getCreatedAt();
     Instant getUpdatedAt();
-    UUID getProductId();
     String getCategory();
-    Long getPrice();
-    String getOriginalUrl();
     UUID getSellerId();
 }

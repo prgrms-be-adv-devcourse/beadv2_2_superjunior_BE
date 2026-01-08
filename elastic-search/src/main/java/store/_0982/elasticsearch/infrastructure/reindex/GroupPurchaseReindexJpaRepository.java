@@ -17,18 +17,8 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.title as title,
                 gp.description as description,
                 gp.status as status,
-                gp.start_date as startDate,
-                gp.end_date as endDate,
-                gp.min_quantity as minQuantity,
-                gp.max_quantity as maxQuantity,
-                gp.discounted_price as discountedPrice,
-                gp.current_quantity as currentQuantity,
-                gp.created_at as createdAt,
-                gp.updated_at as updatedAt,
-                p.product_id as productId,
+                coalesce(gp.updated_at, gp.created_at) as updatedAt,
                 p.category as category,
-                p.price as price,
-                p.original_url as originalUrl,
                 p.seller_id as sellerId
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
@@ -46,18 +36,8 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.title as title,
                 gp.description as description,
                 gp.status as status,
-                gp.start_date as startDate,
-                gp.end_date as endDate,
-                gp.min_quantity as minQuantity,
-                gp.max_quantity as maxQuantity,
-                gp.discounted_price as discountedPrice,
-                gp.current_quantity as currentQuantity,
-                gp.created_at as createdAt,
-                gp.updated_at as updatedAt,
-                p.product_id as productId,
+                coalesce(gp.updated_at, gp.created_at) as updatedAt,
                 p.category as category,
-                p.price as price,
-                p.original_url as originalUrl,
                 p.seller_id as sellerId
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id

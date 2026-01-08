@@ -9,35 +9,19 @@ import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
         String groupPurchaseId,
-        String sellerName,
-        Integer minQuantity,
-        Integer maxQuantity,
         String title,
         String description,
-        Long discountedPrice,
         String status,
-        String startDate,
-        String endDate,
-        OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
-        Integer currentQuantity,
         ProductEvent productEvent
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
-                event.getSellerName(),
-                event.getMinQuantity(),
-                event.getMaxQuantity(),
                 event.getTitle(),
                 event.getDescription(),
-                event.getDiscountedPrice(),
                 event.getStatus(),
-                event.getStartDate(),
-                event.getEndDate(),
-                OffsetDateTime.parse(event.getCreatedAt()),
                 OffsetDateTime.parse(event.getUpdatedAt()),
-                event.getCurrentQuantity(),
                 event.getProductEvent()
         );
     }
@@ -45,33 +29,11 @@ public record GroupPurchaseDocumentCommand(
     public GroupPurchaseDocument toDocument() {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(groupPurchaseId)
-                .sellerName(sellerName)
-                .minQuantity(minQuantity)
-                .maxQuantity(maxQuantity)
                 .title(title)
                 .description(description)
-                .discountedPrice(discountedPrice)
                 .status(status)
-                .startDate(startDate)
-                .endDate(endDate)
-                .createdAt(createdAt)
                 .updatedAt(updatedAt)
-                .currentQuantity(currentQuantity)
-                .discountRate(calculateDiscountRate(productEvent.getPrice(), discountedPrice))
                 .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
                 .build();
-    }
-    private static Long calculateDiscountRate(Long price, Long discountedPrice) {
-        if (price == null) {
-            return 0L;
-        }
-
-        if (price <= 0 || discountedPrice >= price) {
-            return 0L;
-        }
-
-        return Math.round(
-                ((double) (price - discountedPrice) / price) * 100
-        );
     }
 }
