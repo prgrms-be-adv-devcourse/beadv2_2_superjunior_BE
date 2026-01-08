@@ -16,7 +16,7 @@ public class PointEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handlePointRecharged(PointRechargedEvent event) {
-        pointEventPublisher.publishPointRechargedEvent(event.paymentPoint());
+        pointEventPublisher.publishPointRechargedEvent(event.payment());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

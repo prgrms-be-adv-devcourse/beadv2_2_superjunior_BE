@@ -6,28 +6,30 @@ import store._0982.point.domain.constant.PaymentStatus;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record PointRefundInfo(
+public record PaymentInfo(
         UUID paymentPointId,
         UUID memberId,
         UUID orderId,
         String paymentMethod,
         String paymentKey,
+        String failMessage,
         long amount,
         PaymentStatus status,
         OffsetDateTime createdAt,
-        OffsetDateTime refundedAt
+        OffsetDateTime requestedAt
 ) {
-    public static PointRefundInfo from(Payment payment){
-        return new PointRefundInfo(
+    public static PaymentInfo from(Payment payment) {
+        return new PaymentInfo(
                 payment.getId(),
                 payment.getMemberId(),
                 payment.getPgOrderId(),
                 payment.getPaymentMethod(),
                 payment.getPaymentKey(),
+                payment.getFailMessage(),
                 payment.getAmount(),
                 payment.getStatus(),
                 payment.getCreatedAt(),
-                payment.getRefundedAt()
+                payment.getRequestedAt()
         );
     }
 }

@@ -9,7 +9,7 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.MemberPointService;
-import store._0982.point.application.dto.MemberPointInfo;
+import store._0982.point.application.dto.PointInfo;
 import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
 
@@ -25,22 +25,22 @@ public class InternalPointController {
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
     @PostMapping("/deduct")
-    public ResponseDto<MemberPointInfo> deductPoints(
+    public ResponseDto<PointInfo> deductPoints(
             @Valid @RequestBody PointDeductRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        MemberPointInfo info = memberPointService.deductPoints(memberId, request.toCommand());
+        PointInfo info = memberPointService.deductPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 차감 완료");
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
     @PostMapping("/return")
-    public ResponseDto<MemberPointInfo> returnPoints(
+    public ResponseDto<PointInfo> returnPoints(
             @Valid @RequestBody PointReturnRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        MemberPointInfo info = memberPointService.returnPoints(memberId, request.toCommand());
+        PointInfo info = memberPointService.returnPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 반환 완료");
     }
 }

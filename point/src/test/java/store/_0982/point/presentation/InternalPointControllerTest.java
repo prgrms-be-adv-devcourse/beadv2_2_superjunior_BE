@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.point.application.MemberPointService;
-import store._0982.point.application.dto.MemberPointInfo;
+import store._0982.point.application.dto.PointInfo;
 import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
 
@@ -53,7 +53,7 @@ class InternalPointControllerTest {
         UUID orderId = UUID.randomUUID();
         UUID idempotencyKey = UUID.randomUUID();
         PointDeductRequest request = new PointDeductRequest(idempotencyKey, orderId, 5000);
-        MemberPointInfo info = new MemberPointInfo(memberId, 5000, OffsetDateTime.now());
+        PointInfo info = new PointInfo(memberId, 5000, OffsetDateTime.now());
 
         when(memberPointService.deductPoints(eq(memberId), any())).thenReturn(info);
 
@@ -78,7 +78,7 @@ class InternalPointControllerTest {
         UUID orderId = UUID.randomUUID();
         UUID idempotencyKey = UUID.randomUUID();
         PointReturnRequest request = new PointReturnRequest(idempotencyKey, orderId, 5000);
-        MemberPointInfo info = new MemberPointInfo(memberId, 15000, OffsetDateTime.now());
+        PointInfo info = new PointInfo(memberId, 15000, OffsetDateTime.now());
 
         when(memberPointService.returnPoints(eq(memberId), any())).thenReturn(info);
 

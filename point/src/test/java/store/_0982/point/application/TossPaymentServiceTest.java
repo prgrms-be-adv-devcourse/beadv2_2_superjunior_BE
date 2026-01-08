@@ -8,12 +8,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.PointChargeConfirmCommand;
+import store._0982.point.application.dto.PaymentConfirmCommand;
 import store._0982.point.application.dto.PointRefundCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.entity.PaymentPoint;
+import store._0982.point.domain.entity.Payment;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
@@ -40,9 +40,9 @@ class TossPaymentServiceTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
+        Payment payment = Payment.create(memberId, orderId, 10000);
 
-        PointChargeConfirmCommand command = new PointChargeConfirmCommand(
+        PaymentConfirmCommand command = new PaymentConfirmCommand(
                 orderId,
                 10000,
                 "test_payment_key"
@@ -62,7 +62,7 @@ class TossPaymentServiceTest {
         when(tossPaymentClient.confirm(any(TossPaymentConfirmRequest.class))).thenReturn(response);
 
         // when
-        TossPaymentResponse result = tossPaymentService.confirmPayment(paymentPoint, command);
+        TossPaymentResponse result = tossPaymentService.confirmPayment(payment, command);
 
         // then
         assertThat(result).isNotNull();
@@ -76,9 +76,9 @@ class TossPaymentServiceTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
+        Payment payment = Payment.create(memberId, orderId, 10000);
 
-        PointChargeConfirmCommand command = new PointChargeConfirmCommand(
+        PaymentConfirmCommand command = new PaymentConfirmCommand(
                 orderId,
                 10000,
                 "test_payment_key"
@@ -99,7 +99,7 @@ class TossPaymentServiceTest {
         when(tossPaymentClient.confirm(any(TossPaymentConfirmRequest.class))).thenReturn(response);
 
         // when & then
-        assertThatThrownBy(() -> tossPaymentService.confirmPayment(paymentPoint, command))
+        assertThatThrownBy(() -> tossPaymentService.confirmPayment(payment, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ORDER_ID_MISMATCH.getMessage());
     }
@@ -110,9 +110,9 @@ class TossPaymentServiceTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
+        Payment payment = Payment.create(memberId, orderId, 10000);
 
-        PointChargeConfirmCommand command = new PointChargeConfirmCommand(
+        PaymentConfirmCommand command = new PaymentConfirmCommand(
                 orderId,
                 10000,
                 "test_payment_key"
@@ -122,7 +122,7 @@ class TossPaymentServiceTest {
                 .thenThrow(new ResourceAccessException("Connection timeout"));
 
         // when & then
-        assertThatThrownBy(() -> tossPaymentService.confirmPayment(paymentPoint, command))
+        assertThatThrownBy(() -> tossPaymentService.confirmPayment(payment, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_API_TIMEOUT.getMessage());
     }
@@ -133,8 +133,8 @@ class TossPaymentServiceTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
-        paymentPoint.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
+        Payment payment = Payment.create(memberId, orderId, 10000);
+        payment.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
 
         PointRefundCommand command = new PointRefundCommand(orderId, "환불 요청");
 
@@ -158,7 +158,7 @@ class TossPaymentServiceTest {
         when(tossPaymentClient.cancel(any())).thenReturn(response);
 
         // when
-        TossPaymentResponse result = tossPaymentService.cancelPayment(paymentPoint, command);
+        TossPaymentResponse result = tossPaymentService.cancelPayment(payment, command);
 
         // then
         assertThat(result).isNotNull();
@@ -172,7 +172,7 @@ class TossPaymentServiceTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PaymentPoint paymentPoint = PaymentPoint.create(memberId, orderId, 10000);
+        Payment payment = Payment.create(memberId, orderId, 10000);
 
         PointRefundCommand command = new PointRefundCommand(orderId, "환불 요청");
 
@@ -180,7 +180,7 @@ class TossPaymentServiceTest {
                 .thenThrow(new RuntimeException("API Error"));
 
         // when & then
-        assertThatThrownBy(() -> tossPaymentService.cancelPayment(paymentPoint, command))
+        assertThatThrownBy(() -> tossPaymentService.cancelPayment(payment, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_API_ERROR.getMessage());
     }

@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.MemberPointInfo;
+import store._0982.point.application.dto.PointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.domain.constant.MemberPointHistoryStatus;
-import store._0982.point.domain.entity.MemberPoint;
-import store._0982.point.domain.entity.MemberPointHistory;
+import store._0982.point.domain.constant.PointHistoryStatus;
+import store._0982.point.domain.entity.Point;
+import store._0982.point.domain.entity.PointHistory;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
-import store._0982.point.domain.repository.MemberPointHistoryRepository;
-import store._0982.point.domain.repository.MemberPointRepository;
+import store._0982.point.domain.repository.PointHistoryRepository;
+import store._0982.point.domain.repository.PointRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;
@@ -31,36 +31,36 @@ import java.util.function.Function;
 @Transactional(readOnly = true)
 public class MemberPointService {
 
-    private final MemberPointRepository memberPointRepository;
-    private final MemberPointHistoryRepository memberPointHistoryRepository;
+    private final PointRepository pointRepository;
+    private final PointHistoryRepository pointHistoryRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final OrderServiceClient orderServiceClient;
 
-    public MemberPointInfo getPoints(UUID memberId) {
-        MemberPoint memberPoint = memberPointRepository.findById(memberId)
+    public PointInfo getPoints(UUID memberId) {
+        Point point = pointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-        return MemberPointInfo.from(memberPoint);
+        return PointInfo.from(point);
     }
 
     @ServiceLog
     @Transactional
-    public MemberPointInfo deductPoints(UUID memberId, PointDeductCommand command) {
+    public PointInfo deductPoints(UUID memberId, PointDeductCommand command) {
         return processPointOperation(
                 memberId,
                 command.idempotencyKey(),
-                memberPoint -> {
-                    if (memberPointHistoryRepository.existsByOrderIdAndStatus(command.orderId(), MemberPointHistoryStatus.USED)) {
-                        return MemberPointInfo.from(memberPoint);
+                point -> {
+                    if (pointHistoryRepository.existsByOrderIdAndStatus(command.orderId(), PointHistoryStatus.USED)) {
+                        return PointInfo.from(point);
                     }
 
                     long amount = command.amount();
                     try {
-                        MemberPointHistory history = memberPointHistoryRepository.saveAndFlush(MemberPointHistory.used(memberId, command));
-                        memberPoint.deductPoints(amount);
+                        PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.used(memberId, command));
+                        point.deductPoints(amount);
                         applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
-                        return MemberPointInfo.from(memberPoint);
+                        return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {
-                        return MemberPointInfo.from(memberPoint);
+                        return PointInfo.from(point);
                     }
                 }
         );
@@ -68,14 +68,14 @@ public class MemberPointService {
 
     @ServiceLog
     @Transactional
-    public MemberPointInfo returnPoints(UUID memberId, PointReturnCommand command) {
+    public PointInfo returnPoints(UUID memberId, PointReturnCommand command) {
         return processPointOperation(
                 memberId,
                 command.idempotencyKey(),
-                memberPoint -> {
+                point -> {
                     UUID orderId = command.orderId();
-                    if (memberPointHistoryRepository.existsByOrderIdAndStatus(orderId, MemberPointHistoryStatus.RETURNED)) {
-                        return MemberPointInfo.from(memberPoint);
+                    if (pointHistoryRepository.existsByOrderIdAndStatus(orderId, PointHistoryStatus.RETURNED)) {
+                        return PointInfo.from(point);
                     }
 
                     long amount = command.amount();
@@ -83,28 +83,28 @@ public class MemberPointService {
                     orderInfo.validateReturnable(memberId, orderId, amount);
 
                     try {
-                        MemberPointHistory history = memberPointHistoryRepository.saveAndFlush(MemberPointHistory.returned(memberId, command));
-                        memberPoint.addPoints(amount);
+                        PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.returned(memberId, command));
+                        point.addPoints(amount);
                         applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
-                        return MemberPointInfo.from(memberPoint);
+                        return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {
-                        return MemberPointInfo.from(memberPoint);
+                        return PointInfo.from(point);
                     }
                 }
         );
     }
 
-    private MemberPointInfo processPointOperation(
+    private PointInfo processPointOperation(
             UUID memberId,
             UUID idempotencyKey,
-            Function<MemberPoint, MemberPointInfo> operation
+            Function<Point, PointInfo> operation
     ) {
-        MemberPoint memberPoint = memberPointRepository.findById(memberId)
+        Point point = pointRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberPointHistoryRepository.existsByIdempotencyKey(idempotencyKey)) {
-            return MemberPointInfo.from(memberPoint);
+        if (pointHistoryRepository.existsByIdempotencyKey(idempotencyKey)) {
+            return PointInfo.from(point);
         }
-        return operation.apply(memberPoint);
+        return operation.apply(point);
     }
 }
