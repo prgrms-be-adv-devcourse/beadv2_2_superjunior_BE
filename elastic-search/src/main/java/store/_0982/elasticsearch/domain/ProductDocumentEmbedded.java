@@ -15,12 +15,16 @@ public class ProductDocumentEmbedded {
     @Field(type = FieldType.Keyword)
     private String category;
 
+    @Field(type = FieldType.Long)
+    private Long price;
+
     @Field(type = FieldType.Keyword)
     private String sellerId;
 
     public static ProductDocumentEmbedded from(ProductEvent event) {
         return new ProductDocumentEmbedded(
                 event.getCategory(),
+                event.getPrice(),
                 event.getSellerId().toString()
         );
     }

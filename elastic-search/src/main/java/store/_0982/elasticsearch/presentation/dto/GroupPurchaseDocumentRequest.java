@@ -11,6 +11,8 @@ public record GroupPurchaseDocumentRequest(
         String title,
         String description,
         String status,
+        Long discountedPrice,
+        OffsetDateTime endDate,
         OffsetDateTime updatedAt,
         ProductEvent productEvent
 ) {
@@ -21,6 +23,8 @@ public record GroupPurchaseDocumentRequest(
                 title,
                 description,
                 status,
+                discountedPrice,
+                endDate,
                 updatedAt,
                 productEvent
         );

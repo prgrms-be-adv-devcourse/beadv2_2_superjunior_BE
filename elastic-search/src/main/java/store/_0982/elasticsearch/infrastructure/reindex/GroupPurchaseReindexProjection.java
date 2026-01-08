@@ -8,7 +8,10 @@ public interface GroupPurchaseReindexProjection {
     String getTitle();
     String getDescription();
     String getStatus();
+    Instant getEndDate();
+    long getDiscountedPrice();
     Instant getUpdatedAt();
     String getCategory();
+    Long getPrice();
     UUID getSellerId();
 }

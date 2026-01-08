@@ -30,10 +30,19 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Keyword)
     private String status;
 
+    @Field(type = FieldType.Long)
+    private Long discountedPrice;
+
+    @Field(type = FieldType.Date, format = DateFormat.date_time)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    private OffsetDateTime endDate;
+
     @Field(type = FieldType.Date, format = DateFormat.date_time)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     private OffsetDateTime updatedAt;
 
+    @Field(type = FieldType.Long)
+    private Long discountRate;
 
 
     @Field(type = FieldType.Nested)
@@ -45,9 +54,13 @@ public class GroupPurchaseDocument {
                 .title(row.title())
                 .description(row.description())
                 .status(row.status())
+                .discountedPrice(row.discountedPrice())
+                .endDate(toOffsetDateTime(row.endDate()))
                 .updatedAt(toOffsetDateTime(row.updatedAt()))
+                .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
                         row.category(),
+                        row.price(),
                         row.sellerId().toString()
                 ))
                 .build();
@@ -58,6 +71,16 @@ public class GroupPurchaseDocument {
             return null;
         }
         return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
+    }
+
+    private static long calculateDiscountRate(Long price, Long discountedPrice) {
+        if (price == null || discountedPrice == null) {
+            return 0L;
+        }
+        if (price <= 0 || discountedPrice >= price) {
+            return 0L;
+        }
+        return Math.round(((double) (price - discountedPrice) / price) * 100);
     }
 
 }

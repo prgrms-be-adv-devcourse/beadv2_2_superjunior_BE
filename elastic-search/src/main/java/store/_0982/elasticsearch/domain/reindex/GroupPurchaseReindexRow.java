@@ -10,8 +10,11 @@ public record GroupPurchaseReindexRow(
         String title,
         String description,
         String status,
+        Instant endDate,
+        long discountedPrice,
         Instant updatedAt,
         String category,
+        Long price,
         UUID sellerId
 ) {
     public static GroupPurchaseReindexRow from(GroupPurchaseReindexProjection projection) {
@@ -20,8 +23,11 @@ public record GroupPurchaseReindexRow(
                 projection.getTitle(),
                 projection.getDescription(),
                 projection.getStatus(),
+                projection.getEndDate(),
+                projection.getDiscountedPrice(),
                 projection.getUpdatedAt(),
                 projection.getCategory(),
+                projection.getPrice(),
                 projection.getSellerId()
         );
     }

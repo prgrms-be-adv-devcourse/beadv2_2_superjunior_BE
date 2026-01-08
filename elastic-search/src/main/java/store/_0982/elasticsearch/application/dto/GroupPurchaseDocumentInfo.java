@@ -10,7 +10,10 @@ public record GroupPurchaseDocumentInfo(
         String title,
         String description,
         String status,
+        Long discountedPrice,
+        OffsetDateTime endDate,
         OffsetDateTime updatedAt,
+        Long discountRate,
         ProductDocumentEmbedded productDocumentEmbedded
 ) {
     public static GroupPurchaseDocumentInfo from(GroupPurchaseDocument groupPurchaseDocument) {
@@ -19,7 +22,10 @@ public record GroupPurchaseDocumentInfo(
                 groupPurchaseDocument.getTitle(),
                 groupPurchaseDocument.getDescription(),
                 groupPurchaseDocument.getStatus(),
+                groupPurchaseDocument.getDiscountedPrice(),
+                groupPurchaseDocument.getEndDate(),
                 groupPurchaseDocument.getUpdatedAt(),
+                groupPurchaseDocument.getDiscountRate(),
                 groupPurchaseDocument.getProductDocumentEmbedded()
         );
     }
