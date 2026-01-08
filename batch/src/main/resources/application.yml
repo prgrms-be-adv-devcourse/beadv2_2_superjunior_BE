@@ -34,7 +34,8 @@ spring:
     jdbc:
       initialize-schema: never
     job:
-      enabled: false
+    #  enabled: true  # k8s
+      enabled: false  # 로컬
 
 management:
   endpoints:
