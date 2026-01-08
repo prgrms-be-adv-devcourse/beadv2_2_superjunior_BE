@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentIdInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
@@ -56,7 +56,7 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public PageResponse<GroupPurchaseDocumentInfo> searchGroupPurchaseDocument(
+    public PageResponse<GroupPurchaseDocumentIdInfo> searchGroupPurchaseDocument(
             String keyword,
             String status,
             UUID memberId,
@@ -70,8 +70,8 @@ public class GroupPurchaseSearchService {
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
 
             SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
-            Page<GroupPurchaseDocumentInfo> mappedPage = searchPage
-                    .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
+            Page<GroupPurchaseDocumentIdInfo> mappedPage = searchPage
+                    .map(hit -> GroupPurchaseDocumentIdInfo.from(hit.getId()));
             return PageResponse.from(mappedPage);
         } catch (CustomException e) {
             throw e;
@@ -81,7 +81,7 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public PageResponse<GroupPurchaseDocumentInfo> searchAllGroupPurchaseDocument(
+    public PageResponse<GroupPurchaseDocumentIdInfo> searchAllGroupPurchaseDocument(
             String keyword,
             String status,
             String category,
@@ -93,8 +93,8 @@ public class GroupPurchaseSearchService {
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
 
             SearchPage<GroupPurchaseDocument> searchPage = SearchHitSupport.searchPageFor(hits, pageable);
-            Page<GroupPurchaseDocumentInfo> mappedPage = searchPage
-                    .map(hit -> GroupPurchaseDocumentInfo.from(hit.getContent()));
+            Page<GroupPurchaseDocumentIdInfo> mappedPage = searchPage
+                    .map(hit -> GroupPurchaseDocumentIdInfo.from(hit.getId()));
             return PageResponse.from(mappedPage);
         } catch (CustomException e) {
             throw e;
