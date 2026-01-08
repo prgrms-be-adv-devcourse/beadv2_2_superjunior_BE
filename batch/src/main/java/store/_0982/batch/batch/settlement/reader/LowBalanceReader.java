@@ -25,7 +25,7 @@ public class LowBalanceReader {
         return new JpaPagingItemReaderBuilder<SellerBalance>()
                 .name("lowBalanceReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(10)
+                .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
                         SELECT s
                         FROM SellerBalance s
