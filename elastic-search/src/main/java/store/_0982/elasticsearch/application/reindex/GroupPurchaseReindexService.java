@@ -3,7 +3,6 @@ package store._0982.elasticsearch.application.reindex;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
@@ -26,11 +25,11 @@ import store._0982.elasticsearch.reindex.GroupPurchaseReindexProperties;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupPurchaseReindexService {
@@ -132,8 +131,9 @@ public class GroupPurchaseReindexService {
             if (rows.isEmpty()) {
                 break;
             }
-            bulkIndex(indexName, rows);
-            total += rows.size();
+            List<String> failedIds = bulkIndex(indexName, rows);
+            //실패 부분 재시도 처리 필요
+            total += rows.size() - failedIds.size();
             offset += batchSize;
         }
         return total;
@@ -149,8 +149,8 @@ public class GroupPurchaseReindexService {
         return newIndex;
     }
 
-    //bulk 부분 실패 판단을 위해 elc로 벌크 처리
-    private void bulkIndex(String indexName, List<GroupPurchaseReindexRow> rows) {
+    //bulk 부분 실패 판단을 위해 저수준 elc로 처리
+    private List<String> bulkIndex(String indexName, List<GroupPurchaseReindexRow> rows) {
         try {
             BulkResponse response = elasticsearchClient.bulk(bulk -> {
                 for (GroupPurchaseReindexRow row : rows) {
@@ -163,12 +163,23 @@ public class GroupPurchaseReindexService {
                 }
                 return bulk;
             });
-            if (response.errors()) {
-                log.warn("Reindex bulk had errors for index={}", indexName);
-            }
+            return collectFailedIds(response);
         } catch (Exception e) {
             throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private List<String> collectFailedIds(BulkResponse response) {
+        if (!response.errors()) {
+            return List.of();
+        }
+        List<String> failedIds = new ArrayList<>();
+        response.items().forEach(item -> {
+            if (item.error() != null && item.id() != null) {
+                failedIds.add(item.id());
+            }
+        });
+        return failedIds;
     }
 
     private void switchAlias(String aliasName, String newIndex) {
