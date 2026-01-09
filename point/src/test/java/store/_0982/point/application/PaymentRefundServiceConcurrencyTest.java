@@ -58,7 +58,7 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
         orderId = UUID.randomUUID();
 
         Point point = new Point(memberId);
-        point.add(INITIAL_BALANCE + PAYMENT_AMOUNT);
+        point.recharge(INITIAL_BALANCE + PAYMENT_AMOUNT);
         memberPointRepository.save(point);
 
         Payment payment = Payment.create(memberId, orderId, PAYMENT_AMOUNT);
@@ -141,7 +141,7 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
         assertThat(payment.getRefundMessage()).isNotNull();
 
         Point point = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(point.getPointBalance()).isEqualTo(INITIAL_BALANCE);
+        assertThat(point.getTotalBalance()).isEqualTo(INITIAL_BALANCE);
 
         verify(tossPaymentService, times(1)).cancelPayment(any(Payment.class), any(PointRefundCommand.class));
     }

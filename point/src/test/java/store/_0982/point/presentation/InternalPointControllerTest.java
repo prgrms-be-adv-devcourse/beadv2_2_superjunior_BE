@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
-import store._0982.point.application.MemberPointService;
+import store._0982.point.application.PointService;
 import store._0982.point.application.dto.PointInfo;
 import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
@@ -32,7 +32,7 @@ class InternalPointControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private MemberPointService memberPointService;
+    private PointService pointService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -40,22 +40,22 @@ class InternalPointControllerTest {
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public MemberPointService memberPointService() {
-            return mock(MemberPointService.class);
+        public PointService memberPointService() {
+            return mock(PointService.class);
         }
     }
 
     @Test
     @DisplayName("내부 API로 포인트를 차감한다")
-    void deduct() throws Exception {
+    void use() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         UUID idempotencyKey = UUID.randomUUID();
         PointDeductRequest request = new PointDeductRequest(idempotencyKey, orderId, 5000);
-        PointInfo info = new PointInfo(memberId, 5000, OffsetDateTime.now());
+        PointInfo info = new PointInfo(memberId, 5000, 0, OffsetDateTime.now());
 
-        when(memberPointService.deductPoints(eq(memberId), any())).thenReturn(info);
+        when(pointService.deductPoints(eq(memberId), any())).thenReturn(info);
 
         // when & then
         mockMvc.perform(post("/internal/points/deduct")
@@ -67,7 +67,7 @@ class InternalPointControllerTest {
                 .andExpect(jsonPath("$.message").value("포인트 차감 완료"))
                 .andExpect(jsonPath("$.data.pointBalance").value(5000));
 
-        verify(memberPointService).deductPoints(eq(memberId), any());
+        verify(pointService).deductPoints(eq(memberId), any());
     }
 
     @Test
@@ -78,9 +78,9 @@ class InternalPointControllerTest {
         UUID orderId = UUID.randomUUID();
         UUID idempotencyKey = UUID.randomUUID();
         PointReturnRequest request = new PointReturnRequest(idempotencyKey, orderId, 5000);
-        PointInfo info = new PointInfo(memberId, 15000, OffsetDateTime.now());
+        PointInfo info = new PointInfo(memberId, 15000, 0, OffsetDateTime.now());
 
-        when(memberPointService.returnPoints(eq(memberId), any())).thenReturn(info);
+        when(pointService.returnPoints(eq(memberId), any())).thenReturn(info);
 
         // when & then
         mockMvc.perform(post("/internal/points/return")
@@ -92,6 +92,6 @@ class InternalPointControllerTest {
                 .andExpect(jsonPath("$.message").value("포인트 반환 완료"))
                 .andExpect(jsonPath("$.data.pointBalance").value(15000));
 
-        verify(memberPointService).returnPoints(eq(memberId), any());
+        verify(pointService).returnPoints(eq(memberId), any());
     }
 }

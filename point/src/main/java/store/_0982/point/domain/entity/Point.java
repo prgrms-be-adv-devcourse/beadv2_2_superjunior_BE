@@ -15,37 +15,61 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "member_point", schema = "point_schema")
+@Table(name = "point")
 public class Point {
 
     @Id
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
-    @Column(name = "point_balance", nullable = false)
-    private long pointBalance;
+    @Column(name = "paid_point", nullable = false)
+    private long paidPoint;
+
+    @Column(name = "bonus_point", nullable = false)
+    private long bonusPoint;
 
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
 
     public Point(UUID memberId) {
         this.memberId = memberId;
-        this.pointBalance = 0;
+        this.paidPoint = 0;
+        this.bonusPoint = 0;
     }
 
-    public void add(long pointBalance) {
-        this.pointBalance += pointBalance;
+    public void recharge(long amount) {
+        this.paidPoint += amount;
     }
 
-    public void deduct(long pointBalance) {
-        refund(pointBalance);
+    public void earnBonus(long bonus) {
+        this.bonusPoint += bonus;
+    }
+
+    public void use(long pointBalance) {
+        deduct(pointBalance);
         lastUsedAt = OffsetDateTime.now();
     }
 
-    public void refund(long pointBalance) {
-        if (this.pointBalance < pointBalance) {
+    public void transfer(long pointBalance) {
+        deduct(pointBalance);
+    }
+
+    public long getTotalBalance() {
+        return paidPoint + bonusPoint;
+    }
+
+    private void deduct(long pointBalance) {
+        long totalBalance = getTotalBalance();
+        if (totalBalance < pointBalance) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
-        this.pointBalance -= pointBalance;
+
+        if (bonusPoint >= pointBalance) {
+            bonusPoint -= pointBalance;
+        } else {
+            long requiredAmount = pointBalance - bonusPoint;
+            bonusPoint = 0;
+            paidPoint -= requiredAmount;
+        }
     }
 }

@@ -12,11 +12,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "payment_cancel", schema = "point_schema")
+@Table(name = "payment_cancel")
 public class PaymentCancel {
 
     @Id
-    @Column(name = "cancel_id")
+    @Column(name = "id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

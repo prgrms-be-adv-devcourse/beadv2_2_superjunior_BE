@@ -16,11 +16,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "payment_point", schema = "point_schema")
+@Table(name = "payment")
 public class Payment {
 
     @Id
-    @Column(name = "payment_point_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(name = "member_id", nullable = false)
@@ -28,6 +28,9 @@ public class Payment {
 
     @Column(name = "pg_order_id", nullable = false, unique = true)
     private UUID pgOrderId;
+
+    @Column(name = "order_id", nullable = false, unique = true)
+    private UUID orderId;
 
     @Column(name = "payment_method", length = 30)
     private String paymentMethod;

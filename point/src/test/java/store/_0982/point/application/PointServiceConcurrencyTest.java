@@ -37,7 +37,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private MemberPointService memberPointService;
+    private PointService pointService;
 
     @Autowired
     private PointJpaRepository memberPointRepository;
@@ -60,13 +60,13 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
         memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(BALANCE);
+        point.recharge(BALANCE);
         memberPointRepository.save(point);
     }
 
     @Test
     @DisplayName("네트워크 장애에 의한 중복 차감 요청을 중복 처리하지 않는다")
-    void concurrent_deduct_idempotent() throws InterruptedException {
+    void concurrent_use_idempotent() throws InterruptedException {
         // given
         PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
         OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.IN_PROGRESS, memberId, 1);
@@ -75,7 +75,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> memberPointService.deductPoints(memberId, command));
+        runSynchronizedTask(() -> pointService.deductPoints(memberId, command));
 
         // then
         validate(true);
@@ -83,7 +83,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @Test
     @DisplayName("사용자 실수에 의한 중복 차감 요청을 중복 처리하지 않는다")
-    void concurrent_deduct_duplicate() throws InterruptedException {
+    void concurrent_use_duplicate() throws InterruptedException {
         // given
         UUID orderId = UUID.randomUUID();
         List<PointDeductCommand> commands = FIXTURE_MONKEY.giveMeBuilder(PointDeductCommand.class)
@@ -99,7 +99,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> memberPointService.deductPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointService.deductPoints(memberId, command));
 
         // then
         validate(true);
@@ -116,7 +116,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> memberPointService.returnPoints(memberId, command));
+        runSynchronizedTask(() -> pointService.returnPoints(memberId, command));
 
         // then
         validate(false);
@@ -140,7 +140,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> memberPointService.returnPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointService.returnPoints(memberId, command));
 
         // then
         validate(false);
@@ -149,6 +149,6 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
     private void validate(boolean isDeduct) {
         assertThat(memberPointHistoryRepository.count()).isEqualTo(1);
         Point point = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(point.getPointBalance()).isEqualTo(isDeduct ? BALANCE - AMOUNT : BALANCE + AMOUNT);
+        assertThat(point.getTotalBalance()).isEqualTo(isDeduct ? BALANCE - AMOUNT : BALANCE + AMOUNT);
     }
 }

@@ -47,7 +47,7 @@ class PointServiceTest {
     private OrderServiceClient orderServiceClient;
 
     @InjectMocks
-    private MemberPointService memberPointService;
+    private PointService pointService;
 
     @Nested
     @DisplayName("포인트 조회")
@@ -59,17 +59,17 @@ class PointServiceTest {
             // given
             UUID memberId = UUID.randomUUID();
             Point point = new Point(memberId);
-            point.add(10000);
+            point.recharge(10000);
 
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
 
             // when
-            PointInfo result = memberPointService.getPoints(memberId);
+            PointInfo result = pointService.getPoints(memberId);
 
             // then
             assertThat(result).isNotNull();
             assertThat(result.memberId()).isEqualTo(memberId);
-            assertThat(result.pointBalance()).isEqualTo(10000);
+            assertThat(result.paidPoint()).isEqualTo(10000);
         }
 
         @Test
@@ -81,7 +81,7 @@ class PointServiceTest {
             when(pointRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> memberPointService.getPoints(memberId))
+            assertThatThrownBy(() -> pointService.getPoints(memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -93,14 +93,14 @@ class PointServiceTest {
 
         @Test
         @DisplayName("포인트를 차감한다")
-        void deduct_success() {
+        void use_success() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.add(10000);
+            point.recharge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
             PointHistory history = PointHistory.used(memberId, command);
@@ -111,24 +111,24 @@ class PointServiceTest {
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
             // when
-            PointInfo result = memberPointService.deductPoints(memberId, command);
+            PointInfo result = pointService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.pointBalance()).isEqualTo(5000);
+            assertThat(result.paidPoint()).isEqualTo(5000);
             verify(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
         }
 
         @Test
         @DisplayName("네트워크 장애 등에 의한 중복 차감 요청은 멱등성 키로 중복 처리하지 않는다")
-        void deduct_idempotent() {
+        void use_idempotent() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.add(10000);
+            point.recharge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -136,25 +136,25 @@ class PointServiceTest {
             when(pointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
-            PointInfo result = memberPointService.deductPoints(memberId, command);
+            PointInfo result = pointService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.pointBalance()).isEqualTo(10000); // 차감되지 않음
+            assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
             verify(pointHistoryRepository, never()).saveAndFlush(any());
         }
 
         @Test
         @DisplayName("사용자 실수 등에 의한 중복 차감 요청은 주문 검사로 중복 처리하지 않는다")
-        void deduct_duplicate() {
+        void use_duplicate() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID orderId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.add(10000);
+            point.recharge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -162,18 +162,18 @@ class PointServiceTest {
             when(pointHistoryRepository.existsByOrderIdAndStatus(orderId, PointHistoryStatus.USED)).thenReturn(true);
 
             // when
-            PointInfo result = memberPointService.deductPoints(memberId, command);
+            PointInfo result = pointService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.pointBalance()).isEqualTo(10000); // 차감되지 않음
+            assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
             verify(pointHistoryRepository, never()).saveAndFlush(any());
         }
 
         @Test
         @DisplayName("존재하지 않는 회원의 포인트 차감 시 예외가 발생한다")
-        void deduct_fail_whenMemberNotFound() {
+        void use_fail_whenMemberNotFound() {
             // given
             UUID memberId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
@@ -182,7 +182,7 @@ class PointServiceTest {
             when(pointRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> memberPointService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointService.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -201,7 +201,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.add(5000);
+            point.recharge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
             PointHistory history = PointHistory.returned(memberId, command);
@@ -213,11 +213,11 @@ class PointServiceTest {
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when
-            PointInfo result = memberPointService.returnPoints(memberId, command);
+            PointInfo result = pointService.returnPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.pointBalance()).isEqualTo(8000);
+            assertThat(result.paidPoint()).isEqualTo(8000);
             verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
         }
 
@@ -230,7 +230,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.add(5000);
+            point.recharge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
 
@@ -238,11 +238,11 @@ class PointServiceTest {
             when(pointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
-            PointInfo result = memberPointService.returnPoints(memberId, command);
+            PointInfo result = pointService.returnPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.pointBalance()).isEqualTo(5000); // 반환되지 않음
+            assertThat(result.paidPoint()).isEqualTo(5000); // 반환되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
             verify(pointHistoryRepository, never()).saveAndFlush(any());
         }
@@ -258,7 +258,7 @@ class PointServiceTest {
             when(pointRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> memberPointService.returnPoints(memberId, command))
+            assertThatThrownBy(() -> pointService.returnPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }

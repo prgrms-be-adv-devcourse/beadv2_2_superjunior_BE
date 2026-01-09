@@ -7,13 +7,15 @@ import java.util.UUID;
 
 public record PointInfo(
         UUID memberId,
-        long pointBalance,
+        long paidPoint,
+        long bonusPoint,
         OffsetDateTime lastUsedAt
 ) {
-    public static PointInfo from(Point point){
+    public static PointInfo from(Point point) {
         return new PointInfo(
                 point.getMemberId(),
-                point.getPointBalance(),
+                point.getPaidPoint(),
+                point.getBonusPoint(),
                 point.getLastUsedAt()
         );
     }

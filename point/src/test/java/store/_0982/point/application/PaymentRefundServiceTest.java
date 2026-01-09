@@ -62,7 +62,7 @@ class PaymentRefundServiceTest {
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
         Point point = new Point(memberId);
-        point.add(10000);
+        point.recharge(10000);
 
         TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
                 10000,
@@ -92,7 +92,7 @@ class PaymentRefundServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.orderId()).isEqualTo(orderId);
         assertThat(result.status()).isEqualTo(PaymentStatus.REFUNDED);
-        assertThat(point.getPointBalance()).isZero();
+        assertThat(point.getTotalBalance()).isZero();
         verify(tossPaymentService).cancelPayment(payment, command);
     }
 

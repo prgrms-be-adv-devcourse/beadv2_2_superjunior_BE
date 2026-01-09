@@ -29,7 +29,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MemberPointService {
+public class PointService {
 
     private final PointRepository pointRepository;
     private final PointHistoryRepository pointHistoryRepository;
@@ -56,7 +56,7 @@ public class MemberPointService {
                     long amount = command.amount();
                     try {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.used(memberId, command));
-                        point.deduct(amount);
+                        point.use(amount);
                         applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
                         return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {
@@ -84,7 +84,7 @@ public class MemberPointService {
 
                     try {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.returned(memberId, command));
-                        point.add(amount);
+                        point.recharge(amount);
                         applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
                         return PointInfo.from(point);
                     } catch (DataIntegrityViolationException e) {

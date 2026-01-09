@@ -52,7 +52,7 @@ public class PaymentRefundService {
         TossPaymentResponse.CancelInfo cancelInfo = response.cancels().get(0);
 
         payment.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
-        point.refund(payment.getAmount());
+        point.transfer(payment.getAmount());
         return PointRefundInfo.from(payment);
     }
 

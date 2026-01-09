@@ -5,8 +5,8 @@ spring:
 
   flyway:
     enabled: true
-    default-schema: point_schema
-    schemas: point_schema
+    default-schema: payment_schema
+    schemas: payment_schema
     create-schemas: true
 
   kafka:
@@ -23,7 +23,7 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        default_schema: point_schema
+        default_schema: payment_schema
         format_sql: true
         show_sql: false
     open-in-view: false

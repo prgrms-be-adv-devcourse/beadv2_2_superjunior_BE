@@ -17,16 +17,16 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(
-        name = "member_point_history",
-        schema = "point_schema",
+        name = "point_history",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "member_point_history_pk_3",
+                        name = "point_history_pk_3",
                         columnNames = {"order_id", "status"}
                 )
         }
 )
 public class PointHistory {
+
     @Id
     @Column(name = "id", nullable = false)
     private UUID id;

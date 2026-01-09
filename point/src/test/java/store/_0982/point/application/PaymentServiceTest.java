@@ -138,7 +138,7 @@ class PaymentServiceTest {
             paymentService.confirmPayment(command, memberId);
 
             // then
-            assertThat(point.getPointBalance()).isEqualTo(10000);
+            assertThat(point.getTotalBalance()).isEqualTo(10000);
             verify(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
         }
 

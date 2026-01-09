@@ -75,7 +75,7 @@ public class PaymentService {
         TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(payment, command);
         try {
             payment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
-            point.add(payment.getAmount());
+            point.recharge(payment.getAmount());
             applicationEventPublisher.publishEvent(PointRechargedEvent.from(payment));
         } catch (Exception e) {
             rollbackPayment(command, payment);

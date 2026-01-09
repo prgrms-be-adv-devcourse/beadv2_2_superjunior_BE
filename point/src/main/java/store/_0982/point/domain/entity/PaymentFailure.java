@@ -11,11 +11,11 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "payment_point_failure", schema = "point_schema")
+@Table(name = "payment_failure")
 public class PaymentFailure {
 
     @Id
-    @Column(name = "failure_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)

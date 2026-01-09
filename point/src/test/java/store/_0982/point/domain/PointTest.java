@@ -24,126 +24,126 @@ class PointTest {
 
         // then
         assertThat(point.getMemberId()).isEqualTo(memberId);
-        assertThat(point.getPointBalance()).isZero();
+        assertThat(point.getTotalBalance()).isZero();
         assertThat(point.getLastUsedAt()).isNull();
     }
 
     @Test
     @DisplayName("포인트를 추가한다")
-    void add() {
+    void recharge() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.add(10000);
+        point.recharge(10000);
 
         // then
-        assertThat(point.getPointBalance()).isEqualTo(10000);
+        assertThat(point.getTotalBalance()).isEqualTo(10000);
     }
 
     @Test
     @DisplayName("포인트를 여러 번 추가한다")
-    void addMultipleTimes() {
+    void rechargeMultipleTimes() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.add(5000);
-        point.add(3000);
-        point.add(2000);
+        point.recharge(5000);
+        point.recharge(3000);
+        point.recharge(2000);
 
         // then
-        assertThat(point.getPointBalance()).isEqualTo(10000);
+        assertThat(point.getTotalBalance()).isEqualTo(10000);
     }
 
     @Test
     @DisplayName("포인트를 차감한다")
-    void deduct() {
+    void use() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(10000);
+        point.recharge(10000);
 
         // when
-        point.deduct(5000);
+        point.use(5000);
 
         // then
-        assertThat(point.getPointBalance()).isEqualTo(5000);
+        assertThat(point.getTotalBalance()).isEqualTo(5000);
         assertThat(point.getLastUsedAt()).isNotNull();
     }
 
     @Test
     @DisplayName("포인트 차감 시 잔액이 부족하면 예외가 발생한다")
-    void deduct_fail_whenInsufficientBalance() {
+    void use_fail_whenInsufficientBalance() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(5000);
+        point.recharge(5000);
 
         // when & then
-        assertThatThrownBy(() -> point.deduct(10000))
+        assertThatThrownBy(() -> point.use(10000))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
     }
 
     @Test
     @DisplayName("포인트를 환불한다")
-    void refund() {
+    void deduct() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(10000);
+        point.recharge(10000);
 
         // when
-        point.refund(3000);
+        point.transfer(3000);
 
         // then
-        assertThat(point.getPointBalance()).isEqualTo(7000);
+        assertThat(point.getTotalBalance()).isEqualTo(7000);
     }
 
     @Test
     @DisplayName("포인트 환불 시 잔액이 부족하면 예외가 발생한다")
-    void refund_fail_whenInsufficientBalance() {
+    void deduct_fail_whenInsufficientBalance() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(5000);
+        point.recharge(5000);
 
         // when & then
-        assertThatThrownBy(() -> point.refund(10000))
+        assertThatThrownBy(() -> point.transfer(10000))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
     }
 
     @Test
     @DisplayName("0 포인트 차감은 성공한다")
-    void deduct_zero() {
+    void use_zero() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.add(10000);
+        point.recharge(10000);
 
         // when
-        point.deduct(0);
+        point.use(0);
 
         // then
-        assertThat(point.getPointBalance()).isEqualTo(10000);
+        assertThat(point.getTotalBalance()).isEqualTo(10000);
         assertThat(point.getLastUsedAt()).isNotNull();
     }
 
     @Test
     @DisplayName("0 포인트 추가는 성공한다")
-    void add_zero() {
+    void recharge_zero() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.add(0);
+        point.recharge(0);
 
         // then
-        assertThat(point.getPointBalance()).isZero();
+        assertThat(point.getTotalBalance()).isZero();
     }
 }
