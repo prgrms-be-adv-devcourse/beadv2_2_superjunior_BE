@@ -9,7 +9,6 @@ import store._0982.common.log.BatchLogMessageFormat;
 import store._0982.common.log.BatchLogMetadataFormat;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 /**
  * 월간 정산 Job 실행 전후 처리
@@ -31,12 +30,12 @@ public class MonthlySettlementJobListener implements JobExecutionListener {
 
     @Override
     public void afterJob(JobExecution jobExecution) {
-        LocalDateTime start = jobExecution.getStartTime();
-        LocalDateTime end = jobExecution.getEndTime();
-
         long duration = -1L;
-        if (start != null && end != null) {
-            duration = Duration.between(start, end).toMillis();
+        if (jobExecution.getStartTime() != null && jobExecution.getEndTime() != null) {
+            duration = Duration.between(
+                    jobExecution.getStartTime(),
+                    jobExecution.getEndTime())
+                    .toMillis();
         }
 
         String jobName = jobExecution.getJobInstance().getJobName();

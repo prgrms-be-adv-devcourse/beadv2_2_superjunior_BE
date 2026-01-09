@@ -2,12 +2,14 @@ package store._0982.batch.batch.settlement.listener;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.stereotype.Component;
+import store._0982.common.log.BatchLogMessageFormat;
+import store._0982.common.log.BatchLogMetadataFormat;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 
 /**
  * 월간 정산 Step 실행 전후 처리
@@ -18,27 +20,70 @@ public class MonthlySettlementStepListener implements StepExecutionListener {
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
+        JobExecution jobExecution = stepExecution.getJobExecution();
+        String jobName = jobExecution.getJobInstance().getJobName();
+        String stepName = stepExecution.getStepName();
+        Long jobExecutionId = stepExecution.getJobExecutionId();
+
+        log.info(
+                BatchLogMessageFormat.stepStart(jobName, stepName),
+                BatchLogMetadataFormat.stepStart(
+                        jobName,
+                        stepName,
+                        jobExecutionId
+                )
+        );
     }
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        LocalDateTime start = stepExecution.getStartTime();
-        LocalDateTime end = stepExecution.getEndTime();
+        JobExecution jobExecution = stepExecution.getJobExecution();
+        String jobName = jobExecution.getJobInstance().getJobName();
+        String stepName = stepExecution.getStepName();
 
         long duration = -1L;
-        if (start != null && end != null) {
-            duration = Duration.between(start, end).toMillis();
+        if (stepExecution.getStartTime() != null && stepExecution.getEndTime() != null) {
+            duration = Duration.between(
+                    stepExecution.getStartTime(),
+                    stepExecution.getEndTime()
+            ).toMillis();
         }
 
-        String stepName = stepExecution.getStepName();
         long readCount = stepExecution.getReadCount();
         long writeCount = stepExecution.getWriteCount();
+        long skipCount = stepExecution.getSkipCount();
 
         if (stepExecution.getStatus().isUnsuccessful()) {
-            // Step 실패
+            String errorMessage = stepExecution.getFailureExceptions()
+                    .stream()
+                    .findFirst()
+                    .map(Throwable::getMessage)
+                    .orElse("UNKNOWN");
 
-        } else {
-            // Step 성공
+            log.error(
+                    BatchLogMessageFormat.stepFailed(jobName, stepName),
+                    BatchLogMetadataFormat.stepFailed(
+                            jobName,
+                            stepName,
+                            readCount,
+                            writeCount,
+                            skipCount,
+                            duration,
+                            errorMessage
+                    ));
+        }
+        else {
+            log.info(
+                    BatchLogMessageFormat.stepSuccess(jobName, stepName),
+                    BatchLogMetadataFormat.stepSuccess(
+                            jobName,
+                            stepName,
+                            readCount,
+                            writeCount,
+                            skipCount,
+                            duration
+                    )
+            );
         }
 
         return stepExecution.getExitStatus();

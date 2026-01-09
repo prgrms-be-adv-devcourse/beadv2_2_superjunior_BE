@@ -46,6 +46,58 @@ public class BatchLogMetadataFormat {
         };
     }
 
+    public static Object[] stepStart(
+            String jobName,
+            String stepName,
+            Long jobExecutionId
+    ) {
+        return new StructuredArgument[]{
+                keyValue("event", "STEP_START"),
+                keyValue("job", jobName),
+                keyValue("step", stepName),
+                keyValue("jobExecutionId", jobExecutionId)
+        };
+    }
+
+    public static Object[] stepSuccess(
+            String jobName,
+            String stepName,
+            long readCount,
+            long writeCount,
+            long skipCount,
+            long duration
+    ) {
+        return new StructuredArgument[]{
+                keyValue("event", "STEP_SUCCESS"),
+                keyValue("job", jobName),
+                keyValue("step", stepName),
+                keyValue("readCount", readCount),
+                keyValue("writeCount", writeCount),
+                keyValue("skipCount", skipCount),
+                keyValue("duration", duration)
+        };
+    }
+
+    public static Object[] stepFailed(
+            String jobName,
+            String stepName,
+            long readCount,
+            long writeCount,
+            long skipCount,
+            long duration,
+            String errorMessage
+    ) {
+        return new StructuredArgument[]{
+                keyValue("event", "STEP_FAILED"),
+                keyValue("job", jobName),
+                keyValue("step", stepName),
+                keyValue("readCount", readCount),
+                keyValue("writeCount", writeCount),
+                keyValue("skipCount", skipCount),
+                keyValue("duration", duration),
+                keyValue("errorMessage", errorMessage)
+        };
+    }
 
     private BatchLogMetadataFormat() {}
 }
