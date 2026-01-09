@@ -10,6 +10,7 @@ public interface GroupPurchaseReindexProjection {
     String getStatus();
     Instant getEndDate();
     long getDiscountedPrice();
+    Integer getCurrentQuantity();
     Instant getUpdatedAt();
     String getCategory();
     Long getPrice();

@@ -12,6 +12,7 @@ public record GroupPurchaseDocumentRequest(
         String description,
         String status,
         Long discountedPrice,
+        Integer currentQuantity,
         OffsetDateTime endDate,
         OffsetDateTime updatedAt,
         ProductEvent productEvent
@@ -24,6 +25,7 @@ public record GroupPurchaseDocumentRequest(
                 description,
                 status,
                 discountedPrice,
+                currentQuantity,
                 endDate,
                 updatedAt,
                 productEvent

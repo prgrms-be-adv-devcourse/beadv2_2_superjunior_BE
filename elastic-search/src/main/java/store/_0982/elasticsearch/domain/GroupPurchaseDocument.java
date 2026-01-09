@@ -33,6 +33,9 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Long)
     private Long discountedPrice;
 
+    @Field(type = FieldType.Integer)
+    private Integer currentQuantity;
+
     @Field(type = FieldType.Date, format = DateFormat.date_time)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     private OffsetDateTime endDate;
@@ -55,6 +58,7 @@ public class GroupPurchaseDocument {
                 .description(row.description())
                 .status(row.status())
                 .discountedPrice(row.discountedPrice())
+                .currentQuantity(row.currentQuantity())
                 .endDate(toOffsetDateTime(row.endDate()))
                 .updatedAt(toOffsetDateTime(row.updatedAt()))
                 .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))

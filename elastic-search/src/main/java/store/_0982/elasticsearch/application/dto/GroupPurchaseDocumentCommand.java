@@ -13,6 +13,7 @@ public record GroupPurchaseDocumentCommand(
         String description,
         String status,
         Long discountedPrice,
+        Integer currentQuantity,
         OffsetDateTime endDate,
         OffsetDateTime updatedAt,
         ProductEvent productEvent
@@ -24,6 +25,7 @@ public record GroupPurchaseDocumentCommand(
                 event.getDescription(),
                 event.getStatus(),
                 event.getDiscountedPrice(),
+                event.getCurrentQuantity(),
                 OffsetDateTime.parse(event.getEndDate()),
                 OffsetDateTime.parse(event.getUpdatedAt()),
                 event.getProductEvent()
@@ -37,6 +39,7 @@ public record GroupPurchaseDocumentCommand(
                 .description(description)
                 .status(status)
                 .discountedPrice(discountedPrice)
+                .currentQuantity(currentQuantity)
                 .endDate(endDate)
                 .updatedAt(updatedAt)
                 .discountRate(calculateDiscountRate(productEvent, discountedPrice))
