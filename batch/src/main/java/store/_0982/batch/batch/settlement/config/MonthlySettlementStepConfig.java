@@ -7,6 +7,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.settlement.listener.MonthlySettlementItemReaderListener;
 import store._0982.batch.batch.settlement.listener.MonthlySettlementStepListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.MonthlySettlementProcessor;
@@ -32,6 +33,7 @@ public class MonthlySettlementStepConfig {
     private final MonthlySettlementProcessor monthlySettlementProcessor;
     private final MonthlySettlementWriter monthlySettlementWriter;
     private final MonthlySettlementStepListener stepListener;
+    private final MonthlySettlementItemReaderListener readerListener;
 
     @Bean
     public Step monthlySettlementStep() {
@@ -41,6 +43,7 @@ public class MonthlySettlementStepConfig {
                 .processor(monthlySettlementProcessor)
                 .writer(monthlySettlementWriter)
                 .listener(stepListener)
+                .listener(readerListener)
                 .build();
     }
 }

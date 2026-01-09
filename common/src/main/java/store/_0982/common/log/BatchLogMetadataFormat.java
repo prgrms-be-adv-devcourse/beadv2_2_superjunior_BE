@@ -99,5 +99,22 @@ public class BatchLogMetadataFormat {
         };
     }
 
+    public static Object[] itemReaderFailed(
+            String jobName,
+            String stepName,
+            String readerName,
+            String errorType,
+            String errorMessage
+    ) {
+        return new StructuredArgument[]{
+                keyValue("event", "ITEM_READ_FAILED"),
+                keyValue("job", jobName),
+                keyValue("step", stepName),
+                keyValue("reader", readerName),
+                keyValue("errorType", errorType),
+                keyValue("errorMessage", errorMessage)
+        };
+    }
+
     private BatchLogMetadataFormat() {}
 }

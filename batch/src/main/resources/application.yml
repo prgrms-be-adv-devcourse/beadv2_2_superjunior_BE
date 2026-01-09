@@ -54,3 +54,13 @@ gateway:
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+logging:
+  level:
+    # Spring Batch 프레임워크의 중복 로그 최소화
+    org.springframework.batch.core.launch.support.TaskExecutorJobLauncher: WARN
+    org.springframework.batch.core.step.AbstractStep: WARN
+    org.springframework.batch.core.job.SimpleStepHandler: WARN
+
+    # 커스텀 배치 로그는 INFO 유지
+    store._0982.batch: INFO

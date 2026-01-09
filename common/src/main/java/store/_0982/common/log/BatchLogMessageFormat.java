@@ -10,6 +10,7 @@ public class BatchLogMessageFormat {
     private static final String STEP_SUCCESS = "[STEP] [%s] [%s] completed";
     private static final String STEP_FAILED = "[STEP] [%s] [%s] failed";
 
+    private static final String ITEM_READER_FAILED = "[READER] [%s] [%s] failed";
 
     public static String jobStart(String jobName) {
         return String.format(JOB_START, jobName);
@@ -33,6 +34,10 @@ public class BatchLogMessageFormat {
 
     public static String stepFailed(String jobName, String stepName) {
         return String.format(STEP_FAILED, jobName, stepName);
+    }
+
+    public static String itemReaderFailed(String jobName, String stepName) {
+        return String.format(ITEM_READER_FAILED, jobName, stepName);
     }
 
     private BatchLogMessageFormat() {}
