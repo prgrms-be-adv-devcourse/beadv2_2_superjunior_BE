@@ -5,7 +5,6 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.stereotype.Component;
-import store._0982.common.log.BatchLogFormat;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -19,9 +18,6 @@ public class MonthlySettlementStepListener implements StepExecutionListener {
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
-        log.info(BatchLogFormat.STEP_START,
-                stepExecution.getStepName(),
-                stepExecution.getJobExecutionId());
     }
 
     @Override
@@ -40,19 +36,9 @@ public class MonthlySettlementStepListener implements StepExecutionListener {
 
         if (stepExecution.getStatus().isUnsuccessful()) {
             // Step 실패
-            log.error(BatchLogFormat.STEP_FAILED,
-                    stepName,
-                    readCount,
-                    writeCount,
-                    stepExecution.getExitStatus().getExitDescription());
 
         } else {
             // Step 성공
-            log.info(BatchLogFormat.STEP_SUCCESS,
-                    stepName,
-                    readCount,
-                    writeCount,
-                    duration);
         }
 
         return stepExecution.getExitStatus();

@@ -12,7 +12,7 @@ import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
 import store._0982.batch.kafka.event.SettlementEventPublisher;
-import store._0982.common.log.BatchLogFormat;
+import store._0982.common.log.BatchLogMetadataFormat;
 
 import java.util.List;
 import java.util.Map;
@@ -89,15 +89,15 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
             settlementEventPublisher.publishCompleted(settlement);
 
             // 정산 성공 로그
-            log.info(BatchLogFormat.MONTHLY_SETTLEMENT_SUCCESS,
-                    settlement.getSellerId());
+//            log.info(BatchLogMetadataFormat.MONTHLY_SETTLEMENT_SUCCESS,
+//                    settlement.getSellerId());
 
         } catch (Exception e) {
             // 정산 실패 로그
-            log.error(BatchLogFormat.MONTHLY_SETTLEMENT_FAILED,
-                    settlement.getSellerId(),
-                    e.getMessage(),
-                    e);
+//            log.error(BatchLogMetadataFormat.MONTHLY_SETTLEMENT_FAILED,
+//                    settlement.getSellerId(),
+//                    e.getMessage(),
+//                    e);
             handleSettlementFailure(settlement, e.getMessage());
         }
     }

@@ -3,8 +3,10 @@ package store._0982.batch.batch.settlement.listener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.stereotype.Component;
-import store._0982.common.log.BatchLogFormat;
+import store._0982.common.log.BatchLogMessageFormat;
+import store._0982.common.log.BatchLogMetadataFormat;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -18,9 +20,13 @@ public class MonthlySettlementJobListener implements JobExecutionListener {
 
     @Override
     public void beforeJob(JobExecution jobExecution) {
-        log.info(BatchLogFormat.JOB_START,
-                jobExecution.getJobInstance().getJobName(),
-                jobExecution.getJobParameters());
+        log.info(
+                BatchLogMessageFormat.jobStart(jobExecution.getJobInstance().getJobName()),
+                BatchLogMetadataFormat.jobStart(
+                        jobExecution.getJobInstance().getJobName(),
+                        jobExecution.getJobParameters().toString()
+                )
+        );
     }
 
     @Override
@@ -38,20 +44,38 @@ public class MonthlySettlementJobListener implements JobExecutionListener {
 
         if (jobExecution.getStatus().isUnsuccessful()) {
             // Job 실패
-            log.error(BatchLogFormat.JOB_FAILED,
-                    jobName,
-                    executionId,
-                    duration,
-                    jobExecution.getExitStatus().getExitCode(),
-                    jobExecution.getExitStatus().getExitDescription());
+            String failedStep = jobExecution.getStepExecutions().stream()
+                    .filter(step -> step.getStatus().isUnsuccessful())
+                    .map(StepExecution::getStepName)
+                    .findFirst()
+                    .orElse("UNKNOWN");
 
+            String errorMessage = jobExecution.getAllFailureExceptions().stream()
+                    .findFirst()
+                    .map(Throwable::getMessage)
+                    .orElse("Unknown error");
+
+            log.error(
+                    BatchLogMessageFormat.jobFailed(jobName),
+                    BatchLogMetadataFormat.jobFailed(
+                            jobName,
+                            executionId,
+                            duration,
+                            failedStep,
+                            errorMessage
+                    )
+            );
         } else {
             // Job 성공
-            log.info(BatchLogFormat.JOB_SUCCESS,
-                    jobName,
-                    executionId,
-                    duration,
-                    jobExecution.getStatus());
+            log.info(
+                    BatchLogMessageFormat.jobSuccess(jobName),
+                    BatchLogMetadataFormat.jobSuccess(
+                            jobName,
+                            executionId,
+                            duration,
+                            jobExecution.getStatus().toString()
+                    )
+            );
         }
     }
 }
