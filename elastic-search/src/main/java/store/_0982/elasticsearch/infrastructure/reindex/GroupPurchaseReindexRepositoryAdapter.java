@@ -7,6 +7,7 @@ import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
@@ -30,6 +31,17 @@ public class GroupPurchaseReindexRepositoryAdapter implements GroupPurchaseReind
     @Override
     public List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, long offset) {
         return repository.findIncrementalRows(since, limit, offset)
+                .stream()
+                .map(GroupPurchaseReindexRow::from)
+                .toList();
+    }
+
+    @Override
+    public List<GroupPurchaseReindexRow> fetchByIds(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return repository.findRowsByIds(ids)
                 .stream()
                 .map(GroupPurchaseReindexRow::from)
                 .toList();

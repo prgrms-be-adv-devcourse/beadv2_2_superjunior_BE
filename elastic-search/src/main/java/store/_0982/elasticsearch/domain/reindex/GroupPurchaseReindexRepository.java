@@ -1,9 +1,8 @@
 package store._0982.elasticsearch.domain.reindex;
 
-import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
-
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public interface GroupPurchaseReindexRepository {
     long countSource();
@@ -11,4 +10,6 @@ public interface GroupPurchaseReindexRepository {
     List<GroupPurchaseReindexRow> fetchAllRows(int limit, long offset);
 
     List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, long offset);
+
+    List<GroupPurchaseReindexRow> fetchByIds(List<UUID> ids);
 }

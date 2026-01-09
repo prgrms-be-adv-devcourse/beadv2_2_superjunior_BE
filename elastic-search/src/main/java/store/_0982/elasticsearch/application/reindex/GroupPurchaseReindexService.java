@@ -29,12 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class GroupPurchaseReindexService {
 
     private static final String INDEX_SUFFIX_PATTERN = "yyyyMMddHHmmss";
+    private static final int RETRY_MAX_ATTEMPTS = 1;
 
     private final ElasticsearchOperations operations;
     private final ElasticsearchClient elasticsearchClient;
@@ -132,7 +134,9 @@ public class GroupPurchaseReindexService {
                 break;
             }
             List<String> failedIds = bulkIndex(indexName, rows);
-            //실패 부분 재시도 처리 필요
+            if (!failedIds.isEmpty()) {
+                failedIds = retryFailedRows(indexName, failedIds);
+            }
             total += rows.size() - failedIds.size();
             offset += batchSize;
         }
@@ -180,6 +184,28 @@ public class GroupPurchaseReindexService {
             }
         });
         return failedIds;
+    }
+
+    //벌크 내에서 실패한 문서들 1회 재시도 후 최종실패 id 반환 실패처리에 사용
+    private List<String> retryFailedRows(String indexName, List<String> failedIds) {
+        if (failedIds.isEmpty()) {
+            return failedIds;
+        }
+        List<UUID> ids = failedIds.stream()
+                .map(UUID::fromString)
+                .toList();
+        List<GroupPurchaseReindexRow> retryRows = reindexRepository.fetchByIds(ids);
+        if (retryRows.isEmpty()) {
+            return failedIds;
+        }
+        List<String> retryFailedIds = failedIds;
+        for (int attempt = 0; attempt < RETRY_MAX_ATTEMPTS; attempt++) {
+            retryFailedIds = bulkIndex(indexName, retryRows);
+            if (retryFailedIds.isEmpty()) {
+                break;
+            }
+        }
+        return retryFailedIds;
     }
 
     private void switchAlias(String aliasName, String newIndex) {
