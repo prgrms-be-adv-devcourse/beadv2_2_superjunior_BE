@@ -59,7 +59,7 @@ class PointServiceTest {
             // given
             UUID memberId = UUID.randomUUID();
             Point point = new Point(memberId);
-            point.recharge(10000);
+            point.charge(10000);
 
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
 
@@ -100,7 +100,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.recharge(10000);
+            point.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
             PointHistory history = PointHistory.used(memberId, command);
@@ -128,7 +128,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.recharge(10000);
+            point.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -154,7 +154,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.recharge(10000);
+            point.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
@@ -201,11 +201,11 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.recharge(5000);
+            point.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
             PointHistory history = PointHistory.returned(memberId, command);
-            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.FAILED, memberId, 1);
+            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
             when(pointHistoryRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
@@ -230,7 +230,7 @@ class PointServiceTest {
             UUID idempotencyKey = UUID.randomUUID();
 
             Point point = new Point(memberId);
-            point.recharge(5000);
+            point.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
 

@@ -30,13 +30,13 @@ class PointTest {
 
     @Test
     @DisplayName("포인트를 추가한다")
-    void recharge() {
+    void charge() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.recharge(10000);
+        point.charge(10000);
 
         // then
         assertThat(point.getTotalBalance()).isEqualTo(10000);
@@ -44,15 +44,15 @@ class PointTest {
 
     @Test
     @DisplayName("포인트를 여러 번 추가한다")
-    void rechargeMultipleTimes() {
+    void chargeMultipleTimes() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.recharge(5000);
-        point.recharge(3000);
-        point.recharge(2000);
+        point.charge(5000);
+        point.charge(3000);
+        point.charge(2000);
 
         // then
         assertThat(point.getTotalBalance()).isEqualTo(10000);
@@ -64,7 +64,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(10000);
+        point.charge(10000);
 
         // when
         point.use(5000);
@@ -80,7 +80,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(5000);
+        point.charge(5000);
 
         // when & then
         assertThatThrownBy(() -> point.use(10000))
@@ -94,7 +94,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(10000);
+        point.charge(10000);
 
         // when
         point.transfer(3000);
@@ -109,7 +109,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(5000);
+        point.charge(5000);
 
         // when & then
         assertThatThrownBy(() -> point.transfer(10000))
@@ -123,7 +123,7 @@ class PointTest {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(10000);
+        point.charge(10000);
 
         // when
         point.use(0);
@@ -135,13 +135,13 @@ class PointTest {
 
     @Test
     @DisplayName("0 포인트 추가는 성공한다")
-    void recharge_zero() {
+    void charge_zero() {
         // given
         UUID memberId = UUID.randomUUID();
         Point point = new Point(memberId);
 
         // when
-        point.recharge(0);
+        point.charge(0);
 
         // then
         assertThat(point.getTotalBalance()).isZero();

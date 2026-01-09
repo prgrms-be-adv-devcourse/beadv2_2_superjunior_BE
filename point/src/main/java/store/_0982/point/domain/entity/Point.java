@@ -15,7 +15,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "point")
+@Table(name = "point", schema = "payment_schema")
 public class Point {
 
     @Id
@@ -37,7 +37,7 @@ public class Point {
         this.bonusPoint = 0;
     }
 
-    public void recharge(long amount) {
+    public void charge(long amount) {
         this.paidPoint += amount;
     }
 

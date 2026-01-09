@@ -8,9 +8,10 @@ import java.util.UUID;
 
 public record PaymentCreateRequest(
         @NotNull UUID orderId,
+        @NotNull UUID pgOrderId,
         @Positive long amount
 ) {
     public PaymentCreateCommand toCommand(){
-        return new PaymentCreateCommand(orderId, amount);
+        return new PaymentCreateCommand(orderId, pgOrderId, amount);
     }
 }

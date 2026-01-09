@@ -22,13 +22,13 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
     }
 
     @Override
-    public Optional<Payment> findByOrderId(UUID orderId) {
-        return paymentJpaRepository.findByPgOrderId(orderId);
+    public Optional<Payment> findByPgOrderId(UUID pgOrderId) {
+        return paymentJpaRepository.findByPgOrderId(pgOrderId);
     }
 
     @Override
-    public Optional<Payment> findByOrderIdWithLock(UUID orderId) {
-        return paymentJpaRepository.readByPgOrderId(orderId);
+    public Optional<Payment> findByPgOrderIdWithLock(UUID pgOrderId) {
+        return paymentJpaRepository.readByPgOrderId(pgOrderId);
     }
 
     @Override

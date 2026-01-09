@@ -2,7 +2,6 @@ package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,13 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.*;
-import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.constant.PaymentStatus;
-import store._0982.point.domain.entity.Point;
+import store._0982.point.application.dto.PaymentCreateCommand;
+import store._0982.point.application.dto.PaymentCreateInfo;
+import store._0982.point.application.dto.PaymentInfo;
 import store._0982.point.domain.entity.Payment;
-import store._0982.point.domain.event.PointRechargedEvent;
-import store._0982.point.domain.repository.PointRepository;
 import store._0982.point.domain.repository.PaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -28,23 +24,20 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PaymentService {
-    private final TossPaymentService tossPaymentService;
     private final PaymentRepository paymentRepository;
-    private final PointRepository pointRepository;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
     @ServiceLog
     @Transactional
     public PaymentCreateInfo createPaymentPoint(PaymentCreateCommand command, UUID memberId) {
-        UUID orderId = command.orderId();
-        return paymentRepository.findByOrderId(orderId)
+        UUID pgOrderId = command.pgOrderId();
+        return paymentRepository.findByPgOrderId(pgOrderId)
                 .map(PaymentCreateInfo::from)
                 .orElseGet(() -> {
                     try {
-                        Payment payment = Payment.create(memberId, orderId, command.amount());
+                        Payment payment = Payment.create(memberId, pgOrderId, command.orderId(), command.amount());
                         return PaymentCreateInfo.from(paymentRepository.saveAndFlush(payment));
                     } catch (DataIntegrityViolationException e) {
-                        return paymentRepository.findByOrderId(orderId)
+                        return paymentRepository.findByPgOrderId(pgOrderId)
                                 .map(PaymentCreateInfo::from)
                                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_CREATION_FAILED));
                     }
@@ -58,46 +51,10 @@ public class PaymentService {
         return PageResponse.from(page);
     }
 
-    @ServiceLog
-    @Transactional
-    public PaymentInfo confirmPayment(PaymentConfirmCommand command, UUID memberId) {
-        Payment payment = paymentRepository.findByOrderId(command.orderId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-
-        payment.validate(memberId);
-        if (payment.getStatus() == PaymentStatus.COMPLETED) {
-            throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
-        }
-
-        Point point = pointRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-
-        TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(payment, command);
-        try {
-            payment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
-            point.recharge(payment.getAmount());
-            applicationEventPublisher.publishEvent(PointRechargedEvent.from(payment));
-        } catch (Exception e) {
-            rollbackPayment(command, payment);
-        }
-
-        return PaymentInfo.from(payment);
-    }
-
     public PaymentInfo getPaymentHistory(UUID id, UUID memberId) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         payment.validate(memberId);
         return PaymentInfo.from(payment);
-    }
-
-    private void rollbackPayment(PaymentConfirmCommand command, Payment payment) {
-        try {
-            tossPaymentService.cancelPayment(payment, new PointRefundCommand(command.orderId(), "System Error"));
-        } catch (Exception refundEx) {
-            log.error("[Service] Failed to rollback payment", refundEx);
-            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
-        }
-        throw new CustomException(CustomErrorCode.PAYMENT_PROCESS_FAILED_REFUNDED);
     }
 }

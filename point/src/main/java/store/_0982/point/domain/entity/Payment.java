@@ -16,7 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "payment")
+@Table(name = "payment", schema = "payment_schema")
 public class Payment {
 
     @Id
@@ -68,17 +68,18 @@ public class Payment {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private Payment(UUID memberId, UUID pgOrderId, long amount){
+    private Payment(UUID memberId, UUID pgOrderId, UUID orderId, long amount) {
         this.id = UUID.randomUUID();
         this.memberId = memberId;
         this.pgOrderId = pgOrderId;
+        this.orderId = orderId;
         this.amount = amount;
         this.requestedAt = OffsetDateTime.now();
         this.status = PaymentStatus.REQUESTED;
     }
 
-    public static Payment create(UUID memberId, UUID orderId, long amount){
-        return new Payment(memberId, orderId, amount);
+    public static Payment create(UUID memberId, UUID pgOrderId, UUID orderId, long amount) {
+        return new Payment(memberId, pgOrderId, orderId, amount);
     }
 
     public void markConfirmed(String method, OffsetDateTime approvedAt, String paymentKey) {

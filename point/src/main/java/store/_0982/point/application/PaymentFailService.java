@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentFailureService {
+public class PaymentFailService {
 
     private final PaymentRepository paymentRepository;
     private final PaymentFailureRepository paymentFailureRepository;
@@ -25,7 +25,7 @@ public class PaymentFailureService {
     @ServiceLog
     @Transactional
     public PaymentInfo handlePaymentFailure(PaymentFailCommand command, UUID memberId) {
-        Payment payment = paymentRepository.findByOrderIdWithLock(command.orderId())
+        Payment payment = paymentRepository.findByPgOrderIdWithLock(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         payment.validate(memberId);

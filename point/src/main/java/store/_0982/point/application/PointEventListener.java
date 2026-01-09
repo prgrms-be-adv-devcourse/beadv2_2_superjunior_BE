@@ -7,7 +7,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointRechargedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
-import store._0982.point.infrastructure.PointEventPublisher;
+import store._0982.point.infrastructure.kafka.PointEventPublisher;
 
 @Component
 @RequiredArgsConstructor

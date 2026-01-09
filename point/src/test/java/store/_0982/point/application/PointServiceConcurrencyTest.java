@@ -60,7 +60,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
         memberId = UUID.randomUUID();
         Point point = new Point(memberId);
-        point.recharge(BALANCE);
+        point.charge(BALANCE);
         memberPointRepository.save(point);
     }
 
@@ -69,7 +69,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
     void concurrent_use_idempotent() throws InterruptedException {
         // given
         PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
-        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.IN_PROGRESS, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.CANCELLED, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -93,7 +93,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
                 .setNotNull("idempotencyKey")
                 .sampleList(getDefaultThreadCount());
 
-        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.FAILED, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -110,7 +110,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
     void concurrent_return_idempotent() throws InterruptedException {
         // given
         PointReturnCommand command = new PointReturnCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
-        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.FAILED, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -134,7 +134,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
                 .setNotNull("idempotencyKey")
                 .sampleList(getDefaultThreadCount());
 
-        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.FAILED, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());

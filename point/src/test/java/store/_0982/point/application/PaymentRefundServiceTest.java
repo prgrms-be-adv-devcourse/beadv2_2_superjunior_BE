@@ -62,7 +62,7 @@ class PaymentRefundServiceTest {
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
         Point point = new Point(memberId);
-        point.recharge(10000);
+        point.charge(10000);
 
         TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
                 10000,
@@ -81,7 +81,7 @@ class PaymentRefundServiceTest {
                 List.of(cancelInfo)
         );
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
         when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
         when(tossPaymentService.cancelPayment(any(), any())).thenReturn(response);
 
@@ -102,7 +102,7 @@ class PaymentRefundServiceTest {
         // given
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.empty());
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> paymentRefundService.refundPaymentPoint(memberId, command))
@@ -119,7 +119,7 @@ class PaymentRefundServiceTest {
 
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when & then
         assertThatThrownBy(() -> paymentRefundService.refundPaymentPoint(memberId, command))
@@ -136,7 +136,7 @@ class PaymentRefundServiceTest {
 
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when & then
         assertThatThrownBy(() -> paymentRefundService.refundPaymentPoint(memberId, command))
@@ -154,7 +154,7 @@ class PaymentRefundServiceTest {
 
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when
         PointRefundInfo result = paymentRefundService.refundPaymentPoint(memberId, command);
@@ -175,7 +175,7 @@ class PaymentRefundServiceTest {
 
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when & then
         assertThatThrownBy(() -> paymentRefundService.refundPaymentPoint(memberId, command))
@@ -192,7 +192,7 @@ class PaymentRefundServiceTest {
 
         PointRefundCommand command = new PointRefundCommand(orderId, "고객 요청");
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
         when(pointRepository.findById(memberId)).thenReturn(Optional.empty());
 
         // when & then

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record PaymentCreateCommand(
         UUID orderId,
+        UUID pgOrderId,
         long amount
 ) {
 }

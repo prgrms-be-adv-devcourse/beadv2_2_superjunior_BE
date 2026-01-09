@@ -67,7 +67,7 @@ class PaymentServiceTest {
             // given
             PaymentCreateCommand command = new PaymentCreateCommand(orderId, 10000);
 
-            when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+            when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.empty());
             when(paymentRepository.saveAndFlush(any(Payment.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -88,7 +88,7 @@ class PaymentServiceTest {
             PaymentCreateCommand command = new PaymentCreateCommand(orderId, 10000);
 
             Payment existingPayment = Payment.create(memberId, orderId, 10000);
-            when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existingPayment));
+            when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.of(existingPayment));
 
             // when
             PaymentCreateInfo result = paymentService.createPaymentPoint(command, memberId);
@@ -129,7 +129,7 @@ class PaymentServiceTest {
 
             Point point = new Point(memberId);
 
-            when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(payment));
+            when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.of(payment));
             when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
             doNothing().when(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
@@ -152,7 +152,7 @@ class PaymentServiceTest {
                     "test_payment_key"
             );
 
-            when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+            when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> paymentService.confirmPayment(command, memberId))
@@ -173,7 +173,7 @@ class PaymentServiceTest {
                     "test_payment_key"
             );
 
-            when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(payment));
+            when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.of(payment));
 
             // when & then
             assertThatThrownBy(() -> paymentService.confirmPayment(command, memberId))

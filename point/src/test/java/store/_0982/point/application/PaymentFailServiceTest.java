@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentFailureServiceTest {
+class PaymentFailServiceTest {
 
     @Mock
     private PaymentRepository paymentRepository;
@@ -33,7 +33,7 @@ class PaymentFailureServiceTest {
     private PaymentFailureRepository paymentFailureRepository;
 
     @InjectMocks
-    private PaymentFailureService paymentFailureService;
+    private PaymentFailService paymentFailService;
 
     private UUID memberId;
     private UUID orderId;
@@ -61,11 +61,11 @@ class PaymentFailureServiceTest {
 
         PaymentFailure failure = PaymentFailure.from(payment, command);
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
         when(paymentFailureRepository.save(any(PaymentFailure.class))).thenReturn(failure);
 
         // when
-        paymentFailureService.handlePaymentFailure(command, memberId);
+        paymentFailService.handlePaymentFailure(command, memberId);
 
         // then
         verify(paymentFailureRepository).save(any(PaymentFailure.class));
@@ -87,10 +87,10 @@ class PaymentFailureServiceTest {
                 "{}"
         );
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when
-        paymentFailureService.handlePaymentFailure(command, memberId);
+        paymentFailService.handlePaymentFailure(command, memberId);
 
         // then
         verify(paymentFailureRepository, never()).save(any(PaymentFailure.class));
@@ -113,10 +113,10 @@ class PaymentFailureServiceTest {
                 "{}"
         );
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
 
         // when & then
-        assertThatThrownBy(() -> paymentFailureService.handlePaymentFailure(command, memberId))
+        assertThatThrownBy(() -> paymentFailService.handlePaymentFailure(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.CANNOT_HANDLE_FAILURE.getMessage());
     }
@@ -134,10 +134,10 @@ class PaymentFailureServiceTest {
                 "{}"
         );
 
-        when(paymentRepository.findByOrderIdWithLock(orderId)).thenReturn(Optional.empty());
+        when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> paymentFailureService.handlePaymentFailure(command, memberId))
+        assertThatThrownBy(() -> paymentFailService.handlePaymentFailure(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
     }

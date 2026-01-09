@@ -58,7 +58,7 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
         orderId = UUID.randomUUID();
 
         Point point = new Point(memberId);
-        point.recharge(INITIAL_BALANCE + PAYMENT_AMOUNT);
+        point.charge(INITIAL_BALANCE + PAYMENT_AMOUNT);
         memberPointRepository.save(point);
 
         Payment payment = Payment.create(memberId, orderId, PAYMENT_AMOUNT);

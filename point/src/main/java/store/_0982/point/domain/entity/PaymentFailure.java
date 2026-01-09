@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "payment_failure")
+@Table(name = "payment_failure", schema = "payment_schema")
 public class PaymentFailure {
 
     @Id

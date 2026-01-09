@@ -1,4 +1,4 @@
-CREATE TABLE payment
+CREATE TABLE payment_schema.payment
 (
     id             UUID                        NOT NULL,
     member_id      UUID                        NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE payment
     CONSTRAINT pk_payment PRIMARY KEY (id)
 );
 
-CREATE TABLE payment_cancel
+CREATE TABLE payment_schema.payment_cancel
 (
     id            UUID                        NOT NULL,
     payment_id    UUID                        NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE payment_cancel
     CONSTRAINT pk_payment_cancel PRIMARY KEY (id)
 );
 
-CREATE TABLE payment_failure
+CREATE TABLE payment_schema.payment_failure
 (
     id               UUID                        NOT NULL,
     payment_point_id UUID,
@@ -42,7 +42,7 @@ CREATE TABLE payment_failure
     CONSTRAINT pk_payment_failure PRIMARY KEY (id)
 );
 
-CREATE TABLE point
+CREATE TABLE payment_schema.point
 (
     member_id    UUID   NOT NULL,
     paid_point   BIGINT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE point
     CONSTRAINT pk_point PRIMARY KEY (member_id)
 );
 
-CREATE TABLE point_history
+CREATE TABLE payment_schema.point_history
 (
     id              UUID                                      NOT NULL,
     member_id       UUID                                      NOT NULL,
@@ -63,23 +63,23 @@ CREATE TABLE point_history
     CONSTRAINT pk_point_history PRIMARY KEY (id)
 );
 
-ALTER TABLE point_history
+ALTER TABLE payment_schema.point_history
     ADD CONSTRAINT point_history_pk_3 UNIQUE (order_id, status);
 
-ALTER TABLE payment_failure
+ALTER TABLE payment_schema.payment_failure
     ADD CONSTRAINT uc_payment_failure_payment_point UNIQUE (payment_point_id);
 
-ALTER TABLE payment
+ALTER TABLE payment_schema.payment
     ADD CONSTRAINT uc_payment_order UNIQUE (order_id);
 
-ALTER TABLE payment
+ALTER TABLE payment_schema.payment
     ADD CONSTRAINT uc_payment_pg_order UNIQUE (pg_order_id);
 
-ALTER TABLE point_history
+ALTER TABLE payment_schema.point_history
     ADD CONSTRAINT uc_point_history_idempotency_key UNIQUE (idempotency_key);
 
-ALTER TABLE payment_cancel
-    ADD CONSTRAINT FK_PAYMENT_CANCEL_ON_PAYMENT FOREIGN KEY (payment_id) REFERENCES payment (id);
+ALTER TABLE payment_schema.payment_cancel
+    ADD CONSTRAINT FK_PAYMENT_CANCEL_ON_PAYMENT FOREIGN KEY (payment_id) REFERENCES payment_schema.payment (id);
 
-ALTER TABLE payment_failure
-    ADD CONSTRAINT FK_PAYMENT_FAILURE_ON_PAYMENT_POINT FOREIGN KEY (payment_point_id) REFERENCES payment (id);
+ALTER TABLE payment_schema.payment_failure
+    ADD CONSTRAINT FK_PAYMENT_FAILURE_ON_PAYMENT_POINT FOREIGN KEY (payment_point_id) REFERENCES payment_schema.payment (id);

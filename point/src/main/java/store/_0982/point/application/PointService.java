@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.PointInfo;
+import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.application.dto.PointDeductCommand;
+import store._0982.point.application.dto.PointInfo;
 import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
@@ -42,6 +43,31 @@ public class PointService {
         return PointInfo.from(point);
     }
 
+    // TODO: 계좌이체 API를 넣을까? 고도화를 어떻게 할지도 생각하자
+    @ServiceLog
+    @Transactional
+    public PointInfo chargePoints(PointChargeCommand command, UUID memberId) {
+        return processPointOperation(
+                memberId,
+                command.idempotencyKey(),
+                point -> {
+                    UUID orderId = command.orderId();
+                    if (pointHistoryRepository.existsByOrderIdAndStatus(orderId, PointHistoryStatus.CHARGED)) {
+                        return PointInfo.from(point);
+                    }
+
+                    OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
+                    orderInfo.validateChargeable(memberId);
+
+                    return executeIdempotentAction(point, () -> {
+                        PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.charged(memberId, command));
+                        point.charge(command.amount());
+                        // 이벤트 발송 추가
+                    });
+                }
+        );
+    }
+
     @ServiceLog
     @Transactional
     public PointInfo deductPoints(UUID memberId, PointDeductCommand command) {
@@ -49,19 +75,20 @@ public class PointService {
                 memberId,
                 command.idempotencyKey(),
                 point -> {
-                    if (pointHistoryRepository.existsByOrderIdAndStatus(command.orderId(), PointHistoryStatus.USED)) {
+                    UUID orderId = command.orderId();
+                    if (pointHistoryRepository.existsByOrderIdAndStatus(orderId, PointHistoryStatus.USED)) {
                         return PointInfo.from(point);
                     }
 
                     long amount = command.amount();
-                    try {
+                    OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
+                    orderInfo.validateDeductible(memberId, orderId, amount);
+
+                    return executeIdempotentAction(point, () -> {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.used(memberId, command));
                         point.use(amount);
                         applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
-                        return PointInfo.from(point);
-                    } catch (DataIntegrityViolationException e) {
-                        return PointInfo.from(point);
-                    }
+                    });
                 }
         );
     }
@@ -82,14 +109,11 @@ public class PointService {
                     OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
                     orderInfo.validateReturnable(memberId, orderId, amount);
 
-                    try {
+                    return executeIdempotentAction(point, () -> {
                         PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.returned(memberId, command));
-                        point.recharge(amount);
+                        point.charge(amount);
                         applicationEventPublisher.publishEvent(PointReturnedEvent.from(history));
-                        return PointInfo.from(point);
-                    } catch (DataIntegrityViolationException e) {
-                        return PointInfo.from(point);
-                    }
+                    });
                 }
         );
     }
@@ -106,5 +130,14 @@ public class PointService {
             return PointInfo.from(point);
         }
         return operation.apply(point);
+    }
+
+    private PointInfo executeIdempotentAction(Point point, Runnable action) {
+        try {
+            action.run();
+            return PointInfo.from(point);
+        } catch (DataIntegrityViolationException e) {
+            return PointInfo.from(point);
+        }
     }
 }

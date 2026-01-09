@@ -15,22 +15,39 @@ public record OrderInfo(
         int quantity
 ) {
     public enum Status {
-        SCHEDULED,      // 시작전
-        IN_PROGRESS,    // 진행중
-        SUCCESS,        // 완료 - 성공
-        FAILED,         // 완료 - 실패
+        PENDING,
+        ORDER_FAILED,
+        COMPLETED,
+        CANCELLED,
+        GROUP_PURCHASE_SUCCESS,
+        GROUP_PURCHASE_FAILED,
+        REVERSED,
+        RETURNED
     }
 
     public void validateReturnable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.FAILED) {
+        if (status != Status.ORDER_FAILED) {
             throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
         }
     }
 
     public void validateDeductible(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.IN_PROGRESS) {
+        if (status != Status.CANCELLED) {
+            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+        }
+    }
+
+    public void validateChargeable(UUID memberId) {
+        if (!this.memberId.equals(memberId)) {
+            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+        }
+    }
+
+    public void validateAutoChargeable(UUID memberId, UUID orderId, long amount) {
+        validate(memberId, orderId, amount);
+        if (status != Status.PENDING) {
             throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
         }
     }

@@ -10,7 +10,6 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.PointService;
 import store._0982.point.application.dto.PointInfo;
-import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointReturnRequest;
 
 import java.util.UUID;
@@ -21,17 +20,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class InternalPointController {
     private final PointService pointService;
-
-    @ResponseStatus(HttpStatus.CREATED)
-    @ControllerLog
-    @PostMapping("/deduct")
-    public ResponseDto<PointInfo> deductPoints(
-            @Valid @RequestBody PointDeductRequest request,
-            @RequestHeader(HeaderName.ID) UUID memberId
-    ) {
-        PointInfo info = pointService.deductPoints(memberId, request.toCommand());
-        return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 차감 완료");
-    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog

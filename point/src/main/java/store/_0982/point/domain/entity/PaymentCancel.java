@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "payment_cancel")
+@Table(name = "payment_cancel", schema = "payment_schema")
 public class PaymentCancel {
 
     @Id

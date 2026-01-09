@@ -15,7 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
-import store._0982.point.application.PaymentFailureService;
+import store._0982.point.application.PaymentFailService;
 import store._0982.point.application.PaymentService;
 import store._0982.point.application.PaymentRefundService;
 import store._0982.point.application.dto.*;
@@ -49,7 +49,7 @@ class PaymentControllerTest {
     private PaymentService paymentService;
 
     @MockitoBean
-    private PaymentFailureService paymentFailureService;
+    private PaymentFailService paymentFailService;
 
     @MockitoBean
     private PaymentRefundService paymentRefundService;
@@ -163,7 +163,7 @@ class PaymentControllerTest {
                 orderId, "test_payment_key", "PAYMENT_FAILED", "카드 승인 실패", 10000, "{}"
         );
 
-        when(paymentFailureService.handlePaymentFailure(any(PaymentFailCommand.class), eq(memberId)))
+        when(paymentFailService.handlePaymentFailure(any(PaymentFailCommand.class), eq(memberId)))
                 .thenReturn(mock(PaymentInfo.class));
 
         // when & then
@@ -174,7 +174,7 @@ class PaymentControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
-        verify(paymentFailureService).handlePaymentFailure(any(), eq(memberId));
+        verify(paymentFailService).handlePaymentFailure(any(), eq(memberId));
     }
 
     @Test
