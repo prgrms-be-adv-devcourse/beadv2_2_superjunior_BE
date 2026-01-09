@@ -36,11 +36,11 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Integer)
     private Integer currentQuantity;
 
-    @Field(type = FieldType.Date, format = DateFormat.date_time)
+    @Field(type = FieldType.Date, format = DateFormat.strict_date_optional_time_nanos)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     private OffsetDateTime endDate;
 
-    @Field(type = FieldType.Date, format = DateFormat.date_time)
+    @Field(type = FieldType.Date, format = DateFormat.strict_date_optional_time_nanos)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
     private OffsetDateTime updatedAt;
 

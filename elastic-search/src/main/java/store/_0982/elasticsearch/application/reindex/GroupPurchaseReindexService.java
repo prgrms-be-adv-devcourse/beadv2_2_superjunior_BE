@@ -1,5 +1,7 @@
 package store._0982.elasticsearch.application.reindex;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -10,8 +12,6 @@ import org.springframework.data.elasticsearch.core.index.AliasActionParameters;
 import org.springframework.data.elasticsearch.core.index.AliasActions;
 import org.springframework.data.elasticsearch.core.index.Settings;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.IndexQuery;
-import org.springframework.data.elasticsearch.core.query.IndexQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
@@ -38,6 +38,7 @@ public class GroupPurchaseReindexService {
     private static final String INDEX_SUFFIX_PATTERN = "yyyyMMddHHmmss";
 
     private final ElasticsearchOperations operations;
+    private final ElasticsearchClient elasticsearchClient;
     private final GroupPurchaseReindexProperties properties;
     private final GroupPurchaseReindexRepository reindexRepository;
 
@@ -148,14 +149,26 @@ public class GroupPurchaseReindexService {
         return newIndex;
     }
 
+    //bulk 부분 실패 판단을 위해 elc로 벌크 처리
     private void bulkIndex(String indexName, List<GroupPurchaseReindexRow> rows) {
-        List<IndexQuery> queries = rows.stream()
-                .map(row -> new IndexQueryBuilder()
-                        .withId(row.groupPurchaseId().toString())
-                        .withObject(GroupPurchaseDocument.fromReindexRow(row))
-                        .build())
-                .toList();
-        operations.bulkIndex(queries, IndexCoordinates.of(indexName));
+        try {
+            BulkResponse response = elasticsearchClient.bulk(bulk -> {
+                for (GroupPurchaseReindexRow row : rows) {
+                    bulk.operations(op -> op
+                            .index(idx -> idx
+                                    .index(indexName)
+                                    .id(row.groupPurchaseId().toString())
+                                    .document(GroupPurchaseDocument.fromReindexRow(row))
+                            ));
+                }
+                return bulk;
+            });
+            if (response.errors()) {
+                log.warn("Reindex bulk had errors for index={}", indexName);
+            }
+        } catch (Exception e) {
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private void switchAlias(String aliasName, String newIndex) {
