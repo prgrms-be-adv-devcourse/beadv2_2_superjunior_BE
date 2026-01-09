@@ -54,6 +54,9 @@ management:
 gateway:
   host: ${GATEWAY_HOST:http://localhost:8000}
 
+client:
+  member: http://member-service:8083
+
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
