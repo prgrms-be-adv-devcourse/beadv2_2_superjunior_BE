@@ -3,16 +3,20 @@ package store._0982.commerce.application.grouppurchase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
-import store._0982.common.exception.CustomException;
-import store._0982.common.log.ServiceLog;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -21,21 +25,40 @@ import java.util.UUID;
 public class ParticipateService {
 
     private final ProductRepository productRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
     private final GroupPurchaseRetryService groupPurchaseRetryService;
 
     private final ApplicationEventPublisher eventPublisher;
 
+    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisScript<Long> participateScript;
+
     @ServiceLog
     @Transactional
     public void participate(UUID groupPurchaseId, int quantity, String sellerName) {
-        GroupPurchase savedGroupPurchase = groupPurchaseRetryService.participateWithRetry(groupPurchaseId, quantity);
+        // 공동 구매 조회
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        // 참여 인원 카운트 증가
+        String countKey = "gp:" + groupPurchaseId + ":count";
+        Long result = redisTemplate.execute(
+                participateScript,
+                List.of(countKey),
+                String.valueOf(quantity),
+                String.valueOf(groupPurchase.getMaxQuantity())
+        );
+
+        if(result == -1){
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
+        }
 
         // Kafka 이벤트 발행
-        Product product = productRepository.findById(savedGroupPurchase.getProductId())
+        Product product = productRepository.findById(groupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
         eventPublisher.publishEvent(
-                new GroupPurchaseParticipatedEvent(savedGroupPurchase, sellerName, product)
+                new GroupPurchaseParticipatedEvent(groupPurchase, sellerName, product)
         );
     }
 }
