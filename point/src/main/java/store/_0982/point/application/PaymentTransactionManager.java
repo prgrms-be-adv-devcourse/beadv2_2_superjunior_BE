@@ -5,9 +5,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.dto.PaymentFailCommand;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.entity.PaymentFailure;
 import store._0982.point.domain.event.PaymentConfirmedEvent;
+import store._0982.point.domain.repository.PaymentFailureRepository;
 import store._0982.point.domain.repository.PaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -19,6 +22,7 @@ import java.util.UUID;
 class PaymentTransactionManager {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentFailureRepository paymentFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     Payment findPayment(String paymentKey) {
@@ -46,8 +50,19 @@ class PaymentTransactionManager {
     }
 
     @Transactional
-    void markFailedPayment(String errorMessage, String paymentKey) {
-        Payment payment = findPayment(paymentKey);
+    void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
+        Payment payment = findFailablePayment(paymentKey, memberId);
         payment.markFailed(errorMessage);
+        PaymentFailure paymentFailure = PaymentFailure.systemError(payment);
+        paymentFailureRepository.save(paymentFailure);
+    }
+
+    @Transactional
+    Payment markFailedPaymentByPg(PaymentFailCommand command, UUID memberId) {
+        Payment payment = findFailablePayment(command.paymentKey(), memberId);
+        payment.markFailed(command.errorMessage());
+        PaymentFailure paymentFailure = PaymentFailure.pgError(payment, command);
+        paymentFailureRepository.save(paymentFailure);
+        return payment;
     }
 }

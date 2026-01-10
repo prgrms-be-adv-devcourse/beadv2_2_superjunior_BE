@@ -35,16 +35,18 @@ public class PaymentConfirmService {
         order.validateConfirmable(memberId, orderId, command.amount());
 
         TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(payment, command);
+
+        // TODO: 여기서는 예외가 발생했다고 바로 롤백하기보다는 재시도 로직이 있는 게 좋을 것 같음
         try {
             paymentTransactionManager.markConfirmedPayment(tossPaymentResponse, paymentKey, memberId);
         } catch (Exception e) {
             log.error("[Error] Failed to mark payment confirmed. Trying to rollback...", e);
-            rollbackPayment(command, payment);
+            rollbackPayment(command, payment, memberId);
         }
     }
 
     // 1차 방어선: 결제 성공 처리에 실패했을 때 토스 API에 취소 요청
-    private void rollbackPayment(PaymentConfirmCommand command, Payment payment) {
+    private void rollbackPayment(PaymentConfirmCommand command, Payment payment, UUID memberId) {
         String cancelReason = "System Error";
         try {
             tossPaymentService.cancelPayment(payment, new PointRefundCommand(command.orderId(), cancelReason));
@@ -55,7 +57,7 @@ public class PaymentConfirmService {
         }
 
         try {
-            paymentTransactionManager.markFailedPayment(cancelReason, payment.getPaymentKey());
+            paymentTransactionManager.markFailedPaymentBySystem(cancelReason, payment.getPaymentKey(), memberId);
         } catch (Exception e) {
             // TODO: 돈은 환불됐는데 DB에는 아직 PENDING 중으로 남아있음 -> 재시도? 배치?
             log.error("[Error] Failed to mark payment failed", e);

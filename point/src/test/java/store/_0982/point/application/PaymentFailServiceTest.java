@@ -59,7 +59,7 @@ class PaymentFailServiceTest {
                 "{}"
         );
 
-        PaymentFailure failure = PaymentFailure.from(payment, command);
+        PaymentFailure failure = PaymentFailure.pgError(payment, command);
 
         when(paymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(payment));
         when(paymentFailureRepository.save(any(PaymentFailure.class))).thenReturn(failure);

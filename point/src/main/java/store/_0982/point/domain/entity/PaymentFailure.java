@@ -10,7 +10,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "payment_failure", schema = "payment_schema")
 public class PaymentFailure {
 
@@ -22,7 +24,7 @@ public class PaymentFailure {
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    @Column(name = "payment_key", nullable = false, length = 50)
+    @Column(name = "payment_key", nullable = false, unique = true)
     private String paymentKey;
 
     @Column(name = "error_code", length = 30)
@@ -41,31 +43,31 @@ public class PaymentFailure {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    private PaymentFailure(
-            Payment payment,
-            String paymentKey,
-            String errorCode,
-            String errorMessage,
-            Long amount,
-            String rawPayload
-    ) {
-        this.id = UUID.randomUUID();
-        this.payment = payment;
-        this.paymentKey = paymentKey;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
-        this.amount = amount;
-        this.rawPayload = rawPayload;
+    public static PaymentFailure systemError(Payment payment) {
+        return PaymentFailure.builder()
+                .payment(payment)
+                .errorCode("SYSTEM_ERROR")
+                .errorMessage("system error")
+                .paymentKey(payment.getPaymentKey())
+                .amount(payment.getAmount())
+                .build();
     }
 
-    public static PaymentFailure from(Payment payment, PaymentFailCommand command) {
-        return new PaymentFailure(
-                payment,
-                command.paymentKey(),
-                command.errorCode(),
-                command.errorMessage(),
-                command.amount(),
-                command.rawPayload()
-        );
+    public static PaymentFailure pgError(Payment payment, PaymentFailCommand command) {
+        return PaymentFailure.builder()
+                .payment(payment)
+                .errorCode(command.errorCode())
+                .errorMessage(command.errorMessage())
+                .paymentKey(command.paymentKey())
+                .amount(command.amount())
+                .rawPayload(command.rawPayload())
+                .build();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
     }
 }
