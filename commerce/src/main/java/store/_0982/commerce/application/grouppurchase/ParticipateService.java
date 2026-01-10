@@ -56,7 +56,7 @@ public class ParticipateService {
         }
 
         // 참여 인원 증가
-        groupPurchase.increaseQuantity(result.intValue());
+        groupPurchase.syncCurrentQuantity(result.intValue());
         groupPurchaseRepository.save(groupPurchase);
 
         // Kafka 이벤트 발행
