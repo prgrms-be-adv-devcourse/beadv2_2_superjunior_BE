@@ -30,15 +30,15 @@ public class PaymentRefundService {
     @ServiceLog
     @Transactional
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
-        Payment payment = paymentRepository.findByPgOrderIdWithLock(command.orderId())
+        Payment payment = paymentRepository.findByPgOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
-        payment.validate(memberId);
+        payment.validateOwner(memberId);
         switch (payment.getStatus()) {
             case COMPLETED -> {
                 // 정상 상태
             }
-            case REQUESTED, FAILED -> throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
+            case PENDING, FAILED -> throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
             case REFUNDED -> {
                 return PointRefundInfo.from(payment);
             }

@@ -25,17 +25,11 @@ public class PaymentFailService {
     @ServiceLog
     @Transactional
     public PaymentInfo handlePaymentFailure(PaymentFailCommand command, UUID memberId) {
-        Payment payment = paymentRepository.findByPgOrderIdWithLock(command.orderId())
+        Payment payment = paymentRepository.findByPaymentKey(command.paymentKey())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
-        payment.validate(memberId);
-        switch (payment.getStatus()) {
-            case COMPLETED, REFUNDED -> throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
-            case FAILED -> {
-                return PaymentInfo.from(payment);
-            }
-            case REQUESTED -> payment.markFailed(command.errorMessage());
-        }
+        payment.validateFailable(memberId);
+        payment.markFailed(command.errorMessage());
 
         PaymentFailure failure = PaymentFailure.from(payment, command);
         paymentFailureRepository.save(failure);

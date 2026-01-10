@@ -75,7 +75,7 @@ public class Payment {
         this.orderId = orderId;
         this.amount = amount;
         this.requestedAt = OffsetDateTime.now();
-        this.status = PaymentStatus.REQUESTED;
+        this.status = PaymentStatus.PENDING;
     }
 
     public static Payment create(UUID memberId, UUID pgOrderId, UUID orderId, long amount) {
@@ -101,7 +101,21 @@ public class Payment {
         this.refundMessage = cancelReason;
     }
 
-    public void validate(UUID memberId) {
+    public void validateCompletable(UUID memberId) {
+        validateOwner(memberId);
+        if (this.status != PaymentStatus.PENDING) {
+            throw new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT);
+        }
+    }
+
+    public void validateFailable(UUID memberId) {
+        validateOwner(memberId);
+        if (this.status != PaymentStatus.PENDING) {
+            throw new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE);
+        }
+    }
+
+    public void validateOwner(UUID memberId) {
         if (!this.memberId.equals(memberId)) {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
         }

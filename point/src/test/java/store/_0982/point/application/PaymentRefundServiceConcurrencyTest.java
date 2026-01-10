@@ -95,7 +95,7 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTask(() -> paymentRefundService.refundPaymentPoint(memberId, command));
 
         // then
-        validate();
+        validateOwner();
     }
 
     @Test
@@ -131,10 +131,10 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTasks(commands, command -> paymentRefundService.refundPaymentPoint(memberId, command));
 
         // then
-        validate();
+        validateOwner();
     }
 
-    private void validate() {
+    private void validateOwner() {
         Payment payment = paymentPointRepository.findByPgOrderId(orderId).orElseThrow();
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         assertThat(payment.getRefundedAt()).isNotNull();

@@ -78,7 +78,7 @@ class PaymentControllerTest {
                 memberId,
                 orderId,
                 10000,
-                PaymentStatus.REQUESTED,
+                PaymentStatus.PENDING,
                 OffsetDateTime.now(),
                 OffsetDateTime.now()
         );

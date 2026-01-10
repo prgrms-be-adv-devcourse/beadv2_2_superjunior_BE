@@ -27,7 +27,7 @@ class PaymentTest {
         assertThat(payment.getMemberId()).isEqualTo(memberId);
         assertThat(payment.getPgOrderId()).isEqualTo(orderId);
         assertThat(payment.getAmount()).isEqualTo(amount);
-        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REQUESTED);
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PENDING);
     }
 
     @Test

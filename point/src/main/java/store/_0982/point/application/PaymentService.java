@@ -54,7 +54,7 @@ public class PaymentService {
     public PaymentInfo getPaymentHistory(UUID id, UUID memberId) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-        payment.validate(memberId);
+        payment.validateOwner(memberId);
         return PaymentInfo.from(payment);
     }
 }

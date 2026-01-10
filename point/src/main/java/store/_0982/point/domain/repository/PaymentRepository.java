@@ -12,7 +12,7 @@ public interface PaymentRepository {
 
     Optional<Payment> findByPgOrderId(UUID pgOrderId);
 
-    Optional<Payment> findByPgOrderIdWithLock(UUID pgOrderId);
+    Optional<Payment> findByPaymentKey(String paymentKey);
 
     Optional<Payment> findById(UUID id);
 
