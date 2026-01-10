@@ -76,7 +76,7 @@ public class Order {
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
-    public Order(
+    private Order(
             int quantity,
             Long price,
             UUID memberId,
@@ -100,6 +100,30 @@ public class Order {
         this.groupPurchaseId = groupPurchaseId;
         this.idempotencyKey = idempotencyKey;
         this.expiredAt = OffsetDateTime.now().plusMinutes(10);
+    }
+
+    public static Order create(  int quantity,
+                                 Long price,
+                                 UUID memberId,
+                                 String address,
+                                 String addressDetail,
+                                 String postalCode,
+                                 String receiverName,
+                                 UUID sellerId,
+                                 UUID groupPurchaseId,
+                                 String idempotencyKey){
+        return new Order(
+                quantity,
+                price,
+                memberId,
+                address,
+                addressDetail,
+                postalCode,
+                receiverName,
+                sellerId,
+                groupPurchaseId,
+                idempotencyKey
+        );
     }
 
     // 상태 변경

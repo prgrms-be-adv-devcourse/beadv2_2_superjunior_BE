@@ -64,8 +64,12 @@ public class OrderService {
         // 공동 구매 존재 여부
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
+        // 참여
+        participate(groupPurchase.getGroupPurchaseId(), command, memberName);
+
+
         // order 생성
-        Order order = new Order(
+        Order order = Order.create(
                 command.quantity(),
                 groupPurchase.getDiscountedPrice(),
                 memberId,
@@ -74,14 +78,14 @@ public class OrderService {
                 command.postalCode(),
                 command.receiverName(),
                 command.sellerId(),
-                command.groupPurchaseId(),
+                groupPurchase.getGroupPurchaseId(),
                 command.requestId()
         );
 
         Order savedOrder = orderRepository.save(order);
 
-        participate(command.groupPurchaseId(), command, memberName);
         return OrderRegisterInfo.from(savedOrder);
+
     }
 
     /**
@@ -161,7 +165,7 @@ public class OrderService {
             );
 
             // Order 생성
-            Order order = new Order(
+            Order order = Order.create(
                     cart.getQuantity(),
                     purchase.getDiscountedPrice(),
                     memberId,
