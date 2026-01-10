@@ -28,16 +28,16 @@ public class PaymentService {
 
     @ServiceLog
     @Transactional
-    public PaymentCreateInfo createPaymentPoint(PaymentCreateCommand command, UUID memberId) {
-        UUID pgOrderId = command.pgOrderId();
-        return paymentRepository.findByPgOrderId(pgOrderId)
+    public PaymentCreateInfo createPayment(PaymentCreateCommand command, UUID memberId) {
+        UUID orderId = command.orderId();
+        return paymentRepository.findByOrderId(orderId)
                 .map(PaymentCreateInfo::from)
                 .orElseGet(() -> {
                     try {
-                        Payment payment = Payment.create(memberId, pgOrderId, command.orderId(), command.amount());
+                        Payment payment = Payment.create(memberId, orderId, command.amount());
                         return PaymentCreateInfo.from(paymentRepository.saveAndFlush(payment));
                     } catch (DataIntegrityViolationException e) {
-                        return paymentRepository.findByPgOrderId(pgOrderId)
+                        return paymentRepository.findByOrderId(orderId)
                                 .map(PaymentCreateInfo::from)
                                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_CREATION_FAILED));
                     }

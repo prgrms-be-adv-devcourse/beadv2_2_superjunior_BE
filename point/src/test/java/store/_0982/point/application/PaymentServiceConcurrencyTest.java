@@ -44,7 +44,7 @@ class PaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         PaymentCreateCommand command = new PaymentCreateCommand(orderId, 1000L);
 
         // when
-        runSynchronizedTask(() -> paymentService.createPaymentPoint(command, memberId));
+        runSynchronizedTask(() -> paymentService.createPayment(command, memberId));
 
         // then
         List<Payment> payments = paymentPointRepository.findAll();

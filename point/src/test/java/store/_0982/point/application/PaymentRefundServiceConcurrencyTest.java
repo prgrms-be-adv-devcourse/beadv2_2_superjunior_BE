@@ -135,7 +135,7 @@ class PaymentRefundServiceConcurrencyTest extends BaseConcurrencyTest {
     }
 
     private void validateOwner() {
-        Payment payment = paymentPointRepository.findByPgOrderId(orderId).orElseThrow();
+        Payment payment = paymentPointRepository.findByOrderId(orderId).orElseThrow();
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         assertThat(payment.getRefundedAt()).isNotNull();
         assertThat(payment.getRefundMessage()).isNotNull();

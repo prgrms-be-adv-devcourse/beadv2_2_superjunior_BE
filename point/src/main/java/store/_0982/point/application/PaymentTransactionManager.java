@@ -32,10 +32,15 @@ class PaymentTransactionManager {
         return payment;
     }
 
+    Payment findFailablePayment(String paymentKey, UUID memberId) {
+        Payment payment = findPayment(paymentKey);
+        payment.validateFailable(memberId);
+        return payment;
+    }
+
     @Transactional
     void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
-        Payment payment = findPayment(paymentKey);
-        payment.validateCompletable(memberId);
+        Payment payment = findCompletablePayment(paymentKey, memberId);
         payment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
         applicationEventPublisher.publishEvent(PaymentConfirmedEvent.from(payment));
     }

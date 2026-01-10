@@ -22,7 +22,7 @@ public record PaymentInfo(
         return new PaymentInfo(
                 payment.getId(),
                 payment.getMemberId(),
-                payment.getPgOrderId(),
+                payment.getOrderId(),
                 payment.getPaymentMethod(),
                 payment.getPaymentKey(),
                 payment.getFailMessage(),

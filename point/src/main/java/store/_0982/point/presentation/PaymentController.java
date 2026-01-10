@@ -37,11 +37,11 @@ public class PaymentController {
     @ResponseStatus(HttpStatus.CREATED)
     @ControllerLog
     @PostMapping("/create")
-    public ResponseDto<PaymentCreateInfo> createPaymentPoint(
+    public ResponseDto<PaymentCreateInfo> createPayment(
             @RequestBody @Valid PaymentCreateRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        PaymentCreateInfo info = paymentService.createPaymentPoint(request.toCommand(), memberId);
+        PaymentCreateInfo info = paymentService.createPayment(request.toCommand(), memberId);
         return new ResponseDto<>(HttpStatus.CREATED, info, "주문이 생성되었습니다.");
     }
 

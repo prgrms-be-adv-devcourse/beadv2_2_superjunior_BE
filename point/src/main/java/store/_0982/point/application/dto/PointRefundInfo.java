@@ -21,7 +21,7 @@ public record PointRefundInfo(
         return new PointRefundInfo(
                 payment.getId(),
                 payment.getMemberId(),
-                payment.getPgOrderId(),
+                payment.getOrderId(),
                 payment.getPaymentMethod(),
                 payment.getPaymentKey(),
                 payment.getAmount(),

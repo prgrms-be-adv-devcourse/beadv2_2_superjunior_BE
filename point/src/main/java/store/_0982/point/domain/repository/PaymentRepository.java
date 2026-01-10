@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface PaymentRepository {
     Page<Payment> findAllByMemberId(UUID memberId, Pageable pageable);
 
-    Optional<Payment> findByPgOrderId(UUID pgOrderId);
+    Optional<Payment> findByOrderId(UUID orderId);
 
     Optional<Payment> findByPaymentKey(String paymentKey);
 

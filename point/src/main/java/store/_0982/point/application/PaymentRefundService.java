@@ -30,7 +30,7 @@ public class PaymentRefundService {
     @ServiceLog
     @Transactional
     public PointRefundInfo refundPaymentPoint(UUID memberId, PointRefundCommand command) {
-        Payment payment = paymentRepository.findByPgOrderId(command.orderId())
+        Payment payment = paymentRepository.findByOrderId(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
         payment.validateOwner(memberId);

@@ -26,16 +26,13 @@ public class Payment {
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
-    @Column(name = "pg_order_id", nullable = false, unique = true)
-    private UUID pgOrderId;
-
     @Column(name = "order_id", nullable = false, unique = true)
     private UUID orderId;
 
     @Column(name = "payment_method", length = 30)
     private String paymentMethod;
 
-    @Column(name = "payment_key", length = 50)
+    @Column(name = "payment_key", nullable = false, unique = true)
     private String paymentKey;
 
     @Column(nullable = false)
@@ -68,18 +65,17 @@ public class Payment {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private Payment(UUID memberId, UUID pgOrderId, UUID orderId, long amount) {
+    private Payment(UUID memberId, UUID orderId, long amount) {
         this.id = UUID.randomUUID();
         this.memberId = memberId;
-        this.pgOrderId = pgOrderId;
         this.orderId = orderId;
         this.amount = amount;
         this.requestedAt = OffsetDateTime.now();
         this.status = PaymentStatus.PENDING;
     }
 
-    public static Payment create(UUID memberId, UUID pgOrderId, UUID orderId, long amount) {
-        return new Payment(memberId, pgOrderId, orderId, amount);
+    public static Payment create(UUID memberId, UUID orderId, long amount) {
+        return new Payment(memberId, orderId, amount);
     }
 
     public void markConfirmed(String method, OffsetDateTime approvedAt, String paymentKey) {

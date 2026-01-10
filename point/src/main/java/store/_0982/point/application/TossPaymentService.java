@@ -37,7 +37,7 @@ public class TossPaymentService {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.from(command);
         TossPaymentResponse tossPaymentResponse = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
 
-        if (!payment.getPgOrderId().equals(tossPaymentResponse.orderId())) {
+        if (!payment.getOrderId().equals(tossPaymentResponse.orderId())) {
             throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
         }
         return tossPaymentResponse;

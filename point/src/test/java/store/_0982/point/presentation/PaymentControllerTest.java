@@ -67,7 +67,7 @@ class PaymentControllerTest {
 
     @Test
     @DisplayName("포인트 충전 주문을 생성한다")
-    void createPaymentPoint() throws Exception {
+    void createPayment() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
@@ -83,7 +83,7 @@ class PaymentControllerTest {
                 OffsetDateTime.now()
         );
 
-        when(paymentService.createPaymentPoint(any(), eq(memberId))).thenReturn(info);
+        when(paymentService.createPayment(any(), eq(memberId))).thenReturn(info);
 
         // when & then
         mockMvc.perform(post("/api/payments/create")
@@ -96,7 +96,7 @@ class PaymentControllerTest {
                 .andExpect(jsonPath("$.data.orderId").value(orderId.toString()))
                 .andExpect(jsonPath("$.data.amount").value(10000));
 
-        verify(paymentService).createPaymentPoint(any(), eq(memberId));
+        verify(paymentService).createPayment(any(), eq(memberId));
     }
 
     @Test
