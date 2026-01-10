@@ -50,11 +50,14 @@ create table product_schema.group_purchase
         constraint group_purchase_pk
             primary key,
     min_quantity      integer                  default 1                              not null,
-    max_quantity      integer,
+    max_quantity      integer                                                         not null,
     title             varchar(100)                                                    not null,
     description       text,
     discounted_price  bigint                   default 0                              not null,
-    status            varchar(20)              default 'SCHEDULED'                    not null,
+    status            varchar(20)              default 'SCHEDULED'::character varying not null
+        constraint status_check
+            check ((status)::text = ANY
+                   (ARRAY [('SCHEDULED'::character varying)::text, ('OPEN'::character varying)::text,('SUCCESS'::character varying)::text,('FAILED'::character varying)::text])),
     start_date        timestamp with time zone                                        not null,
     end_date          timestamp with time zone                                        not null,
     seller_id         uuid                                                            not null,
@@ -62,7 +65,14 @@ create table product_schema.group_purchase
         constraint group_purchase_product_product_id_fk
             references product_schema.product,
     current_quantity  integer                  default 0                              not null,
-    version           bigint                   default 0,
+    constraint current_quantity_limit_check
+        check (current_quantity <= max_quantity),
+
+    constraint quantity_range_check
+        check (min_quantity <= max_quantity),
+
+    constraint current_quantity_non_negative_check
+        check (current_quantity >= 0),
     created_at        timestamp with time zone default now()                          not null,
     updated_at        timestamp with time zone,
     settled_at        timestamp with time zone,
@@ -94,8 +104,6 @@ comment on column product_schema.group_purchase.seller_id is '판매자 ID';
 comment on column product_schema.group_purchase.product_id is '상품 ID';
 
 comment on column product_schema.group_purchase.current_quantity is '현재 주문 수량';
-
-comment on column product_schema.group_purchase.version is '낙관적 락 버전';
 
 comment on column product_schema.group_purchase.created_at is '등록일';
 
