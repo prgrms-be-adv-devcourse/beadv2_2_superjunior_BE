@@ -148,15 +148,16 @@ public class OrderService {
             }
 
             // 공동 구매 참여
-            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
-                    cart.getQuantity(),
-                    command.address(),
-                    command.addressDetail(),
-                    command.postalCode(),
-                    command.receiverName(),
-                    purchase.getSellerId(),
-                    purchase.getGroupPurchaseId()
-            );
+//            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
+//                    cart.getQuantity(),
+//                    command.address(),
+//                    command.addressDetail(),
+//                    command.postalCode(),
+//                    command.receiverName(),
+//                    purchase.getSellerId(),
+//                    purchase.getGroupPurchaseId(),
+//                    command.
+//            );
 
             // Order 생성
             Order order = new Order(
@@ -173,7 +174,7 @@ public class OrderService {
 
             Order savedOrder = orderRepository.save(order);
 
-            participate(cart.getGroupPurchaseId(), orderCommand, memberName);
+            //participate(cart.getGroupPurchaseId(), orderCommand, memberName);
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
@@ -213,7 +214,7 @@ public class OrderService {
     }
 
     private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
-        participateService.participate(groupPurchaseId, command.quantity(), name);
+        participateService.participate(groupPurchaseId, command.quantity(), name, command.requestId());
     }
 
     /**

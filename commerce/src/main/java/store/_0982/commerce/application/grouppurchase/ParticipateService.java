@@ -26,7 +26,6 @@ public class ParticipateService {
 
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
-    private final GroupPurchaseRetryService groupPurchaseRetryService;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -35,7 +34,7 @@ public class ParticipateService {
 
     @ServiceLog
     @Transactional
-    public void participate(UUID groupPurchaseId, int quantity, String sellerName) {
+    public void participate(UUID groupPurchaseId, int quantity, String sellerName, String requestId) {
         // 공동 구매 조회
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
@@ -44,14 +43,21 @@ public class ParticipateService {
         String countKey = "gp:" + groupPurchaseId + ":count";
         Long result = redisTemplate.execute(
                 participateScript,
-                List.of(countKey),
+                List.of(countKey, requestId),
                 String.valueOf(quantity),
-                String.valueOf(groupPurchase.getMaxQuantity())
+                String.valueOf(groupPurchase.getMaxQuantity()),
+                "3600"
         );
 
         if(result == -1){
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
+        } else if(result == -2){
+            throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
         }
+
+        // 참여 인원 증가
+        groupPurchase.increaseQuantity(result.intValue());
+        groupPurchaseRepository.save(groupPurchase);
 
         // Kafka 이벤트 발행
         Product product = productRepository.findById(groupPurchase.getProductId())
