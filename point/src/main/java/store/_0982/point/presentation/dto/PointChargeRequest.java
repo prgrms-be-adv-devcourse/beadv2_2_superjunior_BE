@@ -8,10 +8,9 @@ import java.util.UUID;
 
 public record PointChargeRequest(
         @Positive long amount,
-        @NotNull UUID idempotencyKey,
-        @NotNull UUID orderId
+        @NotNull UUID idempotencyKey
 ) {
     public PointChargeCommand toCommand() {
-        return new PointChargeCommand(amount, idempotencyKey, orderId);
+        return new PointChargeCommand(amount, idempotencyKey);
     }
 }

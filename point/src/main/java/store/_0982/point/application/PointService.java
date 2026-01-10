@@ -3,7 +3,7 @@ package store._0982.point.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
@@ -17,6 +17,7 @@ import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointHistoryStatus;
 import store._0982.point.domain.entity.Point;
 import store._0982.point.domain.entity.PointHistory;
+import store._0982.point.domain.event.PointChargedEvent;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
 import store._0982.point.domain.repository.PointHistoryRepository;
@@ -43,28 +44,18 @@ public class PointService {
         return PointInfo.from(point);
     }
 
-    // TODO: 계좌이체 API를 넣을까? 고도화를 어떻게 할지도 생각하자
+    // TODO: 계좌이체 API를 넣을까? 고도화를 어떻게 할지도 생각하자. 우선은 중복 요청 처리는 하지 말자
     @ServiceLog
     @Transactional
     public PointInfo chargePoints(PointChargeCommand command, UUID memberId) {
         return processPointOperation(
                 memberId,
                 command.idempotencyKey(),
-                point -> {
-                    UUID orderId = command.orderId();
-                    if (pointHistoryRepository.existsByOrderIdAndStatus(orderId, PointHistoryStatus.CHARGED)) {
-                        return PointInfo.from(point);
-                    }
-
-                    OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
-                    orderInfo.validateChargeable(memberId);
-
-                    return executeIdempotentAction(point, () -> {
-                        PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.charged(memberId, command));
-                        point.charge(command.amount());
-                        // 이벤트 발송 추가
-                    });
-                }
+                point -> executeIdempotentAction(point, () -> {
+                    PointHistory history = pointHistoryRepository.saveAndFlush(PointHistory.charged(memberId, command));
+                    point.charge(command.amount());
+                    applicationEventPublisher.publishEvent(PointChargedEvent.from(history));
+                })
         );
     }
 
@@ -136,7 +127,7 @@ public class PointService {
         try {
             action.run();
             return PointInfo.from(point);
-        } catch (DataIntegrityViolationException e) {
+        } catch (DuplicateKeyException e) {
             return PointInfo.from(point);
         }
     }

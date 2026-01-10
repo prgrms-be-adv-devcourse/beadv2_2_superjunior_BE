@@ -14,7 +14,7 @@ import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PaymentStatus;
 import store._0982.point.domain.entity.Payment;
 import store._0982.point.domain.entity.Point;
-import store._0982.point.domain.event.PointRechargedEvent;
+import store._0982.point.domain.event.PaymentConfirmedEvent;
 import store._0982.point.domain.repository.PaymentRepository;
 import store._0982.point.domain.repository.PointRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -50,7 +50,7 @@ public class PaymentConfirmService {
         try {
             payment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
             point.charge(payment.getAmount());
-            applicationEventPublisher.publishEvent(PointRechargedEvent.from(payment));
+            applicationEventPublisher.publishEvent(PaymentConfirmedEvent.from(payment));
         } catch (Exception e) {
             rollbackPayment(command, payment);
         }

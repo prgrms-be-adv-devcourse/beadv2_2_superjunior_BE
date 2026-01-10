@@ -6,8 +6,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointEvent;
-import store._0982.point.domain.entity.PointHistory;
 import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.entity.PointHistory;
 
 @Slf4j
 @Service
@@ -15,9 +15,14 @@ import store._0982.point.domain.entity.Payment;
 public class PointEventPublisher {
     private final KafkaTemplate<String, PointEvent> kafkaTemplate;
 
-    public void publishPointRechargedEvent(Payment payment) {
-        PointEvent event = createPointRechargedEvent(payment);
-        send(KafkaTopics.POINT_RECHARGED, payment.getMemberId().toString(), event);
+
+    public void publishPaymentConfirmedEvent(Payment payment) {
+        // TODO: 결제 승인 이벤트 발송 추가
+    }
+
+    public void publishPointChargedEvent(PointHistory history) {
+        PointEvent event = createPointChangedEvent(history, PointEvent.Status.RECHARGED);
+        send(KafkaTopics.POINT_RECHARGED, history.getMemberId().toString(), event);
     }
 
     public void publishPointDeductedEvent(PointHistory history) {
@@ -28,16 +33,6 @@ public class PointEventPublisher {
     public void publishPointReturnedEvent(PointHistory history) {
         PointEvent event = createPointChangedEvent(history, PointEvent.Status.RETURNED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
-    }
-
-    private static PointEvent createPointRechargedEvent(Payment payment) {
-        return new PointEvent(
-                payment.getId(),
-                payment.getMemberId(),
-                payment.getAmount(),
-                PointEvent.Status.RECHARGED,
-                payment.getPaymentMethod()
-        );
     }
 
     private static PointEvent createPointChangedEvent(PointHistory history, PointEvent.Status status) {

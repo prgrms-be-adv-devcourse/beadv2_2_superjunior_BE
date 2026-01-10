@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public record PointChargeCommand(
         long amount,
-        UUID idempotencyKey,
-        UUID orderId
+        UUID idempotencyKey
 ) {
 }

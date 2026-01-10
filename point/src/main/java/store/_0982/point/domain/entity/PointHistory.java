@@ -60,7 +60,6 @@ public class PointHistory {
                 .idempotencyKey(command.idempotencyKey())
                 .status(PointHistoryStatus.CHARGED)
                 .amount(command.amount())
-                .orderId(command.orderId())
                 .build();
     }
 

@@ -16,7 +16,7 @@ import store._0982.point.application.dto.PaymentConfirmCommand;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.Point;
 import store._0982.point.domain.entity.Payment;
-import store._0982.point.domain.event.PointRechargedEvent;
+import store._0982.point.domain.event.PaymentConfirmedEvent;
 import store._0982.point.domain.repository.PointRepository;
 import store._0982.point.domain.repository.PaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -132,14 +132,14 @@ class PaymentServiceTest {
             when(paymentRepository.findByPgOrderId(orderId)).thenReturn(Optional.of(payment));
             when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
             when(pointRepository.findById(memberId)).thenReturn(Optional.of(point));
-            doNothing().when(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
+            doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedEvent.class));
 
             // when
             paymentService.confirmPayment(command, memberId);
 
             // then
             assertThat(point.getTotalBalance()).isEqualTo(10000);
-            verify(applicationEventPublisher).publishEvent(any(PointRechargedEvent.class));
+            verify(applicationEventPublisher).publishEvent(any(PaymentConfirmedEvent.class));
         }
 
         @Test
