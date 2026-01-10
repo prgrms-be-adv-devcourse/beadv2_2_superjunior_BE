@@ -16,5 +16,7 @@ public interface PaymentRepository {
 
     Optional<Payment> findById(UUID id);
 
+    Payment save(Payment payment);
+
     Payment saveAndFlush(Payment payment);
 }

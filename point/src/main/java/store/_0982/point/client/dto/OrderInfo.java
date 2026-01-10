@@ -28,33 +28,27 @@ public record OrderInfo(
     public void validateReturnable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
         if (status != Status.ORDER_FAILED) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 
     public void validateDeductible(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
         if (status != Status.CANCELLED) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 
-    public void validateChargeable(UUID memberId) {
-        if (!this.memberId.equals(memberId)) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
-        }
-    }
-
-    public void validateAutoChargeable(UUID memberId, UUID orderId, long amount) {
+    public void validateConfirmable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
         if (status != Status.PENDING) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 
     private void validate(UUID memberId, UUID orderId, long amount) {
         if (!this.memberId.equals(memberId) || !this.orderId.equals(orderId) || price * quantity != amount) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 }

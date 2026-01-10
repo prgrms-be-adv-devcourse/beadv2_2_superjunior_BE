@@ -19,7 +19,7 @@ public class PaymentFailure {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_point_id")
+    @JoinColumn(name = "payment_id")
     private Payment payment;
 
     @Column(name = "payment_key", nullable = false, length = 50)
