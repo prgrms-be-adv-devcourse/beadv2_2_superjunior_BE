@@ -74,7 +74,8 @@ public class OrderService {
                 command.postalCode(),
                 command.receiverName(),
                 command.sellerId(),
-                command.groupPurchaseId()
+                command.groupPurchaseId(),
+                command.requestId()
         );
 
         Order savedOrder = orderRepository.save(order);
@@ -148,16 +149,16 @@ public class OrderService {
             }
 
             // 공동 구매 참여
-//            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
-//                    cart.getQuantity(),
-//                    command.address(),
-//                    command.addressDetail(),
-//                    command.postalCode(),
-//                    command.receiverName(),
-//                    purchase.getSellerId(),
-//                    purchase.getGroupPurchaseId(),
-//                    command.
-//            );
+            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
+                    cart.getQuantity(),
+                    command.address(),
+                    command.addressDetail(),
+                    command.postalCode(),
+                    command.receiverName(),
+                    purchase.getSellerId(),
+                    purchase.getGroupPurchaseId(),
+                    command.requestId()
+            );
 
             // Order 생성
             Order order = new Order(
@@ -169,7 +170,8 @@ public class OrderService {
                     command.postalCode(),
                     command.receiverName(),
                     purchase.getSellerId(),
-                    cart.getGroupPurchaseId()
+                    cart.getGroupPurchaseId(),
+                    command.requestId()
             );
 
             Order savedOrder = orderRepository.save(order);
@@ -299,7 +301,7 @@ public class OrderService {
     @ServiceLog
     @Transactional
     public void returnOrder(UUID groupPurchaseId) {
-        List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
+        List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.GROUP_PURCHASE_FAIL);
 
         log.info("환불 대상 주문 조회 완료 : groupPurchaseId = {}, count = {}", groupPurchaseId, orders.size());
 
