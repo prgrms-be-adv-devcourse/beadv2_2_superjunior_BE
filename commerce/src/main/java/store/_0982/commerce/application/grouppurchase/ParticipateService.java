@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCountSyncEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
@@ -47,6 +48,7 @@ public class ParticipateService {
                 String.valueOf(quantity),
                 String.valueOf(groupPurchase.getMaxQuantity()),
                 "3600"
+
         );
 
         if(result == -1){
@@ -55,9 +57,11 @@ public class ParticipateService {
             throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
         }
 
-        // 참여 인원 증가
-        groupPurchase.syncCurrentQuantity(result.intValue());
-        groupPurchaseRepository.save(groupPurchase);
+        // 참여 인원 증가 이벤트 발행
+        eventPublisher.publishEvent(
+                new GroupPurchaseCountSyncEvent(groupPurchase.getGroupPurchaseId(), result.intValue())
+        );
+
 
         // Kafka 이벤트 발행
         Product product = productRepository.findById(groupPurchase.getProductId())

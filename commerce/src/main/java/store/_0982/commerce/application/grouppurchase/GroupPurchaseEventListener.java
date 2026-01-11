@@ -1,20 +1,20 @@
 package store._0982.commerce.application.grouppurchase;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCreatedEvent;
-import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
-import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
-import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
+import store._0982.commerce.application.grouppurchase.event.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GroupPurchaseEventListener {
 
     private final KafkaTemplate<String, GroupPurchaseEvent> kafkaTemplate;
@@ -92,5 +92,24 @@ public class GroupPurchaseEventListener {
                 searchEvent.getId().toString(),
                 searchEvent
         );
+    }
+
+    @Async("groupPurchaseAsyncExecutor")
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void participantCountSyncToDb(GroupPurchaseCountSyncEvent event){
+        try{
+            GroupPurchase groupPurchase = groupPurchaseRepository.findById(event.groupPurchaseId())
+                    .orElse(null);
+
+            if(groupPurchase == null){
+                log.warn("공동구매 찾을 수 없음 : groupPurchaseId = {}", event.groupPurchaseId());
+                return;
+            }
+
+            groupPurchase.syncCurrentQuantity(event.newCount());
+            groupPurchaseRepository.save(groupPurchase);
+        }catch(Exception e){
+            log.error("Participate DB 동기화 실패");
+        }
     }
 }
