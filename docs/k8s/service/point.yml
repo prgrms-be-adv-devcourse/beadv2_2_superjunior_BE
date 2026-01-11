@@ -29,7 +29,7 @@ spec:
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
             - name: CLIENT_COMMERCE
-              value: http://commerce-service:8087
+              value: "http://commerce-service:8087"
           resources:
             requests:
               cpu: "200m"
