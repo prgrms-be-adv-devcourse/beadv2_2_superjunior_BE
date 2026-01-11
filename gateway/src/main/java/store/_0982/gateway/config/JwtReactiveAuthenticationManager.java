@@ -1,7 +1,6 @@
 package store._0982.gateway.config;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -28,6 +27,11 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
+
+        if (authentication instanceof MemberAuthenticationToken) {
+            return Mono.just(authentication); // 게스트 토큰 등 이미 인증된 토큰은 그대로 사용
+        }
+
         if (!(authentication instanceof AccessTokenAuthenticationToken)) {
             return Mono.empty();
         }
@@ -48,7 +52,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
 
     private Mono<Member> fetchAndCacheMember(UUID memberId) {
         return memberServiceClient.fetchMember(memberId)
-                .switchIfEmpty(Mono.error(new JwtException("없는 Id")));
+                .switchIfEmpty(Mono.just(Member.createGuest()));
     }
 
     private MemberAuthenticationToken toAuthenticatedToken(UUID memberId, Role role) {

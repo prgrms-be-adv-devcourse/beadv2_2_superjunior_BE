@@ -3,9 +3,11 @@ package store._0982.gateway.config;
 import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import store._0982.gateway.domain.Role;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -34,4 +36,7 @@ public class MemberAuthenticationToken extends AbstractAuthenticationToken {
         return memberId;
     }
 
+    public static MemberAuthenticationToken generateGuestAuthenticationToken() {
+        return new MemberAuthenticationToken(UUID.fromString("00000000-0000-0000-0000-000000000000"), Role.GUEST, Collections.singletonList(new SimpleGrantedAuthority(Role.GUEST.name())));
+    }
 }

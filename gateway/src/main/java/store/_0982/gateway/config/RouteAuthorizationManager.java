@@ -27,8 +27,7 @@ public class RouteAuthorizationManager implements ReactiveAuthorizationManager<A
         return authentication
                 .map(Authentication::getPrincipal)
                 .ofType(UUID.class)
-                .flatMap(memberCache::findById)
-                .defaultIfEmpty(Member.createGuest())
+                .flatMap(this::getRole)
                 .flatMap(member -> {
                     String method = exchange.getRequest().getMethod().name();
                     String path = exchange.getRequest().getURI().getPath();
@@ -43,5 +42,10 @@ public class RouteAuthorizationManager implements ReactiveAuthorizationManager<A
                             })
                             .defaultIfEmpty(new AuthorizationDecision(false));
                 });
+    }
+
+    private Mono<Member> getRole(UUID memberId){
+        if (memberId == UUID.fromString("00000000-0000-0000-0000-000000000000")) return Mono.just(Member.createGuest());
+        return memberCache.findById(memberId);
     }
 }

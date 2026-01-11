@@ -7,13 +7,16 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.http.HttpCookie;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import reactor.core.publisher.Mono;
+import store._0982.gateway.domain.MemberCache;
 import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
+import store._0982.gateway.infrastructure.member.MemberServiceClient;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -22,6 +25,8 @@ public class SecurityConfig {
 
     private final RouteAuthorizationManager routeAuthorizationManager;
     private final GatewayJwtProvider gatewayJwtProvider;
+    private final MemberCache memberCache;
+    private final MemberServiceClient memberServiceClient;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -52,9 +57,20 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationWebFilter authenticationWebFilter() {
-        ReactiveAuthenticationManager authenticationManager = Mono::just;
-        // 쿠키의 토큰을 Authentication으로 변경하는 컨버터
-        ServerAuthenticationConverter converter = new CookieServerAuthenticationConverter(gatewayJwtProvider);
+        ReactiveAuthenticationManager authenticationManager = new JwtReactiveAuthenticationManager(
+                gatewayJwtProvider,
+                memberCache,
+                memberServiceClient
+        );
+        ServerAuthenticationConverter converter = exchange -> {
+            HttpCookie accessTokenCookie = exchange.getRequest()
+                    .getCookies()
+                    .getFirst("accessToken");
+            if (accessTokenCookie == null || accessTokenCookie.getValue().isBlank()) {
+                return Mono.just(MemberAuthenticationToken.generateGuestAuthenticationToken());
+            }
+            return Mono.just(new AccessTokenAuthenticationToken(accessTokenCookie.getValue()));
+        };
 
         AuthenticationWebFilter filter = new AuthenticationWebFilter(authenticationManager);
         filter.setServerAuthenticationConverter(converter);

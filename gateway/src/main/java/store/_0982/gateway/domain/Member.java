@@ -21,7 +21,7 @@ public class Member {
     }
 
     public static Member createGuest(){
-        return new Member(null, Role.GUEST);
+        return new Member(UUID.fromString("00000000-0000-0000-0000-000000000000"), Role.GUEST);
     }
 
 }
