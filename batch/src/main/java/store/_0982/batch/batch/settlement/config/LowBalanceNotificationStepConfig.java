@@ -7,6 +7,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.settlement.listener.LowBalanceItemReaderListener;
 import store._0982.batch.batch.settlement.listener.MonthlySettlementStepListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.LowBalanceProcessor;
@@ -31,6 +32,7 @@ public class LowBalanceNotificationStepConfig {
     private final LowBalanceProcessor lowBalanceProcessor;
     private final LowBalanceNotificationWriter lowBalanceNotificationWriter;
     private final MonthlySettlementStepListener stepListener;
+    private final LowBalanceItemReaderListener lowBalanceItemReaderListener;
 
     @Bean
     public Step lowBalanceNotificationStep() {
@@ -40,6 +42,7 @@ public class LowBalanceNotificationStepConfig {
                 .processor(lowBalanceProcessor)
                 .writer(lowBalanceNotificationWriter)
                 .listener(stepListener)
+                .listener(lowBalanceItemReaderListener)
                 .build();
     }
 }
