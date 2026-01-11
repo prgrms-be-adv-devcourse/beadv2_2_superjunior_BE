@@ -19,7 +19,7 @@ public class MemberServiceClient {
 
     private final WebClient.Builder webClientBuilder;
 
-    @Value("${member.service.url}")
+    @Value("${member-service.url}")
     private String memberServiceBaseUrl;
 
     public Mono<Member> fetchMember(UUID memberId) {
