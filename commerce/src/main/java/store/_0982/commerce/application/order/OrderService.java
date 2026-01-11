@@ -58,6 +58,11 @@ public class OrderService {
     @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
+        // 이미 처리 요청된 주문인지 확인
+        if(orderRepository.existsByIdempotencyKey(command.requestId())){
+            throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
+        }
+
         // 주문자 존재 여부
         String memberName = validateMember(memberId);
 
@@ -66,7 +71,7 @@ public class OrderService {
 
         // 참여
         participate(groupPurchase.getGroupPurchaseId(), command, memberName);
-        
+
         // order 생성
         Order order = Order.create(
                 command.quantity(),

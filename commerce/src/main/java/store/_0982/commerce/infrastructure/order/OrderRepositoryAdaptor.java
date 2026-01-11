@@ -70,4 +70,9 @@ public class OrderRepositoryAdaptor implements OrderRepository {
                 groupPurchaseId, status
         );
     }
+
+    @Override
+    public boolean existsByIdempotencyKey(String idempotenceKey) {
+        return orderJpaRepository.existsByIdempotencyKey(idempotenceKey);
+    }
 }
