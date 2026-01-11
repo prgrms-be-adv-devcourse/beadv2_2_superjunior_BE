@@ -12,7 +12,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
-import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 
 import java.util.UUID;
 
@@ -46,14 +46,14 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @GetMapping("/search")
-    public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocument(
+    public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchGroupPurchaseDocument(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
             @RequestHeader(required = false, value = HeaderName.ID) UUID memberId,
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable);
+        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }
@@ -62,13 +62,13 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @GetMapping("/search/all")
-    public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchAllGroupPurchaseDocument(
+    public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchAllGroupPurchaseDocument(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchAllGroupPurchaseDocument(keyword, status, category, pageable);
+        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchAllGroupPurchaseDocument(keyword, status, category, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }
@@ -77,14 +77,14 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @GetMapping("/search/seller")
-    public ResponseDto<PageResponse<GroupPurchaseDocumentInfo>> searchGroupPurchaseDocumentBySeller(
+    public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchGroupPurchaseDocumentBySeller(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) UUID sellerId,
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseDocumentInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, sellerId, category, pageable);
+        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, sellerId, category, pageable);
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }
