@@ -54,9 +54,10 @@ public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
         executorService.submit(() -> {
             try{
                 signalReadyAndAwaitStart();
-                task.run();
-            } catch(Exception e){
-                System.err.println(e.getMessage());
+                task.run();  // 예외를 task 안에서 처리하게 함
+            } catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+                System.err.println("Thread interrupted: " + e.getMessage());
             } finally {
                 doneLatch.countDown();
             }
