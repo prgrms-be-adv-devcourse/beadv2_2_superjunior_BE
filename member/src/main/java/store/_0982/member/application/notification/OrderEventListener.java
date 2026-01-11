@@ -38,20 +38,21 @@ public class OrderEventListener {
         notificationRepository.save(notification);
     }
 
+    // TODO: 나중에 알림 분기 제대로 진행
     private NotificationContent createNotificationContent(OrderChangedEvent event) {
         String productName = event.getProductName();
         return switch (event.getStatus()) {
-            case CREATED -> new NotificationContent(
+            case PAYMENT_COMPLETED -> new NotificationContent(
                     NotificationType.ORDER_SCHEDULED,
                     productName + " 공동 구매 신청 완료",
                     productName + " 상품의 공동 구매 신청이 완료되었습니다."
             );
-            case SUCCESS -> new NotificationContent(
+            case GROUP_PURCHASE_SUCCESS -> new NotificationContent(
                     NotificationType.ORDER_COMPLETED,
                     productName + " 공동 구매 성공",
                     productName + " 상품의 공동 구매가 확정되어 곧 배송이 시작됩니다."
             );
-            case FAILED -> new NotificationContent(
+            case GROUP_PURCHASE_FAIL, PAYMENT_FAILED, ORDER_FAILED -> new NotificationContent(
                     NotificationType.ORDER_FAILED,
                     productName + " 공동 구매 실패",
                     productName + " 상품의 공동 구매가 취소되어 곧 포인트가 반환됩니다."

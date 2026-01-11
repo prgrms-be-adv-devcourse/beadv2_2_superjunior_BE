@@ -47,7 +47,7 @@ public final class NotificationCreator {
                 .build();
     }
 
-    public static Notification create(GroupPurchaseChangedEvent event, NotificationContent content, NotificationChannel channel) {
+    public static Notification create(GroupPurchaseEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getSellerId())
                 .type(content.type())

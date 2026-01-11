@@ -27,7 +27,7 @@ public class SettlementEventListener {
     @ServiceLog
     @RetryableTopic(exclude = CustomKafkaException.class)
     @KafkaListener(
-            topics = {KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED, KafkaTopics.MONTHLY_SETTLEMENT_FAILED},
+            topics = {KafkaTopics.SETTLEMENT_DONE},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )

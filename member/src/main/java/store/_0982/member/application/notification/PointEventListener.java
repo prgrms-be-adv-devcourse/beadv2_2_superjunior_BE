@@ -22,7 +22,7 @@ public class PointEventListener {
     @ServiceLog
     @RetryableTopic
     @KafkaListener(
-            topics = {KafkaTopics.POINT_CHANGED, KafkaTopics.POINT_RECHARGED},
+            topics = {KafkaTopics.POINT_CHANGED},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )
