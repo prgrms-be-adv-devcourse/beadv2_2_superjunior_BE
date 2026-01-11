@@ -1,7 +1,7 @@
 package store._0982.point.application.dto;
 
-import store._0982.point.domain.entity.PaymentPoint;
-import store._0982.point.domain.constant.PaymentPointStatus;
+import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.constant.PaymentStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -13,21 +13,21 @@ public record PointRefundInfo(
         String paymentMethod,
         String paymentKey,
         long amount,
-        PaymentPointStatus status,
+        PaymentStatus status,
         OffsetDateTime createdAt,
         OffsetDateTime refundedAt
 ) {
-    public static PointRefundInfo from(PaymentPoint paymentPoint){
+    public static PointRefundInfo from(Payment payment){
         return new PointRefundInfo(
-                paymentPoint.getId(),
-                paymentPoint.getMemberId(),
-                paymentPoint.getPgOrderId(),
-                paymentPoint.getPaymentMethod(),
-                paymentPoint.getPaymentKey(),
-                paymentPoint.getAmount(),
-                paymentPoint.getStatus(),
-                paymentPoint.getCreatedAt(),
-                paymentPoint.getRefundedAt()
+                payment.getId(),
+                payment.getMemberId(),
+                payment.getOrderId(),
+                payment.getPaymentMethod(),
+                payment.getPaymentKey(),
+                payment.getAmount(),
+                payment.getStatus(),
+                payment.getCreatedAt(),
+                payment.getRefundedAt()
         );
     }
 }

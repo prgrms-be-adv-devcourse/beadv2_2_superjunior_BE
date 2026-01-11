@@ -64,7 +64,7 @@ public class ParticipateService {
         Product product = productRepository.findById(groupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         String sellerName = memberClient.getMember(product.getSellerId()).data().name();
-        GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.INCREASE_PARTICIPATE, product.toEvent());
+        GroupPurchaseEvent event = groupPurchase.toEvent(sellerName, GroupPurchaseEvent.EventStatus.INCREASE_PARTICIPATE, product.toEvent());
         upsertKafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event.getId().toString(), event);
 
         return ParticipateInfo.success(

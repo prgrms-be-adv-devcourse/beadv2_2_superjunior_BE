@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.kafka.dto.SettlementEvent;
+import store._0982.common.kafka.dto.SettlementDoneEvent;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -82,39 +82,39 @@ public class Settlement {
         this.status = SettlementStatus.FAILED;
     }
 
-    public SettlementEvent toCompletedEvent() {
-        return new SettlementEvent(
+    public SettlementDoneEvent toCompletedEvent() {
+        return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.SUCCESS,
                 this.totalAmount,
                 this.serviceFee,
                 this.settlementAmount
         );
     }
 
-    public SettlementEvent toFailedEvent() {
-        return new SettlementEvent(
+    public SettlementDoneEvent toFailedEvent() {
+        return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementEvent.Status.FAILED,
+                SettlementDoneEvent.Status.FAILED,
                 this.totalAmount,
                 this.serviceFee,
                 this.settlementAmount
         );
     }
 
-    public SettlementEvent toDeferredEvent() {
-        return new SettlementEvent(
+    public SettlementDoneEvent toDeferredEvent() {
+        return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementEvent.Status.DEFERRED,
+                SettlementDoneEvent.Status.DEFERRED,
                 this.totalAmount,
                 BigDecimal.ZERO,
                 BigDecimal.ZERO

@@ -1,0 +1,56 @@
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
+spring:
+  application:
+    name: point
+
+  flyway:
+    enabled: true
+    default-schema: payment_schema
+    schemas: payment_schema
+    create-schemas: true
+
+  kafka:
+    bootstrap-servers: kafka-service:9092
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: payment_schema
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+  default-flat-param-object: true
+
+server:
+  port: 8086
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  tracing:
+    sampling:
+      probability: 0.0
+    propagation:
+      type: w3c  # 또는 b3
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+
+toss:
+  secret-key: ${TOSS_SECRET_KEY}
