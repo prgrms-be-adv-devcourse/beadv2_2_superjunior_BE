@@ -39,11 +39,10 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-  tracing:
-    sampling:
-      probability: 0.0
-    propagation:
-      type: w3c  # 또는 b3
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
