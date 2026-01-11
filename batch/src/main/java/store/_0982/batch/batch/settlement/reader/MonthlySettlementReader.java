@@ -24,7 +24,7 @@ public class MonthlySettlementReader {
         return new JpaPagingItemReaderBuilder<SellerBalance>()
                 .name("monthlySettlementReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(10)
+                .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
                         SELECT s
                         FROM SellerBalance s
