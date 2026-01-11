@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.PointEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 
 @Configuration
 public class KafkaConfig {
@@ -16,12 +16,12 @@ public class KafkaConfig {
     private String bootStrapServer;
 
     @Bean
-    public ProducerFactory<String, PointEvent> producerFactory() {
+    public ProducerFactory<String, PointChangedEvent> producerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootStrapServer);
     }
 
     @Bean
-    public KafkaTemplate<String, PointEvent> kafkaTemplate() {
+    public KafkaTemplate<String, PointChangedEvent> kafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(producerFactory());
     }
 

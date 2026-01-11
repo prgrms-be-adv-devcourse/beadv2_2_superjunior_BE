@@ -11,25 +11,25 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings("unused")
-public class PointEvent extends BaseEvent {
+public class OrderChangedEvent extends BaseEvent {
     private UUID id;
     private UUID memberId;
-    private long amount;
     private Status status;
-    private String paymentMethod;
+    private String productName;
 
-    public PointEvent(Clock clock, UUID id, UUID memberId, long amount, Status status, String paymentMethod) {
+    public OrderChangedEvent(Clock clock, UUID id, UUID memberId, Status status, String productName) {
         super(clock);
         this.id = id;
         this.memberId = memberId;
-        this.amount = amount;
         this.status = status;
-        this.paymentMethod = paymentMethod;
+        this.productName = productName;
     }
 
     public enum Status {
-        DEDUCTED,
-        RETURNED,
-        RECHARGED
+        PAYMENT_COMPLETED,
+        PAYMENT_FAILED,
+        ORDER_FAILED,
+        GROUP_PURCHASE_SUCCESS,
+        GROUP_PURCHASE_FAIL
     }
 }

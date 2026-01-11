@@ -31,7 +31,7 @@ public class GroupPurchaseEventListener {
     @KafkaListener(topics = KafkaTopics.GROUP_PURCHASE_CHANGED, groupId = "search-service-group", containerFactory = "changeGroupPurchaseKafkaListenerFactory")
     public void changed(GroupPurchaseEvent event) {
         try {
-            if (event.getKafkaStatus() == GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE) {
+            if (event.getKafkaStatus() == GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE) {
                 groupPurchaseRepository.deleteById(event.getId().toString());
                 return;
             }

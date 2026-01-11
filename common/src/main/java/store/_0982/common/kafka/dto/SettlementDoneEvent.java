@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings({"unused", "java:S107"})
-public class SettlementEvent extends BaseEvent {
+public class SettlementDoneEvent extends BaseEvent {
     private UUID id;
     private UUID sellerId;
     private OffsetDateTime start;
@@ -23,8 +23,8 @@ public class SettlementEvent extends BaseEvent {
     private BigDecimal serviceFee;
     private BigDecimal settlementAmount;
 
-    public SettlementEvent(Clock clock, UUID id, UUID sellerId, OffsetDateTime start, OffsetDateTime end,
-                           Status status, long totalAmount, BigDecimal serviceFee, BigDecimal settlementAmount) {
+    public SettlementDoneEvent(Clock clock, UUID id, UUID sellerId, OffsetDateTime start, OffsetDateTime end,
+                               Status status, long totalAmount, BigDecimal serviceFee, BigDecimal settlementAmount) {
         super(clock);
         this.id = id;
         this.sellerId = sellerId;

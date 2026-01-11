@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.PointEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.NotificationStatus;
@@ -25,9 +25,9 @@ import static org.awaitility.Awaitility.await;
         partitions = 3,
         topics = {"point.recharged", "point.changed"}
 )
-class PointEventListenerTest {
+class PointChangedEventListenerTest {
     @Autowired
-    private KafkaTemplate<String, PointEvent> kafkaTemplate;
+    private KafkaTemplate<String, PointChangedEvent> kafkaTemplate;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -37,11 +37,11 @@ class PointEventListenerTest {
     void handlePointRechargedEvent() {
         // given
         UUID memberId = UUID.randomUUID();
-        PointEvent event = new PointEvent(
+        PointChangedEvent event = new PointChangedEvent(
                 UUID.randomUUID(),
                 memberId,
                 1000L,
-                PointEvent.Status.RECHARGED,
+                PointChangedEvent.Status.CHARGED,
                 "간편결제"
         );
 

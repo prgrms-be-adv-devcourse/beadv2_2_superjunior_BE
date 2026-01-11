@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderEvent;
+import store._0982.common.kafka.dto.OrderChangedEvent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.NotificationStatus;
@@ -23,11 +23,11 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest
 @EmbeddedKafka(
         partitions = 3,
-        topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_STATUS_CHANGED}
+        topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_CHANGED}
 )
-class OrderEventListenerTest {
+class OrderChangedEventListenerTest {
     @Autowired
-    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
+    private KafkaTemplate<String, OrderChangedEvent> kafkaTemplate;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -37,10 +37,10 @@ class OrderEventListenerTest {
     void handleOrderCreatedEvent() {
         // given
         UUID memberId = UUID.randomUUID();
-        OrderEvent event = new OrderEvent(
+        OrderChangedEvent event = new OrderChangedEvent(
                 UUID.randomUUID(),
                 memberId,
-                OrderEvent.Status.CREATED,
+                OrderChangedEvent.Status.CREATED,
                 "테스트 상품"
         );
 
@@ -67,15 +67,15 @@ class OrderEventListenerTest {
     void handleOrderSuccessEvent() {
         // given
         UUID memberId = UUID.randomUUID();
-        OrderEvent event = new OrderEvent(
+        OrderChangedEvent event = new OrderChangedEvent(
                 UUID.randomUUID(),
                 memberId,
-                OrderEvent.Status.SUCCESS,
+                OrderChangedEvent.Status.SUCCESS,
                 "성공 상품"
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.ORDER_STATUS_CHANGED, memberId.toString(), event);
+        kafkaTemplate.send(KafkaTopics.ORDER_CHANGED, memberId.toString(), event);
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -97,15 +97,15 @@ class OrderEventListenerTest {
     void handleOrderFailedEvent() {
         // given
         UUID memberId = UUID.randomUUID();
-        OrderEvent event = new OrderEvent(
+        OrderChangedEvent event = new OrderChangedEvent(
                 UUID.randomUUID(),
                 memberId,
-                OrderEvent.Status.FAILED,
+                OrderChangedEvent.Status.FAILED,
                 "실패 상품"
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.ORDER_STATUS_CHANGED, memberId.toString(), event);
+        kafkaTemplate.send(KafkaTopics.ORDER_CHANGED, memberId.toString(), event);
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {

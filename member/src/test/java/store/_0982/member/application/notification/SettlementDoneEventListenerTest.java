@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.SettlementEvent;
+import store._0982.common.kafka.dto.SettlementDoneEvent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.NotificationStatus;
@@ -30,9 +30,9 @@ import static org.awaitility.Awaitility.await;
                 KafkaTopics.MONTHLY_SETTLEMENT_FAILED
         }
 )
-class SettlementEventListenerTest {
+class SettlementDoneEventListenerTest {
     @Autowired
-    private KafkaTemplate<String, SettlementEvent> kafkaTemplate;
+    private KafkaTemplate<String, SettlementDoneEvent> kafkaTemplate;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -42,12 +42,12 @@ class SettlementEventListenerTest {
     void handleDailySettlementCompletedEvent() {
         // given
         UUID sellerId = UUID.randomUUID();
-        SettlementEvent event = new SettlementEvent(
+        SettlementDoneEvent event = new SettlementDoneEvent(
                 UUID.randomUUID(),
                 sellerId,
                 java.time.OffsetDateTime.now().minusDays(1),
                 java.time.OffsetDateTime.now(),
-                SettlementEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.SUCCESS,
                 50000L,
                 java.math.BigDecimal.valueOf(500),
                 java.math.BigDecimal.valueOf(49500)
@@ -77,12 +77,12 @@ class SettlementEventListenerTest {
     void handleDailySettlementFailedEvent() {
         // given
         UUID sellerId = UUID.randomUUID();
-        SettlementEvent event = new SettlementEvent(
+        SettlementDoneEvent event = new SettlementDoneEvent(
                 UUID.randomUUID(),
                 sellerId,
                 java.time.OffsetDateTime.now().minusDays(1),
                 java.time.OffsetDateTime.now(),
-                SettlementEvent.Status.FAILED,
+                SettlementDoneEvent.Status.FAILED,
                 30000L,
                 java.math.BigDecimal.valueOf(300),
                 java.math.BigDecimal.valueOf(29700)
@@ -112,12 +112,12 @@ class SettlementEventListenerTest {
     void handleMonthlySettlementCompletedEvent() {
         // given
         UUID sellerId = UUID.randomUUID();
-        SettlementEvent event = new SettlementEvent(
+        SettlementDoneEvent event = new SettlementDoneEvent(
                 UUID.randomUUID(),
                 sellerId,
                 java.time.OffsetDateTime.now().minusMonths(1),
                 java.time.OffsetDateTime.now(),
-                SettlementEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.SUCCESS,
                 1000000L,
                 java.math.BigDecimal.valueOf(10000),
                 java.math.BigDecimal.valueOf(990000)
@@ -147,12 +147,12 @@ class SettlementEventListenerTest {
     void handleMonthlySettlementFailedEvent() {
         // given
         UUID sellerId = UUID.randomUUID();
-        SettlementEvent event = new SettlementEvent(
+        SettlementDoneEvent event = new SettlementDoneEvent(
                 UUID.randomUUID(),
                 sellerId,
                 java.time.OffsetDateTime.now().minusMonths(1),
                 java.time.OffsetDateTime.now(),
-                SettlementEvent.Status.FAILED,
+                SettlementDoneEvent.Status.FAILED,
                 800000L,
                 java.math.BigDecimal.valueOf(8000),
                 java.math.BigDecimal.valueOf(792000)

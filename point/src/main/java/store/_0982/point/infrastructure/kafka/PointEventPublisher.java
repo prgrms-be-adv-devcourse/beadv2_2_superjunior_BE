@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.PointEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.point.domain.entity.Payment;
 import store._0982.point.domain.entity.PointHistory;
 
@@ -13,7 +13,7 @@ import store._0982.point.domain.entity.PointHistory;
 @Service
 @RequiredArgsConstructor
 public class PointEventPublisher {
-    private final KafkaTemplate<String, PointEvent> kafkaTemplate;
+    private final KafkaTemplate<String, PointChangedEvent> kafkaTemplate;
 
 
     public void publishPaymentConfirmedEvent(Payment payment) {
@@ -21,22 +21,22 @@ public class PointEventPublisher {
     }
 
     public void publishPointChargedEvent(PointHistory history) {
-        PointEvent event = createPointChangedEvent(history, PointEvent.Status.RECHARGED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.CHARGED);
         send(KafkaTopics.POINT_RECHARGED, history.getMemberId().toString(), event);
     }
 
     public void publishPointDeductedEvent(PointHistory history) {
-        PointEvent event = createPointChangedEvent(history, PointEvent.Status.DEDUCTED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
     public void publishPointReturnedEvent(PointHistory history) {
-        PointEvent event = createPointChangedEvent(history, PointEvent.Status.RETURNED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.RETURNED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    private static PointEvent createPointChangedEvent(PointHistory history, PointEvent.Status status) {
-        return new PointEvent(
+    private static PointChangedEvent createPointChangedEvent(PointHistory history, PointChangedEvent.Status status) {
+        return new PointChangedEvent(
                 history.getId(),
                 history.getMemberId(),
                 history.getAmount(),
@@ -45,7 +45,7 @@ public class PointEventPublisher {
         );
     }
 
-    private void send(String topic, String key, PointEvent event) {
+    private void send(String topic, String key, PointChangedEvent event) {
         kafkaTemplate.send(topic, key, event)
                 .whenComplete((result, throwable) -> {
                     if (throwable == null) {
