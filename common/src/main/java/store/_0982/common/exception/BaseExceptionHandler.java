@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import store._0982.common.HeaderName;
@@ -34,7 +35,11 @@ public abstract class BaseExceptionHandler {
     public ResponseEntity<ResponseDto<String>> handleCustomException(CustomException e) {
         ErrorCode errorCode = e.getErrorCode();
         HttpStatus httpStatus = errorCode.getHttpStatus();
-        log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        if (errorCode instanceof DefaultErrorCode) {
+            log.error(LogFormat.errorOf(httpStatus, e.getMessage()));
+        } else {
+            log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        }
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
@@ -56,9 +61,16 @@ public abstract class BaseExceptionHandler {
             case HeaderName.ID -> new CustomException(DefaultErrorCode.NO_LOGIN_INFO);
             case HeaderName.EMAIL -> new CustomException(DefaultErrorCode.NO_EMAIL_INFO);
             case HeaderName.ROLE -> new CustomException(DefaultErrorCode.NO_ROLE_INFO);
+            case HeaderName.TOKEN -> new CustomException(DefaultErrorCode.NO_TOKEN_INFO);
             default -> new CustomException(DefaultErrorCode.REQUEST_HEADER_IS_NULL);
         };
         return handleCustomException(ex);
+    }
+
+    // 메서드 파라미터 타입 변환 실패 에러 핸들러
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ResponseDto<String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        return handleCustomException(new CustomException(DefaultErrorCode.INVALID_PARAMETER));
     }
 
     // TODO: 커스텀 에러로 변환해서 메시지를 유저 친화적이게 구성할까?

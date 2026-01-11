@@ -8,17 +8,18 @@ data:
     appendonly yes
     appendfilename "appendonly.aof"
     appendfsync everysec
-    maxmemory 256mb
+    maxmemory 128mb
     maxmemory-policy allkeys-lru
 
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: redis
   labels:
     app: redis
 spec:
+  serviceName: "redis-service"
   replicas: 1
   selector:
     matchLabels:
@@ -30,11 +31,12 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
+      terminationGracePeriodSeconds: 30
       containers:
         - name: redis
           image: redis:7-alpine
-          imagePullPolicy: Never
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
               name: redis
@@ -50,11 +52,18 @@ spec:
             requests:
               ephemeral-storage: "256Mi"
               memory: "128Mi"
-              cpu: "100m"
+              cpu: "50m"
             limits:
               ephemeral-storage: "512Mi"
               memory: "256Mi"
-              cpu: "500m"
+              cpu: "250m"
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "redis-cli shutdown save"
           livenessProbe:
             exec:
               command:
@@ -74,12 +83,19 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
       volumes:
-        - name: redis-data
-          persistentVolumeClaim:
-            claimName: redis-pvc
         - name: redis-config
           configMap:
             name: redis-config
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 2Gi
 
 ---
 apiVersion: v1
@@ -89,24 +105,12 @@ metadata:
   labels:
     app: redis
 spec:
-  type: NodePort
+  type: ClusterIP
+  clusterIP: None
   ports:
     - port: 6379
       targetPort: 6379
-      nodePort: 30379
       protocol: TCP
       name: redis
   selector:
     app: redis
-
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: redis-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Gi

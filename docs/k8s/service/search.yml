@@ -15,24 +15,23 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-131-196
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
         - name: search
           image: minbros/search:latest
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           env:
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-              value: "http://admin:admin@discovery-service:8761/eureka"
-            - name: EUREKA_INSTANCE_HOSTNAME
-              value: "discovery-service"
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
             - name: SPRING_ELASTICSEARCH_URIS
               value: http://elasticsearch-service:9200
             - name: KAFKA_LOG_SEGMENT_BYTES
               value: "67108864"  # 64MB (기본 1GB)
+          envFrom:
+            - secretRef:
+                name: search-secret
           resources:
             requests:
               cpu: "200m"
@@ -75,4 +74,4 @@ spec:
       protocol: TCP
       name: http
 
-######
+# DD

@@ -18,33 +18,27 @@ spec:
         kubernetes.io/hostname: ip-10-0-0-5
       containers:
         - name: point
-          image: minbros/point
+          image: minbros/point:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
                 name: point-secret
           env:
-            - name: LOGGING_LEVEL_STORE
-              value: info
-            - name: SPRING_CLOUD_CONFIG_URI
-              value: "http://config-service:8888"
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-              value: "http://admin:admin@discovery-service:8761/eureka"
-            - name: EUREKA_INSTANCE_HOSTNAME
-              value: "discovery-service"
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+            - name: CLIENT_COMMERCE
+              value: "http://commerce-service:8087"
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
-              ephemeral-storage: "512Mi"
+              memory: "384Mi"
+              ephemeral-storage: "786Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
-              ephemeral-storage: "1Gi"
+              memory: "786Mi"
+              ephemeral-storage: "1.5Gi"
           ports:
             - containerPort: 8086
           readinessProbe:
@@ -75,3 +69,5 @@ spec:
     - port: 8086
       targetPort: 8086
   type: ClusterIP
+
+# DDD

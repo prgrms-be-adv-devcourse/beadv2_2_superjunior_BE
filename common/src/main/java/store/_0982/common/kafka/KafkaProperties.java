@@ -7,18 +7,21 @@ package store._0982.common.kafka;
  * @author Minhyung Kim
  */
 public final class KafkaProperties {
-    public static final int DEFAULT_PARTITIONS = 3;
+    public static final int DEFAULT_PARTITIONS = 1;
     public static final int DEFAULT_REPLICAS = 1;
 
     public static final int DEFAULT_CONSUMER_CONCURRENCY = 1;
 
     public static final String DEFAULT_ACK = "all";
 
-    public static final int MAX_RETRY_ATTEMPTS = 3;
-    public static final long RETRY_BACKOFF_MS = 1000L;
+    public static final int MAX_RETRIES = Integer.MAX_VALUE;
+    public static final int DELIVERY_TIMEOUT_MS = 120_000;
+    public static final long RETRY_BACKOFF_MS = 100L;
+
+    public static final int DEFAULT_BATCH_SIZE = 32768; // 32KB
+    public static final int DEFAULT_LINGER_MS = 5;
 
     public static final String DEFAULT_AUTO_OFFSET_RESET = "earliest";
-    public static final boolean DEFAULT_ENABLE_AUTO_COMMIT = false;
 
     private KafkaProperties() {
     }

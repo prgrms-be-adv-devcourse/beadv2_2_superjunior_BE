@@ -1,0 +1,151 @@
+#file: noinspection SpellCheckingInspection
+name: Business Services Deploy
+on:
+  push:
+    branches:
+      - dev
+      - feature/ci-cd
+    paths:
+      - 'gateway/**'
+      - 'member/**'
+      - 'point/**'
+      - 'commerce/**'
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'docs/k8s/service/*.yml'
+      - '!docs/k8s/service/search.yml'
+      - 'business-services-deploy.yml'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gateway: ${{ steps.filter.outputs.gateway }}
+      member: ${{ steps.filter.outputs.member }}
+      point: ${{ steps.filter.outputs.point }}
+      commerce: ${{ steps.filter.outputs.commerce }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 변경된 서비스 감지
+        id: filter
+        run: |
+          if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+            # 최초 푸시: 최근 커밋만 비교
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+          else
+            # 일반 푸시: 이전 커밋과 비교
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+          
+          # Gateway
+          if echo "$CHANGED_FILES" | grep -qE '^(gateway/|build\.gradle|settings\.gradle|docs/k8s/service/gateway\.yml)'; then
+            echo "gateway=true" >> $GITHUB_OUTPUT
+          else
+            echo "gateway=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Member
+          if echo "$CHANGED_FILES" | grep -qE '^(member/|common/|build\.gradle|settings\.gradle|docs/k8s/service/member\.yml)'; then
+            echo "member=true" >> $GITHUB_OUTPUT
+          else
+            echo "member=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Point
+          if echo "$CHANGED_FILES" | grep -qE '^(point/|common/|build\.gradle|settings\.gradle|docs/k8s/service/point\.yml)'; then
+            echo "point=true" >> $GITHUB_OUTPUT
+          else
+            echo "point=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Commerce
+          if echo "$CHANGED_FILES" | grep -qE '^(commerce/|common/|build\.gradle|settings\.gradle|docs/k8s/service/commerce\.yml)'; then
+            echo "commerce=true" >> $GITHUB_OUTPUT
+          else
+            echo "commerce=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Gateway 배포
+  deploy-gateway:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.gateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gateway 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: gateway
+          manifest-path: docs/k8s/service/gateway.yml
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+  # Member 배포
+  deploy-member:
+    needs: [ detect-changes, deploy-gateway ]
+    if: always() && needs.detect-changes.outputs.member == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Member 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: member
+          manifest-path: docs/k8s/service/member.yml
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+  # Point 배포
+  deploy-point:
+    needs: [ detect-changes, deploy-member ]
+    if: always() && needs.detect-changes.outputs.point == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Point 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: point
+          manifest-path: docs/k8s/service/point.yml
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+  # Commerce 배포
+  deploy-commerce:
+    needs: [ detect-changes, deploy-point ]
+    if: always() && needs.detect-changes.outputs.commerce == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Commerce 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: commerce
+          manifest-path: docs/k8s/service/commerce.yml
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}

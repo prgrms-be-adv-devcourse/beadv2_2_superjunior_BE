@@ -9,35 +9,25 @@ import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
         String groupPurchaseId,
-        String sellerName,
-        Integer minQuantity,
-        Integer maxQuantity,
         String title,
         String description,
-        Long discountedPrice,
         String status,
-        String startDate,
-        String endDate,
-        OffsetDateTime createdAt,
-        OffsetDateTime updatedAt,
+        Long discountedPrice,
         Integer currentQuantity,
+        OffsetDateTime endDate,
+        OffsetDateTime updatedAt,
         ProductEvent productEvent
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
-                event.getSellerName(),
-                event.getMinQuantity(),
-                event.getMaxQuantity(),
                 event.getTitle(),
                 event.getDescription(),
-                event.getDiscountedPrice(),
                 event.getStatus(),
-                event.getStartDate(),
-                event.getEndDate(),
-                OffsetDateTime.parse(event.getCreatedAt()),
-                OffsetDateTime.parse(event.getUpdatedAt()),
+                event.getDiscountedPrice(),
                 event.getCurrentQuantity(),
+                OffsetDateTime.parse(event.getEndDate()),
+                OffsetDateTime.parse(event.getUpdatedAt()),
                 event.getProductEvent()
         );
     }
@@ -45,24 +35,27 @@ public record GroupPurchaseDocumentCommand(
     public GroupPurchaseDocument toDocument() {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(groupPurchaseId)
-                .sellerName(sellerName)
-                .minQuantity(minQuantity)
-                .maxQuantity(maxQuantity)
                 .title(title)
                 .description(description)
-                .discountedPrice(discountedPrice)
                 .status(status)
-                .startDate(startDate)
-                .endDate(endDate)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
+                .discountedPrice(discountedPrice)
                 .currentQuantity(currentQuantity)
-                .discountRate(calculateDiscountRate(productEvent.getPrice(), discountedPrice))
+                .endDate(endDate)
+                .updatedAt(updatedAt)
+                .discountRate(calculateDiscountRate(productEvent, discountedPrice))
                 .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
                 .build();
     }
+
+    private static Long calculateDiscountRate(ProductEvent productEvent, Long discountedPrice) {
+        if (productEvent == null) {
+            return 0L;
+        }
+        return calculateDiscountRate(productEvent.getPrice(), discountedPrice);
+    }
+
     private static Long calculateDiscountRate(Long price, Long discountedPrice) {
-        if (price == null) {
+        if (price == null || discountedPrice == null) {
             return 0L;
         }
 

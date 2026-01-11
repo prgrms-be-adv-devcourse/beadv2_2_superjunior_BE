@@ -1,0 +1,8 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+
+token:
+  internal:
+    secret: ${TOKEN_INTERNAL_SECRET}

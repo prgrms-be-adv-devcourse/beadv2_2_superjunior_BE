@@ -1,0 +1,35 @@
+dependencies {
+    implementation(project(':common')) {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-web'
+    }
+
+    //swagger
+    //noinspection VulnerableLibrariesLocal
+    // implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    //DB
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    //Batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
+    // Feign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+}
+
+bootJar {
+    enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8085']
+    }
+}
