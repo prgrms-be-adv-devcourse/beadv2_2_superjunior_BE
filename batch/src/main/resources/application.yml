@@ -49,8 +49,8 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
+client:
+  member: ${CLIENT_MEMBER:http://localhost:8083}
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

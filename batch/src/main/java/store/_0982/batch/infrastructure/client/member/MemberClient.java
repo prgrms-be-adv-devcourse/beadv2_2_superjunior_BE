@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @FeignClient(
         name = "member",
-        url = "${gateway.host}"
+        url = "${client.member}"
 )
 public interface MemberClient {
 
