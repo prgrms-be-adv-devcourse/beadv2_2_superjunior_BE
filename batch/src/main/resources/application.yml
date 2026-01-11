@@ -2,15 +2,19 @@
 spring:
   application:
     name: batch
+  main:
+    web-application-type: none
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   datasource:
-    url: ${ORDER_SPRING_DATASOURCE_URL}
+    url: ${BATCH_SPRING_DATASOURCE_URL}
     driver-class-name: org.postgresql.Driver
-    username: ${ORDER_SPRING_DATASOURCE_USERNAME}
-    password: ${ORDER_SPRING_DATASOURCE_PASSWORD}
+    username: ${BATCH_SPRING_DATASOURCE_USERNAME}
+    password: ${BATCH_SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema
 
   jackson:
     time-zone: Asia/Seoul
@@ -28,24 +32,10 @@ spring:
 
   batch:
     jdbc:
-      table-prefix: batch_order_schema.batch_
       initialize-schema: never
     job:
-      enabled: false
-
-server:
-  port: 8085
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
+    #  enabled: true  # k8s
+      enabled: false  # 로컬
 
 management:
   endpoints:
@@ -59,12 +49,18 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
+client:
+  member: ${CLIENT_MEMBER:http://localhost:8083}
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+logging:
+  level:
+    # Spring Batch 프레임워크의 중복 로그 최소화
+    org.springframework.batch.core.launch.support.TaskExecutorJobLauncher: WARN
+    org.springframework.batch.core.step.AbstractStep: WARN
+    org.springframework.batch.core.job.SimpleStepHandler: WARN
+
+    # 커스텀 배치 로그는 INFO 유지
+    store._0982.batch: INFO
