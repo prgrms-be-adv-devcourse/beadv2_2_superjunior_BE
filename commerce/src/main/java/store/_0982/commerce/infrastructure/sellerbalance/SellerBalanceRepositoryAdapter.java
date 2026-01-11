@@ -1,4 +1,4 @@
-package store._0982.commerce.infrastructure.settlement;
+package store._0982.commerce.infrastructure.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

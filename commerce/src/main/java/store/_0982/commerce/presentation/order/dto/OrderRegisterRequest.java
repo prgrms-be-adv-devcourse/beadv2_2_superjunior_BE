@@ -22,9 +22,10 @@ public record OrderRegisterRequest(
         @NotNull(message = "판매자 ID는 필수입니다.")
         UUID sellerId,
         @NotNull(message = "공동 구매 ID는 필수입니다.")
-        UUID groupPurchaseId
+        UUID groupPurchaseId,
+        String requestId
 ) {
     public OrderRegisterCommand toCommand(){
-        return new OrderRegisterCommand(quantity, address, addressDetail, postalCode, receiverName, sellerId, groupPurchaseId);
+        return new OrderRegisterCommand(quantity, address, addressDetail, postalCode, receiverName, sellerId, groupPurchaseId, requestId);
     }
 }

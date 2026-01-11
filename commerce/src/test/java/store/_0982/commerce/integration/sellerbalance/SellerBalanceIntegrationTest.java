@@ -14,8 +14,6 @@ import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
-import store._0982.commerce.integration.sellerbalance.fixture.SellerBalanceFixture;
-import store._0982.commerce.integration.sellerbalance.fixture.SellerBalanceHistoryFixture;
 import store._0982.common.HeaderName;
 
 import java.util.UUID;
@@ -46,7 +44,7 @@ class SellerBalanceIntegrationTest {
     @BeforeEach
     void setUp() {
         testMemberId = UUID.randomUUID();
-        testSellerBalance = SellerBalanceFixture.create(testMemberId);
+        testSellerBalance = new SellerBalance(testMemberId);
         sellerBalanceRepository.save(testSellerBalance);
     }
 
@@ -76,23 +74,26 @@ class SellerBalanceIntegrationTest {
         UUID settlementId2 = UUID.randomUUID();
         UUID settlementId3 = UUID.randomUUID();
 
-        SellerBalanceHistory history1 = SellerBalanceHistoryFixture.create(
+        SellerBalanceHistory history1 = new SellerBalanceHistory(
                 testMemberId,
                 settlementId1,
+                null,
                 50000L,
                 SellerBalanceHistoryStatus.CREDIT
         );
 
-        SellerBalanceHistory history2 = SellerBalanceHistoryFixture.create(
+        SellerBalanceHistory history2 =  new SellerBalanceHistory(
                 testMemberId,
                 settlementId2,
+                null,
                 20000L,
                 SellerBalanceHistoryStatus.DEBIT
         );
 
-        SellerBalanceHistory history3 = SellerBalanceHistoryFixture.create(
+        SellerBalanceHistory history3 =new SellerBalanceHistory(
                 testMemberId,
                 settlementId3,
+                null,
                 30000L,
                 SellerBalanceHistoryStatus.CREDIT
         );
@@ -146,9 +147,10 @@ class SellerBalanceIntegrationTest {
     void getBalanceHistory_withPaging() throws Exception {
         // given
         for (int i = 0; i < 5; i++) {
-            SellerBalanceHistory history = SellerBalanceHistoryFixture.create(
+            SellerBalanceHistory history = new SellerBalanceHistory(
                     testMemberId,
                     UUID.randomUUID(),
+                    null,
                     (i + 1) * 10000L,
                     i % 2 == 0 ? SellerBalanceHistoryStatus.CREDIT : SellerBalanceHistoryStatus.DEBIT
             );
@@ -196,20 +198,22 @@ class SellerBalanceIntegrationTest {
     void getBalanceHistory_onlyOwnHistory() throws Exception {
         // given
         UUID otherMemberId = UUID.randomUUID();
-        SellerBalance otherSellerBalance = SellerBalanceFixture.create(otherMemberId);
+        SellerBalance otherSellerBalance = new SellerBalance(otherMemberId);
         sellerBalanceRepository.save(otherSellerBalance);
 
-        SellerBalanceHistory otherHistory = SellerBalanceHistoryFixture.create(
+        SellerBalanceHistory otherHistory = new SellerBalanceHistory(
                 otherMemberId,
                 UUID.randomUUID(),
+                null,
                 100000L,
                 SellerBalanceHistoryStatus.CREDIT
         );
         sellerBalanceHistoryRepository.save(otherHistory);
 
-        SellerBalanceHistory myHistory = SellerBalanceHistoryFixture.create(
+        SellerBalanceHistory myHistory = new SellerBalanceHistory(
                 testMemberId,
                 UUID.randomUUID(),
+                null,
                 50000L,
                 SellerBalanceHistoryStatus.CREDIT
         );

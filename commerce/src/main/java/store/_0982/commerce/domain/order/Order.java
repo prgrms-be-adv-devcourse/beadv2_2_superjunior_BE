@@ -49,6 +49,19 @@ public class Order {
     @Column(name = "group_purchase_id", nullable = false)
     private UUID groupPurchaseId;
 
+    @Column(name = "idempotency_key", unique = true, nullable = false)
+    private String idempotencyKey;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "expired_at")
+    private OffsetDateTime expiredAt;
+
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt;
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -63,7 +76,7 @@ public class Order {
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
-    public Order(
+    private Order(
             int quantity,
             Long price,
             UUID memberId,
@@ -72,42 +85,96 @@ public class Order {
             String postalCode,
             String receiverName,
             UUID sellerId,
-            UUID groupPurchaseId) {
+            UUID groupPurchaseId,
+            String idempotencyKey) {
         this.orderId = UUID.randomUUID();
         this.quantity = quantity;
         this.price = price;
         this.memberId = memberId;
-        this.status = OrderStatus.IN_PROGRESS;
+        this.status = OrderStatus.PENDING;
         this.address = address;
         this.addressDetail = addressDetail;
         this.postalCode = postalCode;
         this.receiverName = receiverName;
         this.sellerId = sellerId;
         this.groupPurchaseId = groupPurchaseId;
+        this.idempotencyKey = idempotencyKey;
+        this.expiredAt = OffsetDateTime.now().plusMinutes(10);
+    }
 
+    public static Order create(  int quantity,
+                                 Long price,
+                                 UUID memberId,
+                                 String address,
+                                 String addressDetail,
+                                 String postalCode,
+                                 String receiverName,
+                                 UUID sellerId,
+                                 UUID groupPurchaseId,
+                                 String idempotencyKey){
+        return new Order(
+                quantity,
+                price,
+                memberId,
+                address,
+                addressDetail,
+                postalCode,
+                receiverName,
+                sellerId,
+                groupPurchaseId,
+                idempotencyKey
+        );
     }
 
     // 상태 변경
     public void updateStatus(OrderStatus newStatus){
-        validateStatus(this.status, newStatus );
         this.status = newStatus;
     }
 
-    // 상태 전환 검증
-    private void validateStatus(OrderStatus current, OrderStatus target) {
-        if (current == target) {
-            return;
-        }
+    // 결제 완료
+    public void completePayment(PaymentMethod paymentMethod){
+        validateStatus(OrderStatus.PAYMENT_COMPLETED);
+        this.status = OrderStatus.PAYMENT_COMPLETED;
+        this.paymentMethod = paymentMethod;
+        this.paidAt = OffsetDateTime.now();
+    }
 
-        switch (current) {
-            case IN_PROGRESS -> {
-                if (target != OrderStatus.SUCCESS && target != OrderStatus.FAILED) {
-                    throw new IllegalStateException("SUCCESS, FAILED로만 변경 가능");
+    // 주문 실패 처리
+    public void markFailed(){
+        validateStatus(OrderStatus.ORDER_FAILED);
+        this.status = OrderStatus.ORDER_FAILED;
+    }
+
+    // 주문 취소 처리
+    public void cancel() {
+        validateStatus(OrderStatus.CANCELLED);
+        this.status = OrderStatus.CANCELLED;
+    }
+
+
+    private void validateStatus(OrderStatus newStatus){
+        switch(this.status){
+            case PENDING:
+                if(newStatus != OrderStatus.PAYMENT_COMPLETED
+                && newStatus != OrderStatus.CANCELLED
+                && newStatus != OrderStatus.ORDER_FAILED){
+                    throw new IllegalStateException("PENDING으로 변경 불가능");
                 }
-            }
-            case SUCCESS, FAILED ->
-                throw new IllegalStateException("현재 상태 " + current + " 변경 불가능");
+                break;
+            case PAYMENT_COMPLETED:
+                if(newStatus != OrderStatus.CANCELLED
+                && newStatus != OrderStatus.RETURNED
+                && newStatus != OrderStatus.REVERSED){
+                    throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
+                }
+                break;
+            case ORDER_FAILED:
+            case CANCELLED:
+            case RETURNED:
+                throw new IllegalStateException("상태 변경 불가능");
 
+            default:
+                break;
         }
     }
 

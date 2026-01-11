@@ -30,4 +30,6 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
     
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
+    boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
 }

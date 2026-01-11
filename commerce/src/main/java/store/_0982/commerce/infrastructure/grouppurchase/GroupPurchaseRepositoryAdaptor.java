@@ -72,6 +72,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     }
 
     @Override
+    public boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses) {
+        return groupPurchaseJpaRepository.existsByProductIdAndStatusIn(productId, statuses);
+    }
+
+    @Override
     public List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now) {
         return groupPurchaseJpaRepository.findAllByStatusAndStartDateBefore(status, now);
     }
