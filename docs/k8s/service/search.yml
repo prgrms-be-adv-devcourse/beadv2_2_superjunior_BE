@@ -21,6 +21,8 @@ spec:
           image: minbros/search:latest
           imagePullPolicy: Always
           env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
             - name: SPRING_ELASTICSEARCH_URIS
