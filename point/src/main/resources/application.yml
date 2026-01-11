@@ -1,7 +1,13 @@
-#file: noinspection SpringBootApplicationYaml, HttpUrlsUsage, SpellCheckingInspection
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
 spring:
   application:
     name: point
+
+  flyway:
+    enabled: true
+    default-schema: payment_schema
+    schemas: payment_schema
+    create-schemas: true
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
@@ -14,10 +20,10 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     properties:
       hibernate:
-        default_schema: point_schema
+        default_schema: payment_schema
         format_sql: true
         show_sql: false
     open-in-view: false
@@ -34,17 +40,6 @@ logging:
 server:
   port: 8086
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
-
 management:
   endpoints:
     web:
@@ -57,18 +52,9 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
-
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-
 token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
-
-frontend:
-  url: https://0982.vercel.app

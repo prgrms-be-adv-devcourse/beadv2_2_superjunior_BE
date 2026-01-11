@@ -84,7 +84,7 @@ class GroupPurchaseEventListenerTest {
                 "2025-01-01T00:00:00+09:00", // updatedAt
                 3, // currentQuantity p
                 productEvent, // productEvent
-                GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE);
+                GroupPurchaseEvent.EventStatus.CREATE_GROUP_PURCHASE);
 
         when(groupPurchaseRepository.save(any(GroupPurchaseDocument.class)))
                 .thenAnswer(invocation -> {
@@ -125,7 +125,7 @@ class GroupPurchaseEventListenerTest {
                 "2025-01-01T00:00:00+09:00",
                 0,
                 productEvent,
-                GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE
+                GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE
         );
 
         doAnswer(invocation -> {
@@ -165,7 +165,7 @@ class GroupPurchaseEventListenerTest {
                 "2025-01-01T00:00:00+09:00",
                 5,
                 productEvent,
-                GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE
+                GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE
         );
 
         when(groupPurchaseRepository.save(any(GroupPurchaseDocument.class)))

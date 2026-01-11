@@ -8,7 +8,7 @@ import store._0982.member.domain.notification.NotificationStatus;
 import store._0982.member.domain.notification.ReferenceType;
 
 public final class NotificationCreator {
-    public static Notification create(OrderEvent event, NotificationContent content, NotificationChannel channel) {
+    public static Notification create(OrderChangedEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getMemberId())
                 .type(content.type())
@@ -21,7 +21,7 @@ public final class NotificationCreator {
                 .build();
     }
 
-    public static Notification create(PointEvent event, NotificationContent content, NotificationChannel channel) {
+    public static Notification create(PointChangedEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getMemberId())
                 .type(content.type())
@@ -34,7 +34,7 @@ public final class NotificationCreator {
                 .build();
     }
 
-    public static Notification create(SettlementEvent event, NotificationContent content, NotificationChannel channel) {
+    public static Notification create(SettlementDoneEvent event, NotificationContent content, NotificationChannel channel) {
         return Notification.builder()
                 .memberId(event.getSellerId())
                 .type(content.type())

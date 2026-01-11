@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.SettlementEvent;
+import store._0982.common.kafka.dto.SettlementDoneEvent;
 
 @Configuration
 public class SettlementKafkaProducerConfig {
@@ -17,12 +17,12 @@ public class SettlementKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, SettlementEvent> settlementProducerFactory() {
+    public ProducerFactory<String, SettlementDoneEvent> settlementProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, SettlementEvent> settlementKafkaTemplate() {
+    public KafkaTemplate<String, SettlementDoneEvent> settlementKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(settlementProducerFactory());
     }
 

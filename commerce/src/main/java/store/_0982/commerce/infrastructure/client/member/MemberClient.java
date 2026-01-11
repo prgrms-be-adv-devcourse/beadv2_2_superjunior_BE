@@ -10,8 +10,8 @@ import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import java.util.UUID;
 
 @FeignClient(
-        name = "member",
-        url = "${gateway.host}"
+        name = "member-service",
+        url = "${client.member}"
 )
 public interface MemberClient {
     /**

@@ -5,7 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderEvent;
+import store._0982.common.kafka.dto.OrderChangedEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
@@ -24,11 +24,11 @@ public class OrderEventListener {
     @ServiceLog
     @RetryableTopic(exclude = CustomKafkaException.class)
     @KafkaListener(
-            topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_STATUS_CHANGED},
+            topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_CHANGED},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )
-    public void handleOrderEvent(OrderEvent event) {
+    public void handleOrderEvent(OrderChangedEvent event) {
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,
@@ -38,7 +38,7 @@ public class OrderEventListener {
         notificationRepository.save(notification);
     }
 
-    private NotificationContent createNotificationContent(OrderEvent event) {
+    private NotificationContent createNotificationContent(OrderChangedEvent event) {
         String productName = event.getProductName();
         return switch (event.getStatus()) {
             case CREATED -> new NotificationContent(

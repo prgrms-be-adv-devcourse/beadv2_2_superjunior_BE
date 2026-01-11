@@ -163,7 +163,7 @@ public class GroupPurchase {
         return this.returnedAt != null;
     }
 
-    public GroupPurchaseEvent toEvent(String sellerName, GroupPurchaseEvent.SearchKafkaStatus searchKafkaStatus, ProductEvent productEvent) {
+    public GroupPurchaseEvent toEvent(String sellerName, GroupPurchaseEvent.EventStatus searchKafkaStatus, ProductEvent productEvent) {
         return new GroupPurchaseEvent(
                 this.groupPurchaseId,
                 this.minQuantity,

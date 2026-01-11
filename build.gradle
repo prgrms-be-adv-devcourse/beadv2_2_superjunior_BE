@@ -38,8 +38,6 @@ subprojects {
         annotationProcessor 'org.projectlombok:lombok'
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-        implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
         implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
@@ -57,21 +55,5 @@ subprojects {
 
     tasks.named('test') {
         useJUnitPlatform()
-    }
-}
-
-//project(':config') {
-//    dependencies {
-//        configurations.configureEach {
-//            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-//        }
-//    }
-//}
-
-project(':discovery') {
-    dependencies {
-        configurations.configureEach {
-            exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-netflix-eureka-client'
-        }
     }
 }

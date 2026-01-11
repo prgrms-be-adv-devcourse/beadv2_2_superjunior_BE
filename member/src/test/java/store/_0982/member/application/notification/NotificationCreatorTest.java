@@ -18,10 +18,10 @@ class NotificationCreatorTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        OrderEvent event = new OrderEvent(
+        OrderChangedEvent event = new OrderChangedEvent(
                 orderId,
                 memberId,
-                OrderEvent.Status.CREATED,
+                OrderChangedEvent.Status.CREATED,
                 "테스트 상품"
         );
         NotificationContent content = new NotificationContent(
@@ -50,11 +50,11 @@ class NotificationCreatorTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID pointId = UUID.randomUUID();
-        PointEvent event = new PointEvent(
+        PointChangedEvent event = new PointChangedEvent(
                 pointId,
                 memberId,
                 10000L,
-                PointEvent.Status.RECHARGED,
+                PointChangedEvent.Status.CHARGED,
                 "간편결제"
         );
         NotificationContent content = new NotificationContent(
@@ -83,12 +83,12 @@ class NotificationCreatorTest {
         // given
         UUID sellerId = UUID.randomUUID();
         UUID settlementId = UUID.randomUUID();
-        SettlementEvent event = new SettlementEvent(
+        SettlementDoneEvent event = new SettlementDoneEvent(
                 settlementId,
                 sellerId,
                 java.time.OffsetDateTime.now().minusDays(1),
                 java.time.OffsetDateTime.now(),
-                SettlementEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.SUCCESS,
                 50000L,
                 java.math.BigDecimal.valueOf(500),
                 java.math.BigDecimal.valueOf(49500)
