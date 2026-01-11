@@ -20,7 +20,7 @@ public record GroupPurchaseSearchInfo(
         OffsetDateTime updatedAt,
         Integer currentQuantity,
         Long discountRate,
-        ProductSearchInfo productDocumentEmbedded
+        ProductSearchInfo productSearchInfo
 ) {
     public static GroupPurchaseSearchInfo from(GroupPurchaseSearchRow row) {
         return new GroupPurchaseSearchInfo(
