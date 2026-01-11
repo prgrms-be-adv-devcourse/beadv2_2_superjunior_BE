@@ -16,6 +16,10 @@ public class Member {
     private UUID memberId;
     private Role role;
 
+    public static Member of(UUID memberId, Role role) {
+        return new Member(memberId, role);
+    }
+
     public static Member createGuest(){
         return new Member(null, Role.GUEST);
     }
