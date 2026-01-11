@@ -6,3 +6,6 @@ spring:
 token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET}
+
+client:
+  commerce: ${CLIENT_COMMERCE}

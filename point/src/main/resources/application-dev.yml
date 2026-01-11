@@ -10,3 +10,6 @@ logging:
 token:
   internal:
     secret: "abcd"
+
+client:
+  commerce: http://localhost:8087
