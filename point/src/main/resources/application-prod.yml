@@ -10,7 +10,7 @@ spring:
     create-schemas: true
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: kafka-service:9092
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -32,10 +32,6 @@ springdoc:
   swagger-ui:
     disable-swagger-default-url: true
   default-flat-param-object: true
-
-logging:
-  level:
-    store: debug
 
 server:
   port: 8086
