@@ -11,7 +11,8 @@ public record OrderCartRegisterCommand(
         @NotBlank String address,
         @NotBlank String addressDetail,
         @NotBlank String postalCode,
-        String receiverName
+        String receiverName,
+        String requestId
 ) {
 }
 

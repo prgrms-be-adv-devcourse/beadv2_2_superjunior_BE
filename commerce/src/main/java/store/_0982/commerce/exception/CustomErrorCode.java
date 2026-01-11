@@ -49,6 +49,7 @@ public enum CustomErrorCode implements ErrorCode {
     ORDER_NOT_CANCELLABLE(HttpStatus.BAD_REQUEST, "취소할 수 없습니다. 공동 구매가 시작되었습니다."),
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
     CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
+    DUPLICATE_ORDER(HttpStatus.BAD_REQUEST, "이미 처리 요청된 주문입니다."),
 
     // 409 Conflict
     CONCURRENT_PARTICIPATION_CONFLICT(HttpStatus.CONFLICT, "현재 참여자가 많습니다. 잠시 후 다시 시도해주세요."),

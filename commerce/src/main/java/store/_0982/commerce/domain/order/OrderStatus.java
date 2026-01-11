@@ -1,8 +1,12 @@
 package store._0982.commerce.domain.order;
 
 public enum OrderStatus {
-    SCHEDULED,      // 시작전
-    IN_PROGRESS,    // 진행중
-    SUCCESS,        // 완료- 성공
-    FAILED,         // 완료 - 실패
+    PENDING,                // 주문 생성 (결제 대기)
+    PAYMENT_COMPLETED,      // 결제 완료
+    ORDER_FAILED,           // 주문 실패
+    CANCELLED,              // 주문 취소
+    GROUP_PURCHASE_SUCCESS, // 공동 구매 성공
+    GROUP_PURCHASE_FAIL,    // 공동 구매 실패
+    REVERSED,               // 결제 취소
+    RETURNED                // 환불 완료
 }

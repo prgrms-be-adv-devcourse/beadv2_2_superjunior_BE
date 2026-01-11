@@ -7,10 +7,10 @@ create table order_schema."order"
             primary key,
     quantity       integer                  default 1                              not null,
     price          integer                  default 0                              not null,
-    status         varchar(20)              default 'SCHEDULED'::character varying not null
+    status         varchar(20)              default 'PENDING'::character varying not null
         constraint status_check
             check ((status)::text = ANY
-                   (ARRAY [('SCHEDULED'::character varying)::text, ('IN_PROGRESS'::character varying)::text, ('SUCCESS'::character varying)::text, ('FAILED'::character varying)::text])),
+                   (ARRAY [('PENDING'::character varying)::text, ('ORDER_FAILED'::character varying)::text, ('PAYMENT_COMPLETED'::character varying)::text, ('CANCELLED'::character varying)::text, ('GROUP_PURCHASE_SUCCESS'::character varying)::text,('GROUP_PURCHASE_FAILED'::character varying)::text,('REVERSED'::character varying)::text, ('RETURNED'::character varying)::text])),
     member_id      uuid                                                            not null,
     address        varchar(100)                                                    not null,
     address_detail varchar(100)                                                    not null,
@@ -18,6 +18,13 @@ create table order_schema."order"
     receiver_name  varchar(100)                                                    not null,
     seller_id      uuid                                                            not null,
     group_purchase_id     uuid                                                     not null,
+    idempotency_key varchar(255)                                                   unique ,
+    payment_method  varchar(50)             default 'POINT'::character varying not null
+        constraint payment_method_check
+            check ((payment_method)::text = ANY
+                   (ARRAY [('POINT'::character varying)::text, ('PG'::character varying)::text])),
+    expires_at     timestamp with time zone,
+    paid_at        timestamp with time zone,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
     deleted_at     timestamp with time zone,
@@ -47,6 +54,14 @@ comment on column order_schema."order".receiver_name is '수신자 이름';
 comment on column order_schema."order".seller_id is '판매자 ID';
 
 comment on column order_schema."order".group_purchase_id is '공동 구매 ID';
+
+comment on column order_schema."order".idempotency_key IS '멱등성 키 (중복 주문 방지)';
+
+comment on column order_schema."order".payment_method IS '결제 수단 (POINT, CARD 등)';
+
+comment on column order_schema."order".expires_at IS '주문 만료 시간';
+
+comment on column order_schema."order".paid_at IS '결제 완료 시간';
 
 comment on column order_schema."order".created_at is '등록일';
 

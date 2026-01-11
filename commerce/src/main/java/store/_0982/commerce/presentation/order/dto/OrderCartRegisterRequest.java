@@ -12,9 +12,10 @@ public record OrderCartRegisterRequest(
     @NotBlank String address,
     @NotBlank String addressDetail,
     @NotBlank String postalCode,
-    String receiverName
+    String receiverName,
+    String requestId
 ) {
     public OrderCartRegisterCommand toCommand(){
-        return new OrderCartRegisterCommand(cartIds, address, addressDetail, postalCode, receiverName);
+        return new OrderCartRegisterCommand(cartIds, address, addressDetail, postalCode, receiverName, requestId);
     }
 }

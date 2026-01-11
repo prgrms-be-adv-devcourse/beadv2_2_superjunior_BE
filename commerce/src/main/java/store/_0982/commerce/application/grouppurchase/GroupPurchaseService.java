@@ -218,4 +218,21 @@ public class GroupPurchaseService {
         groupPurchase.markAsSettled();
         groupPurchaseRepository.save(groupPurchase);
     }
+
+    public GroupPurchase getAvailableForOrder(UUID groupPurchaseId){
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
+        // 상태확인
+        if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
+        }
+
+        // 종료시간 확인
+        if (groupPurchase.getEndDate().isBefore(OffsetDateTime.now())) {
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
+        }
+
+        return groupPurchase;
+    }
 }
