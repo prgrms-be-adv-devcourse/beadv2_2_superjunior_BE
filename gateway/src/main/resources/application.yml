@@ -98,10 +98,6 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
-
 jwt:
   secret: ${JWT_SECRET}
 
