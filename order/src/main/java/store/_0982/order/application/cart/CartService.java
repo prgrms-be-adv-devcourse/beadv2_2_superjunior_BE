@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 import store._0982.order.application.order.OrderService;
 import store._0982.order.application.cart.dto.CartAddCommand;
 import store._0982.order.application.cart.dto.CartDeleteCommand;
@@ -32,12 +33,14 @@ public class CartService {
         return CartInfo.from(cartRepository.save(cart));
     }
 
+    @Transactional
     public void deleteFromCart(CartDeleteCommand command) {
         Cart cart = cartRepository.findById(command.cartId()).orElseThrow(() -> new CustomException(CustomErrorCode.CART_NOT_FOUND));
         checkOwner(cart, command.memberId());
         cart.delete();
     }
 
+    @Transactional
     public CartInfo updateNumOfGpInCart(CartUpdateCommand command) {
         Cart cart = cartRepository.findById(command.cartId()).orElseThrow(() -> new CustomException(CustomErrorCode.CART_NOT_FOUND));
         checkOwner(cart, command.memberId());
@@ -50,8 +53,15 @@ public class CartService {
         return new PageResponse<>(cartPage.getContent(), cartPage.getTotalPages(), cartPage.getTotalElements(), cartPage.isFirst(), cartPage.isLast(), cartPage.getSize(), cartPage.getNumberOfElements());
     }
 
+    @Transactional
     public void flushCart(UUID memberId) {
         cartRepository.flushCart(memberId);
+    }
+
+    @Transactional
+    @ServiceLog
+    public void cleanUpZeroCarts() {
+        cartRepository.deleteAllZeroQuantity();
     }
 
     private void checkOwner(Cart cart, UUID memberId) {

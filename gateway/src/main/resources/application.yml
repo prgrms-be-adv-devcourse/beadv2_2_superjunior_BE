@@ -2,9 +2,15 @@
 spring:
   application:
     name: gateway
-
-  config:
-    import: optional:configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8888}
+  data:
+    redis:
+      host: ${GATEWAY_REDIS_HOST:localhost}   # 실제 Redis 호스트
+      port: ${GATEWAY_REDIS_PORT:6379}
+      database: ${GATEWAY_REDIS_DATABASE:0}
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
 
   cloud:
     gateway:
@@ -12,105 +18,54 @@ spring:
         webflux:
           routes:
             - id: member-api
-              uri: lb://member
+              uri: http://localhost:8083
               predicates:
-                - Path=/api/members/**
-              filters:
-                - JwtAuth
+                - Path=/api/members/**, /api/auth/**, /api/notifications/**
 
-            - id: member-internal-api
-              uri: lb://member
+            - id: member-api-docs
+              uri: http://localhost:8083
               predicates:
-                - Path=/internal/members/**
+                - Path=/v3/api-docs/member
               filters:
-                - InternalAuth
+                - RewritePath=/v3/api-docs/member, /v3/api-docs
 
-            - id: member-auth-api
-              uri: lb://member
-              predicates:
-                - Path=/api/auth/**
 
-            - id: notification-api
-              uri: lb://notification
+            - id: commerce-api
+              uri: http://localhost:8087
               predicates:
-                - Path=/api/notifications/**
+                - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
+
+            - id: commerce-api-docs
+              uri: http://localhost:8087
+              predicates:
+                - Path=/v3/api-docs/commerce
               filters:
-                - JwtAuth
-
-            - id: notification-internal-api
-              uri: lb://notification
-              predicates:
-                - Path=/internal/notifications/**
-              filters:
-                - InternalAuth
-
-            - id: order-api
-              uri: lb://order
-              predicates:
-                - Path=/api/orders/**, /api/carts/**, /api/balances/**
-              filters:
-                - JwtAuth
-
-            - id: order-internal-api
-              uri: lb://order
-              predicates:
-                - Path=/internal/orders/**, /internal/carts/**, /internal/balances/**
-              filters:
-                - InternalAuth
-
-            - id: product-api
-              uri: lb://product
-              predicates:
-                - Path=/api/products/**, /api/purchases/**
-              filters:
-                - JwtAuth
-
-            - id: product-internal-api
-              uri: lb://product
-              predicates:
-                - Path=/internal/products/**, /internal/purchases/**
-              filters:
-                - InternalAuth
+                - RewritePath=/v3/api-docs/commerce, /v3/api-docs
 
             - id: point-api
-              uri: lb://point
+              uri: http://localhost:8086
               predicates:
                 - Path=/api/points/**, /api/payments/**
-              filters:
-                - JwtAuth
 
-            - id: point-internal-api
-              uri: lb://point
+            - id: point-api-docs
+              uri: http://localhost:8086
               predicates:
-                - Path=/internal/points/**, /internal/payments/**
+                - Path=/v3/api-docs/point
               filters:
-                - InternalAuth
+                - RewritePath=/v3/api-docs/point, /v3/api-docs
 
             - id: elastic-search-api
-              uri: lb://elastic-search
+              uri: http://localhost:8082
               predicates:
                 - Path=/api/searches/**
-              filters:
-                - JwtAuth
 
-            - id: elastic-search-internal-api
-              uri: lb://elastic-search
+            - id: elastic-search-api-docs
+              uri: http://localhost:8082
               predicates:
-                - Path=/internal/searches/**
+                - Path=/v3/api-docs/elastic-search
               filters:
-                - InternalAuth
+                - RewritePath=/v3/api-docs/elastic-search, /v3/api-docs
 
-            - id: openapi
-              uri: ${GATEWAY_HOST:http://localhost:8000}
-              predicates:
-                - Path=/v3/api-docs/**
-              filters:
-                - RewritePath=/v3/api-docs/(?<segment>.*), /$\{segment}/v3/api-docs
-
-          discovery:
-            locator:
-              enabled: true
-              lower-case-service-id: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
@@ -120,33 +75,16 @@ springdoc:
     urls:
       - name: member-service
         url: /v3/api-docs/member
-      - name: order-service
-        url: /v3/api-docs/order
+      - name: commerce-service
+        url: /v3/api-docs/commerce
       - name: search-service
         url: /v3/api-docs/elastic-search
-      - name: notification-service
-        url: /v3/api-docs/notification
       - name: point-service
         url: /v3/api-docs/point
-      - name: product-service
-        url: /v3/api-docs/product
-
-    # 필요하면 경로도 커스터마이징 가능 (옵션)
-    # path: /swagger-ui.html
 
 server:
   port: 8000
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
 
 management:
   endpoints:
@@ -160,17 +98,11 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
-
 jwt:
   secret: ${JWT_SECRET}
-  access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
-  refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
 
 frontend:
-  url: https://0982.vercel.app
+  url: http://localhost:3000
+
+member-service:
+  url: ${MEMBER_SERVICE_URL:http://localhost:8083}

@@ -4,7 +4,6 @@ kind: Deployment
 metadata:
   name: notification
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: notification
@@ -36,7 +35,7 @@ spec:
                 name: notification-secret
           resources:
             requests:
-              cpu: "200m"
+              cpu: "100m"
               memory: "256Mi"
               ephemeral-storage: "512Mi"
             limits:

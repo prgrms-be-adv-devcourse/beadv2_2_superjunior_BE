@@ -40,15 +40,10 @@ public class GroupPurchaseService {
     /**
      * 공동 구매 생성
      * @param memberId 로그인 유저
-     * @param memberRole 로그인 유저 권한
      * @param command 생성할 command 데이터
      * @return PurchaseRegisterInfo
      */
-    public GroupPurchaseInfo createGroupPurchase(UUID memberId, String memberRole, GroupPurchaseRegisterCommand command) {
-        // 권한 확인
-        if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
-            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
-        }
+    public GroupPurchaseInfo createGroupPurchase(UUID memberId, GroupPurchaseRegisterCommand command) {
 
         // 상품 있는지 확인
         Product product = productRepository.findById(command.productId())
@@ -156,15 +151,10 @@ public class GroupPurchaseService {
     /**
      * 공동 구매 업데이트
      * @param memberId 로그인 유저
-     * @param memberRole 로그인 유저 권한
      * @param purchaseId 공동구매 Id
      * @return PurchaseDetailInfo
      */
-    public GroupPurchaseInfo updateGroupPurchase(UUID memberId, String memberRole, UUID purchaseId, GroupPurchaseUpdateCommand command) {
-        // 권한 확인
-        if(!memberRole.equals("SELLER") && !memberRole.equals("ADMIN")){
-            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
-        }
+    public GroupPurchaseInfo updateGroupPurchase(UUID memberId, UUID purchaseId, GroupPurchaseUpdateCommand command) {
 
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));

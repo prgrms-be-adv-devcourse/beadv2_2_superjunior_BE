@@ -8,6 +8,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.product.batch.config.tasklet.event.GroupPurchaseUpdatedEvent;
 import store._0982.product.domain.GroupPurchase;
 import store._0982.product.domain.GroupPurchaseRepository;
 import store._0982.product.domain.GroupPurchaseStatus;
@@ -30,7 +31,7 @@ public class OpenGroupPurchaseTasklet implements Tasklet {
 
         purchaseList.forEach(gp -> {
             gp.updateStatus(GroupPurchaseStatus.OPEN);
-            eventPublisher.publishEvent(gp.getGroupPurchaseId());
+            eventPublisher.publishEvent(new GroupPurchaseUpdatedEvent(gp.getGroupPurchaseId()));
         });
 
         contribution.incrementWriteCount(purchaseList.size());

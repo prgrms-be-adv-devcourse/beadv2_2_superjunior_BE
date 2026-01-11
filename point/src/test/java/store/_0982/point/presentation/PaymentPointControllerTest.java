@@ -37,6 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(PaymentPointController.class)
 class PaymentPointControllerTest {
+    private static final String SUCCESS_URL_PATTERN = "**/point/charge/success**";
+    private static final String FAIL_URL_PATTERN = "**/point/charge/fail**";
 
     @Autowired
     private MockMvc mockMvc;
@@ -113,7 +115,20 @@ class PaymentPointControllerTest {
         // given
         UUID orderId = UUID.randomUUID();
 
-        doNothing().when(paymentPointService).confirmPayment(any());
+        PaymentPointInfo paymentPointInfo = new PaymentPointInfo(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "카드",
+                "test-payment-key",
+                null,
+                10000,
+                PaymentPointStatus.COMPLETED,
+                OffsetDateTime.now(),
+                OffsetDateTime.now()
+        );
+
+        when(paymentPointService.confirmPayment(any(PointChargeConfirmCommand.class))).thenReturn(paymentPointInfo);
 
         // when & then
         mockMvc.perform(get("/api/payments/confirm")
@@ -122,7 +137,7 @@ class PaymentPointControllerTest {
                         .param("amount", "10000")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/success"));
+                .andExpect(redirectedUrlPattern(SUCCESS_URL_PATTERN));
 
         verify(paymentPointService).confirmPayment(any());
     }
@@ -141,7 +156,7 @@ class PaymentPointControllerTest {
                         .param("amount", "10000")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/fail"));
+                .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
         verify(paymentPointService).confirmPayment(any());
     }
@@ -152,7 +167,8 @@ class PaymentPointControllerTest {
         // given
         UUID orderId = UUID.randomUUID();
 
-        doNothing().when(paymentPointService).handlePaymentFailure(any());
+        when(paymentPointService.handlePaymentFailure(any(PointChargeFailCommand.class)))
+                .thenReturn(any(PaymentPointInfo.class));
 
         // when & then
         mockMvc.perform(get("/api/payments/fail")
@@ -164,7 +180,7 @@ class PaymentPointControllerTest {
                         .param("rawPayload", "{}")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/fail"));
+                .andExpect(redirectedUrlPattern(FAIL_URL_PATTERN));
 
         verify(paymentPointService).handlePaymentFailure(any());
     }
@@ -210,34 +226,34 @@ class PaymentPointControllerTest {
     void getPaymentHistories() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
-        List<PaymentPointHistoryInfo> histories = List.of(
-                new PaymentPointHistoryInfo(
+        List<PaymentPointInfo> histories = List.of(
+                new PaymentPointInfo(
                         UUID.randomUUID(),
                         memberId,
                         UUID.randomUUID(),
                         "CARD",
                         "payment_key_1",
+                        null,
                         10000,
                         PaymentPointStatus.COMPLETED,
                         OffsetDateTime.now(),
-                        OffsetDateTime.now(),
                         OffsetDateTime.now()
                 ),
-                new PaymentPointHistoryInfo(
+                new PaymentPointInfo(
                         UUID.randomUUID(),
                         memberId,
                         UUID.randomUUID(),
                         "CARD",
                         "payment_key_2",
+                        null,
                         20000,
                         PaymentPointStatus.COMPLETED,
-                        OffsetDateTime.now(),
                         OffsetDateTime.now(),
                         OffsetDateTime.now()
                 )
         );
 
-        PageResponse<PaymentPointHistoryInfo> pageResponse = PageResponse.from(
+        PageResponse<PaymentPointInfo> pageResponse = PageResponse.from(
                 new PageImpl<>(histories, PageRequest.of(0, 20), histories.size())
         );
 

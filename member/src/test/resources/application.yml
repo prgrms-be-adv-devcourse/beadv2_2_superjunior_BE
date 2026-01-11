@@ -1,0 +1,66 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  application:
+    name: notification-test
+
+  cloud:
+    config:
+      enabled: false
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+        hbm2ddl:
+          create_namespaces: true
+
+  h2:
+    console:
+      enabled: false
+
+  kafka:
+    consumer:
+      auto-offset-reset: earliest
+      group-id: test-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+# KafkaConfig에서 참조하는 설정
+kafka:
+  bootstrap-servers: ${spring.embedded.kafka.brokers}
+
+# Eureka 클라이언트 비활성화
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+logging:
+  level:
+    org.springframework.kafka: WARN
+    org.apache.kafka: WARN
+
+jwt:
+  secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
+  access-token-validity-period: 60000
+  refresh-token-validity-period: 120000
+
+token:
+  internal:
+    secret: "this-is-a-long-internal-token-secret-123456"

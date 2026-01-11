@@ -7,10 +7,10 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/group_purchase?currentSchema=notification_schema}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    url: ${MEMBER_DATABASE_URL}
-    username: ${MEMBER_POSTGRES_USERNAME}
-    password: ${MEMBER_POSTGRES_PASSWORD}
 
   jpa:
     hibernate:
@@ -19,7 +19,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: false
+        show-sql: false
+    open-in-view: false
 
   mail:
     host: smtp.gmail.com
@@ -32,20 +33,15 @@ spring:
           auth: true
           starttls:
             enable: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      database: ${REDIS_DATABASE:0}
+
 
 server:
   port: 8083
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
 
 management:
   endpoints:
@@ -74,6 +70,8 @@ jwt:
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
 
-logstash:
-  host: ${LOGSTASH_HOST}
-  port: ${LOGSTASH_PORT}
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+  default-flat-param-object: true
