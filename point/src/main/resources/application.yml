@@ -9,9 +9,6 @@ spring:
     schemas: payment_schema
     create-schemas: true
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -33,10 +30,6 @@ springdoc:
     disable-swagger-default-url: true
   default-flat-param-object: true
 
-logging:
-  level:
-    store: debug
-
 server:
   port: 8086
 
@@ -51,10 +44,6 @@ management:
       probability: 0.0
     propagation:
       type: w3c  # 또는 b3
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
