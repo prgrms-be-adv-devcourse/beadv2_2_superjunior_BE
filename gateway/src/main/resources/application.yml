@@ -103,3 +103,6 @@ jwt:
 
 frontend:
   url: https://0982.vercel.app
+
+member-service:
+  url: ${MEMBER_SERVICE_URL:http://localhost:8083}
