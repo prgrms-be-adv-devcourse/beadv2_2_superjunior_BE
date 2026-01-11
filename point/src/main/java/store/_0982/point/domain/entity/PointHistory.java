@@ -51,7 +51,7 @@ public class PointHistory {
     @Column(name = "idempotency_key", nullable = false, updatable = false, unique = true)
     private UUID idempotencyKey;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", updatable = false)
     private UUID orderId;
 
     public static PointHistory charged(UUID memberId, PointChargeCommand command) {
