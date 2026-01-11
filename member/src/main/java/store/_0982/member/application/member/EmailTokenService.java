@@ -15,6 +15,7 @@ public class EmailTokenService {
     private final EmailTokenRepository emailTokenRepository;
 
     @ServiceLog
+    @Transactional
     public void cleanUpExpiredEmailTokens() {
         emailTokenRepository.deleteExpiredEmailTokens(OffsetDateTime.now());
     }
