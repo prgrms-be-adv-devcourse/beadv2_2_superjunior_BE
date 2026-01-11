@@ -20,6 +20,7 @@ import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRepository;
 import store._0982.elasticsearch.domain.reindex.GroupPurchaseReindexRow;
 import store._0982.elasticsearch.exception.CustomErrorCode;
+import store._0982.elasticsearch.exception.ElasticsearchExecutor;
 import store._0982.elasticsearch.reindex.GroupPurchaseReindexProperties;
 
 import java.time.LocalDateTime;
@@ -42,6 +43,7 @@ public class GroupPurchaseReindexService {
     private final ElasticsearchClient elasticsearchClient;
     private final GroupPurchaseReindexProperties properties;
     private final GroupPurchaseReindexRepository reindexRepository;
+    private final ElasticsearchExecutor elasticsearchExecutor;
 
     @ServiceLog
     public void reindex() {
@@ -155,7 +157,7 @@ public class GroupPurchaseReindexService {
 
     //bulk 부분 실패 판단을 위해 저수준 elc로 처리
     private List<String> bulkIndex(String indexName, List<GroupPurchaseReindexRow> rows) {
-        try {
+        return elasticsearchExecutor.execute(() -> {
             BulkResponse response = elasticsearchClient.bulk(bulk -> {
                 for (GroupPurchaseReindexRow row : rows) {
                     bulk.operations(op -> op
@@ -168,9 +170,7 @@ public class GroupPurchaseReindexService {
                 return bulk;
             });
             return collectFailedIds(response);
-        } catch (Exception e) {
-            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
-        }
+        });
     }
 
     private List<String> collectFailedIds(BulkResponse response) {

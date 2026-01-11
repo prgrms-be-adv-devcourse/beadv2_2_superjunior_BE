@@ -9,13 +9,13 @@ import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
+import store._0982.elasticsearch.exception.ElasticsearchExecutor;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.ArrayList;
@@ -33,12 +33,13 @@ public class GroupPurchaseSearchService {
     private final ElasticsearchOperations operations;
     private final GroupPurchaseSearchQueryFactory groupPurchaseSearchQueryFactory;
     private final ElasticsearchExceptionTranslator exceptionTranslator;
+    private final ElasticsearchExecutor elasticsearchExecutor;
     private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
 
     private static final long[] SEARCH_RETRY_DELAYS_MS = {200L, 500L};
 
     public void createGroupPurchaseIndex() {
-        try {
+        elasticsearchExecutor.execute(() -> {
             IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
 
             if (!ops.exists()) {
@@ -48,21 +49,17 @@ public class GroupPurchaseSearchService {
                 ops.create(settings);
                 ops.putMapping(ops.createMapping(GroupPurchaseDocument.class));
             }
-        } catch (Exception e) {
-            throw exceptionTranslator.translate(e);
-        }
+        });
     }
 
     public void deleteGroupPurchaseIndex() {
-        try {
+        elasticsearchExecutor.execute(() -> {
             IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
             if (!ops.exists()) {
                 return;
             }
             ops.delete();
-        } catch (Exception e) {
-            throw exceptionTranslator.translate(e);
-        }
+        });
     }
 
     @ServiceLog
@@ -74,17 +71,13 @@ public class GroupPurchaseSearchService {
             Pageable pageable
     ) {
         String sellerId = memberId != null ? memberId.toString() : null;
-        try {
+        return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
-        } catch (CustomException e) {
-            throw e;
-        } catch (Exception e) {
-            throw exceptionTranslator.translate(e);
-        }
+        });
     }
 
     @ServiceLog
@@ -94,17 +87,13 @@ public class GroupPurchaseSearchService {
             String category,
             Pageable pageable
     ) {
-        try {
+        return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
-        } catch (CustomException e) {
-            throw e;
-        } catch (Exception e) {
-            throw exceptionTranslator.translate(e);
-        }
+        });
     }
 
     private SearchHits<GroupPurchaseDocument> searchWithRetry(NativeQuery query) {
