@@ -34,8 +34,14 @@ jobs:
       - name: 변경된 서비스 감지
         id: filter
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-
+          if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+            # 최초 푸시: 최근 커밋만 비교
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+          else
+            # 일반 푸시: 이전 커밋과 비교
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+          
           # Gateway
           if echo "$CHANGED_FILES" | grep -qE '^(gateway/|build\.gradle|settings\.gradle|docs/k8s/service/gateway\.yml)'; then
             echo "gateway=true" >> $GITHUB_OUTPUT
