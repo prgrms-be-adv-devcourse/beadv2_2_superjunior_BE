@@ -66,8 +66,7 @@ public class OrderService {
 
         // 참여
         participate(groupPurchase.getGroupPurchaseId(), command, memberName);
-
-
+        
         // order 생성
         Order order = Order.create(
                 command.quantity(),
@@ -204,19 +203,7 @@ public class OrderService {
     }
 
     private GroupPurchase validateGroupPurchase(UUID groupPurchaseId) {
-        GroupPurchase groupPurchase = groupPurchaseService.getAvailableForOrder(groupPurchaseId);
-
-        // 상태확인
-        if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
-        }
-
-        // 종료시간 확인
-        if (groupPurchase.getEndDate().isBefore(OffsetDateTime.now())) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
-        }
-        return groupPurchase;
-
+        return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
     private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
