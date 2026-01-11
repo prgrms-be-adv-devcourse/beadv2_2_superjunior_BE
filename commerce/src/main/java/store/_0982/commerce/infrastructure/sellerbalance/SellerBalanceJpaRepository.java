@@ -1,4 +1,4 @@
-package store._0982.commerce.infrastructure.settlement;
+package store._0982.commerce.infrastructure.sellerbalance;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalance;

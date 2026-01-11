@@ -52,6 +52,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 409 Conflict
     CONCURRENT_PARTICIPATION_CONFLICT(HttpStatus.CONFLICT, "현재 참여자가 많습니다. 잠시 후 다시 시도해주세요."),
+    PRODUCT_ACTIVE_GROUP_PURCHASE_EXISTS(HttpStatus.CONFLICT, "진행 중이거나 예정된 공동구매가 존재합니다."),
 
     // 403 Forbidden
     ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN,"본인의 주문내역만 조회할 수 있습니다."),
