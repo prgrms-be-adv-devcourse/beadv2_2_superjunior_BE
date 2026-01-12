@@ -33,7 +33,6 @@ import static org.mockito.Mockito.*;
 @EmbeddedKafka(
         partitions = 1,
         topics = {
-                KafkaTopics.GROUP_PURCHASE_CREATED,
                 KafkaTopics.GROUP_PURCHASE_CHANGED
         }
 )
@@ -63,46 +62,6 @@ class GroupPurchaseEventListenerTest {
             UUID.randomUUID(),
             "2025-01-01T00:00:00Z",
             "2025-01-01T00:00:00Z");
-
-    @Test
-    @DisplayName("GROUP_PURCHASE_CREATED 이벤트 수신 시 공동구매 문서 저장")
-    void group_purchase_created_event_consumed_and_saved() throws Exception {
-        // given
-        UUID id = UUID.randomUUID();
-
-        GroupPurchaseEvent event = new GroupPurchaseEvent(id, // id
-                1, // minQuantity
-                10, // maxQuantity
-                "공동구매 제목", // title
-                "공동구매 설명", // description
-                9_900L, // discountedPrice
-                "OPEN", // status
-                "판매자명", // sellerName
-                "2025-01-01T00:00", // startDate
-                "2025-01-10T00:00", // endDate
-                "2025-01-01T00:00:00+09:00", // createdAt
-                "2025-01-01T00:00:00+09:00", // updatedAt
-                3, // currentQuantity p
-                productEvent, // productEvent
-                GroupPurchaseEvent.EventStatus.CREATE_GROUP_PURCHASE);
-
-        when(groupPurchaseRepository.save(any(GroupPurchaseDocument.class)))
-                .thenAnswer(invocation -> {
-                    probe.markConsumed();
-                    return invocation.getArgument(0);
-                });
-
-        // when
-        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CREATED, event).get();
-
-        // then
-        boolean consumed = probe.await(10, TimeUnit.SECONDS);
-        assertThat(consumed).isTrue();
-
-        GroupPurchaseDocument saved = captureSavedGroupPurchaseDocument();
-        assertGroupPurchaseDocument(saved, event);
-        verify(groupPurchaseRepository, never()).deleteById(any());
-    }
 
     @Test
     @DisplayName("GROUP_PURCHASE_CHANGED + DELETE 상태일 때 공동구매 문서 삭제")

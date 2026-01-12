@@ -16,16 +16,6 @@ public class GroupPurchaseKafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, GroupPurchaseEvent> createGroupPurchaseConsumerFactory(){
-        return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, GroupPurchaseEvent> createGroupPurchaseKafkaListenerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(createGroupPurchaseConsumerFactory());
-    }
-
-    @Bean
     public ConsumerFactory<String, GroupPurchaseEvent> changeGroupPurchaseConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "search-service-group");
     }
