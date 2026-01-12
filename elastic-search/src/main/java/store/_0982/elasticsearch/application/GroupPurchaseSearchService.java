@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
-import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
@@ -38,30 +37,6 @@ public class GroupPurchaseSearchService {
 
     private static final long[] SEARCH_RETRY_DELAYS_MS = {200L, 500L};
 
-    public void createGroupPurchaseIndex() {
-        elasticsearchExecutor.execute(() -> {
-            IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
-
-            if (!ops.exists()) {
-                Document settings = Document.create();
-                settings.put("index.number_of_shards", 1);
-                settings.put("index.number_of_replicas", 0);
-                ops.create(settings);
-                ops.putMapping(ops.createMapping(GroupPurchaseDocument.class));
-            }
-        });
-    }
-
-    public void deleteGroupPurchaseIndex() {
-        elasticsearchExecutor.execute(() -> {
-            IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
-            if (!ops.exists()) {
-                return;
-            }
-            ops.delete();
-        });
-    }
-
     @ServiceLog
     public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocument(
             String keyword,
@@ -73,22 +48,6 @@ public class GroupPurchaseSearchService {
         String sellerId = memberId != null ? memberId.toString() : null;
         return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
-
-            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
-            return PageResponse.from(mappedPage);
-        });
-    }
-
-    @ServiceLog
-    public PageResponse<GroupPurchaseSearchInfo> searchAllGroupPurchaseDocument(
-            String keyword,
-            String status,
-            String category,
-            Pageable pageable
-    ) {
-        return elasticsearchExecutor.execute(() -> {
-            NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);

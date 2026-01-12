@@ -1,7 +1,6 @@
 package store._0982.elasticsearch.application.dto;
 
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
 
@@ -16,19 +15,23 @@ public record GroupPurchaseDocumentCommand(
         Integer currentQuantity,
         OffsetDateTime endDate,
         OffsetDateTime updatedAt,
-        ProductEvent productEvent
+        String sellerId,
+        String productCategory,
+        Long originalPrice
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
                 event.getTitle(),
                 event.getDescription(),
-                event.getStatus(),
+                event.getGroupPurchaseStatus() != null ? event.getGroupPurchaseStatus().toString() : null,
                 event.getDiscountedPrice(),
                 event.getCurrentQuantity(),
-                OffsetDateTime.parse(event.getEndDate()),
-                OffsetDateTime.parse(event.getUpdatedAt()),
-                event.getProductEvent()
+                event.getEndDate() != null ? OffsetDateTime.parse(event.getEndDate()) : null,
+                event.getUpdatedAt() != null ? OffsetDateTime.parse(event.getUpdatedAt()) : null,
+                event.getSellerId() != null ? event.getSellerId().toString() : null,
+                event.getProductCategory() != null ? event.getProductCategory().toString() : null,
+                event.getOriginalPrice()
         );
     }
 
@@ -42,29 +45,21 @@ public record GroupPurchaseDocumentCommand(
                 .currentQuantity(currentQuantity)
                 .endDate(endDate)
                 .updatedAt(updatedAt)
-                .discountRate(calculateDiscountRate(productEvent, discountedPrice))
-                .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
+                .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
+                .productDocumentEmbedded(new ProductDocumentEmbedded(productCategory, originalPrice, sellerId))
                 .build();
     }
 
-    private static Long calculateDiscountRate(ProductEvent productEvent, Long discountedPrice) {
-        if (productEvent == null) {
+    private static Long calculateDiscountRate(Long originalPrice, Long discountedPrice) {
+        if (originalPrice == null || discountedPrice == null) {
             return 0L;
         }
-        return calculateDiscountRate(productEvent.getPrice(), discountedPrice);
-    }
-
-    private static Long calculateDiscountRate(Long price, Long discountedPrice) {
-        if (price == null || discountedPrice == null) {
-            return 0L;
-        }
-
-        if (price <= 0 || discountedPrice >= price) {
+        if (originalPrice <= 0 || discountedPrice >= originalPrice) {
             return 0L;
         }
 
         return Math.round(
-                ((double) (price - discountedPrice) / price) * 100
+                ((double) (originalPrice - discountedPrice) / originalPrice) * 100
         );
     }
 }
