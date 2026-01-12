@@ -24,6 +24,7 @@ import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest;
+import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
@@ -337,6 +338,17 @@ public class OrderService {
         if (!toUpdate.isEmpty()) {
             orderRepository.saveAll(toUpdate);
             log.info("환불 상태 업데이트 완료 : 성공 = {}, 실패 = {}", success, fail);
+        }
+    }
+
+    @Transactional
+    public void cancelOrder(OrderCancelCommand command) {
+        Order findOrder = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (findOrder.getStatus().equals(OrderStatus.PAYMENT_COMPLETED)) {
+            groupPurchaseService.cancelOrder(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
+            return;
         }
     }
 }

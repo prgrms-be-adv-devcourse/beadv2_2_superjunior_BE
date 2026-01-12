@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.common.HeaderName;
 import store._0982.common.auth.RequireRole;
 import store._0982.common.auth.Role;
@@ -102,4 +103,14 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(판매자)가 완료 되었습니다.");
     }
 
+    @PostMapping("/cancel/{orderId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<OrderInfo> cancelOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId,
+            @RequestBody OrderCancelRequest orderCancelRequest
+            ) {
+        orderService.cancelOrder(orderCancelRequest.toCommand(memberId, orderId));
+        return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
+    }
 }

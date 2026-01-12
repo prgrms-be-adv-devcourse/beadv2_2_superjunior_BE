@@ -37,7 +37,7 @@ public class OrderInternalController {
     public ResponseDto<Void> returnOrders(
             @PathVariable UUID purchaseId
     ) {
-        orderService.returnOrder(purchaseId);
+        // orderService.returnOrder(purchaseId);
         return new ResponseDto<>(HttpStatus.OK, null, "포인트가 환불되었습니다.");
     }
 

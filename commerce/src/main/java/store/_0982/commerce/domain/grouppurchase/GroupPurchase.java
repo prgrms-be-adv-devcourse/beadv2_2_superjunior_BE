@@ -161,4 +161,8 @@ public class GroupPurchase {
                 category
         );
     }
+
+    public void updateQuantity(int quantity) {
+        this.currentQuantity += quantity;
+    }
 }

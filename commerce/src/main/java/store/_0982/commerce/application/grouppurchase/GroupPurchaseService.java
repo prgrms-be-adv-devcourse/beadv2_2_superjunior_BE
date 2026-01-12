@@ -24,6 +24,7 @@ import store._0982.commerce.exception.CustomErrorCode;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
@@ -232,5 +233,11 @@ public class GroupPurchaseService {
         }
 
         return groupPurchase;
+    }
+
+    public void cancelOrder(UUID groupPurchaseId, int quantity) {
+        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+        findGroupPurchase.updateQuantity(quantity);
     }
 }
