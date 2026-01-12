@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
-import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
@@ -49,22 +48,6 @@ public class GroupPurchaseSearchService {
         String sellerId = memberId != null ? memberId.toString() : null;
         return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
-
-            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
-            return PageResponse.from(mappedPage);
-        });
-    }
-
-    @ServiceLog
-    public PageResponse<GroupPurchaseSearchInfo> searchAllGroupPurchaseDocument(
-            String keyword,
-            String status,
-            String category,
-            Pageable pageable
-    ) {
-        return elasticsearchExecutor.execute(() -> {
-            NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, null, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
