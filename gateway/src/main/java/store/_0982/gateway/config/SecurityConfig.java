@@ -3,23 +3,16 @@ package store._0982.gateway.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.http.HttpCookie;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
-import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
-import reactor.core.publisher.Mono;
 import store._0982.gateway.domain.MemberCache;
 import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.infrastructure.member.MemberServiceClient;
-import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
-import store._0982.gateway.security.JwtReactiveAuthenticationManager;
-import store._0982.gateway.security.token.MemberAuthenticationToken;
 import store._0982.gateway.security.RouteAuthorizationManager;
 
 @Configuration
@@ -31,10 +24,10 @@ public class SecurityConfig {
     private final GatewayJwtProvider gatewayJwtProvider;
     private final MemberCache memberCache;
     private final MemberServiceClient memberServiceClient;
+    private final AuthenticationWebFilter authenticationWebFilter;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        AuthenticationWebFilter authenticationWebFilter = authenticationWebFilter();
 
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable).httpBasic(ServerHttpSecurity.HttpBasicSpec::disable).formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 // 인증 필터
@@ -59,25 +52,4 @@ public class SecurityConfig {
                 .build();
     }
 
-    @Bean
-    public AuthenticationWebFilter authenticationWebFilter() {
-        ReactiveAuthenticationManager authenticationManager = new JwtReactiveAuthenticationManager(
-                gatewayJwtProvider,
-                memberCache,
-                memberServiceClient
-        );
-        ServerAuthenticationConverter converter = exchange -> {
-            HttpCookie accessTokenCookie = exchange.getRequest()
-                    .getCookies()
-                    .getFirst("accessToken");
-            if (accessTokenCookie == null || accessTokenCookie.getValue().isBlank()) {
-                return Mono.just(MemberAuthenticationToken.generateGuestAuthenticationToken());
-            }
-            return Mono.just(new AccessTokenAuthenticationToken(accessTokenCookie.getValue()));
-        };
-
-        AuthenticationWebFilter filter = new AuthenticationWebFilter(authenticationManager);
-        filter.setServerAuthenticationConverter(converter);
-        return filter;
-    }
 }
