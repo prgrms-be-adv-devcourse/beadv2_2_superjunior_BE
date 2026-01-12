@@ -3,6 +3,14 @@ spring:
   application:
     name: commerce
 
+  flyway:
+    enabled: true
+    default-schema: product_schema
+    schemas:
+      - product_schema
+      - order_schema
+    create-schemas: true
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   datasource:
