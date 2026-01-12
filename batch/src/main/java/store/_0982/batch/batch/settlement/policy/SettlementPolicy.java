@@ -4,6 +4,8 @@ import java.time.ZoneId;
 
 public class SettlementPolicy {
 
+    public static final int CHUNK_UNIT = 10;
+
     public static final long MINIMUM_TRANSFER_AMOUNT = 30000L;
 
     public static final int SERVICE_FEE_RATE = 20;

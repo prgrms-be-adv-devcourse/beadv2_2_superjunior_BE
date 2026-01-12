@@ -5,7 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderEvent;
+import store._0982.common.kafka.dto.OrderChangedEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
@@ -24,11 +24,11 @@ public class OrderEventListener {
     @ServiceLog
     @RetryableTopic(exclude = CustomKafkaException.class)
     @KafkaListener(
-            topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_STATUS_CHANGED},
+            topics = {KafkaTopics.ORDER_CREATED, KafkaTopics.ORDER_CHANGED},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )
-    public void handleOrderEvent(OrderEvent event) {
+    public void handleOrderEvent(OrderChangedEvent event) {
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,
@@ -38,20 +38,21 @@ public class OrderEventListener {
         notificationRepository.save(notification);
     }
 
-    private NotificationContent createNotificationContent(OrderEvent event) {
+    // TODO: 나중에 알림 분기 제대로 진행
+    private NotificationContent createNotificationContent(OrderChangedEvent event) {
         String productName = event.getProductName();
         return switch (event.getStatus()) {
-            case CREATED -> new NotificationContent(
+            case PAYMENT_COMPLETED -> new NotificationContent(
                     NotificationType.ORDER_SCHEDULED,
                     productName + " 공동 구매 신청 완료",
                     productName + " 상품의 공동 구매 신청이 완료되었습니다."
             );
-            case SUCCESS -> new NotificationContent(
+            case GROUP_PURCHASE_SUCCESS -> new NotificationContent(
                     NotificationType.ORDER_COMPLETED,
                     productName + " 공동 구매 성공",
                     productName + " 상품의 공동 구매가 확정되어 곧 배송이 시작됩니다."
             );
-            case FAILED -> new NotificationContent(
+            case GROUP_PURCHASE_FAIL, PAYMENT_FAILED, ORDER_FAILED -> new NotificationContent(
                     NotificationType.ORDER_FAILED,
                     productName + " 공동 구매 실패",
                     productName + " 상품의 공동 구매가 취소되어 곧 포인트가 반환됩니다."

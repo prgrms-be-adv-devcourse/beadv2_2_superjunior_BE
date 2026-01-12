@@ -40,24 +40,32 @@ import java.util.Map;
 public final class KafkaCommonConfigs {
     /**
      * {@link ProducerFactory}를 빈에 등록할 때 사용하는 메서드입니다.
+     * <p><strong>중요한 비즈니스 로직(주문, 결제 등)에 사용하세요.</strong></p>
+     * <ul>
+     *     <li>ACKS: all (모든 레플리카 응답 대기)</li>
+     *     <li>Idempotence: true (중복 전송 방지 활성화)</li>
+     * </ul>
      *
      * @param bootStrapServers 브로커의 서버 주소
-     * @return 기본 설정대로 생성된 {@link ProducerFactory}
+     * @return 안정성을 최우선으로 설정된 {@link ProducerFactory}
      */
     public static <V extends BaseEvent> ProducerFactory<String, V> defaultProducerFactory(String bootStrapServers) {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
-        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        config.put(ProducerConfig.ACKS_CONFIG, KafkaProperties.DEFAULT_ACK);
-        config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRIES);
-        config.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, KafkaProperties.DELIVERY_TIMEOUT_MS);
-        config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
-        config.put(ProducerConfig.BATCH_SIZE_CONFIG, KafkaProperties.DEFAULT_BATCH_SIZE);
-        config.put(ProducerConfig.LINGER_MS_CONFIG, KafkaProperties.DEFAULT_LINGER_MS);
-        config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
-        return new DefaultKafkaProducerFactory<>(config);
+        return createProducerFactory(bootStrapServers, KafkaProperties.DEFAULT_ACK, true);
+    }
+
+    /**
+     * {@link ProducerFactory}를 빈에 등록할 때 사용하는 메서드입니다.
+     * <p><strong>단순 알림이나 로그성 데이터 등 일부 유실이 허용되는 로직에 사용하세요.</strong></p>
+     * <ul>
+     *     <li>ACKS: 0 (응답 대기 안 함, 전송 속도 빠름)</li>
+     *     <li>Idempotence: false (중복 전송 방지 비활성화)</li>
+     * </ul>
+     *
+     * @param bootStrapServers 브로커의 서버 주소
+     * @return 성능을 최우선으로 설정된 {@link ProducerFactory}
+     */
+    public static <V extends BaseEvent> ProducerFactory<String, V> fastProducerFactory(String bootStrapServers) {
+        return createProducerFactory(bootStrapServers, "0", false);
     }
 
     /**
@@ -139,5 +147,21 @@ public final class KafkaCommonConfigs {
                 .partitions(partitions)
                 .replicas(replicas)
                 .build();
+    }
+
+    private static <V extends BaseEvent> ProducerFactory<String, V> createProducerFactory(String bootStrapServers, String ack, boolean enableIdempotence) {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootStrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        config.put(ProducerConfig.ACKS_CONFIG, ack);
+        config.put(ProducerConfig.RETRIES_CONFIG, KafkaProperties.MAX_RETRIES);
+        config.put(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG, KafkaProperties.DELIVERY_TIMEOUT_MS);
+        config.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, KafkaProperties.RETRY_BACKOFF_MS);
+        config.put(ProducerConfig.BATCH_SIZE_CONFIG, KafkaProperties.DEFAULT_BATCH_SIZE);
+        config.put(ProducerConfig.LINGER_MS_CONFIG, KafkaProperties.DEFAULT_LINGER_MS);
+        config.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, enableIdempotence);
+        config.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, true);
+        return new DefaultKafkaProducerFactory<>(config);
     }
 }

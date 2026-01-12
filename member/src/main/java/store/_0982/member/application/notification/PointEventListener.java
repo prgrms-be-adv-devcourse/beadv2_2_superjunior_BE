@@ -5,7 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.PointEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
@@ -22,11 +22,11 @@ public class PointEventListener {
     @ServiceLog
     @RetryableTopic
     @KafkaListener(
-            topics = {KafkaTopics.POINT_CHANGED, KafkaTopics.POINT_RECHARGED},
+            topics = {KafkaTopics.POINT_CHANGED},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )
-    public void handlePointChangedEvent(PointEvent event) {
+    public void handlePointChangedEvent(PointChangedEvent event) {
         NotificationContent content = createNotificationContent(event);
         Notification notification = NotificationCreator.create(
                 event,
@@ -36,9 +36,9 @@ public class PointEventListener {
         notificationRepository.save(notification);
     }
 
-    private NotificationContent createNotificationContent(PointEvent event) {
+    private NotificationContent createNotificationContent(PointChangedEvent event) {
         return switch (event.getStatus()) {
-            case RECHARGED -> new NotificationContent(
+            case CHARGED -> new NotificationContent(
                     NotificationType.POINT_RECHARGED,
                     "포인트 충전 완료",
                     String.format("포인트 %,d원이 정상적으로 충전되었습니다.", event.getAmount())

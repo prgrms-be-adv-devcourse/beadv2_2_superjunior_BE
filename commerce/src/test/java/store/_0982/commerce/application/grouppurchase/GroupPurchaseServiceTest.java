@@ -29,7 +29,6 @@ import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.kafka.KafkaTopics;
 
-import javax.swing.*;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -950,7 +949,7 @@ class GroupPurchaseServiceTest {
 
         when(groupPurchase.toEvent(
                 anyString(),
-                eq(GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE),
+                eq(GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE),
                 isNull()
         )).thenReturn(mockEvent);
 

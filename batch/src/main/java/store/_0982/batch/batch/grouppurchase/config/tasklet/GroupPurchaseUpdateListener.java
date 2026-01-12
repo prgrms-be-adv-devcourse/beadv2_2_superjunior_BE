@@ -36,7 +36,7 @@ public class GroupPurchaseUpdateListener {
             memberClient.getMember(product.getSellerId()).data().name();
 
         GroupPurchaseEvent kafkaEvent =
-            groupPurchase.toEvent(sellerName, GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE, product.toEvent());
+            groupPurchase.toEvent(sellerName, GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE, product.toEvent());
 
         kafkaTemplate.send(
             KafkaTopics.GROUP_PURCHASE_CHANGED,

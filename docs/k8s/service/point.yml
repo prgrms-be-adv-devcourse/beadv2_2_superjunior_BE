@@ -24,16 +24,12 @@ spec:
             - secretRef:
                 name: point-secret
           env:
-            - name: LOGGING_LEVEL_STORE
-              value: info
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-              value: "http://admin:admin@discovery-service:8761/eureka"
-            - name: EUREKA_INSTANCE_HOSTNAME
-              value: "discovery-service"
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+            - name: CLIENT_COMMERCE
+              value: "http://commerce-service:8087"
           resources:
             requests:
               cpu: "200m"

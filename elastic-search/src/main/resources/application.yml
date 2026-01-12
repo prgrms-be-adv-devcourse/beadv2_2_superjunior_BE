@@ -1,32 +1,30 @@
-#file: noinspection HttpUrlsUsage, SpringBootApplicationYaml, SpellCheckingInspection
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
 spring:
   application:
     name: elastic-search
 
-  elasticsearch:
-    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
-    connection-timeout: 1s
-    socket-timeout: 3s
-    #    추후 xpack.security.enabled=false 변경 시
-    #    username: elastic
-    #    password: your_password
+  datasource:
+    url: ${PRODUCT_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME}
+    password: ${PRODUCT_DATABASE_PASSWORD}
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+    open-in-view: false
 
 server:
   port: 8082
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
 
 management:
   endpoints:
@@ -40,12 +38,5 @@ management:
     propagation:
       type: w3c  # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
-
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+  bootstrap-servers: ${spring.kafka.bootstrap-servers}
