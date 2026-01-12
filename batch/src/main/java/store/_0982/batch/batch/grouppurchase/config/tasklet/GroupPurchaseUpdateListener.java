@@ -22,7 +22,6 @@ public class GroupPurchaseUpdateListener {
 
     private final KafkaTemplate<String, GroupPurchaseEvent> kafkaTemplate;
     private final ProductRepository productRepository;
-    private final MemberClient memberClient;
     private final GroupPurchaseRepository groupPurchaseRepository;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -32,11 +31,12 @@ public class GroupPurchaseUpdateListener {
         Product product = productRepository.findById(groupPurchase.getProductId())
             .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
-        String sellerName =
-            memberClient.getMember(product.getSellerId()).data().name();
-
         GroupPurchaseEvent kafkaEvent =
-            groupPurchase.toEvent(sellerName, GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE, product.toEvent());
+            groupPurchase.toEvent(
+                    GroupPurchaseEvent.Status.valueOf(groupPurchase.getStatus().name()),
+                    GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE,
+                    product.getPrice(),
+                    GroupPurchaseEvent.ProductCategory.valueOf(product.getCategory().name()));
 
         kafkaTemplate.send(
             KafkaTopics.GROUP_PURCHASE_CHANGED,
