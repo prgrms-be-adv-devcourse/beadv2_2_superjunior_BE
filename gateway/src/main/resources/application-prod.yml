@@ -19,8 +19,6 @@ spring:
               uri: http://member-service:8083
               predicates:
                 - Path=/api/members/**, /api/auth/**, /api/notifications/**
-              filters:
-                - JwtAuth
 
             - id: member-docs
               uri: http://member-service:8083
@@ -33,8 +31,6 @@ spring:
               uri: http://commerce-service:8087
               predicates:
                 - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
-              filters:
-                - JwtAuth
 
             - id: commerce-docs
               uri: http://commerce-service:8087
@@ -47,8 +43,6 @@ spring:
               uri: http://point-service:8086
               predicates:
                 - Path=/api/points/**, /api/payments/**
-              filters:
-                - JwtAuth
 
             - id: point-docs
               uri: http://point-service:8086
@@ -61,8 +55,6 @@ spring:
               uri: http://search-service:8082
               predicates:
                 - Path=/api/searches/**
-              filters:
-                - JwtAuth
 
             - id: search-docs
               uri: http://search-service:8082
