@@ -27,6 +27,7 @@ public class SellerBalanceService {
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
 
+    @Transactional
     public SellerBalanceThumbnailInfo createSellerBalance(SellerBalanceCommand command) {
         SellerBalance sellerBalance = new SellerBalance(command.sellerId());
         sellerBalanceRepository.save(sellerBalance);

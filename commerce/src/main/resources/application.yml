@@ -3,6 +3,14 @@ spring:
   application:
     name: commerce
 
+  flyway:
+    enabled: true
+    default-schema: product_schema
+    schemas:
+      - product_schema
+      - order_schema
+    create-schemas: true
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   datasource:
@@ -40,17 +48,6 @@ spring:
 server:
   port: 8087
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://admin:admin@${eureka.instance.hostname:localhost}:8761/eureka
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${server.port}}
-    health-check-url-path: /actuator/health
-
 management:
   endpoints:
     web:
@@ -63,19 +60,11 @@ management:
     propagation:
       type: w3c # 또는 b3
 
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
-
 client:
   member: http://member-service:8083
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
-
 
 # 공동구매 주문 시간 설정
 group-purchase:
