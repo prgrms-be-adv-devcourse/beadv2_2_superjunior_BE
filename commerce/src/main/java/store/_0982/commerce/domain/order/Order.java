@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class Order {
     private int quantity;
 
     @Column(name = "price", nullable = false)
-    private Long  price;
+    private Long price;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -104,16 +105,16 @@ public class Order {
         this.expiredAt = OffsetDateTime.now().plusMinutes(10);
     }
 
-    public static Order create(  int quantity,
-                                 Long price,
-                                 UUID memberId,
-                                 String address,
-                                 String addressDetail,
-                                 String postalCode,
-                                 String receiverName,
-                                 UUID sellerId,
-                                 UUID groupPurchaseId,
-                                 String idempotencyKey){
+    public static Order create(int quantity,
+                               Long price,
+                               UUID memberId,
+                               String address,
+                               String addressDetail,
+                               String postalCode,
+                               String receiverName,
+                               UUID sellerId,
+                               UUID groupPurchaseId,
+                               String idempotencyKey) {
         return new Order(
                 quantity,
                 price,
@@ -129,12 +130,12 @@ public class Order {
     }
 
     // 상태 변경
-    public void updateStatus(OrderStatus newStatus){
+    public void updateStatus(OrderStatus newStatus) {
         this.status = newStatus;
     }
 
     // 결제 완료
-    public void completePayment(PaymentMethod paymentMethod){
+    public void completePayment(PaymentMethod paymentMethod) {
         validateStatus(OrderStatus.PAYMENT_COMPLETED);
         this.status = OrderStatus.PAYMENT_COMPLETED;
         this.paymentMethod = paymentMethod;
@@ -142,7 +143,7 @@ public class Order {
     }
 
     // 주문 실패 처리
-    public void markFailed(){
+    public void markFailed() {
         validateStatus(OrderStatus.ORDER_FAILED);
         this.status = OrderStatus.ORDER_FAILED;
     }
@@ -171,19 +172,19 @@ public class Order {
         this.status = OrderStatus.REVERSED_REQUESTED;
     }
 
-    private void validateStatus(OrderStatus newStatus){
-        switch(this.status){
+    private void validateStatus(OrderStatus newStatus) {
+        switch (this.status) {
             case PENDING:
-                if(newStatus != OrderStatus.PAYMENT_COMPLETED
-                && newStatus != OrderStatus.CANCELLED
-                && newStatus != OrderStatus.ORDER_FAILED){
+                if (newStatus != OrderStatus.PAYMENT_COMPLETED
+                        && newStatus != OrderStatus.CANCELLED
+                        && newStatus != OrderStatus.ORDER_FAILED) {
                     throw new IllegalStateException("PENDING으로 변경 불가능");
                 }
                 break;
             case PAYMENT_COMPLETED:
-                if(newStatus != OrderStatus.CANCELLED
-                && newStatus != OrderStatus.RETURNED
-                && newStatus != OrderStatus.REVERSED){
+                if (newStatus != OrderStatus.CANCELLED
+                        && newStatus != OrderStatus.RETURNED
+                        && newStatus != OrderStatus.REVERSED) {
                     throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
                 }
                 break;
@@ -198,15 +199,25 @@ public class Order {
     }
 
     // 환불 완료
-    public void markReturned(){
-        if(this.returnedAt != null){
+    public void markReturned() {
+        if (this.returnedAt != null) {
             throw new IllegalStateException("이미 환불된 건입니다.");
         }
         this.returnedAt = OffsetDateTime.now();
     }
 
     // 환불 여부
-    public boolean isReturned(){
+    public boolean isReturned() {
         return this.returnedAt != null;
+    }
+
+    public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+        return new OrderCanceledEvent(
+                this.memberId,
+                this.orderId,
+                cancelReason,
+                method,
+                amount
+        );
     }
 }

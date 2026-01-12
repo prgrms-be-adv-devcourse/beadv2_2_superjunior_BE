@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.event.KafkaEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
@@ -27,6 +29,8 @@ import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
@@ -46,6 +50,8 @@ public class OrderService {
     private final ParticipateService participateService;
     private final MemberClient memberClient;
     private final PaymentClient paymentClient;
+
+    private final KafkaTemplate<String, OrderCanceledEvent> orderCanceledKafkaTemplate;
 
     /**
      * 주문 생성
@@ -349,17 +355,55 @@ public class OrderService {
         if (findOrder.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
             groupPurchaseService.cancelOrder(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
             findOrder.requestCancel();
-            // TODO: Kafka를 이용하여 point-service
+
+            OrderCanceledEvent kafkaEvent = findOrder.toEvent(
+                    command.reason(),
+                    OrderCanceledEvent.PaymentMethod.valueOf(
+                            findOrder.getPaymentMethod().name()
+                    ),
+                    findOrder.getPrice()
+            );
+            orderCanceledKafkaTemplate.send(
+                    KafkaTopics.ORDER_CANCELED,
+                    kafkaEvent.getEventId().toString(),
+                    kafkaEvent
+            );
             return;
         }
         if (findGroupPurchase.isInReversedPeriod()) {
             findOrder.requestReversed();
-            // TODO: Kafka를 이용하여 point-service
+
+            Long amount = (long) (findOrder.getPrice() * 0.8);
+            OrderCanceledEvent kafkaEvent = findOrder.toEvent(
+                    command.reason(),
+                    OrderCanceledEvent.PaymentMethod.valueOf(
+                            findOrder.getPaymentMethod().name()
+                    ),
+                    amount
+            );
+            orderCanceledKafkaTemplate.send(
+                    KafkaTopics.ORDER_CANCELED,
+                    kafkaEvent.getEventId().toString(),
+                    kafkaEvent
+            );
             return;
         }
         if (findGroupPurchase.isInReturnedPeriod()) {
             findOrder.requestReturned();
-            // TODO: Kafka를 이용하여 point-service
+
+            Long amount = (long) (findOrder.getPrice() * 0.8) - 6000;
+            OrderCanceledEvent kafkaEvent = findOrder.toEvent(
+                    command.reason(),
+                    OrderCanceledEvent.PaymentMethod.valueOf(
+                            findOrder.getPaymentMethod().name()
+                    ),
+                    amount
+            );
+            orderCanceledKafkaTemplate.send(
+                    KafkaTopics.ORDER_CANCELED,
+                    kafkaEvent.getEventId().toString(),
+                    kafkaEvent
+            );
         }
     }
 }
