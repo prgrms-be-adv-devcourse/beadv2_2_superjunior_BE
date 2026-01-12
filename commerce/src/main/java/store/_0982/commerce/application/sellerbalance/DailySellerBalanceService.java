@@ -22,7 +22,7 @@ public class DailySellerBalanceService {
     private final GroupPurchaseService groupPurchaseService;
 
     @ServiceLog
-    public void processDailySettlement() {
+    public void creditDailySellerBalance() {
         List<GroupPurchaseInternalInfo> unsettledGroupPurchases = groupPurchaseService.getUnsettledGroupPurchases();
 
         if (unsettledGroupPurchases.isEmpty()) {
@@ -33,11 +33,11 @@ public class DailySellerBalanceService {
                 unsettledGroupPurchases.stream()
                         .collect(Collectors.groupingBy(GroupPurchaseInternalInfo::sellerId));
 
-        processEachSellerSettlement(groupPurchasesBySeller);
+        processEachSellerBalance(groupPurchasesBySeller);
     }
 
     @ServiceLog
-    private void processEachSellerSettlement(
+    private void processEachSellerBalance(
             Map<UUID, List<GroupPurchaseInternalInfo>> groupPurchasesBySeller) {
 
         for (Map.Entry<UUID, List<GroupPurchaseInternalInfo>> entry : groupPurchasesBySeller.entrySet()) {

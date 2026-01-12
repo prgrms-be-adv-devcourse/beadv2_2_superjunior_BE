@@ -42,9 +42,9 @@ public class SellerBalanceController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping
-    public ResponseDto<PageResponse<Void>> processDailySettlement() {
-        dailySellerBalanceService.processDailySettlement();
-        return new ResponseDto<>(HttpStatus.OK, null, "seller balance 정산처리 되었습니다.");
+    @PostMapping("daily-credit")
+    public ResponseDto<PageResponse<Void>> creditDailySellerBalance() {
+        dailySellerBalanceService.creditDailySellerBalance();
+        return new ResponseDto<>(HttpStatus.OK, null, "seller balance 증가 처리 되었습니다.");
     }
 }
