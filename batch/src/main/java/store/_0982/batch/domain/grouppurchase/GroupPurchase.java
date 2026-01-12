@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.kafka.dto.GroupPurchaseChangedEvent;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -163,33 +161,23 @@ public class GroupPurchase {
         return this.returnedAt != null;
     }
 
-    public GroupPurchaseEvent toEvent(String sellerName, GroupPurchaseEvent.EventStatus searchKafkaStatus, ProductEvent productEvent) {
+    public GroupPurchaseEvent toEvent(GroupPurchaseEvent.Status groupPurchaseStatus,
+                                      GroupPurchaseEvent.EventStatus kafkaStatus,
+                                      Long originalPrice,
+                                      GroupPurchaseEvent.ProductCategory category) {
         return new GroupPurchaseEvent(
-                this.groupPurchaseId,
-                this.minQuantity,
-                this.maxQuantity,
-                this.title,
-                this.description,
-                this.discountedPrice,
-                this.status.name(),
-                sellerName,
-                this.startDate.toString(),
-                this.endDate.toString(),
-                this.createdAt.toString(),
-                this.updatedAt.toString(),
-                this.currentQuantity,
-                productEvent,
-                searchKafkaStatus
-        );
-    }
-
-    public GroupPurchaseChangedEvent toChangedEvent(GroupPurchaseChangedEvent.Status status, long totalAmount) {
-        return new GroupPurchaseChangedEvent(
                 this.groupPurchaseId,
                 this.sellerId,
                 this.title,
-                status,
-                totalAmount
+                this.description,
+                this.discountedPrice,
+                groupPurchaseStatus,
+                this.endDate.toString(),
+                this.updatedAt.toString(),
+                this.currentQuantity,
+                kafkaStatus,
+                originalPrice,
+                category
         );
     }
 }
