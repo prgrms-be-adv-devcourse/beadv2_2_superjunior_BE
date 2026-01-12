@@ -15,8 +15,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
-import store._0982.elasticsearch.application.ProductSearchService;
-import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
 
 import java.time.OffsetDateTime;
 import java.util.List;

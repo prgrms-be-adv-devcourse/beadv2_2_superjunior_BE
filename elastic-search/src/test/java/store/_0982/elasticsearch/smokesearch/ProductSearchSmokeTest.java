@@ -17,9 +17,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.elasticsearch.application.ProductSearchService;
-import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
-import store._0982.elasticsearch.domain.ProductDocument;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 
 import java.util.UUID;

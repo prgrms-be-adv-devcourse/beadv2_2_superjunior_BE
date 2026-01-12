@@ -13,11 +13,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
-import store._0982.elasticsearch.application.dto.ProductDocumentCommand;
 import store._0982.elasticsearch.application.support.KafkaTestProbe;
 import store._0982.elasticsearch.config.KafkaTestConfig;
-import store._0982.elasticsearch.domain.ProductDocument;
-import store._0982.elasticsearch.infrastructure.ProductRepository;
+
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

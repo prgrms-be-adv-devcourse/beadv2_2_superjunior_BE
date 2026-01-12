@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import store._0982.elasticsearch.infrastructure.queryfactory.ProductSearchQueryFactory;
 
 import java.util.Objects;
 import java.util.UUID;

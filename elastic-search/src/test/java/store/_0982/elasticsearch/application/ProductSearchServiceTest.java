@@ -15,11 +15,8 @@ import org.springframework.data.elasticsearch.core.*;
 import org.springframework.data.elasticsearch.core.document.Document;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.elasticsearch.application.dto.ProductDocumentInfo;
-import store._0982.elasticsearch.domain.ProductDocument;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.CustomErrorCode;
-import store._0982.elasticsearch.infrastructure.queryfactory.ProductSearchQueryFactory;
 
 import java.util.List;
 import java.util.UUID;
