@@ -13,6 +13,7 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PaymentCreateCommand;
 import store._0982.point.application.dto.PaymentCreateInfo;
 import store._0982.point.application.dto.PaymentConfirmCommand;
+import store._0982.point.application.payment.PaymentService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.Point;
 import store._0982.point.domain.entity.Payment;

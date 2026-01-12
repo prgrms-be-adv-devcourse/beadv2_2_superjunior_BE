@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PointRefundCommand;
 import store._0982.point.application.dto.PointRefundInfo;
+import store._0982.point.application.payment.PaymentRefundService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PaymentStatus;
 import store._0982.point.domain.entity.Point;

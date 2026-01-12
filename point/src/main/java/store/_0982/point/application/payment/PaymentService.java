@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.payment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

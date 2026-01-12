@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PointRefundCommand;
+import store._0982.point.application.payment.PaymentRefundService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PaymentStatus;
 import store._0982.point.domain.entity.Point;

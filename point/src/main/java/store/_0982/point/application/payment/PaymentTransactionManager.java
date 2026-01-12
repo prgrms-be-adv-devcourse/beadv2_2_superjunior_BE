@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.payment;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -8,8 +8,10 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PaymentFailCommand;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.entity.PaymentCancel;
 import store._0982.point.domain.entity.PaymentFailure;
 import store._0982.point.domain.event.PaymentConfirmedEvent;
+import store._0982.point.domain.repository.PaymentCancelRepository;
 import store._0982.point.domain.repository.PaymentFailureRepository;
 import store._0982.point.domain.repository.PaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -22,6 +24,7 @@ import java.util.UUID;
 class PaymentTransactionManager {
 
     private final PaymentRepository paymentRepository;
+    private final PaymentCancelRepository paymentCancelRepository;
     private final PaymentFailureRepository paymentFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -42,6 +45,14 @@ class PaymentTransactionManager {
         return payment;
     }
 
+    Payment markRefundPending(UUID orderId, UUID memberId) {
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+        payment.validateRefundable(memberId);
+        payment.markRefundPending();
+        return payment;
+    }
+
     @Transactional
     void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
         Payment payment = findCompletablePayment(paymentKey, memberId);
@@ -58,11 +69,20 @@ class PaymentTransactionManager {
     }
 
     @Transactional
-    Payment markFailedPaymentByPg(PaymentFailCommand command, UUID memberId) {
+    void markFailedPaymentByPg(PaymentFailCommand command, UUID memberId) {
         Payment payment = findFailablePayment(command.paymentKey(), memberId);
         payment.markFailed(command.errorMessage());
         PaymentFailure paymentFailure = PaymentFailure.pgError(payment, command);
         paymentFailureRepository.save(paymentFailure);
-        return payment;
+    }
+
+    @Transactional
+    void markRefundedPayment(TossPaymentResponse tossPaymentResponse, UUID orderId, UUID memberId) {
+        Payment payment = markRefundPending(orderId, memberId);
+        TossPaymentResponse.CancelInfo cancelInfo = tossPaymentResponse.cancels().get(0);
+        payment.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
+
+        PaymentCancel paymentCancel = PaymentCancel.from(payment, cancelInfo.cancelReason(), cancelInfo.cancelAmount(), cancelInfo.canceledAt());
+        paymentCancelRepository.save(paymentCancel);
     }
 }

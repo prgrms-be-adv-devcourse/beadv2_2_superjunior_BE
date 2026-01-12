@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PaymentCreateCommand;
+import store._0982.point.application.payment.PaymentService;
 import store._0982.point.domain.entity.Payment;
 import store._0982.point.infrastructure.PaymentJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;

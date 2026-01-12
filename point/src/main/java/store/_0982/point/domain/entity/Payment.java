@@ -8,6 +8,7 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.domain.constant.PaymentStatus;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -18,6 +19,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "payment", schema = "payment_schema")
 public class Payment {
+
+    private static final int REFUND_PERIOD_DAYS = 14;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -91,6 +94,10 @@ public class Payment {
         this.failMessage = errorMessage;
     }
 
+    public void markRefundPending() {
+        this.status = PaymentStatus.REFUND_PENDING;
+    }
+
     public void markRefunded(OffsetDateTime refundedAt, String cancelReason) {
         this.status = PaymentStatus.REFUNDED;
         this.refundedAt = refundedAt;
@@ -111,9 +118,32 @@ public class Payment {
         }
     }
 
+    public void validateRefundable(UUID memberId) {
+        validateOwner(memberId);
+        if (this.status == PaymentStatus.REFUNDED) {
+            throw new CustomException(CustomErrorCode.ALREADY_REFUNDED_PAYMENT);
+        }
+        if (this.status != PaymentStatus.COMPLETED) {
+            throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
+        }
+        validateRefundTerms();
+    }
+
     public void validateOwner(UUID memberId) {
         if (!this.memberId.equals(memberId)) {
             throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
+    }
+
+    // TODO: 기간을 세분화해서 부분 환불 비율을 결정하면 좋을 것 같다.
+    private void validateRefundTerms() {
+        if (approvedAt == null) {
+            throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
+        }
+
+        // 결제일이 7일 이내일 경우 환불 가능
+        if (Duration.between(approvedAt, OffsetDateTime.now()).toDays() > REFUND_PERIOD_DAYS) {
+            throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
     }
 }

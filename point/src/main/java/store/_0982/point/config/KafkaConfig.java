@@ -4,11 +4,15 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.common.kafka.dto.PointChangedEvent;
+import store._0982.point.common.KafkaGroupIds;
 
 @Configuration
 public class KafkaConfig {
@@ -26,8 +30,18 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ConsumerFactory<String, OrderCanceledEvent> orderCanceledEventConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.PAYMENT_SERVICE);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCanceledEvent> orderCanceledEventListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderCanceledEventConsumerFactory());
+    }
+
+    @Bean
     public NewTopic pointRechargedTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.POINT_RECHARGED);
+        return KafkaCommonConfigs.createTopic(KafkaTopics.PAYMENT_CHANGED);
     }
 
     @Bean

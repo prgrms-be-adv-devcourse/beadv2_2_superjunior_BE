@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PaymentFailCommand;
+import store._0982.point.application.payment.PaymentFailService;
 import store._0982.point.domain.entity.Payment;
 import store._0982.point.domain.entity.PaymentFailure;
 import store._0982.point.domain.repository.PaymentFailureRepository;

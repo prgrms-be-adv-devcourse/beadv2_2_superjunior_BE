@@ -2,7 +2,6 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -21,25 +20,37 @@ public class PaymentCancel {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment; // 원본 결제
+    private Payment payment;
 
     @Column(name = "cancel_amount", nullable = false)
-    private long cancelAmount; // 이번에 취소한 금액
+    private long cancelAmount;
 
     @Column(name = "cancel_reason")
     private String cancelReason;
 
-    @Column(name = "pg_cancel_key")
-    private String pgCancelKey; // PG사 취소 키
+    @Column(name = "payment_key", nullable = false, unique = true, updatable = false)
+    private String paymentKey;
 
-    @CreationTimestamp
     @Column(name = "canceled_at", nullable = false)
     private OffsetDateTime canceledAt;
+
+    public static PaymentCancel from(Payment payment, String cancelReason, long cancelAmount, OffsetDateTime canceledAt) {
+        return PaymentCancel.builder()
+                .payment(payment)
+                .paymentKey(payment.getPaymentKey())
+                .cancelReason(cancelReason)
+                .cancelAmount(cancelAmount)
+                .canceledAt(canceledAt)
+                .build();
+    }
 
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID();
+        }
+        if (canceledAt == null) {
+            canceledAt = OffsetDateTime.now();
         }
     }
 }

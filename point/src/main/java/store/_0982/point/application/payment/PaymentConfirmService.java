@@ -1,10 +1,11 @@
-package store._0982.point.application;
+package store._0982.point.application.payment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
+import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PaymentConfirmCommand;
 import store._0982.point.application.dto.PointRefundCommand;
 import store._0982.point.client.OrderServiceClient;
