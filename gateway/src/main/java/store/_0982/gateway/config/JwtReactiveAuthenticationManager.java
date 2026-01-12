@@ -2,6 +2,7 @@ package store._0982.gateway.config;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -45,14 +46,13 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
                 .map(Claims::getSubject)
                 .map(UUID::fromString)
                 .flatMap(memberId -> memberCache.findById(memberId)
-                        .switchIfEmpty(fetchAndCacheMember(memberId))
+                        .switchIfEmpty(fetchAndCacheMember(memberId)).switchIfEmpty(Mono.error(new BadCredentialsException("위변조된 토큰")))
                         .map(member -> toAuthenticatedToken(memberId, member.getRole()))
                 );
     }
 
     private Mono<Member> fetchAndCacheMember(UUID memberId) {
-        return memberServiceClient.fetchMember(memberId)
-                .switchIfEmpty(Mono.just(Member.createGuest()));
+        return memberServiceClient.fetchMember(memberId);
     }
 
     private MemberAuthenticationToken toAuthenticatedToken(UUID memberId, Role role) {
