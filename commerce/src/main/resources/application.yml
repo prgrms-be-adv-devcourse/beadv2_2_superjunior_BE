@@ -1,0 +1,57 @@
+#file: noinspection SpellCheckingInspection, HttpUrlsUsage
+spring:
+  application:
+    name: commerce
+
+  flyway:
+    enabled: true
+    default-schema: product_schema
+    schemas:
+      - product_schema
+      - order_schema
+    create-schemas: true
+
+  datasource:
+    url: ${PRODUCT_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME}
+    password: ${PRODUCT_DATABASE_PASSWORD}
+
+  jackson:
+    time-zone: Asia/Seoul
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Seoul
+    open-in-view: false
+
+server:
+  port: 8087
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
+client:
+  member: http://member-service:8083
+
+kafka:
+  bootstrap-servers: ${spring.kafka.bootstrap-servers}
+
+# 공동구매 주문 시간 설정
+group-purchase:
+  payment:
+    timeout-minutes: 10

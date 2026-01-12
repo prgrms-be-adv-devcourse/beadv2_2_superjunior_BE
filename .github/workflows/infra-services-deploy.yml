@@ -1,0 +1,65 @@
+#file: noinspection SpellCheckingInspection
+name: Infra Services Deploy
+on:
+  push:
+    branches:
+      - dev
+      - feature/ci-cd
+    paths:
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'elastic-search/**'
+      - 'docs/k8s/service/search.yml'
+      - 'infra-services-deploy.yml'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      search: ${{ steps.filter.outputs.search }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 변경된 서비스 감지
+        id: filter
+        run: |
+          if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+            # 최초 푸시: 최근 커밋만 비교
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+          else
+            # 일반 푸시: 이전 커밋과 비교
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+          
+          # Search
+          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
+            echo "search=true" >> $GITHUB_OUTPUT
+          else
+            echo "search=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Search 배포
+  deploy-search:
+    needs: detect-changes
+    if: always() && needs.detect-changes.outputs.search == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search 배포
+        uses: ./.github/actions/deploy-infra-service
+        with:
+          service-name: search
+          module-name: elastic-search
+          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/search
+          manifest-path: docs/k8s/service/search.yml
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

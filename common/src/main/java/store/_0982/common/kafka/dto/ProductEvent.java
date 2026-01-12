@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.Clock;
 import java.util.UUID;
 
+@Deprecated(forRemoval = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

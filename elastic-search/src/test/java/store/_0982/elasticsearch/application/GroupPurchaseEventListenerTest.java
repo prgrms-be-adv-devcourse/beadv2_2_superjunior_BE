@@ -1,132 +1,161 @@
 package store._0982.elasticsearch.application;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
+import store._0982.elasticsearch.application.support.KafkaTestProbe;
+import store._0982.elasticsearch.config.KafkaTestConfig;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
-import java.time.Clock;
-import java.time.OffsetDateTime;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@Import(KafkaTestConfig.class)
+@ActiveProfiles("kafka")
+@EmbeddedKafka(
+        partitions = 1,
+        topics = {
+                KafkaTopics.GROUP_PURCHASE_CHANGED
+        }
+)
 class GroupPurchaseEventListenerTest {
 
-    @Mock
+    @Autowired
+    private KafkaTemplate<String, GroupPurchaseEvent> kafkaTemplate;
+
+    @MockitoBean
     private GroupPurchaseRepository groupPurchaseRepository;
 
-    @InjectMocks
-    private GroupPurchaseEventListener listener;
+    @Autowired
+    private KafkaTestProbe probe;
 
-    @Test
-    @DisplayName("GROUP_PURCHASE_ADDED 이벤트 수신 시 문서 저장")
-    void create_event_success() {
-        // given
-        UUID id = UUID.randomUUID();
-
-        GroupPurchaseEvent event = new GroupPurchaseEvent(
-                Clock.systemUTC(),
-                id,
-                10,
-                100,
-                "공동구매 생성",
-                "설명",
-                500_000L,
-                "OPEN",
-                "판매자",
-                "2025-01-01",
-                "2025-01-31",
-                OffsetDateTime.now().toString(),
-                OffsetDateTime.now().toString(),
-                1,
-                null,
-                GroupPurchaseEvent.SearchKafkaStatus.CREATE_GROUP_PURCHASE
-        );
-
-        when(groupPurchaseRepository.save(any()))
-                .thenReturn(mock(GroupPurchaseDocument.class));
-
-        // when
-        listener.create(event);
-
-        // then
-        verify(groupPurchaseRepository).save(any(GroupPurchaseDocument.class));
-        verify(groupPurchaseRepository, never()).deleteById(any());
+    @BeforeEach
+    void setUp() {
+        probe.reset();
     }
 
+    private final ProductEvent productEvent = new ProductEvent(UUID.randomUUID(),
+            "아이폰 15",
+            1_200_000L,
+            "KIDS",
+            "아이폰 설명",
+            10,
+            "https://img.url",
+            UUID.randomUUID(),
+            "2025-01-01T00:00:00Z",
+            "2025-01-01T00:00:00Z");
+
     @Test
-    @DisplayName("상태 변경 이벤트 - DELETE_GROUP_PURCHASE면 문서 삭제")
-    void changed_event_delete() {
+    @DisplayName("GROUP_PURCHASE_CHANGED + DELETE 상태일 때 공동구매 문서 삭제")
+    void group_purchase_changed_delete_event_consumed_and_deleted() throws Exception {
         // given
         UUID id = UUID.randomUUID();
 
         GroupPurchaseEvent event = new GroupPurchaseEvent(
-                Clock.systemUTC(),
-                id,
-                null,
-                null,
-                null,
-                null,
-                1L,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                GroupPurchaseEvent.SearchKafkaStatus.DELETE_GROUP_PURCHASE
+                id,                 // id
+                1,
+                10,
+                "삭제될 공동구매",
+                "삭제 설명",
+                9_900L,
+                "DELETED",
+                "판매자명",
+                "2025-01-01T00:00",
+                "2025-01-10T00:00",
+                "2025-01-01T00:00:00+09:00",
+                "2025-01-01T00:00:00+09:00",
+                0,
+                productEvent,
+                GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE
         );
 
+        doAnswer(invocation -> {
+            probe.markConsumed();
+            return null;
+        }).when(groupPurchaseRepository).deleteById(anyString());
+
         // when
-        listener.changed(event);
+        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event).get();
 
         // then
+        boolean consumed = probe.await(10, TimeUnit.SECONDS);
+        assertThat(consumed).isTrue();
+
         verify(groupPurchaseRepository).deleteById(id.toString());
         verify(groupPurchaseRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("상태 변경 이벤트 - DELETE가 아니면 문서 저장")
-    void changed_event_save() {
+    @DisplayName("GROUP_PURCHASE_CHANGED + UPDATE 상태일 때 공동구매 문서 저장")
+    void group_purchase_changed_update_event_consumed_and_saved() throws Exception {
         // given
         UUID id = UUID.randomUUID();
 
         GroupPurchaseEvent event = new GroupPurchaseEvent(
                 id,
-                10,
-                100,
-                "아이폰 공동구매",
-                "설명",
-                1_000_000L,
+                2,
+                20,
+                "수정된 공동구매",
+                "수정 설명",
+                12_000L,
                 "OPEN",
-                "애플스토어",
-                "2025-01-01",
-                "2025-01-31",
-                OffsetDateTime.now().toString(),
-                OffsetDateTime.now().toString(),
+                "판매자명",
+                "2025-02-01T00:00",
+                "2025-02-10T00:00",
+                "2025-01-01T00:00:00+09:00",
+                "2025-01-01T00:00:00+09:00",
                 5,
-                null,
-                GroupPurchaseEvent.SearchKafkaStatus.UPDATE_GROUP_PURCHASE
+                productEvent,
+                GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE
         );
 
-        when(groupPurchaseRepository.save(any()))
-                .thenReturn(mock(GroupPurchaseDocument.class));
+        when(groupPurchaseRepository.save(any(GroupPurchaseDocument.class)))
+                .thenAnswer(invocation -> {
+                    probe.markConsumed();
+                    return invocation.getArgument(0);
+                });
 
         // when
-        listener.changed(event);
+        kafkaTemplate.send(KafkaTopics.GROUP_PURCHASE_CHANGED, event).get();
 
         // then
-        verify(groupPurchaseRepository).save(any(GroupPurchaseDocument.class));
+        boolean consumed = probe.await(10, TimeUnit.SECONDS);
+        assertThat(consumed).isTrue();
+
+        GroupPurchaseDocument saved = captureSavedGroupPurchaseDocument();
+        assertGroupPurchaseDocument(saved, event);
         verify(groupPurchaseRepository, never()).deleteById(any());
+    }
+
+    private GroupPurchaseDocument captureSavedGroupPurchaseDocument() {
+        ArgumentCaptor<GroupPurchaseDocument> captor =
+                ArgumentCaptor.forClass(GroupPurchaseDocument.class);
+        verify(groupPurchaseRepository).save(captor.capture());
+        return captor.getValue();
+    }
+
+    private void assertGroupPurchaseDocument(GroupPurchaseDocument saved, GroupPurchaseEvent event) {
+        GroupPurchaseDocument document = GroupPurchaseDocumentCommand.from(event).toDocument();
+        assertThat(saved)
+                .usingRecursiveComparison()
+                .isEqualTo(document);
     }
 }

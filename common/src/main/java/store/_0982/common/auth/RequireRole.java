@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
  *
  * @author Huiyeong Kim
  */
+@Deprecated(forRemoval = true)
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequireRole {

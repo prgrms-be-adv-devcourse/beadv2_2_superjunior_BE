@@ -15,29 +15,40 @@ public record OrderInfo(
         int quantity
 ) {
     public enum Status {
-        SCHEDULED,      // 시작전
-        IN_PROGRESS,    // 진행중
-        SUCCESS,        // 완료 - 성공
-        FAILED,         // 완료 - 실패
+        PENDING,
+        ORDER_FAILED,
+        COMPLETED,
+        CANCELLED,
+        GROUP_PURCHASE_SUCCESS,
+        GROUP_PURCHASE_FAILED,
+        REVERSED,
+        RETURNED
     }
 
     public void validateReturnable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.FAILED) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+        if (status != Status.ORDER_FAILED) {
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 
     public void validateDeductible(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.IN_PROGRESS) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+        if (status != Status.CANCELLED) {
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
+        }
+    }
+
+    public void validateConfirmable(UUID memberId, UUID orderId, long amount) {
+        validate(memberId, orderId, amount);
+        if (status != Status.PENDING) {
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 
     private void validate(UUID memberId, UUID orderId, long amount) {
         if (!this.memberId.equals(memberId) || !this.orderId.equals(orderId) || price * quantity != amount) {
-            throw new CustomException(CustomErrorCode.INVALID_POINT_REQUEST);
+            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
 }

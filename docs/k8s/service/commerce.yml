@@ -1,0 +1,77 @@
+#file: noinspection KubernetesUnknownValues
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: commerce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: commerce
+  template:
+    metadata:
+      labels:
+        app: commerce
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: ip-10-0-0-5
+      containers:
+        - name: commerce
+          image: minbros/commerce:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: commerce-secret
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: REDIS_HOST
+              value: redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: CLIENT_MEMBER
+              value: "http://member-service:8083"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: GATEWAY_HOST
+              value: "http://gateway-service:8000"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "384Mi"
+              ephemeral-storage: "768Mi"
+            limits:
+              cpu: "500m"
+              memory: "768Mi"
+              ephemeral-storage: "1.5Gi"
+          ports:
+            - containerPort: 8087
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8087
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8087
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: commerce-service
+spec:
+  selector:
+    app: commerce
+  ports:
+    - port: 8087
+      targetPort: 8087
+  type: ClusterIP

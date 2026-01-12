@@ -11,7 +11,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 금액입니다."),
-    INVALID_POINT_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 포인트 차감 / 반환 요청입니다."),
+    INVALID_PAYMENT_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 결제 요청입니다."),
     IDEMPOTENCY_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "멱등키가 전달되지 않았습니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
@@ -36,7 +36,9 @@ public enum CustomErrorCode implements ErrorCode {
     NOT_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "환불할 수 없는 상태입니다."),
 
     // 500 Internal Server Error
+    PAYMENT_CREATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 생성 중 오류가 발생했습니다."),
     PAYMENT_COMPLETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "결제 승인 중 오류가 발생했습니다."),
+    PAYMENT_PROCESS_FAILED_REFUNDED(HttpStatus.INTERNAL_SERVER_ERROR, "시스템 오류로 결제가 취소되었습니다. (자동 환불 완료)"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
     // 502 Bad Gateway
@@ -45,7 +47,7 @@ public enum CustomErrorCode implements ErrorCode {
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
 
-    // 504
+    // 504 Gateway Timeout
     PAYMENT_API_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "결제 API 호출이 주어진 시간에 완료되지 않았습니다.");
 
     private final HttpStatus httpStatus;

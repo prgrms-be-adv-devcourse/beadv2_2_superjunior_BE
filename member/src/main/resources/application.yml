@@ -1,10 +1,7 @@
-#file: noinspection SpringBootApplicationYaml, SpellCheckingInspection, HttpUrlsUsage
+#file: noinspection SpellCheckingInspection, HttpUrlsUsage
 spring:
   application:
     name: member
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/group_purchase?currentSchema=notification_schema}
@@ -14,10 +11,9 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate   # none / validate / update / create / create-drop
+      ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show-sql: false
     open-in-view: false
@@ -49,27 +45,18 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-  tracing:
-    sampling:
-      probability: 1.0
-    propagation:
-      type: w3c  # 또는 b3
-
-gateway:
-  host: ${GATEWAY_HOST:http://localhost:8000}
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
+  bootstrap-servers: ${spring.kafka.bootstrap-servers}
 
 jwt:
   secret: ${JWT_SECRET}
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
-
 
 springdoc:
   swagger-ui:

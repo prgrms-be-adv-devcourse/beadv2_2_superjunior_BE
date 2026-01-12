@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 import java.time.Clock;
 import java.util.UUID;
 
+/**
+ * @deprecated {@link GroupPurchaseEvent}로 대체합니다.
+ */
+@Deprecated(forRemoval = true)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,7 +1,6 @@
 package store._0982.elasticsearch.application.dto;
 
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
 
@@ -9,69 +8,58 @@ import java.time.OffsetDateTime;
 
 public record GroupPurchaseDocumentCommand(
         String groupPurchaseId,
-        String sellerName,
-        Integer minQuantity,
-        Integer maxQuantity,
         String title,
         String description,
-        Long discountedPrice,
         String status,
-        String startDate,
-        String endDate,
-        OffsetDateTime createdAt,
-        OffsetDateTime updatedAt,
+        Long discountedPrice,
         Integer currentQuantity,
-        ProductEvent productEvent
+        OffsetDateTime endDate,
+        OffsetDateTime updatedAt,
+        String sellerId,
+        String productCategory,
+        Long originalPrice
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
-                event.getSellerName(),
-                event.getMinQuantity(),
-                event.getMaxQuantity(),
                 event.getTitle(),
                 event.getDescription(),
+                event.getGroupPurchaseStatus() != null ? event.getGroupPurchaseStatus().toString() : null,
                 event.getDiscountedPrice(),
-                event.getStatus(),
-                event.getStartDate(),
-                event.getEndDate(),
-                OffsetDateTime.parse(event.getCreatedAt()),
-                OffsetDateTime.parse(event.getUpdatedAt()),
                 event.getCurrentQuantity(),
-                event.getProductEvent()
+                event.getEndDate() != null ? OffsetDateTime.parse(event.getEndDate()) : null,
+                event.getUpdatedAt() != null ? OffsetDateTime.parse(event.getUpdatedAt()) : null,
+                event.getSellerId() != null ? event.getSellerId().toString() : null,
+                event.getProductCategory() != null ? event.getProductCategory().toString() : null,
+                event.getOriginalPrice()
         );
     }
 
     public GroupPurchaseDocument toDocument() {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(groupPurchaseId)
-                .sellerName(sellerName)
-                .minQuantity(minQuantity)
-                .maxQuantity(maxQuantity)
                 .title(title)
                 .description(description)
-                .discountedPrice(discountedPrice)
                 .status(status)
-                .startDate(startDate)
-                .endDate(endDate)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
+                .discountedPrice(discountedPrice)
                 .currentQuantity(currentQuantity)
-                .discountRate(calculateDiscountRate(productEvent.getPrice(), discountedPrice))
-                .productDocumentEmbedded(ProductDocumentEmbedded.from(productEvent))
+                .endDate(endDate)
+                .updatedAt(updatedAt)
+                .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
+                .productDocumentEmbedded(new ProductDocumentEmbedded(productCategory, originalPrice, sellerId))
                 .build();
     }
-    private static Long calculateDiscountRate(Long price, Long discountedPrice) {
-        if (price == null) {
+
+    private static Long calculateDiscountRate(Long originalPrice, Long discountedPrice) {
+        if (originalPrice == null || discountedPrice == null) {
             return 0L;
         }
-
-        if (price <= 0 || discountedPrice >= price) {
+        if (originalPrice <= 0 || discountedPrice >= originalPrice) {
             return 0L;
         }
 
         return Math.round(
-                ((double) (price - discountedPrice) / price) * 100
+                ((double) (originalPrice - discountedPrice) / originalPrice) * 100
         );
     }
 }

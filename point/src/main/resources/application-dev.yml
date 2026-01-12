@@ -1,0 +1,15 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+
+logging:
+  level:
+    store: debug
+
+token:
+  internal:
+    secret: "abcd"
+
+client:
+  commerce: http://localhost:8087

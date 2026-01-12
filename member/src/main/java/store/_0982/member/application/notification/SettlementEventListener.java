@@ -5,7 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.SettlementEvent;
+import store._0982.common.kafka.dto.SettlementDoneEvent;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
@@ -27,17 +27,17 @@ public class SettlementEventListener {
     @ServiceLog
     @RetryableTopic(exclude = CustomKafkaException.class)
     @KafkaListener(
-            topics = {KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED, KafkaTopics.MONTHLY_SETTLEMENT_FAILED},
+            topics = {KafkaTopics.SETTLEMENT_DONE},
             groupId = KafkaGroupIds.IN_APP,
             containerFactory = "inAppListenerContainerFactory"
     )
-    public void handleMonthlySettlementEvent(SettlementEvent event) {
+    public void handleMonthlySettlementEvent(SettlementDoneEvent event) {
         NotificationContent content = createMonthlyContent(event);
         Notification notification = NotificationCreator.create(event, content, NotificationChannel.IN_APP);
         notificationRepository.save(notification);
     }
 
-    private NotificationContent createMonthlyContent(SettlementEvent event) {
+    private NotificationContent createMonthlyContent(SettlementDoneEvent event) {
         return switch (event.getStatus()) {
             case SUCCESS -> new NotificationContent(
                     NotificationType.MONTHLY_SETTLEMENT_COMPLETED,
