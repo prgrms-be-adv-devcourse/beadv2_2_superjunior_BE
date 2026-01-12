@@ -64,7 +64,7 @@ public class ParticipateService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
 
         eventPublisher.publishEvent(
-                new GroupPurchaseParticipatedEvent(groupPurchase, sellerName, product)
+                new GroupPurchaseParticipatedEvent(groupPurchase, product)
         );
     }
 }

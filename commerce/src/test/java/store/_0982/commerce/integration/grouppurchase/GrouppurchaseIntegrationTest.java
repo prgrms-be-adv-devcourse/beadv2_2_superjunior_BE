@@ -18,7 +18,6 @@ import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.HeaderName;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -38,9 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("GroupPurchase 통합 테스트")
 class GrouppurchaseIntegrationTest {
-
-    @MockitoBean
-    private KafkaTemplate<String, ProductEvent> productKafkaTemplate;
 
     @MockitoBean
     private KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate;
