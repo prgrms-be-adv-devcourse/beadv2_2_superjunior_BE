@@ -24,13 +24,15 @@ spec:
             - secretRef:
                 name: commerce-secret
           env:
-            - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
-              value: "http://admin:admin@discovery-service:8761/eureka"
-            - name: EUREKA_INSTANCE_HOSTNAME
-              value: "discovery-service"
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: REDIS_HOST
+              value: redis-service
+            - name: REDIS_PORT
+              value: "6379"
+            - name: CLIENT_MEMBER
+              value: "http://member-service:8083"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
           resources:
             requests:

@@ -1,4 +1,4 @@
-#file: noinspection SpringBootApplicationYaml, SpellCheckingInspection, HttpUrlsUsage
+#file: noinspection SpellCheckingInspection, HttpUrlsUsage
 spring:
   application:
     name: commerce
@@ -11,8 +11,6 @@ spring:
       - order_schema
     create-schemas: true
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
   datasource:
     url: ${PRODUCT_DATABASE_URL}
     driver-class-name: org.postgresql.Driver
@@ -33,18 +31,6 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      timeout: 3000ms
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 2
-
-
 server:
   port: 8087
 
@@ -54,17 +40,16 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-  tracing:
-    sampling:
-      probability: 0.0
-    propagation:
-      type: w3c # 또는 b3
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 client:
   member: http://member-service:8083
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  bootstrap-servers: ${spring.kafka.bootstrap-servers}
 
 # 공동구매 주문 시간 설정
 group-purchase:
