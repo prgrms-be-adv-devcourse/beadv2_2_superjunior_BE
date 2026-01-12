@@ -16,3 +16,6 @@ spring:
 
 client:
   member: ${CLIENT_MEMBER}
+
+gateway:
+  host: ${GATEWAY_HOST}

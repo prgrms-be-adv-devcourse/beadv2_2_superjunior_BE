@@ -16,3 +16,6 @@ spring:
 
 client:
   member: http://localhost:8083
+
+gateway:
+  host: http://localhost:8000
