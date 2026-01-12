@@ -24,24 +24,6 @@ public class GroupPurchaseSearchController {
 
     private final GroupPurchaseSearchService groupPurchaseSearchService;
 
-    @Operation(summary = "공동구매 인덱스 생성", description = "공동구매 인덱스 생성.")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ControllerLog
-    @PutMapping("/index")
-    public ResponseDto<Void> createGroupPurchaseIndex() {
-        groupPurchaseSearchService.createGroupPurchaseIndex();
-        return new ResponseDto<>(HttpStatus.CREATED, null, "인덱스 생성 완료");
-    }
-
-    @Operation(summary = "공동구매 인덱스 삭제", description = "공동구매의 인덱스를 삭제한다.")
-    @ResponseStatus(HttpStatus.OK)
-    @ControllerLog
-    @DeleteMapping("/index")
-    public ResponseDto<Void> deleteGroupPurchaseIndex() {
-        groupPurchaseSearchService.deleteGroupPurchaseIndex();
-        return new ResponseDto<>(HttpStatus.OK, null, "인덱스 삭제 완료");
-    }
-
     @Operation(summary = "공동구매 문서 검색", description = "키워드(제목, 설명) + 상태 기준으로 본인의 공동구매를 검색합니다.")
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
