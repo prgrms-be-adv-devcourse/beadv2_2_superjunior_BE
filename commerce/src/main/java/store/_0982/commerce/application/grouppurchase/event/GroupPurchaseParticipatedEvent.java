@@ -5,7 +5,6 @@ import store._0982.commerce.domain.product.Product;
 
 public record GroupPurchaseParticipatedEvent (
         GroupPurchase groupPurchase,
-        String sellerName,
         Product product
 ) {
 }

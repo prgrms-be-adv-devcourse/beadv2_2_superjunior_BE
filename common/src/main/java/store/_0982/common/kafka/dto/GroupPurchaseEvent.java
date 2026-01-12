@@ -53,7 +53,7 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.status = status;
     }
 
-    public GroupPurchaseEvent(UUID id, UUID sellerId, String title, String description, Long discountedPrice, Status groupPurchaseStatus, String endDate, String updatedAt, Integer currentQuantity, ProductEvent productEvent, EventStatus kafkaStatus, long originalPrice, ProductCategory productCategory) {
+    public GroupPurchaseEvent(UUID id, UUID sellerId, String title, String description, Long discountedPrice, Status groupPurchaseStatus, String endDate, String updatedAt, Integer currentQuantity, EventStatus kafkaStatus, long originalPrice, ProductCategory productCategory) {
         this.id = id;
         this.sellerId = sellerId;
         this.title = title;
@@ -63,7 +63,6 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.endDate = endDate;
         this.updatedAt = updatedAt;
         this.currentQuantity = currentQuantity;
-        this.productEvent = productEvent;
         this.kafkaStatus = kafkaStatus;
         this.originalPrice = originalPrice;
         this.productCategory = productCategory;

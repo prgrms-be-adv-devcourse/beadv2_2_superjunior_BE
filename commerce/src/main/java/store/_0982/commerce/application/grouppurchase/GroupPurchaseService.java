@@ -79,9 +79,8 @@ public class GroupPurchaseService {
         GroupPurchase saved = groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         // 검색 서비스용 Kafka 이벤트 발행
-        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         eventPublisher.publishEvent(
-                new GroupPurchaseCreatedEvent(saved, sellerName, product)
+                new GroupPurchaseCreatedEvent(saved, product)
         );
 
         return GroupPurchaseInfo.from(saved);
@@ -166,9 +165,8 @@ public class GroupPurchaseService {
         // 검색 서비스용 Kafka 이벤트 발행
         Product product = productRepository.findById(saved.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-        String sellerName = memberClient.getMember(product.getSellerId()).data().name();
         eventPublisher.publishEvent(
-                new GroupPurchaseUpdatedEvent(saved, sellerName, product)
+                new GroupPurchaseUpdatedEvent(saved, product)
         );
 
         return GroupPurchaseInfo.from(saved);
