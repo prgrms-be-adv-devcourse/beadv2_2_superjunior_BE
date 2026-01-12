@@ -53,7 +53,7 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
 

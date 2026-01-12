@@ -10,21 +10,21 @@ import store._0982.commerce.application.grouppurchase.dto.*;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCreatedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
-import store._0982.common.log.ServiceLog;
-import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.commerce.infrastructure.client.member.MemberClient;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
 @Service
@@ -221,6 +221,28 @@ public class GroupPurchaseService {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
+        validateAvailable(groupPurchase);
+
+        return groupPurchase;
+    }
+
+    public Map<UUID, GroupPurchase> getAvailableGroupPurchasesOrder(Set<UUID> groupPurchaseIds){
+        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(new ArrayList<>(groupPurchaseIds));
+
+        if(groupPurchases.size() != groupPurchaseIds.size()){
+            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+        }
+
+        groupPurchases.forEach(this::validateAvailable);
+
+        return groupPurchases.stream()
+                .collect(Collectors.toMap(
+                        GroupPurchase::getGroupPurchaseId,
+                        Function.identity()
+                ));
+    }
+
+    private void validateAvailable(GroupPurchase groupPurchase){
         // 상태확인
         if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
@@ -230,7 +252,5 @@ public class GroupPurchaseService {
         if (groupPurchase.getEndDate().isBefore(OffsetDateTime.now())) {
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
         }
-
-        return groupPurchase;
     }
 }

@@ -62,7 +62,7 @@ public class Order {
     @Column(name = "paid_at")
     private OffsetDateTime paidAt;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
 

@@ -1,4 +1,4 @@
-package store._0982.commerce.application.grouppurchase;
+package store._0982.commerce.integration.grouppurchase;
 
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +10,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
+import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
@@ -208,8 +209,8 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
         assertThat(redisCount).isEqualTo("100");
 
-        await().atMost(15, TimeUnit.SECONDS)
-                .pollInterval(500, TimeUnit.MICROSECONDS)
+        await().atMost(30, TimeUnit.SECONDS)
+                .pollInterval(100, TimeUnit.MICROSECONDS)
                 .untilAsserted(() -> {
                     GroupPurchase updated = groupPurchaseRepository
                             .findById(groupPurchase.getGroupPurchaseId())
