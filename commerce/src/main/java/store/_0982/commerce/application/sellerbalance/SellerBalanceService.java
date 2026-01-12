@@ -46,4 +46,11 @@ public class SellerBalanceService {
         Page<SellerBalanceHistoryInfo> sellerBalanceHistoryInfoStream = list.map(SellerBalanceHistoryInfo::from);
         return PageResponse.from(sellerBalanceHistoryInfoStream);
     }
+
+    @Transactional
+    public void addFee(UUID memberId, Long fee) {
+        SellerBalance findSellerBalance = sellerBalanceRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
+        findSellerBalance.increaseBalance(fee);
+    }
 }

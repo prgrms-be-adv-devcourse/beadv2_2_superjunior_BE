@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -46,8 +47,11 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
+
     private final GroupPurchaseService groupPurchaseService;
+    private final SellerBalanceService sellerBalanceService;
     private final ParticipateService participateService;
+
     private final MemberClient memberClient;
     private final PaymentClient paymentClient;
 
@@ -370,10 +374,14 @@ public class OrderService {
             );
             return;
         }
+
+        UUID memberId = findGroupPurchase.getSellerId();
+
         if (findGroupPurchase.isInReversedPeriod()) {
             findOrder.requestReversed();
 
             Long amount = (long) (findOrder.getPrice() * 0.8);
+            sellerBalanceService.addFee(memberId, (long) (findOrder.getPrice() * 0.2));
             OrderCanceledEvent kafkaEvent = findOrder.toEvent(
                     command.reason(),
                     OrderCanceledEvent.PaymentMethod.valueOf(
@@ -392,6 +400,7 @@ public class OrderService {
             findOrder.requestReturned();
 
             Long amount = (long) (findOrder.getPrice() * 0.8) - 6000;
+            sellerBalanceService.addFee(memberId, (long) (findOrder.getPrice() * 0.2));
             OrderCanceledEvent kafkaEvent = findOrder.toEvent(
                     command.reason(),
                     OrderCanceledEvent.PaymentMethod.valueOf(
