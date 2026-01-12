@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.commerce.application.sellerbalance.DailySellerBalanceService;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
@@ -20,7 +19,6 @@ import java.util.UUID;
 public class SellerBalanceController {
 
     private final SellerBalanceService sellerBalanceService;
-    private final DailySellerBalanceService dailySellerBalanceService;
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
@@ -39,12 +37,5 @@ public class SellerBalanceController {
     ) {
         PageResponse<SellerBalanceHistoryInfo> info = sellerBalanceService.getBalanceHistory(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, info, "조회되었습니다.");
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping
-    public ResponseDto<PageResponse<Void>> processDailySettlement() {
-        dailySellerBalanceService.processDailySettlement();
-        return new ResponseDto<>(HttpStatus.OK, null, "seller balance 정산처리 되었습니다.");
     }
 }
