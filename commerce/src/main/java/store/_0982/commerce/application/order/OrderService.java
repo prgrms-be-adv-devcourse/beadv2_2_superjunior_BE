@@ -352,8 +352,14 @@ public class OrderService {
             // TODO: Kafka를 이용하여 point-service
             return;
         }
-        if (findOrder.getStatus() == OrderStatus.ORDER_FAILED) {
-
+        if (findGroupPurchase.isInReversedPeriod()) {
+            findOrder.requestReversed();
+            // TODO: Kafka를 이용하여 point-service
+            return;
+        }
+        if (findGroupPurchase.isInReturnedPeriod()) {
+            findOrder.requestReturned();
+            // TODO: Kafka를 이용하여 point-service
         }
     }
 }

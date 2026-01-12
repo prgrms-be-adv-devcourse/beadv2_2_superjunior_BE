@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -152,7 +154,21 @@ public class Order {
     }
 
     public void requestCancel() {
+        if (this.status != OrderStatus.PAYMENT_COMPLETED)
+            throw new CustomException(CustomErrorCode.CANNOT_CANCEL_ORDER_INVALID_STATUS);
         this.status = OrderStatus.CANCEL_REQUESTED;
+    }
+
+    public void requestReversed() {
+        if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
+            throw new CustomException(CustomErrorCode.CANNOT_REVERSE_ORDER_INVALID_STATUS);
+        this.status = OrderStatus.REVERSED_REQUESTED;
+    }
+
+    public void requestReturned() {
+        if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
+            throw new CustomException(CustomErrorCode.CANNOT_RETURN_ORDER_INVALID_STATUS);
+        this.status = OrderStatus.REVERSED_REQUESTED;
     }
 
     private void validateStatus(OrderStatus newStatus){
