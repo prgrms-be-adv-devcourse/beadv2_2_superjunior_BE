@@ -1,73 +1,7 @@
-#file: noinspection HttpUrlsUsage, SpringBootApplicationYaml, SpellCheckingInspection
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
 spring:
   application:
     name: gateway
-  data:
-    redis:
-      host: ${GATEWAY_REDIS_HOST:localhost}   # 실제 Redis 호스트
-      port: ${GATEWAY_REDIS_PORT:6379}
-      database: ${GATEWAY_REDIS_DATABASE:0}
-  r2dbc:
-    url: ${SPRING_R2DBC_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
-
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: member-api
-              uri: http://localhost:8083
-              predicates:
-                - Path=/api/members/**, /api/auth/**, /api/notifications/**
-
-            - id: member-api-docs
-              uri: http://localhost:8083
-              predicates:
-                - Path=/v3/api-docs/member
-              filters:
-                - RewritePath=/v3/api-docs/member, /v3/api-docs
-
-
-            - id: commerce-api
-              uri: http://localhost:8087
-              predicates:
-                - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
-
-            - id: commerce-api-docs
-              uri: http://localhost:8087
-              predicates:
-                - Path=/v3/api-docs/commerce
-              filters:
-                - RewritePath=/v3/api-docs/commerce, /v3/api-docs
-
-            - id: point-api
-              uri: http://localhost:8086
-              predicates:
-                - Path=/api/points/**, /api/payments/**
-
-            - id: point-api-docs
-              uri: http://localhost:8086
-              predicates:
-                - Path=/v3/api-docs/point
-              filters:
-                - RewritePath=/v3/api-docs/point, /v3/api-docs
-
-            - id: elastic-search-api
-              uri: http://localhost:8082
-              predicates:
-                - Path=/api/searches/**
-
-            - id: elastic-search-api-docs
-              uri: http://localhost:8082
-              predicates:
-                - Path=/v3/api-docs/elastic-search
-              filters:
-                - RewritePath=/v3/api-docs/elastic-search, /v3/api-docs
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
 
 springdoc:
   swagger-ui:
@@ -78,13 +12,12 @@ springdoc:
       - name: commerce-service
         url: /v3/api-docs/commerce
       - name: search-service
-        url: /v3/api-docs/elastic-search
+        url: /v3/api-docs/search
       - name: point-service
         url: /v3/api-docs/point
 
 server:
   port: 8000
-
 
 management:
   endpoints:
@@ -92,17 +25,13 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-  tracing:
-    sampling:
-      probability: 0.0
-    propagation:
-      type: w3c  # 또는 b3
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 jwt:
   secret: ${JWT_SECRET}
 
 frontend:
   url: http://localhost:3000
-
-member-service:
-  url: ${MEMBER_SERVICE_URL:http://localhost:8083}

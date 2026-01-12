@@ -1,9 +1,9 @@
-#file: noinspection HttpUrlsUsage, SpellCheckingInspection
+#file: noinspection SpellCheckingInspection
 spring:
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: localhost
+      port: 6379
 
   r2dbc:
     url: ${SPRING_R2DBC_URL}
@@ -16,63 +16,55 @@ spring:
         webflux:
           routes:
             - id: member-api
-              uri: http://member-service:8083
+              uri: http://localhost:8083
               predicates:
                 - Path=/api/members/**, /api/auth/**, /api/notifications/**
-              filters:
-                - JwtAuth
 
-            - id: member-docs
-              uri: http://member-service:8083
+            - id: member-api-docs
+              uri: http://localhost:8083
               predicates:
                 - Path=/v3/api-docs/member
               filters:
                 - RewritePath=/v3/api-docs/member, /v3/api-docs
 
             - id: commerce-api
-              uri: http://commerce-service:8087
+              uri: http://localhost:8087
               predicates:
                 - Path=/api/orders/**, /api/carts/**, /api/balances/**, /api/products/**, /api/purchases/**
-              filters:
-                - JwtAuth
 
-            - id: commerce-docs
-              uri: http://commerce-service:8087
+            - id: commerce-api-docs
+              uri: http://localhost:8087
               predicates:
                 - Path=/v3/api-docs/commerce
               filters:
                 - RewritePath=/v3/api-docs/commerce, /v3/api-docs
 
             - id: point-api
-              uri: http://point-service:8086
+              uri: http://localhost:8086
               predicates:
                 - Path=/api/points/**, /api/payments/**
-              filters:
-                - JwtAuth
 
-            - id: point-docs
-              uri: http://point-service:8086
+            - id: point-api-docs
+              uri: http://localhost:8086
               predicates:
                 - Path=/v3/api-docs/point
               filters:
                 - RewritePath=/v3/api-docs/point, /v3/api-docs
 
             - id: search-api
-              uri: http://search-service:8082
+              uri: http://localhost:8082
               predicates:
                 - Path=/api/searches/**
-              filters:
-                - JwtAuth
 
-            - id: search-docs
-              uri: http://search-service:8082
+            - id: search-api-docs
+              uri: http://localhost:8082
               predicates:
                 - Path=/v3/api-docs/search
               filters:
                 - RewritePath=/v3/api-docs/search, /v3/api-docs
 
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: localhost:9092
 
 member-service:
-  url: ${MEMBER_SERVICE_URL}
+  url: http://localhost:8083
