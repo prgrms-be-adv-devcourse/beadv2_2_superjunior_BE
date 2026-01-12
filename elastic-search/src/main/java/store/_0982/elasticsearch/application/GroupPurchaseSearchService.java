@@ -38,30 +38,6 @@ public class GroupPurchaseSearchService {
 
     private static final long[] SEARCH_RETRY_DELAYS_MS = {200L, 500L};
 
-    public void createGroupPurchaseIndex() {
-        elasticsearchExecutor.execute(() -> {
-            IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
-
-            if (!ops.exists()) {
-                Document settings = Document.create();
-                settings.put("index.number_of_shards", 1);
-                settings.put("index.number_of_replicas", 0);
-                ops.create(settings);
-                ops.putMapping(ops.createMapping(GroupPurchaseDocument.class));
-            }
-        });
-    }
-
-    public void deleteGroupPurchaseIndex() {
-        elasticsearchExecutor.execute(() -> {
-            IndexOperations ops = operations.indexOps(GroupPurchaseDocument.class);
-            if (!ops.exists()) {
-                return;
-            }
-            ops.delete();
-        });
-    }
-
     @ServiceLog
     public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocument(
             String keyword,
