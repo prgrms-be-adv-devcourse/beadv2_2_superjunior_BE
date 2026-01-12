@@ -7,17 +7,24 @@ create table order_schema."order"
             primary key,
     quantity       integer                  default 1                              not null,
     price          integer                  default 0                              not null,
-    status         varchar(20)              default 'SCHEDULED'::character varying not null
+    status         varchar(20)              default 'PENDING'::character varying not null
         constraint status_check
             check ((status)::text = ANY
-                   (ARRAY [('SCHEDULED'::character varying)::text, ('IN_PROGRESS'::character varying)::text, ('SUCCESS'::character varying)::text, ('FAILED'::character varying)::text])),
+                   (ARRAY [('PENDING'::character varying)::text, ('ORDER_FAILED'::character varying)::text, ('PAYMENT_FAILED'::character varying)::text, ('PAYMENT_COMPLETED'::character varying)::text, ('CANCELLED'::character varying)::text, ('GROUP_PURCHASE_SUCCESS'::character varying)::text,('GROUP_PURCHASE_FAILED'::character varying)::text,('REVERSED'::character varying)::text, ('RETURNED'::character varying)::text])),
     member_id      uuid                                                            not null,
     address        varchar(100)                                                    not null,
     address_detail varchar(100)                                                    not null,
     postal_code    varchar(50)                                                     not null,
-    receiver_name  varchar(100),
+    receiver_name  varchar(100)                                                    not null,
     seller_id      uuid                                                            not null,
     group_purchase_id     uuid                                                     not null,
+    idempotency_key varchar(255)                                                   unique ,
+    payment_method  varchar(50)             default 'POINT'::character varying not null
+        constraint payment_method_check
+            check ((payment_method)::text = ANY
+                   (ARRAY [('POINT'::character varying)::text, ('PG'::character varying)::text])),
+    expires_at     timestamp with time zone,
+    paid_at        timestamp with time zone,
     created_at     timestamp with time zone default now()                          not null,
     updated_at     timestamp with time zone,
     deleted_at     timestamp with time zone,
@@ -48,6 +55,14 @@ comment on column order_schema."order".seller_id is '판매자 ID';
 
 comment on column order_schema."order".group_purchase_id is '공동 구매 ID';
 
+comment on column order_schema."order".idempotency_key IS '멱등성 키 (중복 주문 방지)';
+
+comment on column order_schema."order".payment_method IS '결제 수단 (POINT, CARD 등)';
+
+comment on column order_schema."order".expires_at IS '주문 만료 시간';
+
+comment on column order_schema."order".paid_at IS '결제 완료 시간';
+
 comment on column order_schema."order".created_at is '등록일';
 
 comment on column order_schema."order".updated_at is '수정일';
@@ -68,8 +83,7 @@ create table order_schema.shopping_cart
     group_purchase_id uuid              not null,
     quantity          integer default 1 not null,
     created_at     timestamp with time zone default now()                          not null,
-    updated_at     timestamp with time zone,
-    deleted_at     timestamp with time zone
+    updated_at     timestamp with time zone
 );
 
 comment on table order_schema.shopping_cart is '장바구니';
@@ -82,11 +96,9 @@ comment on column order_schema.shopping_cart.group_purchase_id is '공동 구매
 
 comment on column order_schema.shopping_cart.quantity is '수량';
 
-comment on column order_schema."order".created_at is '등록 시각';
+comment on column order_schema.shopping_cart.created_at is '등록 시각';
 
-comment on column order_schema."order".updated_at is '수정 시각';
-
-comment on column order_schema."order".deleted_at is '삭제 시각';
+comment on column order_schema.shopping_cart.updated_at is '수정 시각';
 
 alter table order_schema.shopping_cart
     owner to postgres;
@@ -167,6 +179,7 @@ create table order_schema.seller_balance_history
         constraint seller_balance_history_pk primary key,
     member_id          uuid                                       not null,
     settlement_id      uuid                                               ,
+    group_purchase_id  uuid                                               ,
     amount             bigint                                     not null,
     created_at         timestamp with time zone    default now()  not null,
     status             varchar(10)                                not null
@@ -177,6 +190,10 @@ comment on table order_schema.seller_balance_history is '판매자 정산 잔액
 comment on column order_schema.seller_balance_history.history_id is 'history id';
 
 comment on column order_schema.seller_balance_history.member_id is '멤버 id';
+
+comment on column order_schema.seller_balance_history.settlement_id is '정산 ID';
+
+comment on column order_schema.seller_balance_history.group_purchase_id is '공동구매 ID';
 
 comment on column order_schema.seller_balance_history.amount is '증감된 금액';
 

@@ -1,23 +1,12 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:schema-test.sql
-
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -32,6 +21,9 @@ gateway:
 token:
   internal:
     secret: test-secret-key
+
+client:
+  member: http://member-service:8083
 
 kafka:
   bootstrap-servers: localhost:9092

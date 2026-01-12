@@ -11,25 +11,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
-import store._0982.commerce.application.grouppurchase.dto.ParticipateInfo;
 import store._0982.commerce.application.order.dto.*;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.dto.ResponseDto;
-import store._0982.common.exception.CustomException;
-import store._0982.common.log.ServiceLog;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
+import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
-import store._0982.commerce.infrastructure.client.payment.dto.PointDeductRequest;
 import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
+import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -44,11 +42,10 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
-    private final GroupPurchaseRepository groupPurchaseRepository;
+    private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
     private final MemberClient memberClient;
     private final PaymentClient paymentClient;
-    private final GroupPurchaseService groupPurchaseService;
 
     /**
      * 주문 생성
@@ -61,14 +58,22 @@ public class OrderService {
     @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
+        // 이미 처리 요청된 주문인지 확인
+        if(orderRepository.existsByIdempotencyKey(command.requestId())){
+            throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
+        }
+
         // 주문자 존재 여부
-        validateMember(memberId);
+        String memberName = validateMember(memberId);
 
         // 공동 구매 존재 여부
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
+        // 참여
+        participate(groupPurchase.getGroupPurchaseId(), command, memberName);
+
         // order 생성
-        Order order = new Order(
+        Order order = Order.create(
                 command.quantity(),
                 groupPurchase.getDiscountedPrice(),
                 memberId,
@@ -77,14 +82,14 @@ public class OrderService {
                 command.postalCode(),
                 command.receiverName(),
                 command.sellerId(),
-                command.groupPurchaseId()
+                groupPurchase.getGroupPurchaseId(),
+                command.requestId()
         );
 
         Order savedOrder = orderRepository.save(order);
 
-        deductPoints(memberId, savedOrder.getOrderId(), command, command.quantity() * groupPurchase.getDiscountedPrice());
-        participate(groupPurchase, command);
         return OrderRegisterInfo.from(savedOrder);
+
     }
 
     /**
@@ -98,7 +103,7 @@ public class OrderService {
     @ServiceLog
     public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
         // 주문자 존재 여부
-        validateMember(memberId);
+        String memberName = validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
         List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
@@ -159,11 +164,12 @@ public class OrderService {
                     command.postalCode(),
                     command.receiverName(),
                     purchase.getSellerId(),
-                    purchase.getGroupPurchaseId()
+                    purchase.getGroupPurchaseId(),
+                    command.requestId()
             );
 
             // Order 생성
-            Order order = new Order(
+            Order order = Order.create(
                     cart.getQuantity(),
                     purchase.getDiscountedPrice(),
                     memberId,
@@ -172,13 +178,13 @@ public class OrderService {
                     command.postalCode(),
                     command.receiverName(),
                     purchase.getSellerId(),
-                    cart.getGroupPurchaseId()
+                    cart.getGroupPurchaseId(),
+                    command.requestId()
             );
 
             Order savedOrder = orderRepository.save(order);
 
-            deductPoints(memberId, savedOrder.getOrderId(), orderCommand, cart.getQuantity() * purchase.getDiscountedPrice());
-            participate(purchase, orderCommand);
+            //participate(cart.getGroupPurchaseId(), orderCommand, memberName);
             results.add(OrderRegisterInfo.from(savedOrder));
         }
 
@@ -189,9 +195,10 @@ public class OrderService {
     }
 
 
-    private void validateMember(UUID memberId) {
+    private String validateMember(UUID memberId) {
         try {
-            memberClient.getMember(memberId);
+            ResponseDto<ProfileInfo> member = memberClient.getMember(memberId);
+            return member.data().name();
         } catch (FeignException.NotFound e) {
             throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
         } catch (FeignException e) {
@@ -201,47 +208,11 @@ public class OrderService {
     }
 
     private GroupPurchase validateGroupPurchase(UUID groupPurchaseId) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-
-        // 상태확인
-        if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
-        }
-
-        // 종료시간 확인
-        if (groupPurchase.getEndDate().isBefore(OffsetDateTime.now())) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
-        }
-        return groupPurchase;
-
+        return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
-    private void participate(GroupPurchase groupPurchase, OrderRegisterCommand command) {
-        // 공동 구매 참여
-        ParticipateInfo result = participateService.participate(groupPurchase, command.quantity());
-
-        if (!result.success()) {
-            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
-        }
-
-    }
-
-    private void deductPoints(UUID memberId, UUID orderId, OrderRegisterCommand command, Long price) {
-        Long totalAmount = price * command.quantity();
-        log.info("가격 : {}, 수량 : {}, 총 가격 : {}", price, command.quantity(), totalAmount);
-        try {
-            paymentClient.deductPointsInternal(
-                    memberId,
-                    new PointDeductRequest(UUID.randomUUID(), orderId, totalAmount)
-            );
-        } catch (FeignException.BadRequest e) {
-            log.error("포인트 부족 : memberId={}, amount={}", memberId, totalAmount, e);
-            throw e;
-        } catch (FeignException e) {
-            log.error("포인트 차감 실패: memberId={}, amount={}", memberId, totalAmount, e);
-            throw e;
-        }
+    private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
+        participateService.participate(groupPurchaseId, command.quantity(), name, command.requestId());
     }
 
     /**
@@ -326,7 +297,7 @@ public class OrderService {
     @ServiceLog
     @Transactional
     public void returnOrder(UUID groupPurchaseId) {
-        List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.FAILED);
+        List<Order> orders = orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.GROUP_PURCHASE_FAIL);
 
         log.info("환불 대상 주문 조회 완료 : groupPurchaseId = {}, count = {}", groupPurchaseId, orders.size());
 
