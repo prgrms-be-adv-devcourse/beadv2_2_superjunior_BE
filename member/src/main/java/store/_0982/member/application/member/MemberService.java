@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
@@ -26,7 +27,7 @@ public class MemberService {
     private final EmailTokenRepository emailTokenRepository;
 
     private final EmailService emailService;
-    //TODO: 만료된 토큰 하루 단위로 삭제 스케쥴링
+    private final MemberRoleCache memberRoleCache;
 
     @ServiceLog
     @Transactional
@@ -131,4 +132,14 @@ public class MemberService {
             throw new CustomException(CustomErrorCode.FORBIDDEN);
     }
 
+    public RoleInfo getRoleOfMember(UUID memberId) {
+        Role role = memberRoleCache.find(memberId).orElse(null);
+        if(role == null) {
+            Member member = memberRepository.findById(memberId).orElse(Member.createGuest());
+            role = member.getRole();
+            if(role != Role.GUEST)
+                memberRoleCache.save(member.getMemberId(), member.getRole());
+        }
+        return new RoleInfo(memberId, role);
+    }
 }
