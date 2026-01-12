@@ -30,8 +30,8 @@ public class GroupPurchaseEventListener {
         saveGroupPurchaseDocument(GroupPurchaseDocumentCommand.from(event));
     }
 
-    public GroupPurchaseDocumentInfo saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
-        return elasticsearchExecutor.execute(
+    public void saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {
+        elasticsearchExecutor.execute(
                 () -> GroupPurchaseDocumentInfo.from(groupPurchaseRepository.save(command.toDocument()))
         );
     }
