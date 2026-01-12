@@ -90,29 +90,9 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public int getRemainingQuantity() {
-        return this.maxQuantity - this.currentQuantity;
-    }
-
-    public boolean increaseQuantity(int quantity) {
-        if (!canParticipate(quantity)) {
-            return false;
-        }
-
-        this.currentQuantity += quantity;
-        checkAndUpdateStatusIfMaxReached();
-
-        return true;
-    }
-
     public void syncCurrentQuantity(int count){
         this.currentQuantity = count;
         checkAndUpdateStatusIfMaxReached();
-    }
-
-    private boolean canParticipate(int quantity) {
-        return status == GroupPurchaseStatus.OPEN
-                && (this.currentQuantity + quantity <= this.maxQuantity);
     }
 
     private void checkAndUpdateStatusIfMaxReached() {

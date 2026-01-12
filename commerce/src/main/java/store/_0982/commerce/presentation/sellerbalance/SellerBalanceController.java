@@ -31,12 +31,11 @@ public class SellerBalanceController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/history")
-    public ResponseDto<PageResponse<SellerBalanceHistoryInfo>> getBalanceHistory(
+    public ResponseDto<PageResponse<SellerBalanceHistoryInfo>> processDailySettlement(
             @RequestHeader(HeaderName.ID) UUID memberId,
             Pageable pageable
     ) {
         PageResponse<SellerBalanceHistoryInfo> info = sellerBalanceService.getBalanceHistory(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, info, "조회되었습니다.");
     }
-
 }
