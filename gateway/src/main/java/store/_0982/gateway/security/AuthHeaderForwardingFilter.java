@@ -1,4 +1,4 @@
-package store._0982.gateway.config;
+package store._0982.gateway.security;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -8,6 +8,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import reactor.core.publisher.Mono;
+import store._0982.gateway.security.token.MemberAuthenticationToken;
 
 import java.util.UUID;
 

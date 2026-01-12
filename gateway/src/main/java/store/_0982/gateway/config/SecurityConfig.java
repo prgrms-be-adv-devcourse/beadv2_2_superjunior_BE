@@ -17,6 +17,10 @@ import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.infrastructure.member.MemberServiceClient;
+import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
+import store._0982.gateway.security.JwtReactiveAuthenticationManager;
+import store._0982.gateway.security.token.MemberAuthenticationToken;
+import store._0982.gateway.security.RouteAuthorizationManager;
 
 @Configuration
 @EnableWebFluxSecurity

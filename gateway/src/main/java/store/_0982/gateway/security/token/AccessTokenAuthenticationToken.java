@@ -1,4 +1,4 @@
-package store._0982.gateway.config;
+package store._0982.gateway.security.token;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 

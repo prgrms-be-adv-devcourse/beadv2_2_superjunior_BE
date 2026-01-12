@@ -1,4 +1,4 @@
-package store._0982.gateway.config;
+package store._0982.gateway.security;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +12,8 @@ import store._0982.gateway.domain.MemberCache;
 import store._0982.gateway.domain.Role;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.infrastructure.member.MemberServiceClient;
+import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
+import store._0982.gateway.security.token.MemberAuthenticationToken;
 
 import java.util.Collections;
 import java.util.UUID;

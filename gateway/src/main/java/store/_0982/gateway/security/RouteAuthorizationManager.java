@@ -1,4 +1,4 @@
-package store._0982.gateway.config;
+package store._0982.gateway.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authorization.AuthorizationDecision;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import store._0982.gateway.domain.GatewayRouteRepository;
+import store._0982.gateway.security.token.MemberAuthenticationToken;
 
 
 @Component

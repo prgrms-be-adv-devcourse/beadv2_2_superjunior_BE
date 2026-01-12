@@ -1,4 +1,4 @@
-package store._0982.gateway.config;
+package store._0982.gateway.security.token;
 
 import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
