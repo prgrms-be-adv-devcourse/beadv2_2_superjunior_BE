@@ -24,7 +24,6 @@ import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest;
-import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
@@ -346,9 +345,15 @@ public class OrderService {
         Order findOrder = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
-        if (findOrder.getStatus().equals(OrderStatus.PAYMENT_COMPLETED)) {
+        GroupPurchase findGroupPurchase = groupPurchaseService.findByGroupPurchase(findOrder.getGroupPurchaseId());
+        if (findOrder.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
             groupPurchaseService.cancelOrder(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
+            findOrder.requestCancel();
+            // TODO: Kafka를 이용하여 point-service
             return;
+        }
+        if (findOrder.getStatus() == OrderStatus.ORDER_FAILED) {
+
         }
     }
 }

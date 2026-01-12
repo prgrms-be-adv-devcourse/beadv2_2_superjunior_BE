@@ -151,6 +151,9 @@ public class Order {
         this.status = OrderStatus.CANCELLED;
     }
 
+    public void requestCancel() {
+        this.status = OrderStatus.CANCEL_REQUESTED;
+    }
 
     private void validateStatus(OrderStatus newStatus){
         switch(this.status){
@@ -190,5 +193,4 @@ public class Order {
     public boolean isReturned(){
         return this.returnedAt != null;
     }
-
 }

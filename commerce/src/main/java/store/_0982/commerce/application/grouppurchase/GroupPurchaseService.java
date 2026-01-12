@@ -240,4 +240,9 @@ public class GroupPurchaseService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
         findGroupPurchase.updateQuantity(quantity);
     }
+
+    public GroupPurchase findByGroupPurchase(UUID groupPurchaseId) {
+        return groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+    }
 }
