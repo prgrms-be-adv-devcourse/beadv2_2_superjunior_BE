@@ -28,8 +28,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
 
-    // private final ApplicationEventPublisher eventPublisher;
-
     @ServiceLog
     @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
@@ -39,9 +37,6 @@ public class ProductService {
                 command.originalUrl(), command.sellerId());
 
         Product savedProduct = productRepository.saveAndFlush(product);
-
-        // 검색 서비스용 Kafka 이벤트 발행
-        // eventPublisher.publishEvent(new ProductCreatedEvent(savedProduct));
 
         return ProductRegisterInfo.from(savedProduct);
     }
@@ -85,10 +80,6 @@ public class ProductService {
                 command.stock(),
                 command.originalLink());
 
-        // 검색 서비스용 Kafka 이벤트 발행
-        // Product updatedProduct = productRepository.saveAndFlush(product);
-        // eventPublisher.publishEvent(new ProductUpdatedEvent(updatedProduct));
-
         return ProductUpdateInfo.from(product);
     }
 
@@ -116,9 +107,6 @@ public class ProductService {
             // hard delete
             productRepository.delete(findProduct);
         }
-
-        // 검색 서비스용 Kafka 이벤트 발행
-        // eventPublisher.publishEvent(new ProductDeletedEvent(findProduct));
     }
 
 }
