@@ -354,44 +354,67 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
-        Order findOrder = orderRepository.findById(command.orderId())
+        Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
-        GroupPurchase findGroupPurchase = groupPurchaseService.findByGroupPurchase(findOrder.getGroupPurchaseId());
-        if (findOrder.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
-            groupPurchaseService.cancelOrder(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
-            findOrder.requestCancel();
+        GroupPurchase groupPurchase = groupPurchaseService
+                .findByGroupPurchase(order.getGroupPurchaseId());
 
-            RefundAmount refundAmount = calculate(findOrder,
-                    CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
-
-            eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
+        if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
+            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
             return;
         }
 
-        UUID memberId = findGroupPurchase.getSellerId();
-
-        if (findGroupPurchase.isInReversedPeriod()) {
-            findOrder.requestReversed();
-
-            RefundAmount refundAmount = calculate(findOrder,
-                    CancellationType.WITHIN_48_HOURS);
-            sellerBalanceService.addFee(memberId, refundAmount.cancellationFee());
-
-            eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
+        if (groupPurchase.isInReversedPeriod()) {
+            processCancellationWithin48Hours(order, groupPurchase.getSellerId(), command.reason());
             return;
         }
-        if (findGroupPurchase.isInReturnedPeriod()) {
-            findOrder.requestReturned();
 
-            RefundAmount refundAmount = calculate(findOrder,
-                    CancellationType.AFTER_48_HOURS);
-            sellerBalanceService.addFee(memberId, refundAmount.cancellationFee());
-
-            eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
+        if (groupPurchase.isInReturnedPeriod()) {
+            processReturnAfter48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
         }
+        throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+    }
+
+    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
+        groupPurchaseService.cancelOrder(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
+        order.requestCancel();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processCancellationWithin48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReversed();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.WITHIN_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processReturnAfter48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReturned();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.AFTER_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
+        eventPublisher.publishEvent(
+                new OrderCanceledEvent(order, reason, refundAmount)
+        );
     }
 }
