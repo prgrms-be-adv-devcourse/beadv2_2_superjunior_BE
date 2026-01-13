@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
+import store._0982.batch.application.settlement.SettlementService;
 import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
@@ -27,13 +28,13 @@ import java.util.stream.Collectors;
 public class MonthlySettlementWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
-    private final BankTransferService bankTransferService;
     private final ApplicationEventPublisher eventPublisher;
 
-    private final SettlementRepository settlementRepository;
-    private final SettlementFailureRepository settlementFailureRepository;
-    private final SellerBalanceRepository sellerBalanceRepository;
+    private final BankTransferService bankTransferService;
+    private final SettlementService settlementService;
     private final SellerBalanceService sellerBalanceService;
+
+    private final SellerBalanceRepository sellerBalanceRepository;
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
@@ -72,13 +73,11 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
             bankTransferService.transfer(accountInfo, transferAmount);
 
             settlement.markAsCompleted();
-            settlementRepository.save(settlement);
 
             sellerBalanceService.saveSellerBalanceHistory(settlement, transferAmount);
 
             SellerBalance balance = balanceMap.get(settlement.getSellerId());
             balance.resetBalance();
-            sellerBalanceRepository.save(balance);
 
             eventPublisher.publishEvent(
                     new SettlementProcessedEvent(
@@ -102,17 +101,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
 
     private void handleSettlementFailure(Settlement settlement, String reason) {
         settlement.markAsFailed();
-        settlementRepository.save(settlement);
-
-        SettlementFailure failure = new SettlementFailure(
-                settlement.getSellerId(),
-                settlement.getPeriodStart(),
-                settlement.getPeriodEnd(),
-                reason,
-                0,
-                settlement.getSettlementId()
-        );
-        settlementFailureRepository.save(failure);
+        settlementService.saveSettlementFailure(settlement, reason);
 
         eventPublisher.publishEvent(
                 new SettlementProcessedEvent(
