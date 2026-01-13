@@ -22,7 +22,10 @@ public class PointEventListener {
     @ServiceLog
     @Transactional
     @RetryableTopic
-    @KafkaListener(topics = KafkaTopics.PAYMENT_CHANGED)
+    @KafkaListener(
+            topics = KafkaTopics.PAYMENT_CHANGED,
+            containerFactory = "paymentKafkaListenerFactory"
+    )
     public void handlePaymentChangedEvent(PaymentChangedEvent event) {
         Order findOrder = orderRepository.findById(event.getOrderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
