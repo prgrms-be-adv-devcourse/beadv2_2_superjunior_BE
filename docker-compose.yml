@@ -94,29 +94,35 @@ services:
       timeout: 10s
       retries: 5
 
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.11.0
-    container_name: group-purchase-logstash
-    environment:
-      - "LS_JAVA_OPTS=-Xms256m -Xmx512m"
-      - xpack.monitoring.enabled=false
+  fluent-bit:
+    image: fluent/fluent-bit:2.2
+    container_name: fluent-bit
     ports:
-      - "5000:5000"
-      - "9600:9600"
+      - "2020:2020"
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_TOPIC: app-logs
     volumes:
-      - ./docker/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
-      - ./docker/logstash/pipeline:/usr/share/logstash/pipeline
-      - logstash_data:/usr/share/logstash/data
+      # Fluent Bit 설정
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      # 애플리케이션 로그 디렉토리 (Spring Boot에서 로그 파일로 남기는 경우)
+      - ./logs:/var/log/app:ro
     networks:
       - group-purchase-network
     depends_on:
       elasticsearch:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:2020/api/v1/health || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
+    command: [
+      "/fluent-bit/bin/fluent-bit",
+      "-c", "/fluent-bit/etc/fluent-bit.conf"
+    ]
+    restart: unless-stopped
 
 volumes:
   kafka_data:
