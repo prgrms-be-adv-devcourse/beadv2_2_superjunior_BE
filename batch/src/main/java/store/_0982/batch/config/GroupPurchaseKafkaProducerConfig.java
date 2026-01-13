@@ -1,4 +1,4 @@
-package store._0982.batch.kafka.config;
+package store._0982.batch.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +9,6 @@ import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
-
 
 @Configuration
 public class GroupPurchaseKafkaProducerConfig {
