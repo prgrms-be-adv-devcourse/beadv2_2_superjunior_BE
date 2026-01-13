@@ -4,15 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.batch.application.BankTransferService;
+import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
-import store._0982.batch.kafka.event.SettlementEventPublisher;
-import store._0982.common.log.BatchLogMetadataFormat;
+import store._0982.batch.application.settlement.SettlementListener;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
     private final BankTransferService bankTransferService;
-    private final SettlementEventPublisher settlementEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final SettlementRepository settlementRepository;
     private final SettlementFailureRepository settlementFailureRepository;
@@ -86,7 +87,11 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
             balance.resetBalance();
             sellerBalanceRepository.save(balance);
 
-            settlementEventPublisher.publishCompleted(settlement);
+            eventPublisher.publishEvent(
+                    new SettlementProcessedEvent(
+                            settlement
+                    )
+            );
 
             // 정산 성공 로그
 //            log.info(BatchLogMetadataFormat.MONTHLY_SETTLEMENT_SUCCESS,
@@ -116,6 +121,10 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
         );
         settlementFailureRepository.save(failure);
 
-        settlementEventPublisher.publishFailed(settlement);
+        eventPublisher.publishEvent(
+                new SettlementProcessedEvent(
+                        settlement
+                )
+        );
     }
 }
