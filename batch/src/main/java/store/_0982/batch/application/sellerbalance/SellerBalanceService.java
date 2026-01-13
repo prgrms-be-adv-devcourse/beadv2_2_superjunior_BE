@@ -1,4 +1,4 @@
-package store._0982.batch.application;
+package store._0982.batch.application.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
