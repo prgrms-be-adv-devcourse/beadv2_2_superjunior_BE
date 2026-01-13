@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
+import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -218,6 +219,12 @@ public class Order {
                 cancelReason,
                 method,
                 amount
+        );
+    }
+
+    public void changeStatus(PaymentChangedEvent.Status status) {
+        this.status = OrderStatus.valueOf(
+                status.name()
         );
     }
 }
