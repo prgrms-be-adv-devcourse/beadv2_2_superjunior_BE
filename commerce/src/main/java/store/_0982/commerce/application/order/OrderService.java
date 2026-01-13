@@ -13,14 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
-import store._0982.commerce.application.order.event.OrderCanceledEvent;
+import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.exception.CustomErrorCode;
@@ -31,7 +30,6 @@ import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
@@ -414,7 +412,7 @@ public class OrderService {
 
     private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
         eventPublisher.publishEvent(
-                new OrderCanceledEvent(order, reason, refundAmount)
+                new OrderCancelProcessedEvent(order, reason, refundAmount)
         );
     }
 }

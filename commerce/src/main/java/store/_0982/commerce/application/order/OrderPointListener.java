@@ -6,10 +6,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.commerce.application.order.dto.OrderCreatedEvent;
-import store._0982.commerce.application.order.event.OrderCanceledEvent;
+import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.infrastructure.client.payment.PaymentClient;
 import store._0982.commerce.infrastructure.client.payment.dto.PointDeductRequest;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 @Component
 @RequiredArgsConstructor
@@ -31,10 +32,10 @@ public class OrderPointListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void cancelOrder(OrderCanceledEvent event) {
-        store._0982.common.kafka.dto.OrderCanceledEvent kafkaEvent = event.order().toEvent(
+    public void cancelOrder(OrderCancelProcessedEvent event) {
+        OrderCanceledEvent kafkaEvent = event.order().toEvent(
                 event.reason(),
-                store._0982.common.kafka.dto.OrderCanceledEvent.PaymentMethod.valueOf(
+                OrderCanceledEvent.PaymentMethod.valueOf(
                         event.order().getPaymentMethod().name()
                 ),
                 event.amount()
