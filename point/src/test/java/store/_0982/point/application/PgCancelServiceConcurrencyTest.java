@@ -72,7 +72,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
     void concurrent_refund_idempotent() throws InterruptedException {
         // given
         String cancelReason = "단순 변심";
-        PgCancelCommand command = new PgCancelCommand(orderId, cancelReason);
+        PgCancelCommand command = new PgCancelCommand(orderId, cancelReason, PAYMENT_AMOUNT);
         TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
                 PAYMENT_AMOUNT,
                 cancelReason,

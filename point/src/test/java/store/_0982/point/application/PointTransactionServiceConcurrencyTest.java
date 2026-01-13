@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
+import store._0982.point.application.point.PointReturnService;
 import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
@@ -39,6 +40,9 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @Autowired
     private PointTransactionService pointTransactionService;
+
+    @Autowired
+    private PointReturnService pointReturnService;
 
     @Autowired
     private PointBalanceJpaRepository memberPointRepository;
@@ -110,14 +114,14 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
     @DisplayName("네트워크 장애에 의한 중복 반환 요청을 중복 처리하지 않는다")
     void concurrent_return_idempotent() throws InterruptedException {
         // given
-        PointReturnCommand command = new PointReturnCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
+        PointReturnCommand command = new PointReturnCommand(UUID.randomUUID(), UUID.randomUUID(), "테스트 환불", AMOUNT);
         OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> pointTransactionService.returnPoints(memberId, command));
+        runSynchronizedTask(() -> pointReturnService.returnPoints(memberId, command));
 
         // then
         validate(false);
@@ -141,7 +145,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> pointTransactionService.returnPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointReturnService.returnPoints(memberId, command));
 
         // then
         validate(false);

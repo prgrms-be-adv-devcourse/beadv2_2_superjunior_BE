@@ -50,7 +50,7 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         // then
         List<PgPayment> pgPayments = paymentPointRepository.findAll();
         assertThat(pgPayments).singleElement()
-                .extracting(PgPayment::getPgOrderId, PgPayment::getMemberId, PgPayment::getAmount)
+                .extracting(PgPayment::getOrderId, PgPayment::getMemberId, PgPayment::getAmount)
                 .containsExactly(orderId, memberId, 1000L);
     }
 }

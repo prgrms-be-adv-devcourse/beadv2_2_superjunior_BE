@@ -1,5 +1,6 @@
 package store._0982.point.application;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.PointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
+import store._0982.point.application.dto.PointInfo;
 import store._0982.point.application.dto.PointReturnCommand;
+import store._0982.point.application.point.PointReturnService;
 import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
@@ -20,8 +22,8 @@ import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
-import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.Optional;
@@ -34,6 +36,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PointTransactionServiceTest {
+
+    private static final String CANCEL_REASON = "테스트 환불";
 
     @Mock
     private PointBalanceRepository pointBalanceRepository;
@@ -50,6 +54,20 @@ class PointTransactionServiceTest {
     @InjectMocks
     private PointTransactionService pointTransactionService;
 
+    @InjectMocks
+    private PointReturnService pointReturnService;
+
+    private UUID memberId;
+    private UUID orderId;
+    private UUID idempotencyKey;
+
+    @BeforeEach
+    void setUp() {
+        memberId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
+        idempotencyKey = UUID.randomUUID();
+    }
+
     @Nested
     @DisplayName("포인트 조회")
     class GetPoints {
@@ -58,7 +76,6 @@ class PointTransactionServiceTest {
         @DisplayName("포인트를 조회한다")
         void getPoints_success() {
             // given
-            UUID memberId = UUID.randomUUID();
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
@@ -77,8 +94,6 @@ class PointTransactionServiceTest {
         @DisplayName("포인트가 없는 회원 조회 시 예외가 발생한다")
         void getPoints_fail_whenMemberPointNotFound() {
             // given
-            UUID memberId = UUID.randomUUID();
-
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
@@ -96,15 +111,11 @@ class PointTransactionServiceTest {
         @DisplayName("포인트를 차감한다")
         void use_success() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
-            PointTransaction history = PointTransaction.used(memberId, command);
+            PointTransaction history = PointTransaction.used(memberId, any(), any(), any());
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
@@ -124,10 +135,6 @@ class PointTransactionServiceTest {
         @DisplayName("네트워크 장애 등에 의한 중복 차감 요청은 멱등성 키로 중복 처리하지 않는다")
         void use_idempotent() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
@@ -150,10 +157,6 @@ class PointTransactionServiceTest {
         @DisplayName("사용자 실수 등에 의한 중복 차감 요청은 주문 검사로 중복 처리하지 않는다")
         void use_duplicate() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
@@ -176,9 +179,7 @@ class PointTransactionServiceTest {
         @DisplayName("존재하지 않는 회원의 포인트 차감 시 예외가 발생한다")
         void use_fail_whenMemberNotFound() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, UUID.randomUUID(), 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
@@ -197,15 +198,11 @@ class PointTransactionServiceTest {
         @DisplayName("포인트를 반환한다")
         void returnPoints_success() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(5000);
 
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
-            PointTransaction history = PointTransaction.returned(memberId, command);
+            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
+            PointTransaction history = PointTransaction.returned(memberId, orderId, idempotencyKey, any(), CANCEL_REASON);
             OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
@@ -214,11 +211,9 @@ class PointTransactionServiceTest {
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when
-            PointInfo result = pointTransactionService.returnPoints(memberId, command);
+            pointReturnService.returnPoints(memberId, command);
 
             // then
-            assertThat(result).isNotNull();
-            assertThat(result.paidPoint()).isEqualTo(8000);
             verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
         }
 
@@ -226,24 +221,18 @@ class PointTransactionServiceTest {
         @DisplayName("이미 처리된 반환 요청은 멱등성 키로 중복 처리하지 않는다")
         void returnPoints_idempotent() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID orderId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(5000);
 
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
+            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
-            PointInfo result = pointTransactionService.returnPoints(memberId, command);
+            pointReturnService.returnPoints(memberId, command);
 
             // then
-            assertThat(result).isNotNull();
-            assertThat(result.paidPoint()).isEqualTo(5000); // 반환되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
             verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
@@ -252,14 +241,12 @@ class PointTransactionServiceTest {
         @DisplayName("존재하지 않는 회원의 포인트 반환 시 예외가 발생한다")
         void returnPoints_fail_whenMemberNotFound() {
             // given
-            UUID memberId = UUID.randomUUID();
-            UUID idempotencyKey = UUID.randomUUID();
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, UUID.randomUUID(), 3000);
+            PointReturnCommand command = new PointReturnCommand(idempotencyKey, UUID.randomUUID(), "테스트 환불", 3000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointTransactionService.returnPoints(memberId, command))
+            assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }

@@ -62,7 +62,7 @@ class PgFailServiceTest {
 
         PgPaymentFailure failure = PgPaymentFailure.pgError(pgPayment, command);
 
-        when(pgPaymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(pgPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         when(pgPaymentFailureRepository.save(any(PgPaymentFailure.class))).thenReturn(failure);
 
         // when
@@ -88,7 +88,7 @@ class PgFailServiceTest {
                 "{}"
         );
 
-        when(pgPaymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(pgPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
         // when
         pgFailService.handlePaymentFailure(command, memberId);
@@ -114,7 +114,7 @@ class PgFailServiceTest {
                 "{}"
         );
 
-        when(pgPaymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.of(pgPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
         // when & then
         assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))
@@ -135,7 +135,7 @@ class PgFailServiceTest {
                 "{}"
         );
 
-        when(pgPaymentRepository.findByPgOrderIdWithLock(orderId)).thenReturn(Optional.empty());
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))

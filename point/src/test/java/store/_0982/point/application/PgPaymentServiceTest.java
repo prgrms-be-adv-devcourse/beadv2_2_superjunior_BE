@@ -13,6 +13,7 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PgCreateCommand;
 import store._0982.point.application.dto.PgCreateInfo;
 import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.PgPayment;
@@ -48,6 +49,9 @@ class PgPaymentServiceTest {
 
     @InjectMocks
     private PgPaymentService pgPaymentService;
+
+    @InjectMocks
+    private PgConfirmService pgConfirmService;
 
     private UUID memberId;
     private UUID orderId;
@@ -136,7 +140,7 @@ class PgPaymentServiceTest {
             doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedEvent.class));
 
             // when
-            pgPaymentService.confirmPayment(command, memberId);
+            pgConfirmService.confirmPayment(command, memberId);
 
             // then
             assertThat(pointBalance.getTotalBalance()).isEqualTo(10000);
@@ -156,7 +160,7 @@ class PgPaymentServiceTest {
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pgPaymentService.confirmPayment(command, memberId))
+            assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
         }
@@ -177,7 +181,7 @@ class PgPaymentServiceTest {
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             // when & then
-            assertThatThrownBy(() -> pgPaymentService.confirmPayment(command, memberId))
+            assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
         }

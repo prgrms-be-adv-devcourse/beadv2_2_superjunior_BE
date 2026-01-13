@@ -1,5 +1,6 @@
 package store._0982.point.domain;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.point.domain.constant.PgPaymentStatus;
@@ -12,21 +13,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PgPaymentTest {
 
+    private static final int DEFAULT_AMOUNT = 10_000;
+
+    private UUID memberId;
+    private UUID orderId;
+
+    @BeforeEach
+    void setUp() {
+        memberId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
+    }
+
     @Test
     @DisplayName("결제 포인트를 생성한다")
     void create() {
-        // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        int amount = 10000;
-
         // when
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
 
         // then
         assertThat(pgPayment.getMemberId()).isEqualTo(memberId);
-        assertThat(pgPayment.getPgOrderId()).isEqualTo(orderId);
-        assertThat(pgPayment.getAmount()).isEqualTo(amount);
+        assertThat(pgPayment.getOrderId()).isEqualTo(orderId);
+        assertThat(pgPayment.getAmount()).isEqualTo(DEFAULT_AMOUNT);
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.PENDING);
     }
 
@@ -34,9 +41,7 @@ class PgPaymentTest {
     @DisplayName("결제를 승인 처리한다")
     void markConfirmed() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
 
         String paymentMethod = "CARD";
         OffsetDateTime approvedAt = OffsetDateTime.now();
@@ -56,10 +61,7 @@ class PgPaymentTest {
     @DisplayName("결제를 실패 처리한다")
     void markFailed() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
         String errorMessage = "카드 승인 실패";
 
         // when
@@ -70,12 +72,23 @@ class PgPaymentTest {
     }
 
     @Test
+    @DisplayName("결제를 환불 대기 처리한다")
+    void markRefundPending() {
+        // given
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+
+        // when
+        pgPayment.markRefundPending();
+
+        // then
+        assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUND_PENDING);
+    }
+
+    @Test
     @DisplayName("결제를 환불 처리한다")
     void markRefunded() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
         pgPayment.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
 
         OffsetDateTime refundedAt = OffsetDateTime.now();
