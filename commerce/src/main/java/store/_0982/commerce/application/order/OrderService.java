@@ -20,6 +20,7 @@ import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.order.Order;
+import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.exception.CustomErrorCode;
@@ -37,6 +38,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
 
 @Slf4j
 @Service
@@ -359,9 +362,11 @@ public class OrderService {
             groupPurchaseService.cancelOrder(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
             findOrder.requestCancel();
 
-            Long amount = (long) (findOrder.getPrice() * findOrder.getQuantity() * 0.8);
+            RefundAmount refundAmount = calculate(findOrder,
+                    CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+
             eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), amount));
+                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
             return;
         }
 
@@ -370,19 +375,23 @@ public class OrderService {
         if (findGroupPurchase.isInReversedPeriod()) {
             findOrder.requestReversed();
 
-            Long amount = (long) (findOrder.getPrice() * findOrder.getQuantity() * 0.8);
-            sellerBalanceService.addFee(memberId, (long) (findOrder.getPrice() * 0.2));
+            RefundAmount refundAmount = calculate(findOrder,
+                    CancellationType.WITHIN_48_HOURS);
+            sellerBalanceService.addFee(memberId, refundAmount.cancellationFee());
+
             eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), amount));
+                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
             return;
         }
         if (findGroupPurchase.isInReturnedPeriod()) {
             findOrder.requestReturned();
 
-            Long amount = (long) (findOrder.getPrice() * findOrder.getQuantity() * 0.8) - 6000;
-            sellerBalanceService.addFee(memberId, (long) (findOrder.getPrice() * 0.2));
+            RefundAmount refundAmount = calculate(findOrder,
+                    CancellationType.AFTER_48_HOURS);
+            sellerBalanceService.addFee(memberId, refundAmount.cancellationFee());
+
             eventPublisher.publishEvent(
-                    new OrderCanceledEvent(findOrder, command.reason(), amount));
+                    new OrderCanceledEvent(findOrder, command.reason(), refundAmount.refundAmount()));
         }
     }
 }
