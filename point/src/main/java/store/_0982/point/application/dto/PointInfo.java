@@ -1,6 +1,6 @@
 package store._0982.point.application.dto;
 
-import store._0982.point.domain.entity.Point;
+import store._0982.point.domain.entity.PointBalance;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -11,12 +11,12 @@ public record PointInfo(
         long bonusPoint,
         OffsetDateTime lastUsedAt
 ) {
-    public static PointInfo from(Point point) {
+    public static PointInfo from(PointBalance pointBalance) {
         return new PointInfo(
-                point.getMemberId(),
-                point.getPaidPoint(),
-                point.getBonusPoint(),
-                point.getLastUsedAt()
+                pointBalance.getMemberId(),
+                pointBalance.getPaidPoint(),
+                pointBalance.getBonusPoint(),
+                pointBalance.getLastUsedAt()
         );
     }
 }

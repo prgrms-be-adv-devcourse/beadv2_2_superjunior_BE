@@ -1,6 +1,6 @@
 package store._0982.point.client.dto;
 
-import store._0982.point.application.dto.PaymentConfirmCommand;
+import store._0982.point.application.dto.PgConfirmCommand;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ public record TossPaymentConfirmRequest(
         long amount,
         String paymentKey
 ) {
-    public static TossPaymentConfirmRequest from(PaymentConfirmCommand command) {
+    public static TossPaymentConfirmRequest from(PgConfirmCommand command) {
         return new TossPaymentConfirmRequest(
                 command.orderId(),
                 command.amount(),

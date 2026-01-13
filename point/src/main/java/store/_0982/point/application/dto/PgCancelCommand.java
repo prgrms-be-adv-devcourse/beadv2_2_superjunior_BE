@@ -2,8 +2,7 @@ package store._0982.point.application.dto;
 
 import java.util.UUID;
 
-public record PointReturnCommand(
-        UUID idempotencyKey,
+public record PgCancelCommand(
         UUID orderId,
         String cancelReason,
         long amount

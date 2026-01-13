@@ -1,14 +1,14 @@
 package store._0982.point.domain.event;
 
-import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.entity.PgPayment;
 
 import java.time.OffsetDateTime;
 
 public record PaymentConfirmedEvent(
-        Payment payment,
+        PgPayment pgPayment,
         OffsetDateTime occurredAt
 ) {
-    public static PaymentConfirmedEvent from(Payment payment) {
-        return new PaymentConfirmedEvent(payment, OffsetDateTime.now());
+    public static PaymentConfirmedEvent from(PgPayment pgPayment) {
+        return new PaymentConfirmedEvent(pgPayment, OffsetDateTime.now());
     }
 }

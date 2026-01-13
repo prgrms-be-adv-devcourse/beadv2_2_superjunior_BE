@@ -8,13 +8,13 @@ import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.LogFormat;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.PaymentConfirmCommand;
-import store._0982.point.application.dto.PointRefundCommand;
+import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.dto.PgCancelCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.domain.entity.Payment;
+import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 import store._0982.point.exception.PaymentClientException;
 
@@ -33,19 +33,19 @@ public class TossPaymentService {
     private final TossPaymentClient tossPaymentClient;
 
     @ServiceLog
-    public TossPaymentResponse confirmPayment(Payment payment, PaymentConfirmCommand command) {
+    public TossPaymentResponse confirmPayment(PgPayment pgPayment, PgConfirmCommand command) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.from(command);
         TossPaymentResponse tossPaymentResponse = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
 
-        if (!payment.getOrderId().equals(tossPaymentResponse.orderId())) {
+        if (!pgPayment.getOrderId().equals(tossPaymentResponse.orderId())) {
             throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
         }
         return tossPaymentResponse;
     }
 
     @ServiceLog
-    public TossPaymentResponse cancelPayment(Payment payment, PointRefundCommand command) {
-        TossPaymentCancelRequest request = TossPaymentCancelRequest.from(payment, command);
+    public TossPaymentResponse cancelPayment(PgPayment pgPayment, PgCancelCommand command) {
+        TossPaymentCancelRequest request = TossPaymentCancelRequest.from(pgPayment, command);
         return executeWithExceptionHandling(() -> tossPaymentClient.cancel(request));
     }
 
