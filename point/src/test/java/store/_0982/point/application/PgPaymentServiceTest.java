@@ -8,18 +8,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCreateCommand;
 import store._0982.point.application.dto.PgCreateInfo;
-import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgPaymentService;
+import store._0982.point.application.pg.PgTransactionManager;
+import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.domain.event.PaymentConfirmedEvent;
-import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -42,10 +41,10 @@ class PgPaymentServiceTest {
     private PgPaymentRepository pgPaymentRepository;
 
     @Mock
-    private PointBalanceRepository pointBalanceRepository;
+    private PgTransactionManager pgTransactionManager;
 
     @Mock
-    private ApplicationEventPublisher applicationEventPublisher;
+    private OrderServiceClient orderServiceClient;
 
     @InjectMocks
     private PgPaymentService pgPaymentService;
@@ -55,11 +54,13 @@ class PgPaymentServiceTest {
 
     private UUID memberId;
     private UUID orderId;
+    private String paymentKey;
 
     @BeforeEach
     void setUp() {
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
+        paymentKey = "test_payment_key";
     }
 
     @Nested
@@ -115,14 +116,10 @@ class PgPaymentServiceTest {
             // given
             PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
 
-            PgConfirmCommand command = new PgConfirmCommand(
-                    orderId,
-                    10000,
-                    "test_payment_key"
-            );
+            PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
             TossPaymentResponse tossResponse = new TossPaymentResponse(
-                    "test_payment_key",
+                    paymentKey,
                     orderId,
                     10000,
                     "CARD",
@@ -132,32 +129,42 @@ class PgPaymentServiceTest {
                     null
             );
 
-            PointBalance pointBalance = new PointBalance(memberId);
+            OrderInfo orderInfo = new OrderInfo(
+                    orderId,
+                    10000,
+                    OrderInfo.Status.ORDER_FAILED,
+                    memberId,
+                    1
+            );
 
-            when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
-            when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedEvent.class));
+            // Mocks - PgTransactionManager 사용
+            when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+                    .thenReturn(pgPayment);
+            when(orderServiceClient.getOrder(orderId, memberId))
+                    .thenReturn(orderInfo);
+            when(tossPaymentService.confirmPayment(any(), any()))
+                    .thenReturn(tossResponse);
+            doNothing().when(pgTransactionManager)
+                    .markConfirmedPayment(any(), eq(paymentKey), eq(memberId));
 
             // when
             pgConfirmService.confirmPayment(command, memberId);
 
             // then
-            assertThat(pointBalance.getTotalBalance()).isEqualTo(10000);
-            verify(applicationEventPublisher).publishEvent(any(PaymentConfirmedEvent.class));
+            verify(pgTransactionManager).markConfirmedPayment(
+                    any(TossPaymentResponse.class), eq(paymentKey), eq(memberId)
+            );
+            verify(orderServiceClient).getOrder(orderId, memberId);
         }
 
         @Test
         @DisplayName("존재하지 않는 주문으로 승인 요청 시 예외가 발생한다")
         void confirmPayment_fail_whenPaymentNotFound() {
             // given
-            PgConfirmCommand command = new PgConfirmCommand(
-                    orderId,
-                    10000,
-                    "test_payment_key"
-            );
+            PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-            when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+            when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+                    .thenThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
             // when & then
             assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
@@ -169,16 +176,10 @@ class PgPaymentServiceTest {
         @DisplayName("이미 승인된 주문으로 재승인 시 예외가 발생한다")
         void confirmPayment_fail_whenAlreadyCompleted() {
             // given
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-            pgPayment.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
+            PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-            PgConfirmCommand command = new PgConfirmCommand(
-                    orderId,
-                    10000,
-                    "test_payment_key"
-            );
-
-            when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
+            when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+                    .thenThrow(new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT));
 
             // when & then
             assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))

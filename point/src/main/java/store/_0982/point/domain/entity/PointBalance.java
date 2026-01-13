@@ -53,4 +53,11 @@ public class PointBalance {
     public long getTotalBalance() {
         return pointAmount.getTotal();
     }
+
+    @PrePersist
+    protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 }

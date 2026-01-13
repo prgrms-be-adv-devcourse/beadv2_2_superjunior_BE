@@ -5,8 +5,8 @@ spring:
 
   flyway:
     enabled: true
-    default-schema: point_schema
-    schemas: point_schema
+    default-schema: payment_schema
+    schemas: payment_schema
     create-schemas: true
 
   jpa:
@@ -14,7 +14,7 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        default_schema: point_schema
+        default_schema: payment_schema
         hbm2ddl:
           create_namespaces: true
         format_sql: true
@@ -25,14 +25,8 @@ token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
 
-kafka:
-  bootstrap-servers: ${spring.embedded.kafka.brokers}
-
 toss:
   secret-key: ${TOSS_SECRET_KEY:"abcd"}
-
-frontend:
-  url: https://0982.vercel.app
 
 logging:
   level:

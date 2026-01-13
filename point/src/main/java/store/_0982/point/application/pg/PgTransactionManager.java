@@ -21,31 +21,31 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-class PgTransactionManager {
+public class PgTransactionManager {
 
     private final PgPaymentRepository pgPaymentRepository;
     private final PgPaymentCancelRepository pgPaymentCancelRepository;
     private final PgPaymentFailureRepository pgPaymentFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    PgPayment findPayment(String paymentKey) {
+    public PgPayment findPayment(String paymentKey) {
         return pgPaymentRepository.findByPaymentKey(paymentKey)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
     }
 
-    PgPayment findCompletablePayment(String paymentKey, UUID memberId) {
+    public PgPayment findCompletablePayment(String paymentKey, UUID memberId) {
         PgPayment pgPayment = findPayment(paymentKey);
         pgPayment.validateCompletable(memberId);
         return pgPayment;
     }
 
-    PgPayment findFailablePayment(String paymentKey, UUID memberId) {
+    public PgPayment findFailablePayment(String paymentKey, UUID memberId) {
         PgPayment pgPayment = findPayment(paymentKey);
         pgPayment.validateFailable(memberId);
         return pgPayment;
     }
 
-    PgPayment markRefundPending(UUID orderId, UUID memberId) {
+    public PgPayment markRefundPending(UUID orderId, UUID memberId) {
         PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         pgPayment.validateRefundable(memberId);
@@ -54,14 +54,14 @@ class PgTransactionManager {
     }
 
     @Transactional
-    void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
+    public void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
         pgPayment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
         applicationEventPublisher.publishEvent(PaymentConfirmedEvent.from(pgPayment));
     }
 
     @Transactional
-    void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
+    public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
         pgPayment.markFailed(errorMessage);
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment);
@@ -69,7 +69,7 @@ class PgTransactionManager {
     }
 
     @Transactional
-    void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
+    public void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
         pgPayment.markFailed(command.errorMessage());
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.pgError(pgPayment, command);
@@ -77,7 +77,7 @@ class PgTransactionManager {
     }
 
     @Transactional
-    void markRefundedPayment(TossPaymentResponse tossPaymentResponse, UUID orderId, UUID memberId) {
+    public void markRefundedPayment(TossPaymentResponse tossPaymentResponse, UUID orderId, UUID memberId) {
         PgPayment pgPayment = markRefundPending(orderId, memberId);
         TossPaymentResponse.CancelInfo cancelInfo = tossPaymentResponse.cancels().get(0);
         pgPayment.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());

@@ -24,6 +24,7 @@ import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
+import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.Optional;
@@ -115,10 +116,14 @@ class PointTransactionServiceTest {
             pointBalance.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
-            PointTransaction history = PointTransaction.used(memberId, any(), any(), any());
+            PointAmount deduction = PointAmount.of(5000, 0);
+            PointTransaction history = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
@@ -202,13 +207,15 @@ class PointTransactionServiceTest {
             pointBalance.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
-            PointTransaction history = PointTransaction.returned(memberId, orderId, idempotencyKey, any(), CANCEL_REASON);
-            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
+            PointAmount usedAmount = PointAmount.of(3000, 0);
+            PointTransaction usedHistory = PointTransaction.used(memberId, orderId, UUID.randomUUID(), usedAmount);
+            PointAmount returnAmount = PointAmount.of(3000, 0);
+            PointTransaction returnHistory = PointTransaction.returned(memberId, orderId, idempotencyKey, returnAmount, CANCEL_REASON);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(Optional.of(usedHistory));
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(returnHistory);
 
             // when
             pointReturnService.returnPoints(memberId, command);
@@ -225,15 +232,18 @@ class PointTransactionServiceTest {
             pointBalance.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
+            PointAmount usedAmount = PointAmount.of(3000, 0);
+            PointTransaction usedHistory = PointTransaction.used(memberId, orderId, UUID.randomUUID(), usedAmount);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(Optional.of(usedHistory));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
             pointReturnService.returnPoints(memberId, command);
 
             // then
-            verify(orderServiceClient, never()).getOrder(any(), any());
             verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 

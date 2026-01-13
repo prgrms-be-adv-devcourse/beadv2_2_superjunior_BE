@@ -6,23 +6,30 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
+import store._0982.common.dto.PageResponse;
 import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCreateInfo;
 import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.PgPaymentInfo;
 import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.client.OrderServiceClient;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.presentation.dto.PgConfirmRequest;
 import store._0982.point.presentation.dto.PgCreateRequest;
 import store._0982.point.presentation.dto.PgFailRequest;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -71,8 +78,17 @@ class PgPaymentControllerTest {
     void createPayment() throws Exception {
         // given
         PgCreateRequest request = new PgCreateRequest(orderId, 10000);
+        PgCreateInfo createInfo = new PgCreateInfo(
+                UUID.randomUUID(),
+                memberId,
+                orderId,
+                10000L,
+                PgPaymentStatus.PENDING,
+                OffsetDateTime.now(),
+                null
+        );
 
-        when(pgPaymentService.createPayment(any(), eq(memberId))).thenReturn(any(PgCreateInfo.class));
+        when(pgPaymentService.createPayment(any(), eq(memberId))).thenReturn(createInfo);
 
         // when & then
         mockMvc.perform(post("/api/payments/create")
@@ -114,7 +130,7 @@ class PgPaymentControllerTest {
                         .header(HeaderName.ID, memberId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().is5xxServerError());
 
         verify(pgConfirmService).confirmPayment(any(), eq(memberId));
     }
@@ -143,7 +159,28 @@ class PgPaymentControllerTest {
     @DisplayName("포인트 충전 내역을 조회한다")
     void getPaymentHistories() throws Exception {
         // given
-        when(pgPaymentService.getPaymentHistories(eq(memberId), any(Pageable.class))).thenReturn(any());
+        Pageable pageable = PageRequest.of(0, 20);
+
+        PgPaymentInfo paymentInfo = new PgPaymentInfo(
+                UUID.randomUUID(),
+                memberId,
+                UUID.randomUUID(),
+                "CARD",
+                "test_payment_key",
+                null,
+                10000L,
+                PgPaymentStatus.COMPLETED,
+                OffsetDateTime.now(),
+                OffsetDateTime.now()
+        );
+
+        List<PgPaymentInfo> content = List.of(paymentInfo);
+        PageResponse<PgPaymentInfo> pageResponse = PageResponse.from(
+                new PageImpl<>(content, pageable, 1)
+        );
+
+        when(pgPaymentService.getPaymentHistories(eq(memberId), any(Pageable.class)))
+                .thenReturn(pageResponse);
 
         // when & then
         mockMvc.perform(get("/api/payments")

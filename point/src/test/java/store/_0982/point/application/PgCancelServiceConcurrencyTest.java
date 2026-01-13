@@ -14,8 +14,8 @@ import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.infrastructure.PointBalanceJpaRepository;
 import store._0982.point.infrastructure.PgPaymentJpaRepository;
+import store._0982.point.infrastructure.PointBalanceJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.time.OffsetDateTime;
@@ -141,8 +141,8 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
         assertThat(pgPayment.getRefundedAt()).isNotNull();
         assertThat(pgPayment.getRefundMessage()).isNotNull();
 
-        PointBalance pointBalance = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(pointBalance.getTotalBalance()).isEqualTo(INITIAL_BALANCE);
+        // PgCancelService는 PointBalance를 직접 변경하지 않음
+        // PointBalance는 별도의 PointReturnService에서 처리
 
         verify(tossPaymentService, times(1)).cancelPayment(any(PgPayment.class), any(PgCancelCommand.class));
     }

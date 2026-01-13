@@ -54,7 +54,8 @@ class PointTransactionControllerTest {
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("포인트 조회 성공"))
                 .andExpect(jsonPath("$.data.memberId").value(memberId.toString()))
-                .andExpect(jsonPath("$.data.pointBalance").value(15000));
+                .andExpect(jsonPath("$.data.paidPoint").value(15000))
+                .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
         verify(pointTransactionService).getPoints(memberId);
     }
