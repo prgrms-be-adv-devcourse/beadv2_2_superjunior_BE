@@ -13,12 +13,12 @@ import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointInfo;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.domain.constant.PointPaymentStatus;
+import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointChargedEvent;
 import store._0982.point.domain.event.PointDeductedEvent;
-import store._0982.point.domain.repository.PointPaymentRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
@@ -33,7 +33,7 @@ import java.util.function.Function;
 public class PointTransactionService {
 
     private final PointBalanceRepository pointBalanceRepository;
-    private final PointPaymentRepository pointPaymentRepository;
+    private final PointTransactionRepository pointTransactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final OrderServiceClient orderServiceClient;
 
@@ -54,7 +54,7 @@ public class PointTransactionService {
                 point -> executeIdempotentAction(point, () -> {
                     long amount = command.amount();
                     PointTransaction charged = PointTransaction.charged(memberId, idempotencyKey, PointAmount.of(amount, 0));
-                    charged = pointPaymentRepository.saveAndFlush(charged);
+                    charged = pointTransactionRepository.saveAndFlush(charged);
                     point.charge(amount);
                     applicationEventPublisher.publishEvent(PointChargedEvent.from(charged));
                 })
@@ -70,7 +70,7 @@ public class PointTransactionService {
                 idempotencyKey,
                 point -> {
                     UUID orderId = command.orderId();
-                    if (pointPaymentRepository.existsByOrderIdAndStatus(orderId, PointPaymentStatus.USED)) {
+                    if (pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)) {
                         return PointInfo.from(point);
                     }
 
@@ -81,7 +81,7 @@ public class PointTransactionService {
                     return executeIdempotentAction(point, () -> {
                         PointAmount deduction = point.use(amount);
                         PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
-                        used = pointPaymentRepository.saveAndFlush(used);
+                        used = pointTransactionRepository.saveAndFlush(used);
                         applicationEventPublisher.publishEvent(PointDeductedEvent.from(used));
                     });
                 }
@@ -96,7 +96,7 @@ public class PointTransactionService {
         PointBalance pointBalance = pointBalanceRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        if (pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)) {
+        if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) {
             return PointInfo.from(pointBalance);
         }
         return operation.apply(pointBalance);

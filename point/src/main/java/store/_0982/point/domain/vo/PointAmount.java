@@ -38,6 +38,19 @@ public record PointAmount(
         return new PointAmount(this.paidPoint - deduction.paidPoint, this.bonusPoint - deduction.bonusPoint);
     }
 
+    public PointAmount calculateRefund(long amount) {
+        if (getTotal() < amount) {
+            throw new CustomException(CustomErrorCode.INVALID_REFUND_AMOUNT);
+        }
+
+        if (amount <= paidPoint) {
+            return new PointAmount(amount, 0);
+        } else {
+            long refundableBonusPoint = amount - paidPoint;
+            return new PointAmount(paidPoint, refundableBonusPoint);
+        }
+    }
+
     private PointAmount calculateDeduction(long amount) {
         if (getTotal() < amount) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);

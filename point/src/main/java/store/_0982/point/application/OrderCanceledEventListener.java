@@ -12,6 +12,7 @@ import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.application.point.PointReturnService;
 import store._0982.point.common.KafkaGroupIds;
+import store._0982.point.exception.EntityNotFoundException;
 
 @Component
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class OrderCanceledEventListener {
     private final PointReturnService pointReturnService;
     private final PgCancelService pgCancelService;
 
-    @RetryableTopic(exclude = DuplicateKeyException.class)
+    @RetryableTopic(exclude = {DuplicateKeyException.class, EntityNotFoundException.class})
     @KafkaListener(
             topics = KafkaTopics.ORDER_CANCELED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,

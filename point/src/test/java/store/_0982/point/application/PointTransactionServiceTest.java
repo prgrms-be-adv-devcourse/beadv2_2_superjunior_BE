@@ -15,12 +15,12 @@ import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.domain.constant.PointPaymentStatus;
+import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
-import store._0982.point.domain.repository.PointPaymentRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -39,7 +39,7 @@ class PointTransactionServiceTest {
     private PointBalanceRepository pointBalanceRepository;
 
     @Mock
-    private PointPaymentRepository pointPaymentRepository;
+    private PointTransactionRepository pointTransactionRepository;
 
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
@@ -107,8 +107,8 @@ class PointTransactionServiceTest {
             PointTransaction history = PointTransaction.used(memberId, command);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(pointPaymentRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
             // when
@@ -134,7 +134,7 @@ class PointTransactionServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
             PointInfo result = pointTransactionService.deductPoints(memberId, command);
@@ -143,7 +143,7 @@ class PointTransactionServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(pointPaymentRepository, never()).saveAndFlush(any());
+            verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -160,7 +160,7 @@ class PointTransactionServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointPaymentRepository.existsByOrderIdAndStatus(orderId, PointPaymentStatus.USED)).thenReturn(true);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(true);
 
             // when
             PointInfo result = pointTransactionService.deductPoints(memberId, command);
@@ -169,7 +169,7 @@ class PointTransactionServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(pointPaymentRepository, never()).saveAndFlush(any());
+            verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -209,8 +209,8 @@ class PointTransactionServiceTest {
             OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(pointPaymentRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when
@@ -236,7 +236,7 @@ class PointTransactionServiceTest {
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
             PointInfo result = pointTransactionService.returnPoints(memberId, command);
@@ -245,7 +245,7 @@ class PointTransactionServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(5000); // 반환되지 않음
             verify(orderServiceClient, never()).getOrder(any(), any());
-            verify(pointPaymentRepository, never()).saveAndFlush(any());
+            verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
         @Test

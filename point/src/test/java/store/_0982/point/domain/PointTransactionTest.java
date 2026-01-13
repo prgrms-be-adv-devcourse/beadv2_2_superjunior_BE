@@ -4,7 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.domain.constant.PointPaymentStatus;
+import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointTransaction;
 
 import java.util.UUID;
@@ -30,7 +30,7 @@ class PointTransactionTest {
         assertThat(history.getMemberId()).isEqualTo(memberId);
         assertThat(history.getOrderId()).isEqualTo(orderId);
         assertThat(history.getTotalAmount()).isEqualTo(5000);
-        assertThat(history.getStatus()).isEqualTo(PointPaymentStatus.USED);
+        assertThat(history.getStatus()).isEqualTo(PointTransactionStatus.USED);
         assertThat(history.getIdempotencyKey()).isEqualTo(idempotencyKey);
     }
 
@@ -51,7 +51,7 @@ class PointTransactionTest {
         assertThat(history.getMemberId()).isEqualTo(memberId);
         assertThat(history.getOrderId()).isEqualTo(orderId);
         assertThat(history.getTotalAmount()).isEqualTo(3000);
-        assertThat(history.getStatus()).isEqualTo(PointPaymentStatus.RETURNED);
+        assertThat(history.getStatus()).isEqualTo(PointTransactionStatus.RETURNED);
         assertThat(history.getIdempotencyKey()).isEqualTo(idempotencyKey);
     }
 
@@ -72,8 +72,8 @@ class PointTransactionTest {
         PointTransaction returnedHistory = PointTransaction.returned(memberId, returnCommand);
 
         // then
-        assertThat(usedHistory.getStatus()).isEqualTo(PointPaymentStatus.USED);
-        assertThat(returnedHistory.getStatus()).isEqualTo(PointPaymentStatus.RETURNED);
+        assertThat(usedHistory.getStatus()).isEqualTo(PointTransactionStatus.USED);
+        assertThat(returnedHistory.getStatus()).isEqualTo(PointTransactionStatus.RETURNED);
         assertThat(usedHistory.getStatus()).isNotEqualTo(returnedHistory.getStatus());
     }
 }

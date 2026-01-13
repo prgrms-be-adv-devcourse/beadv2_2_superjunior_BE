@@ -1,6 +1,6 @@
 package store._0982.point.domain.constant;
 
-public enum PointPaymentStatus {
+public enum PointTransactionStatus {
     CHARGED,
     RETURN_PENDING,
     RETURNED,

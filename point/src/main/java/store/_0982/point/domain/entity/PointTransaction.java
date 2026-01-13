@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import store._0982.point.domain.vo.PointAmount;
-import store._0982.point.domain.constant.PointPaymentStatus;
+import store._0982.point.domain.constant.PointTransactionStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -36,7 +36,7 @@ public class PointTransaction {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20, updatable = false)
-    private PointPaymentStatus status;
+    private PointTransactionStatus status;
 
     @Embedded
     @AttributeOverride(name = "paidPoint", column = @Column(name = "paid_amount", nullable = false, updatable = false))
@@ -61,7 +61,7 @@ public class PointTransaction {
         return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
-                .status(PointPaymentStatus.CHARGED)
+                .status(PointTransactionStatus.CHARGED)
                 .pointAmount(amount)
                 .build();
     }
@@ -70,7 +70,7 @@ public class PointTransaction {
         return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
-                .status(PointPaymentStatus.USED)
+                .status(PointTransactionStatus.USED)
                 .pointAmount(amount)
                 .orderId(orderId)
                 .build();
@@ -80,7 +80,7 @@ public class PointTransaction {
         return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
-                .status(PointPaymentStatus.RETURNED)
+                .status(PointTransactionStatus.RETURNED)
                 .pointAmount(amount)
                 .orderId(orderId)
                 .cancelReason(cancelReason)

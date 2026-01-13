@@ -18,6 +18,7 @@ public enum CustomErrorCode implements ErrorCode {
     ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
 
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    INVALID_REFUND_AMOUNT(HttpStatus.BAD_REQUEST, "환불 요청 금액이 실제 주문 금액을 초과합니다."),
     REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않아 환불이 불가합니다."),
 
     // 403 Forbidden
