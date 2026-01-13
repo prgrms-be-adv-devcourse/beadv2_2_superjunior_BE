@@ -6,6 +6,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.sellerbalance.*;
@@ -32,7 +33,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
     private final SettlementRepository settlementRepository;
     private final SettlementFailureRepository settlementFailureRepository;
     private final SellerBalanceRepository sellerBalanceRepository;
-    private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
+    private final SellerBalanceService sellerBalanceService;
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
@@ -73,14 +74,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
             settlement.markAsCompleted();
             settlementRepository.save(settlement);
 
-            SellerBalanceHistory history = new SellerBalanceHistory(
-                    settlement.getSellerId(),
-                    settlement.getSettlementId(),
-                    null,
-                    transferAmount,
-                    SellerBalanceHistoryStatus.DEBIT
-            );
-            sellerBalanceHistoryRepository.save(history);
+            sellerBalanceService.saveSellerBalanceHistory(settlement, transferAmount);
 
             SellerBalance balance = balanceMap.get(settlement.getSellerId());
             balance.resetBalance();
