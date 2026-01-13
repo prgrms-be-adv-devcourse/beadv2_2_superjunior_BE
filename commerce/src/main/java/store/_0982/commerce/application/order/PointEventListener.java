@@ -21,7 +21,9 @@ public class PointEventListener {
 
     @ServiceLog
     @Transactional
-    @RetryableTopic
+    @RetryableTopic(
+            kafkaTemplate = "orderCanceledEventKafkaTemplate"
+    )
     @KafkaListener(
             topics = KafkaTopics.PAYMENT_CHANGED,
             containerFactory = "paymentKafkaListenerFactory"
