@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
-import store._0982.point.application.point.PointPaymentService;
+import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.application.dto.PointInfo;
 import store._0982.point.presentation.dto.PointChargeRequest;
 import store._0982.point.presentation.dto.PointDeductRequest;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PointPaymentController {
 
-    private final PointPaymentService pointPaymentService;
+    private final PointTransactionService pointTransactionService;
 
     @Operation(summary = "포인트 충전", description = "포인트를 수동적으로 충전한다.")
     @ResponseStatus(HttpStatus.CREATED)
@@ -29,7 +29,7 @@ public class PointPaymentController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody @Valid PointChargeRequest request
     ) {
-        PointInfo pointInfo = pointPaymentService.chargePoints(request.toCommand(), memberId);
+        PointInfo pointInfo = pointTransactionService.chargePoints(request.toCommand(), memberId);
         return new ResponseDto<>(HttpStatus.CREATED, pointInfo, "포인트 충전 성공");
     }
 
@@ -37,7 +37,7 @@ public class PointPaymentController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ResponseDto<PointInfo> getPoints(@RequestHeader(HeaderName.ID) UUID memberId) {
-        PointInfo info = pointPaymentService.getPoints(memberId);
+        PointInfo info = pointTransactionService.getPoints(memberId);
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 조회 성공");
     }
 
@@ -49,7 +49,7 @@ public class PointPaymentController {
             @Valid @RequestBody PointDeductRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        PointInfo info = pointPaymentService.deductPoints(memberId, request.toCommand());
+        PointInfo info = pointTransactionService.deductPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 결제 완료");
     }
 }

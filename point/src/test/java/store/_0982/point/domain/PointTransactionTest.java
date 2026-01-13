@@ -5,13 +5,13 @@ import org.junit.jupiter.api.Test;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.domain.constant.PointPaymentStatus;
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PointPaymentTest {
+class PointTransactionTest {
 
     @Test
     @DisplayName("포인트 사용 내역을 생성한다")
@@ -23,13 +23,13 @@ class PointPaymentTest {
         PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
         // when
-        PointPayment history = PointPayment.used(memberId, command);
+        PointTransaction history = PointTransaction.used(memberId, command);
 
         // then
         assertThat(history).isNotNull();
         assertThat(history.getMemberId()).isEqualTo(memberId);
         assertThat(history.getOrderId()).isEqualTo(orderId);
-        assertThat(history.getAmount()).isEqualTo(5000);
+        assertThat(history.getTotalAmount()).isEqualTo(5000);
         assertThat(history.getStatus()).isEqualTo(PointPaymentStatus.USED);
         assertThat(history.getIdempotencyKey()).isEqualTo(idempotencyKey);
     }
@@ -44,13 +44,13 @@ class PointPaymentTest {
         PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
 
         // when
-        PointPayment history = PointPayment.returned(memberId, command);
+        PointTransaction history = PointTransaction.returned(memberId, command);
 
         // then
         assertThat(history).isNotNull();
         assertThat(history.getMemberId()).isEqualTo(memberId);
         assertThat(history.getOrderId()).isEqualTo(orderId);
-        assertThat(history.getAmount()).isEqualTo(3000);
+        assertThat(history.getTotalAmount()).isEqualTo(3000);
         assertThat(history.getStatus()).isEqualTo(PointPaymentStatus.RETURNED);
         assertThat(history.getIdempotencyKey()).isEqualTo(idempotencyKey);
     }
@@ -68,8 +68,8 @@ class PointPaymentTest {
         PointReturnCommand returnCommand = new PointReturnCommand(idempotencyKey2, orderId2, 3000);
 
         // when
-        PointPayment usedHistory = PointPayment.used(memberId, deductCommand);
-        PointPayment returnedHistory = PointPayment.returned(memberId, returnCommand);
+        PointTransaction usedHistory = PointTransaction.used(memberId, deductCommand);
+        PointTransaction returnedHistory = PointTransaction.returned(memberId, returnCommand);
 
         // then
         assertThat(usedHistory.getStatus()).isEqualTo(PointPaymentStatus.USED);

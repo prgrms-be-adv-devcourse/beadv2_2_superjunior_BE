@@ -11,11 +11,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.application.point.PointPaymentService;
+import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.infrastructure.PointPaymentJpaRepository;
+import store._0982.point.infrastructure.PointTransactionJpaRepository;
 import store._0982.point.infrastructure.PointBalanceJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
+class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private static final int BALANCE = 100_000;
     private static final int AMOUNT = 1_000;
@@ -38,13 +38,13 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private PointPaymentService pointPaymentService;
+    private PointTransactionService pointTransactionService;
 
     @Autowired
     private PointBalanceJpaRepository memberPointRepository;
 
     @Autowired
-    private PointPaymentJpaRepository memberPointHistoryRepository;
+    private PointTransactionJpaRepository memberPointHistoryRepository;
 
     @MockitoBean
     private OrderServiceClient orderServiceClient;
@@ -76,7 +76,7 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> pointPaymentService.deductPoints(memberId, command));
+        runSynchronizedTask(() -> pointTransactionService.deductPoints(memberId, command));
 
         // then
         validate(true);
@@ -100,7 +100,7 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> pointPaymentService.deductPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointTransactionService.deductPoints(memberId, command));
 
         // then
         validate(true);
@@ -117,7 +117,7 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> pointPaymentService.returnPoints(memberId, command));
+        runSynchronizedTask(() -> pointTransactionService.returnPoints(memberId, command));
 
         // then
         validate(false);
@@ -141,7 +141,7 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> pointPaymentService.returnPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointTransactionService.returnPoints(memberId, command));
 
         // then
         validate(false);

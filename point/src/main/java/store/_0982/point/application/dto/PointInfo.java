@@ -14,8 +14,8 @@ public record PointInfo(
     public static PointInfo from(PointBalance pointBalance) {
         return new PointInfo(
                 pointBalance.getMemberId(),
-                pointBalance.getPaidPoint(),
-                pointBalance.getBonusPoint(),
+                pointBalance.getPointAmount().paidPoint(),
+                pointBalance.getPointAmount().bonusPoint(),
                 pointBalance.getLastUsedAt()
         );
     }

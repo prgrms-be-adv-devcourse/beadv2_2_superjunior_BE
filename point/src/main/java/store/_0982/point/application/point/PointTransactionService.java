@@ -15,11 +15,12 @@ import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointPaymentStatus;
 import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointChargedEvent;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.repository.PointPaymentRepository;
 import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;
@@ -29,7 +30,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PointPaymentService {
+public class PointTransactionService {
 
     private final PointBalanceRepository pointBalanceRepository;
     private final PointPaymentRepository pointPaymentRepository;
@@ -52,11 +53,10 @@ public class PointPaymentService {
                 idempotencyKey,
                 point -> executeIdempotentAction(point, () -> {
                     long amount = command.amount();
-                    PointPayment charged = PointPayment.charged(memberId, idempotencyKey, amount, 0);
-
-                    PointPayment history = pointPaymentRepository.saveAndFlush(charged);
+                    PointTransaction charged = PointTransaction.charged(memberId, idempotencyKey, PointAmount.of(amount, 0));
+                    charged = pointPaymentRepository.saveAndFlush(charged);
                     point.charge(amount);
-                    applicationEventPublisher.publishEvent(PointChargedEvent.from(history));
+                    applicationEventPublisher.publishEvent(PointChargedEvent.from(charged));
                 })
         );
     }
@@ -79,10 +79,10 @@ public class PointPaymentService {
                     orderInfo.validateDeductible(memberId, orderId, amount);
 
                     return executeIdempotentAction(point, () -> {
-                        PointPayment used = PointPayment.used(memberId, orderId, idempotencyKey, amount, 0);
-                        PointPayment history = pointPaymentRepository.saveAndFlush(used);
-                        point.use(amount);
-                        applicationEventPublisher.publishEvent(PointDeductedEvent.from(history));
+                        PointAmount deduction = point.use(amount);
+                        PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
+                        used = pointPaymentRepository.saveAndFlush(used);
+                        applicationEventPublisher.publishEvent(PointDeductedEvent.from(used));
                     });
                 }
         );

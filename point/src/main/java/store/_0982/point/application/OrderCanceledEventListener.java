@@ -1,6 +1,7 @@
 package store._0982.point.application;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ public class OrderCanceledEventListener {
     private final PointReturnService pointReturnService;
     private final PgCancelService pgCancelService;
 
-    @RetryableTopic
+    @RetryableTopic(exclude = DuplicateKeyException.class)
     @KafkaListener(
             topics = KafkaTopics.ORDER_CANCELED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,

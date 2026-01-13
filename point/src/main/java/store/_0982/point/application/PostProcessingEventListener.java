@@ -12,7 +12,7 @@ import store._0982.point.infrastructure.kafka.PointEventPublisher;
 
 @Component
 @RequiredArgsConstructor
-public class TransactionEventListener {
+public class PostProcessingEventListener {
     private final PointEventPublisher pointEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)

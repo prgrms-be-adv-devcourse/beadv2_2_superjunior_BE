@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 
 @Slf4j
 @Service
@@ -20,26 +20,26 @@ public class PointEventPublisher {
         // TODO: 결제 승인 이벤트 발송 추가
     }
 
-    public void publishPointChargedEvent(PointPayment history) {
+    public void publishPointChargedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.CHARGED);
-        send(KafkaTopics.POINT_RECHARGED, history.getMemberId().toString(), event);
+        send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    public void publishPointDeductedEvent(PointPayment history) {
+    public void publishPointDeductedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    public void publishPointReturnedEvent(PointPayment history) {
+    public void publishPointReturnedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.RETURNED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    private static PointChangedEvent createPointChangedEvent(PointPayment history, PointChangedEvent.Status status) {
+    private static PointChangedEvent createPointChangedEvent(PointTransaction history, PointChangedEvent.Status status) {
         return new PointChangedEvent(
                 history.getId(),
                 history.getMemberId(),
-                history.getAmount(),
+                history.getTotalAmount(),
                 status,
                 null
         );

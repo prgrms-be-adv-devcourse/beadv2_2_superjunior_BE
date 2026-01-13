@@ -1,14 +1,14 @@
 package store._0982.point.domain.event;
 
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 
 import java.time.OffsetDateTime;
 
 public record PointReturnedEvent(
-        PointPayment history,
+        PointTransaction history,
         OffsetDateTime occurredAt
 ) {
-    public static PointReturnedEvent from(PointPayment history) {
+    public static PointReturnedEvent from(PointTransaction history) {
         return new PointReturnedEvent(history, OffsetDateTime.now());
     }
 }

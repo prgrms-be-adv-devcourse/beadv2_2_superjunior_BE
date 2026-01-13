@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.domain.constant.PointPaymentStatus;
 
 import java.time.OffsetDateTime;
@@ -15,16 +16,16 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(
-        name = "point_payment",
+        name = "point_transaction",
         schema = "payment_schema",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "point_payment_uc",
+                        name = "uc_point_transaction",
                         columnNames = {"order_id", "status"}
                 )
         }
 )
-public class PointPayment {
+public class PointTransaction {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -37,11 +38,10 @@ public class PointPayment {
     @Column(name = "status", nullable = false, length = 20, updatable = false)
     private PointPaymentStatus status;
 
-    @Column(name = "paid_amount", nullable = false, updatable = false)
-    private long paidAmount;
-
-    @Column(name = "bonus_amount", nullable = false, updatable = false)
-    private long bonusAmount;
+    @Embedded
+    @AttributeOverride(name = "paidPoint", column = @Column(name = "paid_amount", nullable = false, updatable = false))
+    @AttributeOverride(name = "bonusPoint", column = @Column(name = "bonus_amount", nullable = false, updatable = false))
+    private PointAmount pointAmount;
 
     @CreationTimestamp
     @ColumnDefault("now()")
@@ -57,41 +57,38 @@ public class PointPayment {
     @Column(name = "cancel_reason")
     private String cancelReason;
 
-    public static PointPayment charged(UUID memberId, UUID idempotencyKey, long paidAmount, long bonusAmount) {
-        return PointPayment.builder()
+    public static PointTransaction charged(UUID memberId, UUID idempotencyKey, PointAmount amount) {
+        return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
                 .status(PointPaymentStatus.CHARGED)
-                .paidAmount(paidAmount)
-                .bonusAmount(bonusAmount)
+                .pointAmount(amount)
                 .build();
     }
 
-    public static PointPayment used(UUID memberId, UUID orderId, UUID idempotencyKey, long paidAmount, long bonusAmount) {
-        return PointPayment.builder()
+    public static PointTransaction used(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount) {
+        return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
                 .status(PointPaymentStatus.USED)
-                .paidAmount(paidAmount)
-                .bonusAmount(bonusAmount)
+                .pointAmount(amount)
                 .orderId(orderId)
                 .build();
     }
 
-    public static PointPayment returned(UUID memberId, UUID orderId, UUID idempotencyKey, long paidAmount, long bonusAmount, String cancelReason) {
-        return PointPayment.builder()
+    public static PointTransaction returned(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount, String cancelReason) {
+        return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
                 .status(PointPaymentStatus.RETURNED)
-                .paidAmount(paidAmount)
-                .bonusAmount(bonusAmount)
+                .pointAmount(amount)
                 .orderId(orderId)
                 .cancelReason(cancelReason)
                 .build();
     }
 
-    public long getAmount() {
-        return paidAmount + bonusAmount;
+    public long getTotalAmount() {
+        return pointAmount.getTotal();
     }
 
     @PrePersist

@@ -1,12 +1,8 @@
 package store._0982.point.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
-import store._0982.common.exception.CustomException;
-import store._0982.point.exception.CustomErrorCode;
+import store._0982.point.domain.vo.PointAmount;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -25,54 +21,36 @@ public class PointBalance {
     @Column(name = "member_id", nullable = false, unique = true, updatable = false)
     private UUID memberId;
 
-    @Column(name = "paid_point", nullable = false)
-    private long paidPoint;
-
-    @Column(name = "bonus_point", nullable = false)
-    private long bonusPoint;
+    @Embedded
+    private PointAmount pointAmount;
 
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
 
     public PointBalance(UUID memberId) {
         this.memberId = memberId;
-        this.paidPoint = 0;
-        this.bonusPoint = 0;
+        this.pointAmount = PointAmount.zero();
     }
 
     public void charge(long amount) {
-        this.paidPoint += amount;
+        this.pointAmount = this.pointAmount.addPaid(amount);
     }
 
     public void earnBonus(long bonus) {
-        this.bonusPoint += bonus;
+        this.pointAmount = this.pointAmount.addBonus(bonus);
     }
 
-    public void use(long pointBalance) {
-        deduct(pointBalance);
+    public PointAmount use(long amount) {
+        this.pointAmount = this.pointAmount.use(amount);
         lastUsedAt = OffsetDateTime.now();
+        return pointAmount;
     }
 
-    public void transfer(long pointBalance) {
-        deduct(pointBalance);
+    public void transfer(long amount) {
+        this.pointAmount = this.pointAmount.use(amount);
     }
 
     public long getTotalBalance() {
-        return paidPoint + bonusPoint;
-    }
-
-    private void deduct(long pointBalance) {
-        long totalBalance = getTotalBalance();
-        if (totalBalance < pointBalance) {
-            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
-        }
-
-        if (bonusPoint >= pointBalance) {
-            bonusPoint -= pointBalance;
-        } else {
-            long requiredAmount = pointBalance - bonusPoint;
-            bonusPoint = 0;
-            paidPoint -= requiredAmount;
-        }
+        return pointAmount.getTotal();
     }
 }

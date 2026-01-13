@@ -3,19 +3,19 @@ package store._0982.point.infrastructure;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import store._0982.point.domain.constant.PointPaymentStatus;
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.repository.PointPaymentRepository;
 
 import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class PointPaymentRepositoryAdapter implements PointPaymentRepository {
-    private final PointPaymentJpaRepository historyJpaRepository;
+public class PointTransactionRepositoryAdapter implements PointPaymentRepository {
+    private final PointTransactionJpaRepository historyJpaRepository;
 
     @Override
-    public PointPayment save(PointPayment pointPayment) {
-        return historyJpaRepository.save(pointPayment);
+    public PointTransaction save(PointTransaction pointTransaction) {
+        return historyJpaRepository.save(pointTransaction);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class PointPaymentRepositoryAdapter implements PointPaymentRepository {
     }
 
     @Override
-    public PointPayment saveAndFlush(PointPayment pointPayment) {
-        return historyJpaRepository.saveAndFlush(pointPayment);
+    public PointTransaction saveAndFlush(PointTransaction pointTransaction) {
+        return historyJpaRepository.saveAndFlush(pointTransaction);
     }
 }

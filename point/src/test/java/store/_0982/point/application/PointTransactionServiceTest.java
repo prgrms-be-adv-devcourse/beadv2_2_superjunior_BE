@@ -12,12 +12,12 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PointInfo;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.application.point.PointPaymentService;
+import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointPaymentStatus;
 import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.domain.entity.PointPayment;
+import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointDeductedEvent;
 import store._0982.point.domain.event.PointReturnedEvent;
 import store._0982.point.domain.repository.PointPaymentRepository;
@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PointPaymentServiceTest {
+class PointTransactionServiceTest {
 
     @Mock
     private PointBalanceRepository pointBalanceRepository;
@@ -48,7 +48,7 @@ class PointPaymentServiceTest {
     private OrderServiceClient orderServiceClient;
 
     @InjectMocks
-    private PointPaymentService pointPaymentService;
+    private PointTransactionService pointTransactionService;
 
     @Nested
     @DisplayName("포인트 조회")
@@ -65,7 +65,7 @@ class PointPaymentServiceTest {
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when
-            PointInfo result = pointPaymentService.getPoints(memberId);
+            PointInfo result = pointTransactionService.getPoints(memberId);
 
             // then
             assertThat(result).isNotNull();
@@ -82,7 +82,7 @@ class PointPaymentServiceTest {
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointPaymentService.getPoints(memberId))
+            assertThatThrownBy(() -> pointTransactionService.getPoints(memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -104,15 +104,15 @@ class PointPaymentServiceTest {
             pointBalance.charge(10000);
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
-            PointPayment history = PointPayment.used(memberId, command);
+            PointTransaction history = PointTransaction.used(memberId, command);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(pointPaymentRepository.saveAndFlush(any(PointPayment.class))).thenReturn(history);
+            when(pointPaymentRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
             // when
-            PointInfo result = pointPaymentService.deductPoints(memberId, command);
+            PointInfo result = pointTransactionService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -137,7 +137,7 @@ class PointPaymentServiceTest {
             when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
-            PointInfo result = pointPaymentService.deductPoints(memberId, command);
+            PointInfo result = pointTransactionService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -163,7 +163,7 @@ class PointPaymentServiceTest {
             when(pointPaymentRepository.existsByOrderIdAndStatus(orderId, PointPaymentStatus.USED)).thenReturn(true);
 
             // when
-            PointInfo result = pointPaymentService.deductPoints(memberId, command);
+            PointInfo result = pointTransactionService.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -183,7 +183,7 @@ class PointPaymentServiceTest {
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointPaymentService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -205,16 +205,16 @@ class PointPaymentServiceTest {
             pointBalance.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, 3000);
-            PointPayment history = PointPayment.returned(memberId, command);
+            PointTransaction history = PointTransaction.returned(memberId, command);
             OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
 
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
-            when(pointPaymentRepository.saveAndFlush(any(PointPayment.class))).thenReturn(history);
+            when(pointPaymentRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when
-            PointInfo result = pointPaymentService.returnPoints(memberId, command);
+            PointInfo result = pointTransactionService.returnPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -239,7 +239,7 @@ class PointPaymentServiceTest {
             when(pointPaymentRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
-            PointInfo result = pointPaymentService.returnPoints(memberId, command);
+            PointInfo result = pointTransactionService.returnPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -259,7 +259,7 @@ class PointPaymentServiceTest {
             when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointPaymentService.returnPoints(memberId, command))
+            assertThatThrownBy(() -> pointTransactionService.returnPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
