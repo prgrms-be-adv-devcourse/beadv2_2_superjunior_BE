@@ -84,17 +84,7 @@ public class MonthlySettlementWriter implements ItemWriter<Settlement> {
                             settlement
                     )
             );
-
-            // 정산 성공 로그
-//            log.info(BatchLogMetadataFormat.MONTHLY_SETTLEMENT_SUCCESS,
-//                    settlement.getSellerId());
-
         } catch (Exception e) {
-            // 정산 실패 로그
-//            log.error(BatchLogMetadataFormat.MONTHLY_SETTLEMENT_FAILED,
-//                    settlement.getSellerId(),
-//                    e.getMessage(),
-//                    e);
             handleSettlementFailure(settlement, e.getMessage());
         }
     }
