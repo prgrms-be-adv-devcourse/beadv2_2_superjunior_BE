@@ -36,17 +36,16 @@ public class PgConfirmService {
         order.validateConfirmable(memberId, orderId, command.amount());
 
         TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(pgPayment, command);
-
-        // TODO: 여기서는 예외가 발생했다고 바로 롤백하기보다는 재시도 로직이 있는 게 좋을 것 같음
         try {
             pgTransactionManager.markConfirmedPayment(tossPaymentResponse, paymentKey, memberId);
         } catch (Exception e) {
+            // 사용자가 요청한 결제인데 나중에 배치로 처리하겠다고 할 수는 없으니 배치는 이용하지 않음
             log.error("[Error] Failed to mark payment confirmed. Trying to rollback...", e);
             rollbackPayment(command, pgPayment, memberId);
         }
     }
 
-    // 1차 방어선: 결제 성공 처리에 실패했을 때 토스 API에 취소 요청
+    // 1차 방어선: 결제 성공 처리에 실패했을 때 토스 API에 취소 요청 (2차는 배치)
     private void rollbackPayment(PgConfirmCommand command, PgPayment pgPayment, UUID memberId) {
         String cancelReason = "System Error";
         try {

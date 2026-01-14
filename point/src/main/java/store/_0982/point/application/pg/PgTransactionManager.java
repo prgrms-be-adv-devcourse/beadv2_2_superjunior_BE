@@ -2,6 +2,10 @@ package store._0982.point.application.pg;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.QueryTimeoutException;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
@@ -16,6 +20,7 @@ import store._0982.point.domain.repository.PgPaymentFailureRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.net.ConnectException;
 import java.util.UUID;
 
 @Component
@@ -54,6 +59,10 @@ public class PgTransactionManager {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {TransientDataAccessException.class, QueryTimeoutException.class, ConnectException.class},
+            backoff = @Backoff(delay = 500)
+    )
     public void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
         pgPayment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
@@ -61,6 +70,10 @@ public class PgTransactionManager {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {TransientDataAccessException.class, QueryTimeoutException.class, ConnectException.class},
+            backoff = @Backoff(delay = 500)
+    )
     public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
         pgPayment.markFailed(errorMessage);
@@ -69,6 +82,10 @@ public class PgTransactionManager {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {TransientDataAccessException.class, QueryTimeoutException.class, ConnectException.class},
+            backoff = @Backoff(delay = 500)
+    )
     public void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
         pgPayment.markFailed(command.errorMessage());
@@ -77,6 +94,10 @@ public class PgTransactionManager {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = {TransientDataAccessException.class, QueryTimeoutException.class, ConnectException.class},
+            backoff = @Backoff(delay = 500)
+    )
     public void markRefundedPayment(TossPaymentResponse tossPaymentResponse, UUID orderId, UUID memberId) {
         PgPayment pgPayment = markRefundPending(orderId, memberId);
         TossPaymentResponse.CancelInfo cancelInfo = tossPaymentResponse.cancels().get(0);

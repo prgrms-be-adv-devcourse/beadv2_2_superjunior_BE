@@ -5,6 +5,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Component;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.point.application.dto.PgCancelCommand;
@@ -12,7 +13,6 @@ import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.application.point.PointReturnService;
 import store._0982.point.common.KafkaGroupIds;
-import store._0982.point.exception.EntityNotFoundException;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +21,7 @@ public class OrderCanceledEventListener {
     private final PointReturnService pointReturnService;
     private final PgCancelService pgCancelService;
 
-    @RetryableTopic(exclude = {DuplicateKeyException.class, EntityNotFoundException.class})
+    @RetryableTopic(exclude = {DuplicateKeyException.class, CustomException.class})
     @KafkaListener(
             topics = KafkaTopics.ORDER_CANCELED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,
