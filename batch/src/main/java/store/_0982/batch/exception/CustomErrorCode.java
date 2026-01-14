@@ -60,7 +60,6 @@ public enum CustomErrorCode implements ErrorCode {
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 공동구매를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
 
     // 409 Conflict
     DB_ES_COUNT_MISMATCH(HttpStatus.CONFLICT, "DB와 ES의 갯수가 다릅니다.");
