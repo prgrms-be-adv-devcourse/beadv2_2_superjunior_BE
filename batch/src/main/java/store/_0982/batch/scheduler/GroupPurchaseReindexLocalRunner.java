@@ -29,3 +29,4 @@ public class GroupPurchaseReindexLocalRunner implements ApplicationRunner {
         );
     }
 }
+
