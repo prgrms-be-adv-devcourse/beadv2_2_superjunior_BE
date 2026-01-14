@@ -21,6 +21,7 @@ public class GroupPurchaseJobConfig {
     private final GroupPurchaseJobListener jobListener;
 
     private final Step openGroupPurchaseStep;
+    private final Step updateStatusClosedGroupPurchaseStep;
 
     @Bean
     public Job groupPurchaseJob(){
@@ -28,6 +29,7 @@ public class GroupPurchaseJobConfig {
                 .incrementer(new TimestampIncrementer())
                 .listener(jobListener)
                 .start(openGroupPurchaseStep)
+                .next(updateStatusClosedGroupPurchaseStep)
                 .build();
     }
 

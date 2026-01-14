@@ -139,6 +139,21 @@ public class Order {
         this.paidAt = OffsetDateTime.now();
     }
 
+    public void markGroupPurchaseSuccess(){
+        if(this.status != OrderStatus.PAYMENT_COMPLETED){
+            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
+        }
+        this.status = OrderStatus.GROUP_PURCHASE_SUCCESS;
+    }
+
+    public void markGroupPurchaseFail(){
+        if(this.status != OrderStatus.PAYMENT_COMPLETED){
+            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
+        }
+        this.status = OrderStatus.GROUP_PURCHASE_FAIL;
+    }
+
+
     // 주문 실패 처리
     public void markFailed(){
         validateStatus(OrderStatus.ORDER_FAILED);
