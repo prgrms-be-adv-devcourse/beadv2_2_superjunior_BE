@@ -30,7 +30,7 @@ public class UpdateStatusOrderReader {
             @Value("#{stepExecutionContext['processedGroupPurchaseIds']}")List<UUID> groupPurchaseIds
             ) {
         return new JpaPagingItemReaderBuilder<Order>()
-                .name("UpdateStatusOrderReader")
+                .name("updateStatusOrderReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(
                         """

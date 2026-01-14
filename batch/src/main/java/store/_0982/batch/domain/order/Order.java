@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -204,6 +205,13 @@ public class Order {
     // 환불 여부
     public boolean isReturned(){
         return this.returnedAt != null;
+    }
+
+    public OrderCanceledEvent toCancelEvent(OrderCanceledEvent.PaymentMethod paymentMethod){
+        return new OrderCanceledEvent(
+                this.orderId,
+                paymentMethod
+        );
     }
 
 }
