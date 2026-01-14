@@ -6,6 +6,8 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import store._0982.batch.batch.elasticsearch.reindex.document.GroupPurchaseDocument;
 import store._0982.batch.batch.elasticsearch.reindex.service.GroupPurchaseReindexService;
+import store._0982.batch.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 import java.util.List;
 
@@ -26,7 +28,8 @@ public class GroupPurchaseReindexWriter implements ItemWriter<GroupPurchaseDocum
         if (!failedIds.isEmpty()) {
             List<String> retryFailed = reindexService.retryFailedRows(targetIndex, failedIds);
             if (!retryFailed.isEmpty()) {
-                log.error("재색인 최종 실패 목록: {}", retryFailed);
+                log.error("Reindex retry failed ids: {}", retryFailed);
+                throw new CustomException(CustomErrorCode.ES_REINDEX_RETRY_FAILED);
             }
         }
     }
