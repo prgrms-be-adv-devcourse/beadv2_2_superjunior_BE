@@ -103,11 +103,8 @@ services:
       KAFKA_BROKERS: kafka:9092
       KAFKA_TOPIC: app-logs
     volumes:
-      # Fluent Bit 설정
-      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
-      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
-      # 애플리케이션 로그 디렉토리 (Spring Boot에서 로그 파일로 남기는 경우)
-      - ./logs:/var/log/app:ro
+      - ./docker/fluent-bit/config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - C:/logs:/var/log/app:ro
     networks:
       - group-purchase-network
     depends_on:
