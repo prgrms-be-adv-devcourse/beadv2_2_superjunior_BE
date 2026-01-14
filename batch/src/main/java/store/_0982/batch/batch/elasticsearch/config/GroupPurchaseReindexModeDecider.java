@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.config;
+package store._0982.batch.batch.elasticsearch.config;
 
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepExecution;

@@ -1,9 +1,9 @@
-package store._0982.batch.batch.elasticsearch.reindex.infrastructure;
+package store._0982.batch.infrastructure.elasticsearch;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRepository;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;

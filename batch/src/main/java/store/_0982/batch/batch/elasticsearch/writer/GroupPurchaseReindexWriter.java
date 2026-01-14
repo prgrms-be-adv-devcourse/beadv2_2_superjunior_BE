@@ -1,11 +1,11 @@
-package store._0982.batch.batch.elasticsearch.reindex.writer;
+package store._0982.batch.batch.elasticsearch.writer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import store._0982.batch.batch.elasticsearch.reindex.document.GroupPurchaseDocument;
-import store._0982.batch.batch.elasticsearch.reindex.service.GroupPurchaseReindexService;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
+import store._0982.batch.application.elasticsearch.GroupPurchaseReindexService;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 

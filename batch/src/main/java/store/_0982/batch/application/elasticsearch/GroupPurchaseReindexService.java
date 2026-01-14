@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.service;
+package store._0982.batch.application.elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
@@ -13,9 +13,9 @@ import org.springframework.data.elasticsearch.core.index.Settings;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Service;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRepository;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
-import store._0982.batch.batch.elasticsearch.reindex.document.GroupPurchaseDocument;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
