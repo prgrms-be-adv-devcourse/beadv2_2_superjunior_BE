@@ -31,6 +31,7 @@ public enum CustomErrorCode implements ErrorCode {
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
     ES_BULK_INSERT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ES를 벌크로 재색인 하는 중 오류가 발생하였습니다."),
+    ES_REINDEX_RETRY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ES 재색인을 실패한 문서가 있습니다."),
 
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
