@@ -1,15 +1,17 @@
 package store._0982.point.application;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.LogFormat;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCancelCommand;
+import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
@@ -33,6 +35,7 @@ public class TossPaymentService {
     private final TossPaymentClient tossPaymentClient;
 
     @ServiceLog
+    @RateLimiter(name = "pg-confirm")
     public TossPaymentResponse confirmPayment(PgPayment pgPayment, PgConfirmCommand command) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.from(command);
         TossPaymentResponse tossPaymentResponse = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
@@ -44,6 +47,7 @@ public class TossPaymentService {
     }
 
     @ServiceLog
+    @RateLimiter(name = "pg-cancel")
     public TossPaymentResponse cancelPayment(PgPayment pgPayment, PgCancelCommand command) {
         TossPaymentCancelRequest request = TossPaymentCancelRequest.from(pgPayment, command);
         return executeWithExceptionHandling(() -> tossPaymentClient.cancel(request));
@@ -58,13 +62,23 @@ public class TossPaymentService {
     private static TossPaymentResponse executeWithExceptionHandling(Supplier<TossPaymentResponse> apiCall) {
         try {
             return apiCall.get();
-        } catch (CustomException | PaymentClientException e) {
+        } catch (CustomException e) {
             throw e;
+        } catch (HttpStatusCodeException e) {
+            HttpStatus httpStatus = HttpStatus.resolve(e.getStatusCode().value());
+            TossPaymentErrorResponse response = e.getResponseBodyAs(TossPaymentErrorResponse.class);
+            if (response == null) {
+                throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
+            }
+            throw new PaymentClientException(httpStatus, response.code(), response.message());
         } catch (ResourceAccessException e) {
             throw new CustomException(CustomErrorCode.PAYMENT_API_TIMEOUT);
         } catch (Exception e) {
             log.error(LogFormat.errorOf(HttpStatus.BAD_GATEWAY, e.getMessage()), e);
             throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
         }
+    }
+
+    private record TossPaymentErrorResponse(String code, String message) {
     }
 }

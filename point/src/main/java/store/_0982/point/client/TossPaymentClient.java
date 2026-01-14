@@ -1,21 +1,19 @@
 package store._0982.point.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.common.exception.CustomException;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.exception.CustomErrorCode;
-import store._0982.point.exception.PaymentClientException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -33,11 +31,14 @@ import java.util.function.Supplier;
 @Component
 @RequiredArgsConstructor
 public class TossPaymentClient {
+
     private static final String BASE_URL = "https://api.tosspayments.com/v1/payments";
 
     private final RestTemplate restTemplate;
     private final TossPaymentProperties properties;
 
+    @Retry(name = "pg-api")
+    @CircuitBreaker(name = "pg-confirm")
     public TossPaymentResponse confirm(TossPaymentConfirmRequest request) {
         HttpHeaders headers = createHeaders();
 
@@ -51,6 +52,7 @@ public class TossPaymentClient {
                 () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentResponse.class));
     }
 
+    @Retry(name = "pg-api")
     public TossPaymentResponse cancel(TossPaymentCancelRequest request) {
         HttpHeaders headers = createHeaders();
 
@@ -86,15 +88,7 @@ public class TossPaymentClient {
             return response;
         } catch (HttpStatusCodeException e) {
             log.debug(e.getResponseBodyAsString());
-            HttpStatus httpStatus = HttpStatus.resolve(e.getStatusCode().value());
-            TossPaymentErrorResponse response = e.getResponseBodyAs(TossPaymentErrorResponse.class);
-            if (response == null) {
-                throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
-            }
-            throw new PaymentClientException(httpStatus, response.code(), response.message());
+            throw e;
         }
-    }
-
-    private record TossPaymentErrorResponse(String code, String message) {
     }
 }

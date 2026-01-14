@@ -8,11 +8,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.exception.PaymentClientException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -112,8 +112,7 @@ class TossPaymentClientTest {
 
         // when & then
         assertThatThrownBy(() -> tossPaymentClient.confirm(request))
-                .isInstanceOf(PaymentClientException.class)
-                .hasMessageContaining("유효하지 않은 카드 번호입니다");
+                .isInstanceOf(HttpStatusCodeException.class);
 
         mockServer.verify();
     }
@@ -193,8 +192,7 @@ class TossPaymentClientTest {
 
         // when & then
         assertThatThrownBy(() -> tossPaymentClient.cancel(request))
-                .isInstanceOf(PaymentClientException.class)
-                .hasMessageContaining("이미 취소된 결제입니다");
+                .isInstanceOf(HttpStatusCodeException.class);
 
         mockServer.verify();
     }

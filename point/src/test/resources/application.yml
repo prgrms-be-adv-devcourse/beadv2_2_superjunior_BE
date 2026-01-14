@@ -38,3 +38,6 @@ springdoc:
     enabled: false
   api-docs:
     enabled: false
+
+client:
+  commerce: http://localhost:8087

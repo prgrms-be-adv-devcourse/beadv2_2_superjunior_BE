@@ -46,3 +46,52 @@ management:
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 50
+        minimum-number-of-calls: 10
+
+    instances:
+      pg-confirm:
+        base-config: default
+        failure-rate-threshold: 50
+        wait-duration-in-open-state:
+          seconds: 30
+        permitted-number-of-calls-in-half-open-state: 10
+        slow-call-duration-threshold:
+          seconds: 5
+        slow-call-rate-threshold: 80
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+
+  retry:
+    instances:
+      pg-api:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        enable-exponential-backoff: true
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+
+  ratelimiter:
+    instances:
+      # 결제 승인은 사용자가 직접 하기 때문에 타임아웃을 짧게 잡아야 함
+      pg-confirm:
+        limit-for-period: 30
+        limit-refresh-period:
+          seconds: 1
+        timeout-duration:
+          seconds: 3
+
+      # 결제 취소는 백그라운드에서 하기 때문에 좀 천천히 해도 됨
+      pg-cancel:
+        limit-for-period: 5
+        limit-refresh-period:
+          seconds: 1
+        timeout-duration:
+          seconds: 10
