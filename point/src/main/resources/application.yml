@@ -62,7 +62,7 @@ resilience4j:
           seconds: 30
         permitted-number-of-calls-in-half-open-state: 10
         slow-call-duration-threshold:
-          seconds: 5
+          seconds: 3
         slow-call-rate-threshold: 80
         ignore-exceptions:
           - org.springframework.web.client.HttpClientErrorException
