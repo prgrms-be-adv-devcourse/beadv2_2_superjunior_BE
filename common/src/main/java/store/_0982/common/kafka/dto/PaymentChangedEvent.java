@@ -14,6 +14,7 @@ import java.util.UUID;
 public class PaymentChangedEvent extends BaseEvent {
 
     private UUID orderId;
+    private PaymentMethod method;
     private Status status;
 
     public PaymentChangedEvent(Clock clock, UUID orderId, Status status) {
@@ -27,5 +28,10 @@ public class PaymentChangedEvent extends BaseEvent {
         COMPLETED,
         FAILED,
         REFUNDED
+    }
+
+    public enum PaymentMethod {
+        POINT,
+        PG
     }
 }

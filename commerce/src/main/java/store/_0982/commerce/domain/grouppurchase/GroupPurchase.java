@@ -61,6 +61,9 @@ public class GroupPurchase {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
+
     @Column(name = "settled_at")
     private OffsetDateTime settledAt;
 
@@ -99,6 +102,24 @@ public class GroupPurchase {
         if (this.currentQuantity == this.maxQuantity) {
             this.status = GroupPurchaseStatus.SUCCESS;
         }
+    }
+
+    public void updateQuantity(int quantity) {
+        this.currentQuantity += quantity;
+    }
+
+    public boolean isInReversedPeriod() {
+        if (this.succeededAt == null) {
+            return false;
+        }
+        return OffsetDateTime.now().isBefore(this.succeededAt.plusDays(2));
+    }
+
+    public boolean isInReturnedPeriod() {
+        if (this.succeededAt == null)
+            return false;
+        return OffsetDateTime.now().isAfter(this.succeededAt.plusDays(2))
+                && OffsetDateTime.now().isBefore(this.succeededAt.plusWeeks(2));
     }
 
     public void updateGroupPurchase(int mintQuantity,

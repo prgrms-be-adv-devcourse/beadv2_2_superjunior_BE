@@ -3,6 +3,7 @@ package store._0982.commerce.application.order;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
+import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -34,6 +37,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
+
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -42,10 +47,15 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
+
     private final GroupPurchaseService groupPurchaseService;
+    private final SellerBalanceService sellerBalanceService;
     private final ParticipateService participateService;
+
     private final MemberClient memberClient;
     private final PaymentClient paymentClient;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성
@@ -338,5 +348,71 @@ public class OrderService {
             orderRepository.saveAll(toUpdate);
             log.info("환불 상태 업데이트 완료 : 성공 = {}, 실패 = {}", success, fail);
         }
+    }
+
+    @Transactional
+    public void cancelOrder(OrderCancelCommand command) {
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        GroupPurchase groupPurchase = groupPurchaseService
+                .findByGroupPurchase(order.getGroupPurchaseId());
+
+        if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
+            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReversedPeriod()) {
+            processCancellationWithin48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReturnedPeriod()) {
+            processReturnAfter48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+        throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+    }
+
+    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
+        groupPurchaseService.cancelOrder(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
+        order.requestCancel();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processCancellationWithin48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReversed();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.WITHIN_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processReturnAfter48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReturned();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.AFTER_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
+        eventPublisher.publishEvent(
+                new OrderCancelProcessedEvent(order, reason, refundAmount)
+        );
     }
 }

@@ -7,14 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceCommand;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceThumbnailInfo;
+import store._0982.commerce.domain.sellerbalance.*;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.dto.PageResponse;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
-import store._0982.commerce.domain.sellerbalance.SellerBalance;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.exception.CustomException;
 
 import java.util.UUID;
@@ -45,5 +42,17 @@ public class SellerBalanceService {
         Page<SellerBalanceHistory> list = sellerBalanceHistoryRepository.findAllMemberId(memberId, pageable);
         Page<SellerBalanceHistoryInfo> sellerBalanceHistoryInfoStream = list.map(SellerBalanceHistoryInfo::from);
         return PageResponse.from(sellerBalanceHistoryInfoStream);
+    }
+
+    @Transactional
+    public void addFee(UUID memberId, Long fee) {
+        SellerBalance findSellerBalance = sellerBalanceRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
+        findSellerBalance.increaseBalance(fee);
+
+        // TODO: 상태 값 세분화 예정
+        SellerBalanceHistory sellerBalanceHistory =
+                new SellerBalanceHistory(memberId, null, null, fee, SellerBalanceHistoryStatus.CREDIT);
+        sellerBalanceHistoryRepository.save(sellerBalanceHistory);
     }
 }
