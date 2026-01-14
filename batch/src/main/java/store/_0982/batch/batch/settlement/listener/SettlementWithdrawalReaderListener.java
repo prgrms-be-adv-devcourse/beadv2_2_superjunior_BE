@@ -11,18 +11,18 @@ import store._0982.common.log.BatchLogMessageFormat;
 import store._0982.common.log.BatchLogMetadataFormat;
 
 /**
- * LowBalance Reader 에러 처리
+ * 월간 정산 Reader 에러 처리
  */
 @Slf4j
 @StepScope
 @Component
-public class LowBalanceItemReaderListener implements ItemReadListener<SellerBalance> {
+public class SettlementWithdrawalReaderListener implements ItemReadListener<SellerBalance> {
 
     private final StepExecution stepExecution;
 
-    public LowBalanceItemReaderListener(
+    public SettlementWithdrawalReaderListener(
             @Value("#{stepExecution}") StepExecution stepExecution
-    ) {
+    ){
         this.stepExecution = stepExecution;
     }
 
@@ -37,7 +37,7 @@ public class LowBalanceItemReaderListener implements ItemReadListener<SellerBala
                 BatchLogMetadataFormat.itemReaderFailed(
                         jobName,
                         stepName,
-                        "lowBalanceReader",
+                        "monthlySettlementReader",
                         ex.getClass().getSimpleName(),
                         ex.getMessage()
                 )

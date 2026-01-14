@@ -12,11 +12,11 @@ import store._0982.common.log.BatchLogMetadataFormat;
 import java.time.Duration;
 
 /**
- * 월간 정산 Step 실행 전후 처리
+ * 출금 정산 Step 실행 전후 처리
  */
 @Slf4j
 @Component
-public class MonthlySettlementStepListener implements StepExecutionListener {
+public class SettlementWithdrawalStepListener implements StepExecutionListener {
 
     @Override
     public void beforeStep(StepExecution stepExecution) {

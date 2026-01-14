@@ -82,43 +82,16 @@ public class Settlement {
         this.status = SettlementStatus.FAILED;
     }
 
-    public SettlementDoneEvent toCompletedEvent() {
+    public SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
         return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementDoneEvent.Status.SUCCESS,
+                status,
                 this.totalAmount,
                 this.serviceFee,
                 this.settlementAmount
         );
     }
-
-    public SettlementDoneEvent toFailedEvent() {
-        return new SettlementDoneEvent(
-                this.settlementId,
-                this.sellerId,
-                this.periodStart,
-                this.periodEnd,
-                SettlementDoneEvent.Status.FAILED,
-                this.totalAmount,
-                this.serviceFee,
-                this.settlementAmount
-        );
-    }
-
-    public SettlementDoneEvent toDeferredEvent() {
-        return new SettlementDoneEvent(
-                this.settlementId,
-                this.sellerId,
-                this.periodStart,
-                this.periodEnd,
-                SettlementDoneEvent.Status.DEFERRED,
-                this.totalAmount,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
-        );
-    }
-
 }
