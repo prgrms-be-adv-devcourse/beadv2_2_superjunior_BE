@@ -11,26 +11,24 @@ import store._0982.batch.domain.sellerbalance.SellerBalance;
 import java.util.Map;
 
 /**
- * 저액 정산 대상 조회 Reader
- * - 0원 초과 & 최소 송금 금액(3만원) 미만인 판매자 잔액 조회
- * - 알림 대상
+ * 월간 정산 대상 조회 Reader
+ * - 최소 송금 금액(3만원) 이상인 판매자 잔액 조회
  */
 @Component
 @RequiredArgsConstructor
-public class LowBalanceReader {
+public class SettlementWithdrawalReader {
 
     private final EntityManagerFactory entityManagerFactory;
 
     public JpaPagingItemReader<SellerBalance> create() {
         return new JpaPagingItemReaderBuilder<SellerBalance>()
-                .name("lowBalanceReader")
+                .name("monthlySettlementReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
                         SELECT s
                         FROM SellerBalance s
-                        WHERE s.settlementBalance > 0
-                          AND s.settlementBalance < :amount
+                        WHERE s.settlementBalance >= :amount
                         ORDER BY s.balanceId ASC
                         """)
                 .parameterValues(Map.of(

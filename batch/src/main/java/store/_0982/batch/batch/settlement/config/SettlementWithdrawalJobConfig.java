@@ -7,34 +7,34 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import store._0982.batch.batch.settlement.listener.MonthlySettlementJobListener;
+import store._0982.batch.batch.settlement.listener.SettlementWithdrawalJobListener;
 
 /**
- * 월간 정산 Job 설정
+ * 출금 정산 Job 설정
  *
  * Flow:
  * 1. monthlySettlementStep: 정산 대상 판매자에게 송금 및 정산 처리
  * 2. lowBalanceNotificationStep: 잔액 부족 판매자에게 알림 발송
  *
- * @see MonthlySettlementStepConfig
+ * @see SettlementWithdrawalStepConfig
  * @see LowBalanceNotificationStepConfig
  */
 @RequiredArgsConstructor
 @Configuration
-public class MonthlySettlementJobConfig {
+public class SettlementWithdrawalJobConfig {
 
     private final JobRepository jobRepository;
-    private final MonthlySettlementJobListener jobListener;
+    private final SettlementWithdrawalJobListener settlementWithdrawalJobListener;
 
-    private final Step monthlySettlementStep;
+    private final Step settlementWithdrawalStep;
     private final Step lowBalanceNotificationStep;
 
     @Bean
-    public Job monthlySettlementJob() {
-        return new JobBuilder("monthlySettlementJob", jobRepository)
+    public Job settlementWithdrawalJob() {
+        return new JobBuilder("settlementWithdrawalJob", jobRepository)
                 .incrementer(new TimestampIncrementer())
-                .listener(jobListener)
-                .start(monthlySettlementStep)
+                .listener(settlementWithdrawalJobListener)
+                .start(settlementWithdrawalStep)
                 .next(lowBalanceNotificationStep)
                 .build();
     }

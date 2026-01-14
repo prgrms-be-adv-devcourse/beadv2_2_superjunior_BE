@@ -10,11 +10,14 @@ import store._0982.batch.domain.settlement.SettlementPeriod;
 import java.math.BigDecimal;
 
 @Component
-public class LowBalanceProcessor implements ItemProcessor<SellerBalance, Settlement> {
+public class SettlementWithdrawalProcessor implements ItemProcessor<SellerBalance, Settlement> {
 
     @Override
     public Settlement process(SellerBalance sellerBalance) {
         Long currentBalance = sellerBalance.getSettlementBalance();
+
+        long serviceFee = SettlementPolicy.calculateServiceFee(currentBalance);
+        long transferAmount = SettlementPolicy.calculateTransferAmount(currentBalance);
 
         SettlementPeriod period = SettlementPeriod.ofLastMonth(SettlementPolicy.KOREA_ZONE);
 
@@ -23,8 +26,8 @@ public class LowBalanceProcessor implements ItemProcessor<SellerBalance, Settlem
                 period.start(),
                 period.end(),
                 currentBalance,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
+                BigDecimal.valueOf(serviceFee),
+                BigDecimal.valueOf(transferAmount)
         );
     }
 }

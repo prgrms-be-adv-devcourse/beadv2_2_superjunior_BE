@@ -7,11 +7,11 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.settlement.listener.LowBalanceItemReaderListener;
-import store._0982.batch.batch.settlement.listener.MonthlySettlementStepListener;
+import store._0982.batch.batch.settlement.listener.LowBalanceNotificationItemReaderListener;
+import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
-import store._0982.batch.batch.settlement.processor.LowBalanceProcessor;
-import store._0982.batch.batch.settlement.reader.LowBalanceReader;
+import store._0982.batch.batch.settlement.processor.LowBalanceNotificationProcessor;
+import store._0982.batch.batch.settlement.reader.lowBalanceNotificationReader;
 import store._0982.batch.batch.settlement.writer.LowBalanceNotificationWriter;
 import store._0982.batch.domain.sellerbalance.SellerBalance;
 import store._0982.batch.domain.settlement.Settlement;
@@ -28,19 +28,21 @@ public class LowBalanceNotificationStepConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
 
-    private final LowBalanceReader lowBalanceReader;
-    private final LowBalanceProcessor lowBalanceProcessor;
+    private final lowBalanceNotificationReader lowBalanceNotificationReader;
+    private final LowBalanceNotificationProcessor lowBalanceNotificationProcessor;
     private final LowBalanceNotificationWriter lowBalanceNotificationWriter;
-    private final MonthlySettlementStepListener stepListener;
-    private final LowBalanceItemReaderListener lowBalanceItemReaderListener;
+
+    private final SettlementWithdrawalStepListener stepListener;
+    private final LowBalanceNotificationItemReaderListener lowBalanceItemReaderListener;
 
     @Bean
     public Step lowBalanceNotificationStep() {
         return new StepBuilder("lowBalanceNotificationStep", jobRepository)
                 .<SellerBalance, Settlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
-                .reader(lowBalanceReader.create())
-                .processor(lowBalanceProcessor)
+                .reader(lowBalanceNotificationReader.create())
+                .processor(lowBalanceNotificationProcessor)
                 .writer(lowBalanceNotificationWriter)
+
                 .listener(stepListener)
                 .listener(lowBalanceItemReaderListener)
                 .build();

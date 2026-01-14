@@ -11,7 +11,7 @@ import store._0982.batch.domain.settlement.Settlement;
 
 @Component
 @RequiredArgsConstructor
-public class SettlementStepListener implements ItemWriteListener<Settlement> {
+public class SettlementWithdrawalWriterListener implements ItemWriteListener<Settlement> {
 
     private final SellerBalanceService sellerBalanceService;
     private final ApplicationEventPublisher eventPublisher;

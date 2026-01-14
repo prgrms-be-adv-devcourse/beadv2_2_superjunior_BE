@@ -9,6 +9,8 @@ import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
 import store._0982.batch.application.settlement.SettlementListener;
+import store._0982.batch.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 import java.util.List;
 
