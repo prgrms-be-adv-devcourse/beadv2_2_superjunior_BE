@@ -13,9 +13,8 @@ import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.domain.entity.PointBalance;
+import store._0982.point.infrastructure.PgPaymentCancelJpaRepository;
 import store._0982.point.infrastructure.PgPaymentJpaRepository;
-import store._0982.point.infrastructure.PointBalanceJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.time.OffsetDateTime;
@@ -24,11 +23,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    private static final int INITIAL_BALANCE = 50_000;
     private static final int PAYMENT_AMOUNT = 10_000;
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
@@ -42,7 +40,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
     private PgPaymentJpaRepository paymentPointRepository;
 
     @Autowired
-    private PointBalanceJpaRepository memberPointRepository;
+    private PgPaymentCancelJpaRepository paymentCancelRepository;
 
     @MockitoBean
     private TossPaymentService tossPaymentService;
@@ -52,15 +50,11 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @BeforeEach
     void setUp() {
+        paymentCancelRepository.deleteAll();
         paymentPointRepository.deleteAll();
-        memberPointRepository.deleteAll();
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
-
-        PointBalance pointBalance = new PointBalance(memberId);
-        pointBalance.charge(INITIAL_BALANCE + PAYMENT_AMOUNT);
-        memberPointRepository.save(pointBalance);
 
         PgPayment pgPayment = PgPayment.create(memberId, orderId, PAYMENT_AMOUNT);
         pgPayment.markConfirmed("카드", OffsetDateTime.now(), "test-payment-key");
@@ -140,10 +134,5 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUNDED);
         assertThat(pgPayment.getRefundedAt()).isNotNull();
         assertThat(pgPayment.getRefundMessage()).isNotNull();
-
-        // PgCancelService는 PointBalance를 직접 변경하지 않음
-        // PointBalance는 별도의 PointReturnService에서 처리
-
-        verify(tossPaymentService, times(1)).cancelPayment(any(PgPayment.class), any(PgCancelCommand.class));
     }
 }

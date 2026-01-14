@@ -35,7 +35,7 @@ public class PgPayment {
     @Column(name = "payment_method", length = 30)
     private String paymentMethod;
 
-    @Column(name = "payment_key", nullable = false, unique = true)
+    @Column(name = "payment_key", unique = true)
     private String paymentKey;
 
     @Column(nullable = false)

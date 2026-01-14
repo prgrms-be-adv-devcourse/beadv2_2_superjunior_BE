@@ -132,7 +132,7 @@ class PgPaymentServiceTest {
             OrderInfo orderInfo = new OrderInfo(
                     orderId,
                     10000,
-                    OrderInfo.Status.ORDER_FAILED,
+                    OrderInfo.Status.PENDING,
                     memberId,
                     1
             );

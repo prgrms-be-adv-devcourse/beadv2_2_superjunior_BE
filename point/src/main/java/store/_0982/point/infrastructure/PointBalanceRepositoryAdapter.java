@@ -15,8 +15,8 @@ public class PointBalanceRepositoryAdapter implements PointBalanceRepository {
     private final PointBalanceJpaRepository pointBalanceJpaRepository;
 
     @Override
-    public Optional<PointBalance> findById(UUID memberId) {
-        return pointBalanceJpaRepository.findById(memberId);
+    public Optional<PointBalance> findByMemberId(UUID memberId) {
+        return pointBalanceJpaRepository.findByMemberId(memberId);
     }
 
     @Override

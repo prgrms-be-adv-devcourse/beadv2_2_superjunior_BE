@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PointBalanceRepository {
-    Optional<PointBalance> findById(UUID memberId);
+    Optional<PointBalance> findByMemberId(UUID memberId);
 
     PointBalance save(PointBalance afterPayment);
 }

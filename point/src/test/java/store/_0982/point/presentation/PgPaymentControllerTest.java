@@ -6,11 +6,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
@@ -18,11 +19,9 @@ import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCreateInfo;
 import store._0982.point.application.dto.PgFailCommand;
 import store._0982.point.application.dto.PgPaymentInfo;
-import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.application.pg.PgPaymentService;
-import store._0982.point.client.OrderServiceClient;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.presentation.dto.PgConfirmRequest;
 import store._0982.point.presentation.dto.PgCreateRequest;
@@ -46,26 +45,38 @@ class PgPaymentControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Autowired
     private PgPaymentService pgPaymentService;
 
-    @MockitoBean
+    @Autowired
     private PgFailService pgFailService;
 
-    @MockitoBean
-    private PgCancelService pgCancelService;
-
-    @MockitoBean
+    @Autowired
     private PgConfirmService pgConfirmService;
-
-    @MockitoBean
-    private OrderServiceClient orderServiceClient;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     private UUID memberId;
     private UUID orderId;
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public PgPaymentService pgPaymentService() {
+            return mock(PgPaymentService.class);
+        }
+
+        @Bean
+        public PgFailService pgFailService() {
+            return mock(PgFailService.class);
+        }
+
+        @Bean
+        public PgConfirmService pgConfirmService() {
+            return mock(PgConfirmService.class);
+        }
+    }
 
     @BeforeEach
     void setUp() {

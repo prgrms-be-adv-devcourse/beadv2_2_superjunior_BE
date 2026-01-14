@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.domain.constant.PointTransactionStatus;
@@ -14,7 +15,6 @@ import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
-import store._0982.point.exception.EntityNotFoundException;
 
 import java.util.UUID;
 
@@ -29,12 +29,16 @@ public class PointReturnService {
     @ServiceLog
     @Transactional
     public void returnPoints(UUID memberId, PointReturnCommand command) {
-        PointBalance point = pointBalanceRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException(CustomErrorCode.MEMBER_NOT_FOUND));
+        PointBalance point = pointBalanceRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+
+        if (pointTransactionRepository.existsByIdempotencyKey(command.idempotencyKey())) {
+            return;
+        }
 
         long amount = command.amount();
         PointTransaction usedHistory = pointTransactionRepository.findByOrderIdAndStatus(command.orderId(), PointTransactionStatus.USED)
-                .orElseThrow(() -> new EntityNotFoundException(CustomErrorCode.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
         PointAmount refundAmount = usedHistory.getPointAmount().calculateRefund(amount);
         PointTransaction returned = PointTransaction.returned(

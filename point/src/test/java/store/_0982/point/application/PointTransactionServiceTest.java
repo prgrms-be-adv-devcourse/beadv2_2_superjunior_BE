@@ -80,7 +80,7 @@ class PointTransactionServiceTest {
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when
             PointInfo result = pointTransactionService.getPoints(memberId);
@@ -95,7 +95,7 @@ class PointTransactionServiceTest {
         @DisplayName("포인트가 없는 회원 조회 시 예외가 발생한다")
         void getPoints_fail_whenMemberPointNotFound() {
             // given
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.getPoints(memberId))
@@ -118,9 +118,9 @@ class PointTransactionServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
             PointAmount deduction = PointAmount.of(5000, 0);
             PointTransaction history = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
-            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.ORDER_FAILED, memberId, 1);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.PENDING, memberId, 1);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
             when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
@@ -145,7 +145,7 @@ class PointTransactionServiceTest {
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
@@ -167,7 +167,7 @@ class PointTransactionServiceTest {
 
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(true);
 
             // when
@@ -186,7 +186,7 @@ class PointTransactionServiceTest {
             // given
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
@@ -212,7 +212,7 @@ class PointTransactionServiceTest {
             PointAmount returnAmount = PointAmount.of(3000, 0);
             PointTransaction returnHistory = PointTransaction.returned(memberId, orderId, idempotencyKey, returnAmount, CANCEL_REASON);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
                     .thenReturn(Optional.of(usedHistory));
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(returnHistory);
@@ -232,12 +232,8 @@ class PointTransactionServiceTest {
             pointBalance.charge(5000);
 
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
-            PointAmount usedAmount = PointAmount.of(3000, 0);
-            PointTransaction usedHistory = PointTransaction.used(memberId, orderId, UUID.randomUUID(), usedAmount);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
-                    .thenReturn(Optional.of(usedHistory));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
             // when
@@ -253,7 +249,7 @@ class PointTransactionServiceTest {
             // given
             PointReturnCommand command = new PointReturnCommand(idempotencyKey, UUID.randomUUID(), "테스트 환불", 3000);
 
-            when(pointBalanceRepository.findById(memberId)).thenReturn(Optional.empty());
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))

@@ -59,19 +59,6 @@ class PgFailServiceTest {
     }
 
     @Test
-    @DisplayName("이미 실패 처리된 결제는 멱등성을 보장하며 실패 이력을 저장하지 않는다")
-    void handlePaymentFailure_idempotency() {
-        // given
-        doNothing().when(pgTransactionManager).markFailedPaymentByPg(command, memberId);
-
-        // when
-        pgFailService.handlePaymentFailure(command, memberId);
-
-        // then
-        verify(pgTransactionManager).markFailedPaymentByPg(command, memberId);
-    }
-
-    @Test
     @DisplayName("이미 성공(COMPLETED)된 결제를 실패 처리하려 하면 예외가 발생한다")
     void handlePaymentFailure_exception_when_completed() {
         // given

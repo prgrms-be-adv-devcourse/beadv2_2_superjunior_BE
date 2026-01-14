@@ -38,7 +38,7 @@ public class PointTransactionService {
     private final OrderServiceClient orderServiceClient;
 
     public PointInfo getPoints(UUID memberId) {
-        PointBalance pointBalance = pointBalanceRepository.findById(memberId)
+        PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
         return PointInfo.from(pointBalance);
     }
@@ -93,7 +93,7 @@ public class PointTransactionService {
             UUID idempotencyKey,
             Function<PointBalance, PointInfo> operation
     ) {
-        PointBalance pointBalance = pointBalanceRepository.findById(memberId)
+        PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) {

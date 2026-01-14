@@ -10,7 +10,6 @@ import store._0982.point.domain.vo.PointAmount;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 
 class PointTransactionTest {
 
@@ -68,7 +67,7 @@ class PointTransactionTest {
         PointTransaction usedHistory = PointTransaction.used(
                 memberId, orderId, idempotencyKey, PointAmount.of(5000, 0));
         PointTransaction returnedHistory = PointTransaction.returned(
-                memberId, orderId2, idempotencyKey2, PointAmount.of(3000, 0), any());
+                memberId, orderId2, idempotencyKey2, PointAmount.of(3000, 0), "테스트");
 
         // then
         assertThat(usedHistory.getStatus()).isEqualTo(PointTransactionStatus.USED);

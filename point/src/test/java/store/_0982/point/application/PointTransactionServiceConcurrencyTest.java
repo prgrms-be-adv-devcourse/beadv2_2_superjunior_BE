@@ -47,10 +47,10 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
     private PointReturnService pointReturnService;
 
     @Autowired
-    private PointBalanceJpaRepository memberPointRepository;
+    private PointBalanceJpaRepository pointBalanceRepository;
 
     @Autowired
-    private PointTransactionJpaRepository memberPointHistoryRepository;
+    private PointTransactionJpaRepository pointTransactionRepository;
 
     @MockitoBean
     private OrderServiceClient orderServiceClient;
@@ -62,13 +62,13 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @BeforeEach
     void setUp() {
-        memberPointRepository.deleteAll();
-        memberPointHistoryRepository.deleteAll();
+        pointBalanceRepository.deleteAll();
+        pointTransactionRepository.deleteAll();
 
         memberId = UUID.randomUUID();
         PointBalance pointBalance = new PointBalance(memberId);
         pointBalance.charge(BALANCE);
-        memberPointRepository.save(pointBalance);
+        pointBalanceRepository.save(pointBalance);
     }
 
     @Test
@@ -76,7 +76,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
     void concurrent_use_idempotent() throws InterruptedException {
         // given
         PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
-        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.CANCELLED, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.PENDING, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -85,7 +85,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTask(() -> pointTransactionService.deductPoints(memberId, command));
 
         // then
-        validate(true);
+        validateDeduction();
     }
 
     @Test
@@ -100,7 +100,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
                 .setNotNull("idempotencyKey")
                 .sampleList(getDefaultThreadCount());
 
-        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.ORDER_FAILED, memberId, 1);
+        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.PENDING, memberId, 1);
 
         when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -109,7 +109,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTasks(commands, command -> pointTransactionService.deductPoints(memberId, command));
 
         // then
-        validate(true);
+        validateDeduction();
     }
 
     @Test
@@ -119,20 +119,15 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         UUID orderId = UUID.randomUUID();
         UUID idempotencyKey = UUID.randomUUID();
 
-        // ===== 사전 준비: USED 트랜잭션 생성 =====
-        PointBalance pointBalance = memberPointRepository.findById(memberId).orElseThrow();
+        PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
         PointAmount deduction = pointBalance.use(AMOUNT);
 
-        PointTransaction usedTransaction = PointTransaction.used(
-                memberId, orderId, UUID.randomUUID(), deduction
-        );
-        memberPointHistoryRepository.save(usedTransaction);
-        memberPointRepository.save(pointBalance);
-        // ========================================
+        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction);
+        pointTransactionRepository.save(usedTransaction);
+        pointBalanceRepository.save(pointBalance);
 
         PointReturnCommand command = new PointReturnCommand(
-                idempotencyKey, orderId, "테스트 환불", AMOUNT
-        );
+                idempotencyKey, orderId, "테스트 환불", AMOUNT);
 
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
@@ -140,9 +135,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTask(() -> pointReturnService.returnPoints(memberId, command));
 
         // then
-        assertThat(memberPointHistoryRepository.count()).isEqualTo(2); // USED + RETURNED
-        PointBalance finalBalance = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(finalBalance.getTotalBalance()).isEqualTo(BALANCE); // 복구됨
+        validateReturn();
     }
 
     @Test
@@ -151,16 +144,12 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         // given
         UUID orderId = UUID.randomUUID();
 
-        // ===== 사전 준비: USED 트랜잭션 생성 =====
-        PointBalance pointBalance = memberPointRepository.findById(memberId).orElseThrow();
+        PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
         PointAmount deduction = pointBalance.use(AMOUNT);
 
-        PointTransaction usedTransaction = PointTransaction.used(
-                memberId, orderId, UUID.randomUUID(), deduction
-        );
-        memberPointHistoryRepository.save(usedTransaction);
-        memberPointRepository.save(pointBalance);
-        // ========================================
+        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction);
+        pointTransactionRepository.save(usedTransaction);
+        pointBalanceRepository.save(pointBalance);
 
         List<PointReturnCommand> commands = FIXTURE_MONKEY.giveMeBuilder(PointReturnCommand.class)
                 .instantiate(Instantiator.constructor())
@@ -177,16 +166,18 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
                 pointReturnService.returnPoints(memberId, command));
 
         // then
-        // ⚠️ 프로덕션 로직에 멱등성 체크 없으면 모두 실패 예상
-        // 로직 수정 후: 1개만 성공하고 나머지는 idempotency key로 차단
-        assertThat(memberPointHistoryRepository.count()).isEqualTo(2); // USED + RETURNED (1개만)
-        PointBalance finalBalance = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(finalBalance.getTotalBalance()).isEqualTo(BALANCE);
+        validateReturn();
     }
 
-    private void validate(boolean isDeduct) {
-        assertThat(memberPointHistoryRepository.count()).isEqualTo(1);
-        PointBalance pointBalance = memberPointRepository.findById(memberId).orElseThrow();
-        assertThat(pointBalance.getTotalBalance()).isEqualTo(isDeduct ? BALANCE - AMOUNT : BALANCE + AMOUNT);
+    private void validateDeduction() {
+        assertThat(pointTransactionRepository.count()).isEqualTo(1);
+        PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
+        assertThat(pointBalance.getTotalBalance()).isEqualTo(BALANCE - AMOUNT);
+    }
+
+    private void validateReturn() {
+        assertThat(pointTransactionRepository.count()).isEqualTo(2); // USED + RETURNED (1개만)
+        PointBalance finalBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
+        assertThat(finalBalance.getTotalBalance()).isEqualTo(BALANCE);
     }
 }

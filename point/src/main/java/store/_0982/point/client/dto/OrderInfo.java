@@ -25,16 +25,9 @@ public record OrderInfo(
         RETURNED
     }
 
-    public void validateReturnable(UUID memberId, UUID orderId, long amount) {
-        validate(memberId, orderId, amount);
-        if (status != Status.ORDER_FAILED) {
-            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
-        }
-    }
-
     public void validateDeductible(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
-        if (status != Status.CANCELLED) {
+        if (status != Status.PENDING) {
             throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
         }
     }
