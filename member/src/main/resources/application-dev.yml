@@ -2,7 +2,3 @@
 spring:
   kafka:
     bootstrap-servers: localhost:9092
-
-token:
-  internal:
-    secret: "abcd"
