@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "member", schema = "member_schema")
-public class Member {           //TODO: Addresses 필드에 넣기 관계의 주인은 address
+public class Member {
 
     @Id
     @Column(name = "member_id", nullable = false)
@@ -65,6 +65,12 @@ public class Member {           //TODO: Addresses 필드에 넣기 관계의 주
         member.phoneNumber = phoneNumber;
         member.saltKey = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         member.createdAt = OffsetDateTime.now();
+        return member;
+    }
+
+    public static Member createGuest() {
+        Member member = new Member();
+        member.role = Role.GUEST;
         return member;
     }
 

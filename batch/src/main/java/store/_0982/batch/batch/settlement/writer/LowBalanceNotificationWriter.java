@@ -3,10 +3,14 @@ package store._0982.batch.batch.settlement.writer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
-import store._0982.batch.kafka.event.SettlementEventPublisher;
+import store._0982.batch.application.settlement.SettlementListener;
+import store._0982.batch.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 import java.util.List;
 
@@ -15,7 +19,7 @@ import java.util.List;
 public class LowBalanceNotificationWriter implements ItemWriter<Settlement> {
 
     private final SettlementRepository settlementRepository;
-    private final SettlementEventPublisher settlementEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
@@ -26,7 +30,11 @@ public class LowBalanceNotificationWriter implements ItemWriter<Settlement> {
             settlementRepository.save(settlement);
 
             // 지연된 이벤트 발행
-            settlementEventPublisher.publishDeferred(settlement);
+            eventPublisher.publishEvent(
+                    new SettlementProcessedEvent(
+                            settlement
+                    )
+            );
         }
     }
 }
