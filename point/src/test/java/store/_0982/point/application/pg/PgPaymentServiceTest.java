@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.pg;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.point.application.dto.PgCreateCommand;
 import store._0982.point.application.dto.PgCreateInfo;
-import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
 

@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.pg;
 
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.instantiator.Instantiator;
@@ -8,8 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCancelCommand;
-import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.client.dto.TossPaymentResponse;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;

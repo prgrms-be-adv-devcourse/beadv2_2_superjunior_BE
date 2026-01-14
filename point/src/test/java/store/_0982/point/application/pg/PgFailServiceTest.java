@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.pg;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,8 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PgFailCommand;
-import store._0982.point.application.pg.PgFailService;
-import store._0982.point.application.pg.PgTransactionManager;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;

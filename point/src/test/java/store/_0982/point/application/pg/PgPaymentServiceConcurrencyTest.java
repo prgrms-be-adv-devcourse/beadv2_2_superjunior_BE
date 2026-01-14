@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.pg;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCreateCommand;
-import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.infrastructure.PgPaymentJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;

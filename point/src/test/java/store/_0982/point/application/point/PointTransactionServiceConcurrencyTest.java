@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.point;
 
 import com.navercorp.fixturemonkey.FixtureMonkey;
 import com.navercorp.fixturemonkey.api.instantiator.Instantiator;
@@ -11,8 +11,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.application.point.PointReturnService;
-import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.PointBalance;

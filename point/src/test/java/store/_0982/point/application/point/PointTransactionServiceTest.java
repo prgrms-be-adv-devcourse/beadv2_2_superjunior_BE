@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.point;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +13,6 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointInfo;
-import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointTransactionStatus;
