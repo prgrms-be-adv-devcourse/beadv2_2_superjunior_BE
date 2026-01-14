@@ -121,6 +121,27 @@ services:
     ]
     restart: unless-stopped
 
+#  kibana:
+#    image: kibana:8.18.8
+#    depends_on:
+#      elasticsearch:
+#        condition: service_healthy
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - NODE_OPTIONS=--max-old-space-size=256
+#      - KIBANA_DEFAULTAPPID=discover
+#      - TELEMETRY_ENABLED=false
+#      - NEWSFEED_ENABLED=false
+#      - XPACK_SECURITY_ENABLED=false
+#      - XPACK_REPORTING_ENABLED=false
+#      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=changemechangemechangemechangeme
+#    mem_limit: 1g
+#    ports:
+#      - "5601:5601"
+#    networks:
+#      - group-purchase-network
+
+
 volumes:
   kafka_data:
     driver: local
