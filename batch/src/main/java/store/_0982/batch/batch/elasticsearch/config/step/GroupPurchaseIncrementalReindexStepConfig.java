@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.config.step;
+package store._0982.batch.batch.elasticsearch.config.step;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
@@ -13,14 +13,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.elasticsearch.reindex.config.GroupPurchaseReindexProperties;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRepository;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
-import store._0982.batch.batch.elasticsearch.reindex.document.GroupPurchaseDocument;
-import store._0982.batch.batch.elasticsearch.reindex.processor.GroupPurchaseReindexProcessor;
-import store._0982.batch.batch.elasticsearch.reindex.reader.GroupPurchaseReindexReader;
-import store._0982.batch.batch.elasticsearch.reindex.service.GroupPurchaseReindexService;
-import store._0982.batch.batch.elasticsearch.reindex.writer.GroupPurchaseReindexWriter;
+import store._0982.batch.batch.elasticsearch.config.GroupPurchaseReindexProperties;
+import store._0982.batch.batch.elasticsearch.processor.GroupPurchaseReindexProcessor;
+import store._0982.batch.batch.elasticsearch.reader.GroupPurchaseReindexReader;
+import store._0982.batch.batch.elasticsearch.writer.GroupPurchaseReindexWriter;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
+import store._0982.batch.application.elasticsearch.GroupPurchaseReindexService;
 
 @Configuration
 @RequiredArgsConstructor

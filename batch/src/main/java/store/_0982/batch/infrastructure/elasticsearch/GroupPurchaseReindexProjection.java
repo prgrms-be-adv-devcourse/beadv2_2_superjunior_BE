@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.infrastructure;
+package store._0982.batch.infrastructure.elasticsearch;
 
 import java.time.Instant;
 import java.util.UUID;

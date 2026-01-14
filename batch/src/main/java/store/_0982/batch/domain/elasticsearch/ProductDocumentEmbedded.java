@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.document;
+package store._0982.batch.domain.elasticsearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

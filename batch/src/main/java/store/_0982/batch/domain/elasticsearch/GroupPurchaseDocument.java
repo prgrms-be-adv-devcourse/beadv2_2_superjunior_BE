@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.document;
+package store._0982.batch.domain.elasticsearch;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
@@ -8,7 +8,6 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;

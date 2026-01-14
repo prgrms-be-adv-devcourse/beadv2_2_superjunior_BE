@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.domain;
+package store._0982.batch.domain.elasticsearch;
 
 import java.time.OffsetDateTime;
 import java.util.List;

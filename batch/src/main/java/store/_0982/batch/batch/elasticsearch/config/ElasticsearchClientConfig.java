@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.config;
+package store._0982.batch.batch.elasticsearch.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;

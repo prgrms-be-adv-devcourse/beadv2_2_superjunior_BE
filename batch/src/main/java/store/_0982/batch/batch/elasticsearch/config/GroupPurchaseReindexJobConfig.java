@@ -1,4 +1,4 @@
-package store._0982.batch.batch.elasticsearch.reindex.config;
+package store._0982.batch.batch.elasticsearch.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -11,8 +11,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.elasticsearch.reindex.tasklet.CreateGroupPurchaseIndexTasklet;
-import store._0982.batch.batch.elasticsearch.reindex.tasklet.GroupPurchaseAliasSwitchTasklet;
+import store._0982.batch.batch.elasticsearch.tasklet.CreateGroupPurchaseIndexTasklet;
+import store._0982.batch.batch.elasticsearch.tasklet.GroupPurchaseAliasSwitchTasklet;
 
 @Configuration
 @RequiredArgsConstructor

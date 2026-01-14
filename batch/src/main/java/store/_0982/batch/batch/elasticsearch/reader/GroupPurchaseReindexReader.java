@@ -1,8 +1,8 @@
-package store._0982.batch.batch.elasticsearch.reindex.reader;
+package store._0982.batch.batch.elasticsearch.reader;
 
 import org.springframework.batch.item.ItemReader;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRepository;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;

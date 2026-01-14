@@ -1,8 +1,8 @@
-package store._0982.batch.batch.elasticsearch.reindex.processor;
+package store._0982.batch.batch.elasticsearch.processor;
 
 import org.springframework.batch.item.ItemProcessor;
-import store._0982.batch.batch.elasticsearch.reindex.domain.GroupPurchaseReindexRow;
-import store._0982.batch.batch.elasticsearch.reindex.document.GroupPurchaseDocument;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
+import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
 
 public class GroupPurchaseReindexProcessor implements ItemProcessor<GroupPurchaseReindexRow, GroupPurchaseDocument> {
     @Override
