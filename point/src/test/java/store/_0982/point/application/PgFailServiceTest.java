@@ -28,15 +28,13 @@ class PgFailServiceTest {
     private PgFailService pgFailService;
 
     private UUID memberId;
-    private UUID orderId;
     private PgFailCommand command;
 
     @BeforeEach
     void setUp() {
         memberId = UUID.randomUUID();
-        orderId = UUID.randomUUID();
         command = new PgFailCommand(
-                orderId,
+                UUID.randomUUID(),
                 "test_payment_key",
                 "PAYMENT_FAILED",
                 "카드 승인 실패",

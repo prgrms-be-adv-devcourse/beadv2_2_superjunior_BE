@@ -10,18 +10,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointInfo;
-import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.application.point.PointReturnService;
 import store._0982.point.application.point.PointTransactionService;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.event.PointChargedEvent;
 import store._0982.point.domain.event.PointDeductedEvent;
-import store._0982.point.domain.event.PointReturnedEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -35,10 +34,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import org.mockito.ArgumentCaptor;
+
 @ExtendWith(MockitoExtension.class)
 class PointTransactionServiceTest {
-
-    private static final String CANCEL_REASON = "테스트 환불";
 
     @Mock
     private PointBalanceRepository pointBalanceRepository;
@@ -54,9 +53,6 @@ class PointTransactionServiceTest {
 
     @InjectMocks
     private PointTransactionService pointTransactionService;
-
-    @InjectMocks
-    private PointReturnService pointReturnService;
 
     private UUID memberId;
     private UUID orderId;
@@ -99,6 +95,68 @@ class PointTransactionServiceTest {
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.getPoints(memberId))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    @DisplayName("포인트 충전")
+    class ChargePoints {
+
+        @Test
+        @DisplayName("포인트를 충전한다")
+        void chargePoints_success() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            PointChargeCommand command = new PointChargeCommand(10000, idempotencyKey);
+            PointTransaction history = PointTransaction.charged(memberId, idempotencyKey, PointAmount.of(10000, 0));
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointChargedEvent.class));
+
+            // when
+            PointInfo result = pointTransactionService.chargePoints(command, memberId);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.paidPoint()).isEqualTo(10000);
+            verify(applicationEventPublisher).publishEvent(any(PointChargedEvent.class));
+        }
+
+        @Test
+        @DisplayName("중복 충전 요청은 멱등성 키로 중복 처리하지 않는다")
+        void chargePoints_idempotent() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(5000);
+
+            PointChargeCommand command = new PointChargeCommand(10000, idempotencyKey);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
+
+            // when
+            PointInfo result = pointTransactionService.chargePoints(command, memberId);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.paidPoint()).isEqualTo(5000); // 충전되지 않음
+            verify(pointTransactionRepository, never()).saveAndFlush(any());
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 회원의 포인트 충전 시 예외가 발생한다")
+        void chargePoints_fail_whenMemberNotFound() {
+            // given
+            PointChargeCommand command = new PointChargeCommand(10000, idempotencyKey);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+
+            // when & then
+            assertThatThrownBy(() -> pointTransactionService.chargePoints(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -193,68 +251,125 @@ class PointTransactionServiceTest {
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
-    }
-
-    @Nested
-    @DisplayName("포인트 반환")
-    class ReturnPoints {
 
         @Test
-        @DisplayName("포인트를 반환한다")
-        void returnPoints_success() {
+        @DisplayName("잔액 부족 시 차감이 실패한다")
+        void use_fail_whenInsufficientBalance() {
             // given
             PointBalance pointBalance = new PointBalance(memberId);
-            pointBalance.charge(5000);
+            pointBalance.charge(3000);
 
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
-            PointAmount usedAmount = PointAmount.of(3000, 0);
-            PointTransaction usedHistory = PointTransaction.used(memberId, orderId, UUID.randomUUID(), usedAmount);
-            PointAmount returnAmount = PointAmount.of(3000, 0);
-            PointTransaction returnHistory = PointTransaction.returned(memberId, orderId, idempotencyKey, returnAmount, CANCEL_REASON);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.PENDING, memberId, 1);
 
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
-                    .thenReturn(Optional.of(usedHistory));
-            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(returnHistory);
-
-            // when
-            pointReturnService.returnPoints(memberId, command);
-
-            // then
-            verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
-        }
-
-        @Test
-        @DisplayName("이미 처리된 반환 요청은 멱등성 키로 중복 처리하지 않는다")
-        void returnPoints_idempotent() {
-            // given
-            PointBalance pointBalance = new PointBalance(memberId);
-            pointBalance.charge(5000);
-
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
-
-            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
-            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
-
-            // when
-            pointReturnService.returnPoints(memberId, command);
-
-            // then
-            verify(pointTransactionRepository, never()).saveAndFlush(any());
-        }
-
-        @Test
-        @DisplayName("존재하지 않는 회원의 포인트 반환 시 예외가 발생한다")
-        void returnPoints_fail_whenMemberNotFound() {
-            // given
-            PointReturnCommand command = new PointReturnCommand(idempotencyKey, UUID.randomUUID(), "테스트 환불", 3000);
-
-            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when & then
-            assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))
+            assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
-                    .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
+                    .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
+        }
+
+        @Test
+        @DisplayName("주문 금액과 차감 금액이 다를 때 예외가 발생한다")
+        void use_fail_whenAmountMismatch() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(10000);
+
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            OrderInfo orderInfo = new OrderInfo(orderId, 3000, OrderInfo.Status.PENDING, memberId, 1);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+
+            // when & then
+            assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
+        }
+
+        @Test
+        @DisplayName("다른 회원의 주문으로 차감 시 예외가 발생한다")
+        void use_fail_whenOrderOwnerMismatch() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(10000);
+
+            UUID otherMemberId = UUID.randomUUID();
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.PENDING, otherMemberId, 1);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+
+            // when & then
+            assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
+        }
+
+        @Test
+        @DisplayName("취소된 주문으로 차감 시 예외가 발생한다")
+        void use_fail_whenOrderCanceled() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(10000);
+
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.CANCELLED, memberId, 1);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+
+            // when & then
+            assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
+        }
+
+        @Test
+        @DisplayName("포인트 차감 시 올바른 이벤트가 발행된다")
+        void use_publishCorrectEvent() {
+            // given
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(10000);
+
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointAmount deduction = PointAmount.of(5000, 0);
+            PointTransaction history = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
+            OrderInfo orderInfo = new OrderInfo(orderId, 5000, OrderInfo.Status.PENDING, memberId, 1);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
+            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
+
+            ArgumentCaptor<PointDeductedEvent> eventCaptor = ArgumentCaptor.forClass(PointDeductedEvent.class);
+
+            // when
+            pointTransactionService.deductPoints(memberId, command);
+
+            // then
+            verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+            PointDeductedEvent capturedEvent = eventCaptor.getValue();
+
+            assertThat(capturedEvent).isNotNull();
+            assertThat(capturedEvent.history()).isNotNull();
+            assertThat(capturedEvent.history().getMemberId()).isEqualTo(memberId);
+            assertThat(capturedEvent.history().getOrderId()).isEqualTo(orderId);
+            assertThat(capturedEvent.history().getStatus()).isEqualTo(PointTransactionStatus.USED);
+            assertThat(capturedEvent.history().getPointAmount().getTotal()).isEqualTo(5000);
         }
     }
 }
