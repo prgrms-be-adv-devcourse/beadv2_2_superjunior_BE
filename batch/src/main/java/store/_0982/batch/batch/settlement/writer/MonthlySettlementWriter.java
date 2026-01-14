@@ -4,12 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.SettlementService;
-import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
 import store._0982.batch.infrastructure.client.member.MemberClient;
@@ -28,75 +25,59 @@ import java.util.stream.Collectors;
 public class MonthlySettlementWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
-    private final ApplicationEventPublisher eventPublisher;
 
     private final BankTransferService bankTransferService;
     private final SettlementService settlementService;
-    private final SellerBalanceService sellerBalanceService;
-
-    private final SellerBalanceRepository sellerBalanceRepository;
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
         List<? extends Settlement> settlements = chunk.getItems();
 
+        // 계좌 정보 일괄 조회
+        Map<UUID, SellerAccountInfo> accountMap = fetchSellerAccounts(settlements);
+
+        for (Settlement settlement : settlements) {
+            processSettlement(settlement, accountMap);
+        }
+    }
+
+    private void processSettlement(Settlement settlement, Map<UUID, SellerAccountInfo> accountMap) {
+        SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
+
+        if (!isValidAccount(accountInfo)) {
+            handleSettlementFailure(settlement, "계좌 정보가 없습니다");
+            return;
+        }
+
+        try {
+            long transferAmount = settlement.getSettlementAmount().longValue();
+            bankTransferService.transfer(accountInfo, transferAmount);
+        }
+        catch (Exception e) {
+            handleSettlementFailure(settlement, e.getMessage());
+        }
+    }
+
+    private Map<UUID, SellerAccountInfo> fetchSellerAccounts(List<? extends Settlement> settlements) {
         List<UUID> sellerIds = settlements.stream()
                 .map(Settlement::getSellerId)
                 .toList();
 
         SellerAccountListRequest request = new SellerAccountListRequest(sellerIds);
-        List<SellerAccountInfo> accountInfos = memberClient.getSellerAccountInfos(request).data();
-        Map<UUID, SellerAccountInfo> accountMap = accountInfos.stream()
-                .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
-
-        Map<UUID, SellerBalance> balanceMap = sellerBalanceRepository
-                .findAllByMemberIdIn(sellerIds)
+        return memberClient.getSellerAccountInfos(request)
+                .data()
                 .stream()
-                .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
-
-        for (Settlement settlement : settlements) {
-            SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
-
-            if (accountInfo == null || accountInfo.accountNumber() == null || accountInfo.accountNumber().isBlank()) {
-                handleSettlementFailure(settlement, "계좌 정보가 없습니다");
-                continue;
-            }
-
-            processTransfer(settlement, accountInfo, balanceMap);
-        }
+                .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
     }
 
-    private void processTransfer(Settlement settlement, SellerAccountInfo accountInfo, Map<UUID, SellerBalance> balanceMap) {
-        try {
-            long transferAmount = settlement.getSettlementAmount().longValue();
-
-            bankTransferService.transfer(accountInfo, transferAmount);
-
-            settlement.markAsCompleted();
-
-            sellerBalanceService.saveSellerBalanceHistory(settlement, transferAmount);
-
-            SellerBalance balance = balanceMap.get(settlement.getSellerId());
-            balance.resetBalance();
-
-            eventPublisher.publishEvent(
-                    new SettlementProcessedEvent(
-                            settlement
-                    )
-            );
-        } catch (Exception e) {
-            handleSettlementFailure(settlement, e.getMessage());
-        }
+    private boolean isValidAccount(SellerAccountInfo accountInfo) {
+        return accountInfo != null
+                && accountInfo.accountNumber() != null
+                && !accountInfo.accountNumber().isBlank();
     }
 
     private void handleSettlementFailure(Settlement settlement, String reason) {
         settlement.markAsFailed();
         settlementService.saveSettlementFailure(settlement, reason);
-
-        eventPublisher.publishEvent(
-                new SettlementProcessedEvent(
-                        settlement
-                )
-        );
     }
 }
