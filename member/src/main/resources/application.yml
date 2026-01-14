@@ -18,6 +18,14 @@ spring:
         show-sql: false
     open-in-view: false
 
+  flyway:
+    enabled: true
+    default-schema: member_schema
+    schemas:
+      - member_schema
+      - notification_schema
+    create-schemas: true
+
   mail:
     host: smtp.gmail.com
     port: 587
