@@ -7,6 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.batch.domain.settlement.SettlementFailureRepository;
+import store._0982.batch.domain.settlement.SettlementRepository;
+
+import java.util.List;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -14,10 +17,10 @@ import store._0982.batch.domain.settlement.SettlementFailureRepository;
 public class SettlementService {
 
     private final SettlementFailureRepository settlementFailureRepository;
+    private final SettlementRepository settlementRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveSettlementFailure(Settlement settlement, String reason) {
-        settlement.markAsFailed();
         SettlementFailure failure = new SettlementFailure(
                 settlement.getSellerId(),
                 settlement.getPeriodStart(),
@@ -27,5 +30,10 @@ public class SettlementService {
                 settlement.getSettlementId()
         );
         settlementFailureRepository.save(failure);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveSettlements(List<Settlement> settlements) {
+        settlementRepository.saveAll(settlements);
     }
 }

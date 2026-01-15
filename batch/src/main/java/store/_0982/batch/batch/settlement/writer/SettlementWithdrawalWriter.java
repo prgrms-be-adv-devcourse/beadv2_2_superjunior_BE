@@ -29,13 +29,16 @@ import java.util.stream.Collectors;
 public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
+    private final SettlementRepository settlementRepository;
 
     private final BankTransferService bankTransferService;
     private final SettlementService settlementService;
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
-        List<? extends Settlement> settlements = chunk.getItems();
+        List<Settlement> settlements = chunk.getItems().stream()
+                .map(settlement -> (Settlement) settlement)
+                .toList();
 
         // 계좌 정보 일괄 조회
         Map<UUID, SellerAccountInfo> accountMap;
@@ -43,29 +46,37 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
             accountMap = fetchSellerAccounts(settlements);
         } catch (Exception e) {
             for (Settlement settlement : settlements) {
-                handleSettlementFailure(settlement, "계좌 정보 조회 실패: " + e.getMessage());
+                settlement.markAsFailed();
+                handleSettlementFailure(settlement, "Member 서비스를 사용할 수 없습니다. : " + e.getMessage());
             }
+            settlementService.saveSettlements(settlements);
             throw new CustomException(CustomErrorCode.MEMBER_SERVICE_UNAVAILABLE);
         }
 
         for (Settlement settlement : settlements) {
             processSettlement(settlement, accountMap);
         }
+
+        settlementRepository.saveAll(settlements);
     }
 
     private void processSettlement(Settlement settlement, Map<UUID, SellerAccountInfo> accountMap) {
         SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
 
         if (!isValidAccount(accountInfo)) {
+            settlement.markAsFailed();
             handleSettlementFailure(settlement, "계좌 정보가 없습니다");
             return;
         }
+
+        settlement.setAccountInfo(accountInfo.accountNumber(), accountInfo.bankCode());
 
         try {
             long transferAmount = settlement.getSettlementAmount().longValue();
             bankTransferService.transfer(accountInfo, transferAmount);
         }
         catch (Exception e) {
+            settlement.markAsFailed();
             handleSettlementFailure(settlement, e.getMessage());
         }
     }

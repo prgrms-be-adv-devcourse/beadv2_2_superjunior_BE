@@ -92,6 +92,11 @@ public class Settlement {
         this.status = SettlementStatus.FAILED;
     }
 
+    public void setAccountInfo(String accountNumber, String bankCode) {
+        this.accountNumber = accountNumber;
+        this.bankCode = bankCode;
+    }
+
     public SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
         return new SettlementDoneEvent(
                 this.settlementId,
