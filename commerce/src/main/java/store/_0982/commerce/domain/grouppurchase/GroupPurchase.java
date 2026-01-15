@@ -97,15 +97,43 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public void syncCurrentQuantity(int count){
-        this.currentQuantity = count;
-        checkAndUpdateStatusIfMaxReached();
+
+    public boolean applyParticipationResult(boolean success, int quantity){
+        if(success){
+            return increaseQuantity(quantity);
+        }else{
+            return decreaseQuantity(quantity);
+        }
+    }
+
+    private boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
     }
 
     private void checkAndUpdateStatusIfMaxReached() {
         if (this.currentQuantity == this.maxQuantity) {
             this.status = GroupPurchaseStatus.SUCCESS;
         }
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (!canParticipate(quantity)) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    public boolean decreaseQuantity(int quantity){
+        if(this.currentQuantity - quantity < 0){
+            throw new IllegalStateException("currentQuantity 음수 불가능");
+        }
+        this.currentQuantity -= quantity;
+        return true;
     }
 
     public void updateQuantity(int quantity) {
