@@ -16,10 +16,15 @@ public record GroupPurchaseDocumentCommand(
         OffsetDateTime endDate,
         OffsetDateTime updatedAt,
         String sellerId,
+        String productId,
         String productCategory,
         Long originalPrice
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
+        String productId = null;
+        if (event.getProductEvent() != null && event.getProductId() != null) {
+            productId = event.getProductId().toString();
+        }
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
                 event.getTitle(),
@@ -30,6 +35,7 @@ public record GroupPurchaseDocumentCommand(
                 event.getEndDate() != null ? OffsetDateTime.parse(event.getEndDate()) : null,
                 event.getUpdatedAt() != null ? OffsetDateTime.parse(event.getUpdatedAt()) : null,
                 event.getSellerId() != null ? event.getSellerId().toString() : null,
+                productId,
                 event.getProductCategory() != null ? event.getProductCategory().toString() : null,
                 event.getOriginalPrice()
         );
@@ -46,7 +52,7 @@ public record GroupPurchaseDocumentCommand(
                 .endDate(endDate)
                 .updatedAt(updatedAt)
                 .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
-                .productDocumentEmbedded(new ProductDocumentEmbedded(productCategory, originalPrice, sellerId))
+                .productDocumentEmbedded(new ProductDocumentEmbedded(productId, productCategory, originalPrice, sellerId))
                 .build();
     }
 

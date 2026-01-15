@@ -14,6 +14,7 @@ public record GroupPurchaseReindexRow(
         long discountedPrice,
         Integer currentQuantity,
         Instant updatedAt,
+        UUID productId,
         String category,
         Long price,
         UUID sellerId
@@ -28,6 +29,7 @@ public record GroupPurchaseReindexRow(
                 projection.getDiscountedPrice(),
                 projection.getCurrentQuantity(),
                 projection.getUpdatedAt(),
+                projection.getProductId(),
                 projection.getCategory(),
                 projection.getPrice(),
                 projection.getSellerId()

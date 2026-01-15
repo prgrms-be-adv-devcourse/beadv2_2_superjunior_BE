@@ -152,6 +152,7 @@ public class GroupPurchase {
                 this.title,
                 this.description,
                 this.discountedPrice,
+                this.productId,
                 groupPurchaseStatus,
                 this.endDate.toString(),
                 this.updatedAt.toString(),

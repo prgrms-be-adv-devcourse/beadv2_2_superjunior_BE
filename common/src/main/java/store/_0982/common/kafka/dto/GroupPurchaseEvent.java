@@ -19,6 +19,7 @@ public class GroupPurchaseEvent extends BaseEvent {
     private String title;
     private String description;
     private Long discountedPrice;
+    private UUID productId;
 
     /**
      * @deprecated {@link Status} 값을 이용해 주세요.
@@ -53,12 +54,13 @@ public class GroupPurchaseEvent extends BaseEvent {
         this.status = status;
     }
 
-    public GroupPurchaseEvent(UUID id, UUID sellerId, String title, String description, Long discountedPrice, Status groupPurchaseStatus, String endDate, String updatedAt, Integer currentQuantity, EventStatus kafkaStatus, long originalPrice, ProductCategory productCategory) {
+    public GroupPurchaseEvent(UUID id, UUID sellerId, String title, String description, Long discountedPrice, UUID productId, Status groupPurchaseStatus, String endDate, String updatedAt, Integer currentQuantity, EventStatus kafkaStatus, long originalPrice, ProductCategory productCategory) {
         this.id = id;
         this.sellerId = sellerId;
         this.title = title;
         this.description = description;
         this.discountedPrice = discountedPrice;
+        this.productId = productId;
         this.groupPurchaseStatus = groupPurchaseStatus;
         this.endDate = endDate;
         this.updatedAt = updatedAt;
