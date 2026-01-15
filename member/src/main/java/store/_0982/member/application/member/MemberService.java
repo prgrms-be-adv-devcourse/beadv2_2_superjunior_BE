@@ -46,7 +46,7 @@ public class MemberService {
         return MemberSignUpInfo.from(memberRepository.save(member));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = CustomException.class) //사용자에게는 Error 메세지를 보내지만 결과는 커밋
     @ServiceLog
     public void createPointBalance(UUID memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() ->
@@ -56,7 +56,7 @@ public class MemberService {
             member.confirm();
         } catch (FeignException e) {
             memberRepository.hardDelete(member);
-            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);   //point_balance는 만들었으나 다른 이유로 중단
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);   //point_balance는 생성 실패
         }
     }
 
