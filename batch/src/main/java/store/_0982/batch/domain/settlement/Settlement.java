@@ -55,13 +55,21 @@ public class Settlement {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Column(name = "account_number")
+    private String accountNumber;
+
+    @Column(name = "bank_code")
+    private String bankCode;
+
     public Settlement(
             UUID sellerId,
             OffsetDateTime periodStart,
             OffsetDateTime periodEnd,
             Long totalAmount,
             BigDecimal serviceFee,
-            BigDecimal settlementAmount
+            BigDecimal settlementAmount,
+            String accountNumber,
+            String bankCode
     ) {
         this.settlementId = UUID.randomUUID();
         this.sellerId = sellerId;
@@ -70,6 +78,8 @@ public class Settlement {
         this.totalAmount = totalAmount;
         this.serviceFee = serviceFee;
         this.settlementAmount = settlementAmount;
+        this.accountNumber = accountNumber;
+        this.bankCode = bankCode;
         this.status = SettlementStatus.PENDING;
     }
 

@@ -24,7 +24,9 @@ public class LowBalanceNotificationProcessor implements ItemProcessor<SellerBala
                 period.end(),
                 currentBalance,
                 BigDecimal.ZERO,
-                BigDecimal.ZERO
+                BigDecimal.ZERO,
+                null,
+                null
         );
     }
 }
