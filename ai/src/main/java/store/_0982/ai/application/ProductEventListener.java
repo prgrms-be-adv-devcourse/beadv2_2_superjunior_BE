@@ -1,0 +1,22 @@
+package store._0982.ai.application;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.stereotype.Service;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEmbeddingEvent;
+import store._0982.common.log.ServiceLog;
+
+@Service
+@RequiredArgsConstructor
+public class ProductEventListener {
+
+    @RetryableTopic
+    @ServiceLog
+    @KafkaListener(topics = KafkaTopics.PRODUCT_EMBEDDING_REQUESTED, groupId = "ai-service-group", containerFactory = "productEmbeddingEventKafkaListenerFactory")
+    public void vectorize(ProductEmbeddingEvent event) {
+        // 벡터화
+
+    }
+}

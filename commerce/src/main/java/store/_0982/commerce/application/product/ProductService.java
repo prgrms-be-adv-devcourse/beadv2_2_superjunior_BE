@@ -2,11 +2,13 @@ package store._0982.commerce.application.product;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.product.dto.*;
+import store._0982.commerce.application.product.event.ProductCreatedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
@@ -27,6 +29,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
@@ -38,6 +41,8 @@ public class ProductService {
 
         Product savedProduct = productRepository.saveAndFlush(product);
 
+        //ai 모듈 kafka
+        eventPublisher.publishEvent(new ProductCreatedEvent(product));
         return ProductRegisterInfo.from(savedProduct);
     }
 
