@@ -1,4 +1,4 @@
-package store._0982.member.infrastructure.member;
+package store._0982.member.infrastructure.member.feign;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
