@@ -33,6 +33,7 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
+    MEMBER_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Member 서비스를 사용할 수 없습니다."),
 
 
     //400 Bad Request

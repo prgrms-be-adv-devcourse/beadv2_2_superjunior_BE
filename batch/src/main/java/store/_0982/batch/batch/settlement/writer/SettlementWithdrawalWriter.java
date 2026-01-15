@@ -9,9 +9,11 @@ import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.SettlementService;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.*;
+import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
+import store._0982.common.exception.CustomException;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,15 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
         List<? extends Settlement> settlements = chunk.getItems();
 
         // 계좌 정보 일괄 조회
-        Map<UUID, SellerAccountInfo> accountMap = fetchSellerAccounts(settlements);
+        Map<UUID, SellerAccountInfo> accountMap;
+        try {
+            accountMap = fetchSellerAccounts(settlements);
+        } catch (Exception e) {
+            for (Settlement settlement : settlements) {
+                handleSettlementFailure(settlement, "계좌 정보 조회 실패: " + e.getMessage());
+            }
+            throw new CustomException(CustomErrorCode.MEMBER_SERVICE_UNAVAILABLE);
+        }
 
         for (Settlement settlement : settlements) {
             processSettlement(settlement, accountMap);
@@ -77,7 +87,6 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
     }
 
     private void handleSettlementFailure(Settlement settlement, String reason) {
-        settlement.markAsFailed();
         settlementService.saveSettlementFailure(settlement, reason);
     }
 }
