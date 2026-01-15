@@ -52,14 +52,10 @@ public class MemberService {
         Member member = memberRepository.findById(memberId).orElseThrow(() ->
                 new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         try {
-            pointQueryPort.postPointBalance(memberId); //todo: 에러 코드에 따른 예외처리 필요
+            pointQueryPort.postPointBalance(memberId);
             member.confirm();
-//        } catch (FeignException e) {
-//            memberRepository.hardDelete(member);
-//            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR); //point_balance를 만들다가 중단
-        } catch (Exception e) {
+        } catch (FeignException e) {
             memberRepository.hardDelete(member);
-            pointQueryPort.deletePointBalance(memberId);
             throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);   //point_balance는 만들었으나 다른 이유로 중단
         }
     }

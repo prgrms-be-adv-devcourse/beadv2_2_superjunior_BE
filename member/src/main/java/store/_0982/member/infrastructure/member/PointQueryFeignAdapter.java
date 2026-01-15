@@ -19,10 +19,4 @@ public class PointQueryFeignAdapter implements PointQueryPort {
     public ResponseEntity<Void> postPointBalance(UUID id) {
         return pointFeignClient.postPointBalance(id);
     }
-
-    @Override
-    @Retry(name = "pointClient")
-    public ResponseEntity<Void> deletePointBalance(UUID id) {
-        return pointFeignClient.deletePointBalance(id);
-    }
 }

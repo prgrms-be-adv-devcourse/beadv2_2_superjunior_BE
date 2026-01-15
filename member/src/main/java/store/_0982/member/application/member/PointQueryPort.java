@@ -7,6 +7,4 @@ import java.util.UUID;
 
 public interface PointQueryPort {
     ResponseEntity<Void> postPointBalance(@PathVariable("id") UUID id);
-
-    ResponseEntity<Void> deletePointBalance(@PathVariable("id") UUID id);
 }
