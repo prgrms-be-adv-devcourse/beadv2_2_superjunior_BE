@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.batch.domain.settlement.SettlementFailureRepository;
 
+import java.util.List;
+
 
 @RequiredArgsConstructor
 @Repository
@@ -17,4 +19,8 @@ public class SettlementFailureRepositoryAdapter implements SettlementFailureRepo
         return settlementFailureJpaRepository.save(settlementFailure);
     }
 
+    @Override
+    public void saveAll(List<SettlementFailure> failures) {
+        settlementFailureJpaRepository.saveAll(failures);
+    }
 }

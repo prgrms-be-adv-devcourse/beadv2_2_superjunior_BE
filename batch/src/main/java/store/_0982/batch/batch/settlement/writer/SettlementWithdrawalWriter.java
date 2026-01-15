@@ -45,11 +45,10 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
         try {
             accountMap = fetchSellerAccounts(settlements);
         } catch (Exception e) {
-            for (Settlement settlement : settlements) {
-                settlement.markAsFailed();
-                handleSettlementFailure(settlement, "Member 서비스를 사용할 수 없습니다. : " + e.getMessage());
-            }
-            settlementService.saveSettlements(settlements);
+            settlementService.saveAllSettlementFailures(
+                    settlements,
+                    "Member 서비스를 사용할 수 없습니다. : " + e.getMessage()
+            );
             throw new CustomException(CustomErrorCode.MEMBER_SERVICE_UNAVAILABLE);
         }
 

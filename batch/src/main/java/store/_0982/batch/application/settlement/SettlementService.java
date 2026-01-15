@@ -33,7 +33,21 @@ public class SettlementService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveSettlements(List<Settlement> settlements) {
+    public void saveAllSettlementFailures(List<Settlement> settlements, String reason) {
+        settlements.forEach(Settlement::markAsFailed);
+
+        List<SettlementFailure> failures = settlements.stream()
+                .map(settlement -> new SettlementFailure(
+                        settlement.getSellerId(),
+                        settlement.getPeriodStart(),
+                        settlement.getPeriodEnd(),
+                        reason,
+                        0,
+                        settlement.getSettlementId()
+                ))
+                .toList();
+
+        settlementFailureRepository.saveAll(failures);
         settlementRepository.saveAll(settlements);
     }
 }
