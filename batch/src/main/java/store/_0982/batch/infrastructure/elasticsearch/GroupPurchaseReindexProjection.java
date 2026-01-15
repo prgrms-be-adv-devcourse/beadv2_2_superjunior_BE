@@ -20,6 +20,8 @@ public interface GroupPurchaseReindexProjection {
 
     Instant getUpdatedAt();
 
+    UUID getProductId();
+
     String getCategory();
 
     Long getPrice();

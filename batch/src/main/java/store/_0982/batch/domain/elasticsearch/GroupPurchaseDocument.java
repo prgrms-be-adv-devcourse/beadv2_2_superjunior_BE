@@ -63,6 +63,7 @@ public class GroupPurchaseDocument {
                 .updatedAt(toOffsetDateTime(row.updatedAt()))
                 .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
+                        toStringOrNull(row.productId()),
                         row.category(),
                         row.price(),
                         row.sellerId().toString()
@@ -85,5 +86,9 @@ public class GroupPurchaseDocument {
             return 0L;
         }
         return Math.round(((double) (price - discountedPrice) / price) * 100);
+    }
+
+    private static String toStringOrNull(Object value) {
+        return value == null ? null : value.toString();
     }
 }

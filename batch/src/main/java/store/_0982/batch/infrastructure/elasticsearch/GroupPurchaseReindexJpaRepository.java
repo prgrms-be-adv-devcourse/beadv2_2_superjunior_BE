@@ -21,6 +21,7 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
                 p.seller_id as sellerId
@@ -44,6 +45,7 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
                 p.seller_id as sellerId
@@ -69,6 +71,7 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
                 p.seller_id as sellerId
