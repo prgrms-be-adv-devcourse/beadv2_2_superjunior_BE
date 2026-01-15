@@ -5,7 +5,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.batch.grouppurchase.event.OrderUpdatedEvent;
+import store._0982.batch.batch.grouppurchase.event.OrderCancelProcessedEvent;
 import store._0982.batch.domain.order.Order;
 import store._0982.batch.domain.order.OrderRepository;
 import store._0982.batch.domain.order.OrderStatus;
@@ -28,7 +28,7 @@ public class UpdateStatusOrderWriter implements ItemWriter<Order> {
         orderList.stream()
                 .filter(order -> order.getStatus() == OrderStatus.GROUP_PURCHASE_FAIL)
                 .forEach(order -> eventPublisher.publishEvent(
-                        new OrderUpdatedEvent(order.getOrderId())
+                        new OrderCancelProcessedEvent(order, "공동 구매 실패",order.getPrice() * order.getQuantity())
                 ));
     }
 }

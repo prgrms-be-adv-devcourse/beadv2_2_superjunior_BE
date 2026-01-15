@@ -5,6 +5,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,7 +25,7 @@ public class UpdateStatusOrderStepConfig {
 
     @Bean
     public Step updateStatusOrderStep(
-            JpaPagingItemReader<Order> updateStatusOrderReader
+            @Qualifier("updateStatsOrder") JpaPagingItemReader<Order> updateStatusOrderReader
     ){
         return new StepBuilder("updateStatusOrderStep", jobRepository)
                 .<Order, Order>chunk(GroupPurchasePolicy.Order.CHUNK_UNIT, transactionManager)

@@ -2,9 +2,12 @@ package store._0982.batch.batch.grouppurchase.reader;
 
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
 
@@ -14,15 +17,21 @@ import java.util.Map;
 /**
  * 공동구매 종료 대상 Reader
  */
-@Component
+@Configuration
 @RequiredArgsConstructor
 public class UpdateStatusClosedGroupPurchaseReader {
 
     private final EntityManagerFactory entityManagerFactory;
 
-    public JpaPagingItemReader<GroupPurchase> create() {
+
+    @Bean
+    @StepScope
+    public JpaPagingItemReader<GroupPurchase> updateStatusClosedGroupPurchase(
+            @Value("#{jobParameters['now']}") String now
+    ) {
+        OffsetDateTime parsedNow = OffsetDateTime.parse(now);
         return new JpaPagingItemReaderBuilder<GroupPurchase>()
-                .name("UpdateStatusClosedGroupPurchaseReader")
+                .name("updateStatusClosedGroupPurchaseReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(
                         "SELECT g FROM GroupPurchase g " +
@@ -31,7 +40,7 @@ public class UpdateStatusClosedGroupPurchaseReader {
                 )
                 .parameterValues(Map.of(
                         "status", GroupPurchaseStatus.OPEN,
-                        "now", OffsetDateTime.now()
+                        "now", parsedNow
                 ))
                 .pageSize(20)
                 .build();
