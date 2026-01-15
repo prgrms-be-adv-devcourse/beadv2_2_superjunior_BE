@@ -37,6 +37,11 @@ spring:
     #  enabled: true  # k8s
       enabled: false  # 로컬
 
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS:http://localhost:9200}
+    connection-timeout: 1s
+    socket-timeout: 3s
+
 management:
   endpoints:
     web:
@@ -54,6 +59,12 @@ client:
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+reindex:
+  group-purchase:
+    alias: group-purchase
+    batch-size: 500
+    switch-alias: true
 
 logging:
   level:
