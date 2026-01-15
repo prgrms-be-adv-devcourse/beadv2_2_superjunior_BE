@@ -32,7 +32,7 @@ class PgCancelServiceTest {
     private TossPaymentService tossPaymentService;
 
     @Mock
-    private PgTransactionManager pgTransactionManager;
+    private PgTxManager pgTxManager;
 
     @InjectMocks
     private PgCancelService pgCancelService;
@@ -74,17 +74,17 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId)).thenReturn(pgPayment);
+        when(pgTxManager.markRefundPending(orderId, memberId)).thenReturn(pgPayment);
         when(tossPaymentService.cancelPayment(pgPayment, command)).thenReturn(response);
-        doNothing().when(pgTransactionManager).markRefundedPayment(response, orderId, memberId);
+        doNothing().when(pgTxManager).markRefundedPayment(response, orderId, memberId);
 
         // when
         pgCancelService.refundPaymentPoint(memberId, command);
 
         // then
-        verify(pgTransactionManager).markRefundPending(orderId, memberId);
+        verify(pgTxManager).markRefundPending(orderId, memberId);
         verify(tossPaymentService).cancelPayment(pgPayment, command);
-        verify(pgTransactionManager).markRefundedPayment(response, orderId, memberId);
+        verify(pgTxManager).markRefundedPayment(response, orderId, memberId);
     }
 
     @Test
@@ -93,7 +93,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId))
+        when(pgTxManager.markRefundPending(orderId, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         // when & then
@@ -108,7 +108,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId))
+        when(pgTxManager.markRefundPending(orderId, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH));
 
         // when & then
@@ -123,7 +123,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId))
+        when(pgTxManager.markRefundPending(orderId, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT));
 
         // when & then
@@ -141,9 +141,9 @@ class PgCancelServiceTest {
         refundedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
         refundedPayment.markRefunded(OffsetDateTime.now());
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId)).thenReturn(refundedPayment);
+        when(pgTxManager.markRefundPending(orderId, memberId)).thenReturn(refundedPayment);
         when(tossPaymentService.cancelPayment(refundedPayment, command)).thenReturn(response);
-        doNothing().when(pgTransactionManager).markRefundedPayment(response, orderId, memberId);
+        doNothing().when(pgTxManager).markRefundedPayment(response, orderId, memberId);
 
         // when
         pgCancelService.refundPaymentPoint(memberId, command);
@@ -158,7 +158,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId))
+        when(pgTxManager.markRefundPending(orderId, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED));
 
         // when & then
@@ -173,7 +173,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTransactionManager.markRefundPending(orderId, memberId))
+        when(pgTxManager.markRefundPending(orderId, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         // when & then

@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
+class PointBalanceServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private static final int BALANCE = 100_000;
     private static final int AMOUNT = 1_000;
@@ -39,7 +39,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private PointTransactionService pointTransactionService;
+    private PointDeductService pointDeductService;
 
     @Autowired
     private PointReturnService pointReturnService;
@@ -80,7 +80,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> pointTransactionService.deductPoints(memberId, command));
+        runSynchronizedTask(() -> pointDeductService.deductPoints(memberId, command));
 
         // then
         validateDeduction();
@@ -104,7 +104,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> pointTransactionService.deductPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointDeductService.deductPoints(memberId, command));
 
         // then
         validateDeduction();

@@ -87,6 +87,10 @@ public class PointTransaction {
                 .build();
     }
 
+    public PointAmount calculateRefund(long amount) {
+        return pointAmount.calculateRefund(amount);
+    }
+
     public long getTotalAmount() {
         return pointAmount.getTotal();
     }

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class PgFailServiceTest {
 
     @Mock
-    private PgTransactionManager pgTransactionManager;
+    private PgTxManager pgTxManager;
 
     @InjectMocks
     private PgFailService pgFailService;
@@ -45,13 +45,13 @@ class PgFailServiceTest {
     @DisplayName("결제 실패 정보를 저장한다")
     void handlePaymentFailure_success() {
         // given
-        doNothing().when(pgTransactionManager).markFailedPaymentByPg(command, memberId);
+        doNothing().when(pgTxManager).markFailedPaymentByPg(command, memberId);
 
         // when
         pgFailService.handlePaymentFailure(command, memberId);
 
         // then
-        verify(pgTransactionManager).markFailedPaymentByPg(command, memberId);
+        verify(pgTxManager).markFailedPaymentByPg(command, memberId);
     }
 
     @Test
@@ -59,7 +59,7 @@ class PgFailServiceTest {
     void handlePaymentFailure_exception_when_completed() {
         // given
         doThrow(new CustomException(CustomErrorCode.CANNOT_HANDLE_FAILURE))
-                .when(pgTransactionManager).markFailedPaymentByPg(command, memberId);
+                .when(pgTxManager).markFailedPaymentByPg(command, memberId);
 
         // when & then
         assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))
@@ -72,7 +72,7 @@ class PgFailServiceTest {
     void handlePaymentFailure_not_found() {
         // given
         doThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND))
-                .when(pgTransactionManager).markFailedPaymentByPg(command, memberId);
+                .when(pgTxManager).markFailedPaymentByPg(command, memberId);
 
         // when & then
         assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))

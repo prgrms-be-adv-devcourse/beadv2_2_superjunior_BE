@@ -42,7 +42,6 @@ public class PgPaymentService {
                                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_CREATION_FAILED));
                     }
                 });
-
     }
 
     public PageResponse<PgPaymentInfo> getPaymentHistories(UUID memberId, Pageable pageable) {

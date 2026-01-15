@@ -21,21 +21,21 @@ import java.util.UUID;
 public class PgConfirmService {
 
     private final TossPaymentService tossPaymentService;
-    private final PgTransactionManager pgTransactionManager;
+    private final PgTxManager pgTxManager;
     private final OrderValidator orderValidator;
 
     // TODO: 결제 승인에 대한 동시성 처리 필요
     @ServiceLog
     public void confirmPayment(PgConfirmCommand command, UUID memberId) {
         String paymentKey = command.paymentKey();
-        PgPayment pgPayment = pgTransactionManager.findCompletablePayment(paymentKey, memberId);
+        PgPayment pgPayment = pgTxManager.findCompletablePayment(paymentKey, memberId);
 
         UUID orderId = command.orderId();
-        orderValidator.validateOrderConfirmable(memberId, orderId, command.amount());
+        orderValidator.validateOrderPayable(memberId, orderId, command.amount());
 
         TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {
-            pgTransactionManager.markConfirmedPayment(tossPaymentInfo, paymentKey, memberId);
+            pgTxManager.markConfirmedPayment(tossPaymentInfo, paymentKey, memberId);
         } catch (Exception e) {
             // 사용자가 요청한 결제인데 나중에 배치로 처리하겠다고 할 수는 없으니 배치는 이용하지 않음
             log.error("[Error] Failed to mark payment confirmed. Trying to rollback...", e);
@@ -56,7 +56,7 @@ public class PgConfirmService {
         }
 
         try {
-            pgTransactionManager.markFailedPaymentBySystem(cancelReason, pgPayment.getPaymentKey(), memberId);
+            pgTxManager.markFailedPaymentBySystem(cancelReason, pgPayment.getPaymentKey(), memberId);
         } catch (Exception e) {
             // TODO: 돈은 환불됐는데 DB에는 아직 PENDING 중으로 남아있음 -> 재시도? 배치?
             log.error("[Error] Failed to mark payment failed", e);

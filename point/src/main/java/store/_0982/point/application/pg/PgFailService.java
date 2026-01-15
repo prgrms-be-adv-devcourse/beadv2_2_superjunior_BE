@@ -12,12 +12,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PgFailService {
 
-    private final PgTransactionManager pgTransactionManager;
+    private final PgTxManager pgTxManager;
 
     // TODO: 클라이언트로부터 받은 실패 데이터를 신뢰할 것인가?
     @ServiceLog
     @Transactional
     public void handlePaymentFailure(PgFailCommand command, UUID memberId) {
-        pgTransactionManager.markFailedPaymentByPg(command, memberId);
+        pgTxManager.markFailedPaymentByPg(command, memberId);
     }
 }

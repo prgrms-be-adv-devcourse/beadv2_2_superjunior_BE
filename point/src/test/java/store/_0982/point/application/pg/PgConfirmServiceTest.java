@@ -31,7 +31,7 @@ class PgConfirmServiceTest {
     private TossPaymentService tossPaymentService;
 
     @Mock
-    private PgTransactionManager pgTransactionManager;
+    private PgTxManager pgTxManager;
 
     @Mock
     private CommerceServiceClient commerceServiceClient;
@@ -77,20 +77,20 @@ class PgConfirmServiceTest {
         );
 
         // Mocks - PgTransactionManager 사용
-        when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
                 .thenReturn(pgPayment);
         when(commerceServiceClient.getOrder(orderId, memberId))
                 .thenReturn(orderInfo);
         when(tossPaymentService.confirmPayment(any(), any()))
                 .thenReturn(tossResponse);
-        doNothing().when(pgTransactionManager)
+        doNothing().when(pgTxManager)
                 .markConfirmedPayment(any(), eq(paymentKey), eq(memberId));
 
         // when
         pgConfirmService.confirmPayment(command, memberId);
 
         // then
-        verify(pgTransactionManager).markConfirmedPayment(
+        verify(pgTxManager).markConfirmedPayment(
                 any(TossPaymentInfo.class), eq(paymentKey), eq(memberId)
         );
         verify(commerceServiceClient).getOrder(orderId, memberId);
@@ -102,7 +102,7 @@ class PgConfirmServiceTest {
         // given
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-        when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         // when & then
@@ -117,7 +117,7 @@ class PgConfirmServiceTest {
         // given
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-        when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
+        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
                 .thenThrow(new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT));
 
         // when & then

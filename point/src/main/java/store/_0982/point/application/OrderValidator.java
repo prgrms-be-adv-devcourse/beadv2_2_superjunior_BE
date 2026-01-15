@@ -13,13 +13,8 @@ public class OrderValidator {
 
     private final CommerceServiceClient commerceServiceClient;
 
-    public void validateOrderDeductible(UUID memberId, UUID orderId, long amount) {
+    public void validateOrderPayable(UUID memberId, UUID orderId, long amount) {
         OrderInfo orderInfo = commerceServiceClient.getOrder(orderId, memberId);
-        orderInfo.validateDeductible(memberId, orderId, amount);
-    }
-
-    public void validateOrderConfirmable(UUID memberId, UUID orderId, long amount) {
-        OrderInfo order = commerceServiceClient.getOrder(orderId, memberId);
-        order.validateConfirmable(memberId, orderId, amount);
+        orderInfo.validatePayable(memberId, orderId, amount);
     }
 }

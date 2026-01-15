@@ -9,7 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.application.dto.PgConfirmCommand;
-import store._0982.point.application.pg.PgTransactionManager;
+import store._0982.point.application.pg.PgTxManager;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.domain.entity.PgPayment;
@@ -43,7 +43,7 @@ class TossResilienceTest extends BaseIntegrationTest {
     private RestTemplate restTemplate;
 
     @MockitoBean
-    private PgTransactionManager pgTransactionManager;
+    private PgTxManager pgTxManager;
 
     @Test
     @DisplayName("Retry 검증: 타임아웃 발생 시 지정된 횟수(3회)만큼 재시도한다")

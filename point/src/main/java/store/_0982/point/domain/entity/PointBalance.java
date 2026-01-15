@@ -2,7 +2,9 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import store._0982.common.exception.CustomException;
 import store._0982.point.domain.vo.PointAmount;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -48,6 +50,12 @@ public class PointBalance {
 
     public void transfer(long amount) {
         this.pointAmount = this.pointAmount.use(amount);
+    }
+
+    public void validateDeductible(long amount) {
+        if (pointAmount.getTotal() < amount) {
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
+        }
     }
 
     public long getTotalBalance() {

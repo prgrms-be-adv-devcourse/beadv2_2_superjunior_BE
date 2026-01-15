@@ -22,7 +22,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PgTransactionManager {
+public class PgTxManager {
 
     private final PgPaymentRepository pgPaymentRepository;
     private final PgPaymentCancelRepository pgPaymentCancelRepository;

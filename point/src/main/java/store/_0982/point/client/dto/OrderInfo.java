@@ -25,14 +25,7 @@ public record OrderInfo(
         RETURNED
     }
 
-    public void validateDeductible(UUID memberId, UUID orderId, long amount) {
-        validate(memberId, orderId, amount);
-        if (status != Status.PENDING) {
-            throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
-        }
-    }
-
-    public void validateConfirmable(UUID memberId, UUID orderId, long amount) {
+    public void validatePayable(UUID memberId, UUID orderId, long amount) {
         validate(memberId, orderId, amount);
         if (status != Status.PENDING) {
             throw new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST);
