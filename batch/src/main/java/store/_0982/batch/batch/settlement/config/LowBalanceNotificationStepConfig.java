@@ -11,7 +11,7 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.settlement.listener.LowBalanceNotificationItemReaderListener;
+import store._0982.batch.batch.settlement.listener.LowBalanceNotificationReaderListener;
 import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.LowBalanceNotificationProcessor;
@@ -38,7 +38,7 @@ public class LowBalanceNotificationStepConfig {
     private final LowBalanceNotificationWriter lowBalanceNotificationWriter;
 
     private final SettlementWithdrawalStepListener stepListener;
-    private final LowBalanceNotificationItemReaderListener lowBalanceItemReaderListener;
+    private final LowBalanceNotificationReaderListener lowBalanceNotificationReaderListener;
 
     @Bean
     public Step lowBalanceNotificationStep(
@@ -49,7 +49,7 @@ public class LowBalanceNotificationStepConfig {
                 .processor(lowBalanceNotificationProcessor)
                 .writer(lowBalanceNotificationWriter)
                 .listener(stepListener)
-                .listener(lowBalanceItemReaderListener)
+                .listener(lowBalanceNotificationReaderListener)
                 .build();
     }
 
