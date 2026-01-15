@@ -56,6 +56,9 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Address> addresses = new ArrayList<>();
 
+    @Column(name = "status")
+    private Status status = Status.PENDING;
+
     public static Member create(String email, String name, String password, String phoneNumber) {
         Member member = new Member();
         member.memberId = UUID.randomUUID();
@@ -97,5 +100,13 @@ public class Member {
     public void registerSeller() {
         this.role = Role.SELLER;
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void confirm() {
+        this.status = Status.ACTIVE;
+    }
+
+    public enum Status{
+        PENDING, ACTIVE
     }
 }
