@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: ai
+
+  datasource:
+    url: ${PRODUCT_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME}
+    password: ${PRODUCT_DATABASE_PASSWORD}
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
