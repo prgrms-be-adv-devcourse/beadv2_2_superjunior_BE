@@ -8,11 +8,12 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
 
 @Configuration
-public class ProductKafkaConfig {
+public class ProductKafkaProducerConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -25,6 +26,16 @@ public class ProductKafkaConfig {
     @Bean
     public KafkaTemplate<String, ProductEmbeddingEvent> productEmbeddingEventKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(productEmbeddingEventProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean(name = "defaultRetryTopicKafkaTemplate")
+    public KafkaTemplate<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(productEmbeddingCompleteEventProducerFactory());
     }
 
     @Bean

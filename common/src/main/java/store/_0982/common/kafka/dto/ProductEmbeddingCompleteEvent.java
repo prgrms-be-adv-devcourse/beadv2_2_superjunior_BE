@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -15,9 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProductEmbeddingCompleteEvent extends BaseEvent {
     private UUID productId;
-    private List<Float> vector;
+    private float[] vector;
 
-    public ProductEmbeddingCompleteEvent(Clock clock, UUID productId, List<Float> vector) {
+    public ProductEmbeddingCompleteEvent(Clock clock, UUID productId, float[] vector) {
         super(clock);
         this.productId = productId;
         this.vector = vector;
