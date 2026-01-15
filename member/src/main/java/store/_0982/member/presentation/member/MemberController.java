@@ -91,7 +91,9 @@ public class MemberController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
-        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
+        SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
+        sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
+        return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
 
     @Operation(summary = "판매자 정보 조회", description = "판매자 정보를 조회합니다.")

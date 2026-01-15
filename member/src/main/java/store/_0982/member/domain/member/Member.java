@@ -102,6 +102,11 @@ public class Member {
         this.updatedAt = OffsetDateTime.now();
     }
 
+    public void unregisterSeller() {
+        this.role = Role.CONSUMER;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
     public void confirm() {
         this.status = Status.ACTIVE;
     }

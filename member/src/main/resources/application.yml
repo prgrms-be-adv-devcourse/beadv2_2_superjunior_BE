@@ -11,7 +11,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none #validate
     properties:
       hibernate:
         format_sql: true
@@ -69,5 +69,8 @@ resilience4j:
   retry:
     instances:
       pointClient:
+        max-attempts: 2
+        wait-duration: 500ms
+      CommerceClient:
         max-attempts: 2
         wait-duration: 500ms
