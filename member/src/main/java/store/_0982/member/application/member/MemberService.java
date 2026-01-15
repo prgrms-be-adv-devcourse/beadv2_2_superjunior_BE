@@ -1,6 +1,7 @@
 package store._0982.member.application.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +12,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.member.dto.*;
+import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.exception.CustomErrorCode;
 import store._0982.member.domain.member.*;
 
@@ -28,6 +30,8 @@ public class MemberService {
 
     private final EmailService emailService;
     private final MemberRoleCache memberRoleCache;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
@@ -52,6 +56,7 @@ public class MemberService {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         checkPassword(command.password(), member);
         member.delete();
+        eventPublisher.publishEvent(new MemberDeletedServiceEvent(command.memberId()));
         memberRepository.save(member);
     }
 
