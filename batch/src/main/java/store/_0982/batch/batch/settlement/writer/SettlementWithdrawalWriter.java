@@ -73,6 +73,7 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
         try {
             long transferAmount = settlement.getSettlementAmount().longValue();
             bankTransferService.transfer(accountInfo, transferAmount);
+            settlement.markAsCompleted();
         }
         catch (Exception e) {
             settlement.markAsFailed();

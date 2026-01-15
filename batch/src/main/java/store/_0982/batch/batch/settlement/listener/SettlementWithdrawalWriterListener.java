@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
 import store._0982.batch.domain.settlement.Settlement;
+import store._0982.batch.domain.settlement.SettlementStatus;
 
 @Component
 @RequiredArgsConstructor
@@ -19,14 +20,13 @@ public class SettlementWithdrawalWriterListener implements ItemWriteListener<Set
     @Override
     public void afterWrite(Chunk<? extends Settlement> items) {
         items.forEach(settlement -> {
-            settlement.markAsCompleted();
-
-            long amount = settlement.getSettlementAmount().longValue();
-            sellerBalanceService.saveSellerBalanceHistory(settlement, amount);
-
-            eventPublisher.publishEvent(
-                    new SettlementProcessedEvent(settlement));
+            if (settlement.getStatus() == SettlementStatus.COMPLETED) {
+                long amount = settlement.getSettlementAmount().longValue();
+                sellerBalanceService.saveSellerBalanceHistory(settlement, amount);
+                eventPublisher.publishEvent(new SettlementProcessedEvent(settlement));
+            }
         });
+
     }
 
     @Override
