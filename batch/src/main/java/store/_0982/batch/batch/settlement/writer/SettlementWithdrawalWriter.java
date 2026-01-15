@@ -13,8 +13,10 @@ import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
+import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -74,7 +76,13 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
                 .toList();
 
         SellerAccountListRequest request = new SellerAccountListRequest(sellerIds);
-        return memberClient.getSellerAccountInfos(request)
+
+        ResponseDto<List<SellerAccountInfo>> response = memberClient.getSellerAccountInfos(request);
+        if (response == null || response.data() == null) {
+            return Collections.emptyMap();
+        }
+
+        return response
                 .data()
                 .stream()
                 .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
