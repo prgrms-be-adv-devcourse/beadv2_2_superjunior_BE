@@ -23,13 +23,12 @@ public class LowBalanceNotificationWriter implements ItemWriter<Settlement> {
 
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
-        List<? extends Settlement> settlements = chunk.getItems();
+        List<Settlement> settlements = chunk.getItems().stream()
+                .map(settlement -> (Settlement) settlement)
+                .toList();
 
+        settlementRepository.saveAll(settlements);
         for (Settlement settlement : settlements) {
-            // Settlement 저장
-            settlementRepository.save(settlement);
-
-            // 지연된 이벤트 발행
             eventPublisher.publishEvent(
                     new SettlementProcessedEvent(
                             settlement
