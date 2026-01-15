@@ -6,10 +6,9 @@ import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCancelCommand;
-import store._0982.point.client.OrderServiceClient;
-import store._0982.point.client.dto.OrderInfo;
+import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.OrderValidator;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
@@ -23,7 +22,7 @@ public class PgConfirmService {
 
     private final TossPaymentService tossPaymentService;
     private final PgTransactionManager pgTransactionManager;
-    private final OrderServiceClient orderServiceClient;
+    private final OrderValidator orderValidator;
 
     // TODO: 결제 승인에 대한 동시성 처리 필요
     @ServiceLog
@@ -32,8 +31,7 @@ public class PgConfirmService {
         PgPayment pgPayment = pgTransactionManager.findCompletablePayment(paymentKey, memberId);
 
         UUID orderId = command.orderId();
-        OrderInfo order = orderServiceClient.getOrder(orderId, memberId);
-        order.validateConfirmable(memberId, orderId, command.amount());
+        orderValidator.validateOrderConfirmable(memberId, orderId, command.amount());
 
         TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {

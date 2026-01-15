@@ -10,7 +10,7 @@ import store._0982.point.client.dto.OrderInfo;
 import java.util.UUID;
 
 @FeignClient(name = "commerce-service", url = "${client.commerce}")
-public interface OrderServiceClient {
+public interface CommerceServiceClient {
     @GetMapping("/internal/orders/{id}")
     OrderInfo getOrder(@PathVariable UUID id, @RequestHeader(HeaderName.ID) UUID memberId);
 }

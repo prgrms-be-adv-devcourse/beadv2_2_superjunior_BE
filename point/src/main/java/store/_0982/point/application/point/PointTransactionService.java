@@ -11,15 +11,14 @@ import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointInfo;
-import store._0982.point.client.OrderServiceClient;
-import store._0982.point.client.dto.OrderInfo;
+import store._0982.point.application.OrderValidator;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointChargedEvent;
 import store._0982.point.domain.event.PointDeductedEvent;
-import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -35,7 +34,7 @@ public class PointTransactionService {
     private final PointBalanceRepository pointBalanceRepository;
     private final PointTransactionRepository pointTransactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final OrderServiceClient orderServiceClient;
+    private final OrderValidator orderValidator;
 
     public PointInfo getPoints(UUID memberId) {
         PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId)
@@ -75,8 +74,7 @@ public class PointTransactionService {
                     }
 
                     long amount = command.amount();
-                    OrderInfo orderInfo = orderServiceClient.getOrder(orderId, memberId);
-                    orderInfo.validateDeductible(memberId, orderId, amount);
+                    orderValidator.validateOrderDeductible(memberId, orderId, amount);
 
                     return executeIdempotentAction(point, () -> {
                         PointAmount deduction = point.use(amount);

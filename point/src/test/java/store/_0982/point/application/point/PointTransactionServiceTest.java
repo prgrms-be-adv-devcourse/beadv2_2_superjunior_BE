@@ -13,7 +13,7 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointInfo;
-import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.CommerceServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
@@ -48,7 +48,7 @@ class PointTransactionServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
-    private OrderServiceClient orderServiceClient;
+    private CommerceServiceClient commerceServiceClient;
 
     @InjectMocks
     private PointTransactionService pointTransactionService;
@@ -180,7 +180,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
 
@@ -211,7 +211,7 @@ class PointTransactionServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
-            verify(orderServiceClient, never()).getOrder(any(), any());
+            verify(commerceServiceClient, never()).getOrder(any(), any());
             verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
@@ -233,7 +233,7 @@ class PointTransactionServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000); // 차감되지 않음
-            verify(orderServiceClient, never()).getOrder(any(), any());
+            verify(commerceServiceClient, never()).getOrder(any(), any());
             verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
@@ -264,7 +264,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
@@ -285,7 +285,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
@@ -307,7 +307,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
@@ -328,7 +328,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
             // when & then
             assertThatThrownBy(() -> pointTransactionService.deductPoints(memberId, command))
@@ -351,7 +351,7 @@ class PointTransactionServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
-            when(orderServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
+            when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
 
             ArgumentCaptor<PointDeductedEvent> eventCaptor = ArgumentCaptor.forClass(PointDeductedEvent.class);

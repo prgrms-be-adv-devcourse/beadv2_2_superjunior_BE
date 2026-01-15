@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.dto.PointDeductCommand;
 import store._0982.point.application.dto.PointReturnCommand;
-import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.CommerceServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
@@ -51,7 +51,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
     private PointTransactionJpaRepository pointTransactionRepository;
 
     @MockitoBean
-    private OrderServiceClient orderServiceClient;
+    private CommerceServiceClient commerceServiceClient;
 
     @MockitoBean
     private ApplicationEventPublisher applicationEventPublisher;
@@ -76,7 +76,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
         PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
         OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.PENDING, memberId, 1);
 
-        when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
+        when(commerceServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
@@ -100,7 +100,7 @@ class PointTransactionServiceConcurrencyTest extends BaseConcurrencyTest {
 
         OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.PENDING, memberId, 1);
 
-        when(orderServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
+        when(commerceServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when

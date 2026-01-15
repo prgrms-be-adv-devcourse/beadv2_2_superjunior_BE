@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgConfirmCommand;
-import store._0982.point.client.OrderServiceClient;
+import store._0982.point.client.CommerceServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
@@ -34,7 +34,7 @@ class PgConfirmServiceTest {
     private PgTransactionManager pgTransactionManager;
 
     @Mock
-    private OrderServiceClient orderServiceClient;
+    private CommerceServiceClient commerceServiceClient;
 
     @InjectMocks
     private PgConfirmService pgConfirmService;
@@ -79,7 +79,7 @@ class PgConfirmServiceTest {
         // Mocks - PgTransactionManager 사용
         when(pgTransactionManager.findCompletablePayment(paymentKey, memberId))
                 .thenReturn(pgPayment);
-        when(orderServiceClient.getOrder(orderId, memberId))
+        when(commerceServiceClient.getOrder(orderId, memberId))
                 .thenReturn(orderInfo);
         when(tossPaymentService.confirmPayment(any(), any()))
                 .thenReturn(tossResponse);
@@ -93,7 +93,7 @@ class PgConfirmServiceTest {
         verify(pgTransactionManager).markConfirmedPayment(
                 any(TossPaymentInfo.class), eq(paymentKey), eq(memberId)
         );
-        verify(orderServiceClient).getOrder(orderId, memberId);
+        verify(commerceServiceClient).getOrder(orderId, memberId);
     }
 
     @Test
