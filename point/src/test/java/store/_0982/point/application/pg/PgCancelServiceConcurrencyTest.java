@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCancelCommand;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.infrastructure.PgPaymentCancelJpaRepository;
@@ -47,6 +48,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private UUID memberId;
     private UUID orderId;
+    private TossPaymentInfo tossPaymentInfo;
 
     @BeforeEach
     void setUp() {
@@ -56,8 +58,25 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
 
+        TossPaymentInfo.CancelInfo cancelInfo = TossPaymentInfo.CancelInfo.builder()
+                .cancelAmount(PAYMENT_AMOUNT)
+                .cancelReason("단순 변심")
+                .canceledAt(OffsetDateTime.now())
+                .build();
+
+        tossPaymentInfo = TossPaymentInfo.builder()
+                .paymentKey("test-payment-key")
+                .orderId(orderId)
+                .amount(PAYMENT_AMOUNT)
+                .method("카드")
+                .status(TossPaymentInfo.Status.CANCELED)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .cancels(List.of(cancelInfo))
+                .build();
+
         PgPayment pgPayment = PgPayment.create(memberId, orderId, PAYMENT_AMOUNT);
-        pgPayment.markConfirmed("카드", OffsetDateTime.now(), "test-payment-key");
+        pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test-payment-key");
         paymentPointRepository.save(pgPayment);
     }
 
@@ -67,24 +86,9 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
         // given
         String cancelReason = "단순 변심";
         PgCancelCommand command = new PgCancelCommand(orderId, cancelReason, PAYMENT_AMOUNT);
-        TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
-                PAYMENT_AMOUNT,
-                cancelReason,
-                OffsetDateTime.now()
-        );
-        TossPaymentResponse response = new TossPaymentResponse(
-                "test-payment-key",
-                orderId,
-                PAYMENT_AMOUNT,
-                "카드",
-                "CANCELED",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                List.of(cancelInfo)
-        );
 
         when(tossPaymentService.cancelPayment(any(PgPayment.class), any(PgCancelCommand.class)))
-                .thenReturn(response);
+                .thenReturn(tossPaymentInfo);
 
         // when
         runSynchronizedTask(() -> pgCancelService.refundPaymentPoint(memberId, command));
@@ -103,24 +107,8 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .setNotNull("cancelReason")
                 .sampleList(getDefaultThreadCount());
 
-        TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
-                PAYMENT_AMOUNT,
-                "단순 변심",
-                OffsetDateTime.now()
-        );
-        TossPaymentResponse response = new TossPaymentResponse(
-                "test-payment-key",
-                orderId,
-                PAYMENT_AMOUNT,
-                "카드",
-                "CANCELED",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                List.of(cancelInfo)
-        );
-
         when(tossPaymentService.cancelPayment(any(PgPayment.class), any(PgCancelCommand.class)))
-                .thenReturn(response);
+                .thenReturn(tossPaymentInfo);
 
         // when
         runSynchronizedTasks(commands, command -> pgCancelService.refundPaymentPoint(memberId, command));
@@ -133,6 +121,5 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
         PgPayment pgPayment = paymentPointRepository.findByOrderId(orderId).orElseThrow();
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUNDED);
         assertThat(pgPayment.getRefundedAt()).isNotNull();
-        assertThat(pgPayment.getRefundMessage()).isNotNull();
     }
 }

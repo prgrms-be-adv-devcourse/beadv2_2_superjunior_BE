@@ -15,7 +15,7 @@ import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 import store._0982.point.exception.PaymentClientException;
@@ -36,19 +36,19 @@ public class TossPaymentService {
 
     @ServiceLog
     @RateLimiter(name = "pg-confirm")
-    public TossPaymentResponse confirmPayment(PgPayment pgPayment, PgConfirmCommand command) {
+    public TossPaymentInfo confirmPayment(PgPayment pgPayment, PgConfirmCommand command) {
         TossPaymentConfirmRequest request = TossPaymentConfirmRequest.from(command);
-        TossPaymentResponse tossPaymentResponse = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
+        TossPaymentInfo tossPaymentInfo = executeWithExceptionHandling(() -> tossPaymentClient.confirm(request));
 
-        if (!pgPayment.getOrderId().equals(tossPaymentResponse.orderId())) {
+        if (!pgPayment.getOrderId().equals(tossPaymentInfo.orderId())) {
             throw new CustomException(CustomErrorCode.ORDER_ID_MISMATCH);
         }
-        return tossPaymentResponse;
+        return tossPaymentInfo;
     }
 
     @ServiceLog
     @RateLimiter(name = "pg-cancel")
-    public TossPaymentResponse cancelPayment(PgPayment pgPayment, PgCancelCommand command) {
+    public TossPaymentInfo cancelPayment(PgPayment pgPayment, PgCancelCommand command) {
         TossPaymentCancelRequest request = TossPaymentCancelRequest.from(pgPayment, command);
         return executeWithExceptionHandling(() -> tossPaymentClient.cancel(request));
     }
@@ -59,7 +59,7 @@ public class TossPaymentService {
      * @param apiCall 토스 API 호출 로직
      * @return API 응답
      */
-    private static TossPaymentResponse executeWithExceptionHandling(Supplier<TossPaymentResponse> apiCall) {
+    private static TossPaymentInfo executeWithExceptionHandling(Supplier<TossPaymentInfo> apiCall) {
         try {
             return apiCall.get();
         } catch (CustomException e) {

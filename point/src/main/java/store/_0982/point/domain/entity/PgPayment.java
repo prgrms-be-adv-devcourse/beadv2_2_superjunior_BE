@@ -5,7 +5,9 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
+import store._0982.point.domain.vo.PaymentMethodDetail;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.time.Duration;
@@ -14,9 +16,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "pg_payment", schema = "payment_schema")
 public class PgPayment {
 
@@ -32,24 +34,32 @@ public class PgPayment {
     @Column(name = "order_id", nullable = false, unique = true)
     private UUID orderId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", length = 30)
-    private String paymentMethod;
+    private PaymentMethod paymentMethod;
+
+    @Embedded
+    private PaymentMethodDetail paymentMethodDetail;
 
     @Column(name = "payment_key", unique = true)
     private String paymentKey;
 
+    private String transactionKey;
+
     @Column(nullable = false)
     private long amount;
+
+    @Column(nullable = false)
+    private long refundedAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PgPaymentStatus status;
 
-    @Column(name = "fail_message")
-    private String failMessage;
+    @Column(length = 2048)
+    private String receiptUrl;
 
-    @Column(name = "refund_message")
-    private String refundMessage;
+    private String webhookSecret;       // 웹훅 검증용 secret
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -68,40 +78,37 @@ public class PgPayment {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private PgPayment(UUID memberId, UUID orderId, long amount) {
-        this.id = UUID.randomUUID();
-        this.memberId = memberId;
-        this.orderId = orderId;
-        this.amount = amount;
-        this.requestedAt = OffsetDateTime.now();
-        this.status = PgPaymentStatus.PENDING;
-    }
+    @Column(nullable = false)
+    private boolean isPartialCancelable;
 
     public static PgPayment create(UUID memberId, UUID orderId, long amount) {
-        return new PgPayment(memberId, orderId, amount);
+        return PgPayment.builder()
+                .memberId(memberId)
+                .orderId(orderId)
+                .amount(amount)
+                .requestedAt(OffsetDateTime.now())
+                .status(PgPaymentStatus.PENDING)
+                .build();
     }
 
-    public void markConfirmed(String method, OffsetDateTime approvedAt, String paymentKey) {
+    public void markConfirmed(PaymentMethod method, OffsetDateTime approvedAt, String paymentKey) {
         this.status = PgPaymentStatus.COMPLETED;
         this.paymentMethod = method;
         this.paymentKey = paymentKey;
         this.approvedAt = approvedAt;
-        this.failMessage = null;
     }
 
-    public void markFailed(String errorMessage) {
+    public void markFailed() {
         this.status = PgPaymentStatus.FAILED;
-        this.failMessage = errorMessage;
     }
 
     public void markRefundPending() {
         this.status = PgPaymentStatus.REFUND_PENDING;
     }
 
-    public void markRefunded(OffsetDateTime refundedAt, String cancelReason) {
+    public void markRefunded(OffsetDateTime refundedAt) {
         this.status = PgPaymentStatus.REFUNDED;
         this.refundedAt = refundedAt;
-        this.refundMessage = cancelReason;
     }
 
     public void validateCompletable(UUID memberId) {
@@ -135,15 +142,21 @@ public class PgPayment {
         }
     }
 
-    // TODO: 기간을 세분화해서 부분 환불 비율을 결정하면 좋을 것 같다.
     private void validateRefundTerms() {
         if (approvedAt == null) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
 
-        // 결제일이 7일 이내일 경우 환불 가능
+        // 결제일이 14일 이내일 경우 환불 가능
         if (Duration.between(approvedAt, OffsetDateTime.now()).toDays() > REFUND_PERIOD_DAYS) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
+        }
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
         }
     }
 }

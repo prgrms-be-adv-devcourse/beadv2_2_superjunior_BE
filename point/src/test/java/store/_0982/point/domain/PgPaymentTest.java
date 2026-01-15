@@ -3,6 +3,7 @@ package store._0982.point.domain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 
@@ -43,16 +44,15 @@ class PgPaymentTest {
         // given
         PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
 
-        String paymentMethod = "CARD";
         OffsetDateTime approvedAt = OffsetDateTime.now();
         String paymentKey = "test_payment_key";
 
         // when
-        pgPayment.markConfirmed(paymentMethod, approvedAt, paymentKey);
+        pgPayment.markConfirmed(PaymentMethod.CARD, approvedAt, paymentKey);
 
         // then
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.COMPLETED);
-        assertThat(pgPayment.getPaymentMethod()).isEqualTo(paymentMethod);
+        assertThat(pgPayment.getPaymentMethod()).isEqualTo(PaymentMethod.CARD);
         assertThat(pgPayment.getApprovedAt()).isEqualTo(approvedAt);
         assertThat(pgPayment.getPaymentKey()).isEqualTo(paymentKey);
     }
@@ -62,10 +62,9 @@ class PgPaymentTest {
     void markFailed() {
         // given
         PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
-        String errorMessage = "카드 승인 실패";
 
         // when
-        pgPayment.markFailed(errorMessage);
+        pgPayment.markFailed();
 
         // then
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);
@@ -89,17 +88,15 @@ class PgPaymentTest {
     void markRefunded() {
         // given
         PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
-        pgPayment.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
+        pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test_payment_key");
 
         OffsetDateTime refundedAt = OffsetDateTime.now();
-        String cancelReason = "고객 요청";
 
         // when
-        pgPayment.markRefunded(refundedAt, cancelReason);
+        pgPayment.markRefunded(refundedAt);
 
         // then
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUNDED);
         assertThat(pgPayment.getRefundedAt()).isEqualTo(refundedAt);
-        assertThat(pgPayment.getRefundMessage()).isEqualTo(cancelReason);
     }
 }

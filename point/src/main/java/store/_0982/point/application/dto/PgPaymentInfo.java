@@ -1,5 +1,6 @@
 package store._0982.point.application.dto;
 
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.constant.PgPaymentStatus;
 
@@ -10,9 +11,8 @@ public record PgPaymentInfo(
         UUID paymentPointId,
         UUID memberId,
         UUID orderId,
-        String paymentMethod,
+        PaymentMethod paymentMethod,
         String paymentKey,
-        String failMessage,
         long amount,
         PgPaymentStatus status,
         OffsetDateTime createdAt,
@@ -25,7 +25,6 @@ public record PgPaymentInfo(
                 pgPayment.getOrderId(),
                 pgPayment.getPaymentMethod(),
                 pgPayment.getPaymentKey(),
-                pgPayment.getFailMessage(),
                 pgPayment.getAmount(),
                 pgPayment.getStatus(),
                 pgPayment.getCreatedAt(),

@@ -22,6 +22,7 @@ import store._0982.point.application.dto.PgPaymentInfo;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.application.pg.PgPaymentService;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.presentation.dto.PgConfirmRequest;
 import store._0982.point.presentation.dto.PgCreateRequest;
@@ -176,9 +177,8 @@ class PgPaymentControllerTest {
                 UUID.randomUUID(),
                 memberId,
                 UUID.randomUUID(),
-                "CARD",
+                PaymentMethod.CARD,
                 "test_payment_key",
-                null,
                 10000L,
                 PgPaymentStatus.COMPLETED,
                 OffsetDateTime.now(),

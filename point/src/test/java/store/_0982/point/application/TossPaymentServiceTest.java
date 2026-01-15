@@ -12,7 +12,8 @@ import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCancelCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -48,21 +49,20 @@ class TossPaymentServiceTest {
                 "test_payment_key"
         );
 
-        TossPaymentResponse response = new TossPaymentResponse(
-                "test_payment_key",
-                orderId,
-                10000,
-                "CARD",
-                "DONE",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                null
-        );
+        TossPaymentInfo response = TossPaymentInfo.builder()
+                .paymentKey("test_payment_key")
+                .orderId(orderId)
+                .amount(10000)
+                .method("CARD")
+                .status(TossPaymentInfo.Status.DONE)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .build();
 
         when(tossPaymentClient.confirm(any(TossPaymentConfirmRequest.class))).thenReturn(response);
 
         // when
-        TossPaymentResponse result = tossPaymentService.confirmPayment(pgPayment, command);
+        TossPaymentInfo result = tossPaymentService.confirmPayment(pgPayment, command);
 
         // then
         assertThat(result).isNotNull();
@@ -85,16 +85,15 @@ class TossPaymentServiceTest {
         );
 
         UUID differentOrderId = UUID.randomUUID();
-        TossPaymentResponse response = new TossPaymentResponse(
-                "test_payment_key",
-                differentOrderId,  // 다른 orderId
-                10000,
-                "CARD",
-                "DONE",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                null
-        );
+        TossPaymentInfo response = TossPaymentInfo.builder()
+                .paymentKey("test_payment_key")
+                .orderId(differentOrderId)  // 다른 orderId
+                .amount(10000)
+                .method("CARD")
+                .status(TossPaymentInfo.Status.DONE)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .build();
 
         when(tossPaymentClient.confirm(any(TossPaymentConfirmRequest.class))).thenReturn(response);
 
@@ -134,31 +133,32 @@ class TossPaymentServiceTest {
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-        pgPayment.markConfirmed("CARD", OffsetDateTime.now(), "test_payment_key");
+        pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test_payment_key");
 
         PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000);
 
-        TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
+        TossPaymentInfo.CancelInfo cancelInfo = new TossPaymentInfo.CancelInfo(
                 10000,
                 "환불 요청",
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                "test_transaction_key"
         );
 
-        TossPaymentResponse response = new TossPaymentResponse(
-                "test_payment_key",
-                orderId,
-                10000,
-                "CARD",
-                "CANCELED",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                java.util.List.of(cancelInfo)
-        );
+        TossPaymentInfo response = TossPaymentInfo.builder()
+                .paymentKey("test_payment_key")
+                .orderId(orderId)
+                .amount(10000)
+                .method("CARD")
+                .status(TossPaymentInfo.Status.CANCELED)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .cancels(java.util.List.of(cancelInfo))
+                .build();
 
         when(tossPaymentClient.cancel(any())).thenReturn(response);
 
         // when
-        TossPaymentResponse result = tossPaymentService.cancelPayment(pgPayment, command);
+        TossPaymentInfo result = tossPaymentService.cancelPayment(pgPayment, command);
 
         // then
         assertThat(result).isNotNull();

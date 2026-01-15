@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCancelCommand;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class PgCancelService {
     public void refundPaymentPoint(UUID memberId, PgCancelCommand command) {
         UUID orderId = command.orderId();
         PgPayment pgPayment = pgTransactionManager.markRefundPending(orderId, memberId);
-        TossPaymentResponse response = tossPaymentService.cancelPayment(pgPayment, command);
+        TossPaymentInfo response = tossPaymentService.cancelPayment(pgPayment, command);
         pgTransactionManager.markRefundedPayment(response, orderId, memberId);
     }
 }

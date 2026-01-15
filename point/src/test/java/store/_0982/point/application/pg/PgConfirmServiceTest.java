@@ -12,7 +12,7 @@ import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -58,16 +58,15 @@ class PgConfirmServiceTest {
 
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-        TossPaymentResponse tossResponse = new TossPaymentResponse(
-                paymentKey,
-                orderId,
-                10000,
-                "CARD",
-                "DONE",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                null
-        );
+        TossPaymentInfo tossResponse = TossPaymentInfo.builder()
+                .paymentKey(paymentKey)
+                .orderId(orderId)
+                .amount(10000)
+                .method("카드")
+                .status(TossPaymentInfo.Status.DONE)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .build();
 
         OrderInfo orderInfo = new OrderInfo(
                 orderId,
@@ -92,7 +91,7 @@ class PgConfirmServiceTest {
 
         // then
         verify(pgTransactionManager).markConfirmedPayment(
-                any(TossPaymentResponse.class), eq(paymentKey), eq(memberId)
+                any(TossPaymentInfo.class), eq(paymentKey), eq(memberId)
         );
         verify(orderServiceClient).getOrder(orderId, memberId);
     }

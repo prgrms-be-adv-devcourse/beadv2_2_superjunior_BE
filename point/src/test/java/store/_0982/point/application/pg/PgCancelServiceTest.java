@@ -10,7 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCancelCommand;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -39,7 +40,7 @@ class PgCancelServiceTest {
     private UUID memberId;
     private UUID orderId;
     private PgPayment pgPayment;
-    private TossPaymentResponse response;
+    private TossPaymentInfo response;
 
     @BeforeEach
     void setUp() {
@@ -47,23 +48,24 @@ class PgCancelServiceTest {
         orderId = UUID.randomUUID();
 
         pgPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
-        pgPayment.markConfirmed("CARD", OffsetDateTime.now(), PAYMENT_KEY);
+        pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
 
-        TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
-                REFUND_AMOUNT,
-                "고객 요청",
-                OffsetDateTime.now()
-        );
-        response = new TossPaymentResponse(
-                PAYMENT_KEY,
-                orderId,
-                REFUND_AMOUNT,
-                "CARD",
-                "CANCELED",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                List.of(cancelInfo)
-        );
+        TossPaymentInfo.CancelInfo cancelInfo = TossPaymentInfo.CancelInfo.builder()
+                .cancelAmount(REFUND_AMOUNT)
+                .cancelReason("단순 변심")
+                .canceledAt(OffsetDateTime.now())
+                .build();
+
+        response = TossPaymentInfo.builder()
+                .paymentKey("test-payment-key")
+                .orderId(orderId)
+                .amount(REFUND_AMOUNT)
+                .method("카드")
+                .status(TossPaymentInfo.Status.CANCELED)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .cancels(List.of(cancelInfo))
+                .build();
     }
 
     @Test
@@ -136,8 +138,8 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
         PgPayment refundedPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
-        refundedPayment.markConfirmed("CARD", OffsetDateTime.now(), PAYMENT_KEY);
-        refundedPayment.markRefunded(OffsetDateTime.now(), "이미 환불됨");
+        refundedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
+        refundedPayment.markRefunded(OffsetDateTime.now());
 
         when(pgTransactionManager.markRefundPending(orderId, memberId)).thenReturn(refundedPayment);
         when(tossPaymentService.cancelPayment(refundedPayment, command)).thenReturn(response);

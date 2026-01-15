@@ -25,11 +25,17 @@ public class PgPaymentCancel {
     @Column(name = "cancel_amount", nullable = false)
     private long cancelAmount;
 
+    @Column(nullable = false)
+    private long remainingAmount;
+
     @Column(name = "cancel_reason")
     private String cancelReason;
 
     @Column(name = "payment_key", nullable = false, unique = true, updatable = false)
     private String paymentKey;
+
+    @Column(nullable = false, updatable = false)
+    private String transactionKey;
 
     @Column(name = "canceled_at", nullable = false)
     private OffsetDateTime canceledAt;

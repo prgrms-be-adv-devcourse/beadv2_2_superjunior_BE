@@ -10,7 +10,7 @@ import store._0982.point.application.dto.PgConfirmCommand;
 import store._0982.point.application.dto.PgCancelCommand;
 import store._0982.point.client.OrderServiceClient;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
 
@@ -35,9 +35,9 @@ public class PgConfirmService {
         OrderInfo order = orderServiceClient.getOrder(orderId, memberId);
         order.validateConfirmable(memberId, orderId, command.amount());
 
-        TossPaymentResponse tossPaymentResponse = tossPaymentService.confirmPayment(pgPayment, command);
+        TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {
-            pgTransactionManager.markConfirmedPayment(tossPaymentResponse, paymentKey, memberId);
+            pgTransactionManager.markConfirmedPayment(tossPaymentInfo, paymentKey, memberId);
         } catch (Exception e) {
             // 사용자가 요청한 결제인데 나중에 배치로 처리하겠다고 할 수는 없으니 배치는 이용하지 않음
             log.error("[Error] Failed to mark payment confirmed. Trying to rollback...", e);

@@ -43,11 +43,11 @@ public class PgPaymentFailure {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    public static PgPaymentFailure systemError(PgPayment pgPayment) {
+    public static PgPaymentFailure systemError(PgPayment pgPayment, String errorMessage) {
         return PgPaymentFailure.builder()
                 .pgPayment(pgPayment)
                 .errorCode("SYSTEM_ERROR")
-                .errorMessage("system error")
+                .errorMessage(errorMessage)
                 .paymentKey(pgPayment.getPaymentKey())
                 .amount(pgPayment.getAmount())
                 .build();

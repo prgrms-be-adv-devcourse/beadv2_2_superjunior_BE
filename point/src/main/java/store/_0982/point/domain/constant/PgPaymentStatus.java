@@ -5,5 +5,6 @@ public enum PgPaymentStatus {
     COMPLETED,
     FAILED,
     REFUND_PENDING,
-    REFUNDED
+    REFUNDED,
+    PARTIALLY_REFUNDED
 }

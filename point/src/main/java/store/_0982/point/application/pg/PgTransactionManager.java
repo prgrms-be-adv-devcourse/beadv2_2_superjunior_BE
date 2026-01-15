@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PgFailCommand;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.RetryForTransactional;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
@@ -56,9 +56,9 @@ public class PgTransactionManager {
 
     @Transactional
     @RetryForTransactional
-    public void markConfirmedPayment(TossPaymentResponse tossPaymentResponse, String paymentKey, UUID memberId) {
+    public void markConfirmedPayment(TossPaymentInfo tossPaymentInfo, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
-        pgPayment.markConfirmed(tossPaymentResponse.method(), tossPaymentResponse.approvedAt(), tossPaymentResponse.paymentKey());
+        pgPayment.markConfirmed(tossPaymentInfo.paymentMethod(), tossPaymentInfo.approvedAt(), tossPaymentInfo.paymentKey());
         applicationEventPublisher.publishEvent(PaymentConfirmedEvent.from(pgPayment));
     }
 
@@ -66,8 +66,8 @@ public class PgTransactionManager {
     @RetryForTransactional
     public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
-        pgPayment.markFailed(errorMessage);
-        PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment);
+        pgPayment.markFailed();
+        PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment, errorMessage);
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
@@ -75,17 +75,17 @@ public class PgTransactionManager {
     @RetryForTransactional
     public void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
-        pgPayment.markFailed(command.errorMessage());
+        pgPayment.markFailed();
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.pgError(pgPayment, command);
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
     @Transactional
     @RetryForTransactional
-    public void markRefundedPayment(TossPaymentResponse tossPaymentResponse, UUID orderId, UUID memberId) {
+    public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
         PgPayment pgPayment = markRefundPending(orderId, memberId);
-        TossPaymentResponse.CancelInfo cancelInfo = tossPaymentResponse.cancels().get(0);
-        pgPayment.markRefunded(cancelInfo.canceledAt(), cancelInfo.cancelReason());
+        TossPaymentInfo.CancelInfo cancelInfo = tossPaymentInfo.cancels().get(0);
+        pgPayment.markRefunded(cancelInfo.canceledAt());
 
         PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(pgPayment, cancelInfo.cancelReason(), cancelInfo.cancelAmount(), cancelInfo.canceledAt());
         pgPaymentCancelRepository.save(pgPaymentCancel);

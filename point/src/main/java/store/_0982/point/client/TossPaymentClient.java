@@ -13,7 +13,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
-import store._0982.point.client.dto.TossPaymentResponse;
+import store._0982.point.client.dto.TossPaymentInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -39,7 +39,7 @@ public class TossPaymentClient {
 
     @Retry(name = "pg-api")
     @CircuitBreaker(name = "pg-confirm")
-    public TossPaymentResponse confirm(TossPaymentConfirmRequest request) {
+    public TossPaymentInfo confirm(TossPaymentConfirmRequest request) {
         HttpHeaders headers = createHeaders();
 
         Map<String, Object> body = new HashMap<>();
@@ -49,11 +49,11 @@ public class TossPaymentClient {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         return handlePaymentApiErrorAndGet(
-                () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentResponse.class));
+                () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentInfo.class));
     }
 
     @Retry(name = "pg-api")
-    public TossPaymentResponse cancel(TossPaymentCancelRequest request) {
+    public TossPaymentInfo cancel(TossPaymentCancelRequest request) {
         HttpHeaders headers = createHeaders();
 
         // paymentKey, amount, reason을 조합해 해시값을 생성 후 멱등키로 이용
@@ -69,7 +69,7 @@ public class TossPaymentClient {
 
         String url = BASE_URL + "/" + request.paymentKey() + "/cancel";
         return handlePaymentApiErrorAndGet(
-                () -> restTemplate.postForObject(url, entity, TossPaymentResponse.class));
+                () -> restTemplate.postForObject(url, entity, TossPaymentInfo.class));
     }
 
     private HttpHeaders createHeaders() {
@@ -81,9 +81,9 @@ public class TossPaymentClient {
         return headers;
     }
 
-    private TossPaymentResponse handlePaymentApiErrorAndGet(Supplier<TossPaymentResponse> apiCall) {
+    private TossPaymentInfo handlePaymentApiErrorAndGet(Supplier<TossPaymentInfo> apiCall) {
         try {
-            TossPaymentResponse response = apiCall.get();
+            TossPaymentInfo response = apiCall.get();
             log.debug(String.valueOf(response));
             return response;
         } catch (HttpStatusCodeException e) {
