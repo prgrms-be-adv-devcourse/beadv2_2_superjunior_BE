@@ -6,6 +6,7 @@ import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.batch.domain.settlement.SettlementFailureRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @RequiredArgsConstructor
@@ -22,5 +23,15 @@ public class SettlementFailureRepositoryAdapter implements SettlementFailureRepo
     @Override
     public void saveAll(List<SettlementFailure> failures) {
         settlementFailureJpaRepository.saveAll(failures);
+    }
+
+    @Override
+    public void incrementRetryCount(UUID settlementId) {
+        settlementFailureJpaRepository.incrementRetryCount(settlementId);
+    }
+
+    @Override
+    public void deleteBySettlementId(UUID settlementId) {
+        settlementFailureJpaRepository.deleteBySettlementId(settlementId);
     }
 }
