@@ -21,6 +21,14 @@ public record PointAmount(
         return new PointAmount(paidPoint, bonusPoint);
     }
 
+    public static PointAmount paid(long amount) {
+        return new PointAmount(amount, 0);
+    }
+
+    public static PointAmount bonus(long amount) {
+        return new PointAmount(0, amount);
+    }
+
     public long getTotal() {
         return paidPoint + bonusPoint;
     }
@@ -33,9 +41,22 @@ public record PointAmount(
         return new PointAmount(this.paidPoint, this.bonusPoint + amount);
     }
 
+    public PointAmount transfer(long amount) {
+        PointAmount transfer = calculateTransfer(amount);
+        return new PointAmount(this.paidPoint - transfer.paidPoint, this.bonusPoint - transfer.bonusPoint);
+    }
+
     public PointAmount use(long amount) {
         PointAmount deduction = calculateDeduction(amount);
         return new PointAmount(this.paidPoint - deduction.paidPoint, this.bonusPoint - deduction.bonusPoint);
+    }
+
+    public PointAmount calculateTransfer(long amount) {
+        if (paidPoint < amount) {
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
+        }
+
+        return PointAmount.paid(amount);
     }
 
     public PointAmount calculateRefund(long amount) {
@@ -51,7 +72,7 @@ public record PointAmount(
         }
     }
 
-    private PointAmount calculateDeduction(long amount) {
+    public PointAmount calculateDeduction(long amount) {
         if (getTotal() < amount) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }

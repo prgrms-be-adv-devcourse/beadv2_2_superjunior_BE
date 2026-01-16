@@ -4,11 +4,11 @@ import store._0982.point.domain.entity.PointTransaction;
 
 import java.time.OffsetDateTime;
 
-public record PointReturnedEvent(
+public record PointReturnedTxEvent(
         PointTransaction history,
         OffsetDateTime occurredAt
 ) {
-    public static PointReturnedEvent from(PointTransaction history) {
-        return new PointReturnedEvent(history, OffsetDateTime.now());
+    public static PointReturnedTxEvent from(PointTransaction history) {
+        return new PointReturnedTxEvent(history, OffsetDateTime.now());
     }
 }

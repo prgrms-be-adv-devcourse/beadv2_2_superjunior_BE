@@ -9,9 +9,10 @@ import store._0982.point.common.RetryForTransactional;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
-import store._0982.point.domain.event.PointChargedEvent;
-import store._0982.point.domain.event.PointDeductedEvent;
-import store._0982.point.domain.event.PointReturnedEvent;
+import store._0982.point.domain.event.PointChargedTxEvent;
+import store._0982.point.domain.event.PointDeductedTxEvent;
+import store._0982.point.domain.event.PointReturnedTxEvent;
+import store._0982.point.domain.event.PointTransferredEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -21,7 +22,6 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PointTxManager {
 
     private final PointBalanceRepository pointBalanceRepository;
@@ -36,6 +36,12 @@ public class PointTxManager {
     public PointBalance findPointBalanceForDeduction(UUID memberId, long amount) {
         PointBalance point = findPointBalance(memberId);
         point.validateDeductible(amount);
+        return point;
+    }
+
+    public PointBalance findPointBalanceForTransfer(UUID memberId, long amount) {
+        PointBalance point = findPointBalance(memberId);
+        point.validateWithdrawable(amount);
         return point;
     }
 
@@ -55,7 +61,7 @@ public class PointTxManager {
         charged = pointTransactionRepository.saveAndFlush(charged);
 
         point.charge(amount);
-        applicationEventPublisher.publishEvent(PointChargedEvent.from(charged));
+        applicationEventPublisher.publishEvent(PointChargedTxEvent.from(charged));
 
         return point;
     }
@@ -73,7 +79,7 @@ public class PointTxManager {
         PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
         used = pointTransactionRepository.saveAndFlush(used);
 
-        applicationEventPublisher.publishEvent(PointDeductedEvent.from(used));
+        applicationEventPublisher.publishEvent(PointDeductedTxEvent.from(used));
 
         return point;
     }
@@ -96,6 +102,20 @@ public class PointTxManager {
         point.charge(refundAmount.paidPoint());
         point.earnBonus(refundAmount.bonusPoint());
 
-        applicationEventPublisher.publishEvent(PointReturnedEvent.from(returned));
+        applicationEventPublisher.publishEvent(PointReturnedTxEvent.from(returned));
+    }
+
+    @Transactional
+    @RetryForTransactional
+    public PointBalance transfer(UUID memberId, UUID idempotencyKey, long amount) {
+        PointBalance balance = findPointBalanceForTransfer(memberId, amount);
+
+        PointTransaction transferred = PointTransaction.transferred(memberId, idempotencyKey, PointAmount.paid(amount));
+        transferred = pointTransactionRepository.saveAndFlush(transferred);
+        balance.transfer(amount);
+
+        applicationEventPublisher.publishEvent(PointTransferredEvent.from(transferred));
+
+        return balance;
     }
 }

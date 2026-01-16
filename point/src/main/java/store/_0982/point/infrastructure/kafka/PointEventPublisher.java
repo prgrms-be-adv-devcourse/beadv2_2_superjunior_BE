@@ -35,6 +35,12 @@ public class PointEventPublisher {
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
+    // TODO: Kafka 이벤트 객체에 '출금됨' 상태를 추가할까?
+    public void publishPointTransferredEvent(PointTransaction history) {
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
+        send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
+    }
+
     private static PointChangedEvent createPointChangedEvent(PointTransaction history, PointChangedEvent.Status status) {
         return new PointChangedEvent(
                 history.getId(),

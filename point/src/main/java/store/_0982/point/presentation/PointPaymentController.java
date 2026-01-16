@@ -17,8 +17,10 @@ import store._0982.point.application.point.PointReadService;
 import store._0982.point.application.dto.PointBalanceInfo;
 import store._0982.point.application.point.PointChargeService;
 import store._0982.point.application.point.PointDeductService;
+import store._0982.point.application.point.PointTransferService;
 import store._0982.point.presentation.dto.PointChargeRequest;
 import store._0982.point.presentation.dto.PointDeductRequest;
+import store._0982.point.presentation.dto.PointTransferRequest;
 
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ public class PointPaymentController {
     private final PointReadService pointReadService;
     private final PointChargeService pointChargeService;
     private final PointDeductService pointDeductService;
+    private final PointTransferService pointTransferService;
 
     @Operation(summary = "포인트 충전", description = "포인트를 수동적으로 충전한다.")
     @ResponseStatus(HttpStatus.CREATED)
@@ -71,5 +74,16 @@ public class PointPaymentController {
     ) {
         Page<PointTransactionInfo> response = pointReadService.getTransactions(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 이력 조회 성공");
+    }
+
+    @Operation(summary = "포인트 출금", description = "보유한 포인트를 출금한다.")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/transfer")
+    public ResponseDto<PointBalanceInfo> transfer(
+            @RequestHeader(HeaderName.ID) UUID memberId,
+            @RequestBody @Valid PointTransferRequest request
+    ) {
+        PointBalanceInfo info = pointTransferService.transfer(memberId, request.toCommand());
+        return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 출금 성공");
     }
 }

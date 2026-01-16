@@ -4,11 +4,11 @@ import store._0982.point.domain.entity.PgPayment;
 
 import java.time.OffsetDateTime;
 
-public record PaymentConfirmedEvent(
+public record PaymentConfirmedTxEvent(
         PgPayment pgPayment,
         OffsetDateTime occurredAt
 ) {
-    public static PaymentConfirmedEvent from(PgPayment pgPayment) {
-        return new PaymentConfirmedEvent(pgPayment, OffsetDateTime.now());
+    public static PaymentConfirmedTxEvent from(PgPayment pgPayment) {
+        return new PaymentConfirmedTxEvent(pgPayment, OffsetDateTime.now());
     }
 }

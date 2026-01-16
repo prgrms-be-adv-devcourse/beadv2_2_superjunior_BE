@@ -4,34 +4,36 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import store._0982.point.domain.event.PointChargedEvent;
-import store._0982.point.domain.event.PointDeductedEvent;
-import store._0982.point.domain.event.PaymentConfirmedEvent;
-import store._0982.point.domain.event.PointReturnedEvent;
+import store._0982.point.domain.event.*;
 import store._0982.point.infrastructure.kafka.PointEventPublisher;
 
 @Component
 @RequiredArgsConstructor
-public class PostProcessingEventListener {
+public class TxEventListener {
     private final PointEventPublisher pointEventPublisher;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentConfirmed(PaymentConfirmedEvent event) {
+    public void handlePaymentConfirmed(PaymentConfirmedTxEvent event) {
         pointEventPublisher.publishPaymentConfirmedEvent(event.pgPayment());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePointCharged(PointChargedEvent event) {
+    public void handlePointCharged(PointChargedTxEvent event) {
         pointEventPublisher.publishPointChargedEvent(event.history());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePointDeducted(PointDeductedEvent event) {
+    public void handlePointDeducted(PointDeductedTxEvent event) {
         pointEventPublisher.publishPointDeductedEvent(event.history());
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePointReturned(PointReturnedEvent event) {
+    public void handlePointReturned(PointReturnedTxEvent event) {
         pointEventPublisher.publishPointReturnedEvent(event.history());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handlePointTransferred(PointTransferredEvent event) {
+        pointEventPublisher.publishPointTransferredEvent(event.transaction());
     }
 }

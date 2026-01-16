@@ -48,12 +48,19 @@ public class PointBalance {
         return pointAmount;
     }
 
-    public void transfer(long amount) {
-        this.pointAmount = this.pointAmount.use(amount);
+    public PointAmount transfer(long amount) {
+        pointAmount = pointAmount.transfer(amount);
+        return pointAmount;
     }
 
     public void validateDeductible(long amount) {
         if (pointAmount.getTotal() < amount) {
+            throw new CustomException(CustomErrorCode.LACK_OF_POINT);
+        }
+    }
+
+    public void validateWithdrawable(long amount) {
+        if (pointAmount.paidPoint() < amount) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
     }

@@ -18,8 +18,8 @@ import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
-import store._0982.point.domain.event.PointChargedEvent;
-import store._0982.point.domain.event.PointDeductedEvent;
+import store._0982.point.domain.event.PointChargedTxEvent;
+import store._0982.point.domain.event.PointDeductedTxEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -114,7 +114,7 @@ class PointReadServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
-            doNothing().when(applicationEventPublisher).publishEvent(any(PointChargedEvent.class));
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointChargedTxEvent.class));
 
             // when
             PointBalanceInfo result = pointReadService.chargePoints(command, memberId);
@@ -122,7 +122,7 @@ class PointReadServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000);
-            verify(applicationEventPublisher).publishEvent(any(PointChargedEvent.class));
+            verify(applicationEventPublisher).publishEvent(any(PointChargedTxEvent.class));
         }
 
         @Test
@@ -182,7 +182,7 @@ class PointReadServiceTest {
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)).thenReturn(false);
             when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
-            doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedTxEvent.class));
 
             // when
             PointBalanceInfo result = pointReadService.deductPoints(memberId, command);
@@ -190,7 +190,7 @@ class PointReadServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(5000);
-            verify(applicationEventPublisher).publishEvent(any(PointDeductedEvent.class));
+            verify(applicationEventPublisher).publishEvent(any(PointDeductedTxEvent.class));
         }
 
         @Test
@@ -354,14 +354,14 @@ class PointReadServiceTest {
             when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class))).thenReturn(history);
 
-            ArgumentCaptor<PointDeductedEvent> eventCaptor = ArgumentCaptor.forClass(PointDeductedEvent.class);
+            ArgumentCaptor<PointDeductedTxEvent> eventCaptor = ArgumentCaptor.forClass(PointDeductedTxEvent.class);
 
             // when
             pointReadService.deductPoints(memberId, command);
 
             // then
             verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
-            PointDeductedEvent capturedEvent = eventCaptor.getValue();
+            PointDeductedTxEvent capturedEvent = eventCaptor.getValue();
 
             assertThat(capturedEvent).isNotNull();
             assertThat(capturedEvent.history()).isNotNull();

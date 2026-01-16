@@ -13,7 +13,7 @@ import store._0982.point.application.dto.PointReturnCommand;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
-import store._0982.point.domain.event.PointReturnedEvent;
+import store._0982.point.domain.event.PointReturnedTxEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -78,7 +78,7 @@ class PointReturnServiceTest {
         pointReturnService.returnPoints(memberId, command);
 
         // then
-        verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
+        verify(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
     }
 
     @Test
@@ -179,7 +179,7 @@ class PointReturnServiceTest {
         pointReturnService.returnPoints(memberId, command);
 
         // then
-        verify(applicationEventPublisher).publishEvent(any(PointReturnedEvent.class));
+        verify(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
         verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
     }
 }

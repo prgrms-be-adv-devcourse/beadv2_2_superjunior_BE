@@ -11,7 +11,7 @@ import store._0982.point.common.RetryForTransactional;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.entity.PgPaymentFailure;
-import store._0982.point.domain.event.PaymentConfirmedEvent;
+import store._0982.point.domain.event.PaymentConfirmedTxEvent;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentFailureRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
@@ -59,7 +59,7 @@ public class PgTxManager {
     public void markConfirmedPayment(TossPaymentInfo tossPaymentInfo, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
         pgPayment.markConfirmed(tossPaymentInfo.paymentMethod(), tossPaymentInfo.approvedAt(), tossPaymentInfo.paymentKey());
-        applicationEventPublisher.publishEvent(PaymentConfirmedEvent.from(pgPayment));
+        applicationEventPublisher.publishEvent(PaymentConfirmedTxEvent.from(pgPayment));
     }
 
     @Transactional
