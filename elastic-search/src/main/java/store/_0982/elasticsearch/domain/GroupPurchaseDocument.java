@@ -66,7 +66,8 @@ public class GroupPurchaseDocument {
                         toStringOrNull(row.productId()),
                         row.category(),
                         row.price(),
-                        row.sellerId().toString()
+                        row.sellerId().toString(),
+                        row.productVector()
                 ))
                 .build();
     }

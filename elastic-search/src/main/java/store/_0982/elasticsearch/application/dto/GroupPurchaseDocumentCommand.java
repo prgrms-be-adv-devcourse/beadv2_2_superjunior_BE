@@ -18,9 +18,14 @@ public record GroupPurchaseDocumentCommand(
         String sellerId,
         String productId,
         String productCategory,
-        Long originalPrice
+        Long originalPrice,
+        float[] productVector
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
+        return from(event, null);
+    }
+
+    public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event, float[] productVector) {
         String productId = null;
         if (event.getProductEvent() != null && event.getProductId() != null) {
             productId = event.getProductId().toString();
@@ -37,7 +42,8 @@ public record GroupPurchaseDocumentCommand(
                 event.getSellerId() != null ? event.getSellerId().toString() : null,
                 productId,
                 event.getProductCategory() != null ? event.getProductCategory().toString() : null,
-                event.getOriginalPrice()
+                event.getOriginalPrice(),
+                productVector
         );
     }
 
@@ -52,7 +58,13 @@ public record GroupPurchaseDocumentCommand(
                 .endDate(endDate)
                 .updatedAt(updatedAt)
                 .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
-                .productDocumentEmbedded(new ProductDocumentEmbedded(productId, productCategory, originalPrice, sellerId))
+                .productDocumentEmbedded(new ProductDocumentEmbedded(
+                        productId,
+                        productCategory,
+                        originalPrice,
+                        sellerId,
+                        productVector
+                ))
                 .build();
     }
 
