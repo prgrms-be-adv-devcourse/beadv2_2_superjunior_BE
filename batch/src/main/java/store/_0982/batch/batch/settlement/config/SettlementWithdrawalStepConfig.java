@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.batch.batch.settlement.listener.SettlementWithdrawalReaderListener;
 import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
-import store._0982.batch.batch.settlement.listener.SettlementWithdrawalWriterListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.SettlementWithdrawalProcessor;
 import store._0982.batch.batch.settlement.writer.SettlementWithdrawalWriter;
@@ -44,7 +43,6 @@ public class SettlementWithdrawalStepConfig {
 
     private final SettlementWithdrawalStepListener stepListener;
     private final SettlementWithdrawalReaderListener settlementWithdrawalReaderListener;
-    private final SettlementWithdrawalWriterListener settlementWithdrawalWriterListener;
 
     @Bean
     public Step settlementWithdrawalStep(
@@ -56,7 +54,6 @@ public class SettlementWithdrawalStepConfig {
                 .writer(settlementWithdrawalWriter)
                 .listener(stepListener)
                 .listener(settlementWithdrawalReaderListener)
-                .listener(settlementWithdrawalWriterListener)
                 // 재시도 정책
                 .faultTolerant()
                 .retry(RetryableException.class)
