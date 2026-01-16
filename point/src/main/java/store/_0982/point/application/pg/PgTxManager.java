@@ -87,7 +87,13 @@ public class PgTxManager {
         TossPaymentInfo.CancelInfo cancelInfo = tossPaymentInfo.cancels().get(0);
         pgPayment.markRefunded(cancelInfo.canceledAt());
 
-        PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(pgPayment, cancelInfo.cancelReason(), cancelInfo.cancelAmount(), cancelInfo.canceledAt());
+        PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(
+                pgPayment,
+                cancelInfo.cancelReason(),
+                cancelInfo.cancelAmount(),
+                cancelInfo.canceledAt(),
+                cancelInfo.transactionKey()
+        );
         pgPaymentCancelRepository.save(pgPaymentCancel);
     }
 }

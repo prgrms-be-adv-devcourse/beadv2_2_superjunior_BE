@@ -40,13 +40,20 @@ public class PgPaymentCancel {
     @Column(name = "canceled_at", nullable = false)
     private OffsetDateTime canceledAt;
 
-    public static PgPaymentCancel from(PgPayment pgPayment, String cancelReason, long cancelAmount, OffsetDateTime canceledAt) {
+    public static PgPaymentCancel from(
+            PgPayment pgPayment,
+            String cancelReason,
+            long cancelAmount,
+            OffsetDateTime canceledAt,
+            String transactionKey
+    ) {
         return PgPaymentCancel.builder()
                 .pgPayment(pgPayment)
                 .paymentKey(pgPayment.getPaymentKey())
                 .cancelReason(cancelReason)
                 .cancelAmount(cancelAmount)
                 .canceledAt(canceledAt)
+                .transactionKey(transactionKey)
                 .build();
     }
 

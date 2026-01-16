@@ -10,63 +10,68 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.PointBalanceInfo;
+import store._0982.point.application.dto.PointChargeCommand;
 import store._0982.point.domain.entity.PointBalance;
-import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.exception.CustomErrorCode;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PointReadServiceTest {
+class PointChargeServiceTest {
 
     @Mock
-    private PointBalanceRepository pointBalanceRepository;
+    private PointTxManager pointTxManager;
 
     @InjectMocks
-    private PointReadService pointReadService;
+    private PointChargeService pointChargeService;
 
     private UUID memberId;
+    private UUID idempotencyKey;
 
     @BeforeEach
     void setUp() {
         memberId = UUID.randomUUID();
+        idempotencyKey = UUID.randomUUID();
     }
 
     @Nested
-    @DisplayName("포인트 조회")
-    class GetPoints {
+    @DisplayName("포인트 충전")
+    class ChargePoints {
 
         @Test
-        @DisplayName("포인트를 조회한다")
-        void getPoints_success() {
+        @DisplayName("포인트를 충전한다")
+        void chargePoints_success() {
             // given
+            PointChargeCommand command = new PointChargeCommand(10000, idempotencyKey);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
 
-            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTxManager.chargePoints(memberId, idempotencyKey, 10000)).thenReturn(pointBalance);
 
             // when
-            PointBalanceInfo result = pointReadService.getPoints(memberId);
+            PointBalanceInfo result = pointChargeService.chargePoints(command, memberId);
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.memberId()).isEqualTo(memberId);
             assertThat(result.paidPoint()).isEqualTo(10000);
+            verify(pointTxManager).chargePoints(memberId, idempotencyKey, 10000);
         }
 
         @Test
-        @DisplayName("포인트가 없는 회원 조회 시 예외가 발생한다")
-        void getPoints_fail_whenMemberPointNotFound() {
+        @DisplayName("존재하지 않는 회원의 포인트 충전 시 예외가 발생한다")
+        void chargePoints_fail_whenMemberNotFound() {
             // given
-            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
+            PointChargeCommand command = new PointChargeCommand(10000, idempotencyKey);
+
+            when(pointTxManager.chargePoints(memberId, idempotencyKey, 10000))
+                    .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
             // when & then
-            assertThatThrownBy(() -> pointReadService.getPoints(memberId))
+            assertThatThrownBy(() -> pointChargeService.chargePoints(command, memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }

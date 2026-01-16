@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.PgCancelCommand;
@@ -46,6 +47,9 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
     @MockitoBean
     private TossPaymentService tossPaymentService;
 
+    @MockitoBean
+    private ApplicationEventPublisher applicationEventPublisher;
+
     private UUID memberId;
     private UUID orderId;
     private TossPaymentInfo tossPaymentInfo;
@@ -62,6 +66,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .cancelAmount(PAYMENT_AMOUNT)
                 .cancelReason("단순 변심")
                 .canceledAt(OffsetDateTime.now())
+                .transactionKey(UUID.randomUUID().toString())
                 .build();
 
         tossPaymentInfo = TossPaymentInfo.builder()
