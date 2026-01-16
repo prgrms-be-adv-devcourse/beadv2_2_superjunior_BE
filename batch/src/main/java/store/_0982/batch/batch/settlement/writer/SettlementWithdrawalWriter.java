@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
+import store._0982.batch.application.settlement.event.SettlementFailedEvent;
 import store._0982.batch.domain.settlement.*;
+import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
+import store._0982.common.exception.CustomException;
 
 import java.util.List;
 import java.util.Map;
@@ -40,21 +43,20 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
             try {
                 SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
                 if (!isValidAccount(accountInfo)) {
-                    settlement.markAsFailed();
+                    throw new CustomException(CustomErrorCode.INVALID_ACCOUNT_INFO);
                 }
+
                 settlement.setAccountInfo(accountInfo.accountNumber(), accountInfo.bankCode());
                 bankTransferService.transfer(accountInfo, settlement.getSettlementAmount().longValue());
                 settlement.markAsCompleted();
+                eventPublisher.publishEvent(new SettlementCompletedEvent(settlement));
             } catch (Exception e) {
                 settlement.markAsFailed();
+                eventPublisher.publishEvent(new SettlementFailedEvent(settlement, e.getMessage()));
             }
         }
 
         settlementRepository.saveAll(settlements);
-
-        settlements.forEach(s ->
-                eventPublisher.publishEvent(new SettlementCompletedEvent(s))
-        );
     }
 
     private boolean isValidAccount(SellerAccountInfo accountInfo) {

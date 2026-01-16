@@ -8,6 +8,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
+import store._0982.batch.application.settlement.event.SettlementFailedEvent;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementStatus;
 import store._0982.common.kafka.KafkaTopics;
@@ -19,6 +20,7 @@ import store._0982.common.kafka.dto.SettlementDoneEvent;
 public class SettlementListener {
 
     private final SellerBalanceService sellerBalanceService;
+    private final SettlementService settlementService;
     private final KafkaTemplate<String, SettlementDoneEvent> settlementKafkaTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -37,5 +39,14 @@ public class SettlementListener {
                 kafkaEvent.getId().toString(),
                 kafkaEvent
         );
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(SettlementFailedEvent event) {
+        Settlement settlement = event.settlement();
+
+        if (settlement.getStatus() == SettlementStatus.FAILED) {
+            settlementService.saveSettlementFailure(settlement, event.failureReason());
+        }
     }
 }

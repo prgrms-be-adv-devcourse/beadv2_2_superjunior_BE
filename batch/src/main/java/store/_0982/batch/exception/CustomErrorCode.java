@@ -45,6 +45,7 @@ public enum CustomErrorCode implements ErrorCode {
     GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
     INVALID_SETTLEMENT_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 정산 금액입니다."),
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST, "정산 잔액이 부족합니다."),
+    INVALID_ACCOUNT_INFO(HttpStatus.BAD_REQUEST, "유효하지 않은 계좌 정보입니다."),
     GROUP_PURCHASE_IS_NOT_OPEN(HttpStatus.BAD_REQUEST, "공동 구매가 시작하지 않았습니다."),
     GROUP_PURCHASE_IS_END(HttpStatus.BAD_REQUEST, "종료된 공동 구매입니다."),
     GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
