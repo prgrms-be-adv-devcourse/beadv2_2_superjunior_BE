@@ -1,26 +1,36 @@
 package store._0982.batch.application.settlement;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
+import store._0982.batch.application.sellerbalance.SellerBalanceService;
+import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
+import store._0982.batch.domain.settlement.Settlement;
+import store._0982.batch.domain.settlement.SettlementStatus;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementDoneEvent;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SettlementListener {
 
+    private final SellerBalanceService sellerBalanceService;
     private final KafkaTemplate<String, SettlementDoneEvent> settlementKafkaTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void publishCompleted(SettlementProcessedEvent event) {
-        SettlementDoneEvent kafkaEvent = event.settlement().toEvent(
-                SettlementDoneEvent.Status.valueOf(
-                        event.settlement().getStatus().name()
-                )
+    public void handle(SettlementCompletedEvent event) {
+        Settlement settlement = event.settlement();
+
+        if (settlement.getStatus() == SettlementStatus.COMPLETED) {
+            sellerBalanceService.clearBalance(settlement);
+        }
+
+        SettlementDoneEvent kafkaEvent = settlement.toEvent(
+                SettlementDoneEvent.Status.valueOf(settlement.getStatus().name())
         );
         settlementKafkaTemplate.send(
                 KafkaTopics.SETTLEMENT_DONE,

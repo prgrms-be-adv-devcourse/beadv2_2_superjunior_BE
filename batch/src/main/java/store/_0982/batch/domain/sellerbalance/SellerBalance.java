@@ -51,6 +51,14 @@ public class SellerBalance {
         this.settlementBalance += amount;
     }
 
+    public void decreaseBalance(Long amount) {
+        if (amount < 0)
+            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
+        if (this.settlementBalance < amount)
+            throw new CustomException(CustomErrorCode.INSUFFICIENT_BALANCE);
+        this.settlementBalance -= amount;
+    }
+
     public void resetBalance() {
         this.settlementBalance = 0L;
     }
