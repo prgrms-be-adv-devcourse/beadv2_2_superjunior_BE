@@ -5,20 +5,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
-import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
-import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.application.cart.dto.CartAddCommand;
 import store._0982.commerce.application.cart.dto.CartDeleteCommand;
 import store._0982.commerce.application.cart.dto.CartInfo;
 import store._0982.commerce.application.cart.dto.CartUpdateCommand;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 
 import java.util.UUID;
 
@@ -69,5 +67,4 @@ public class CartService {
             throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
         }
     }
-
 }
