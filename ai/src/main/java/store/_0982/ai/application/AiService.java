@@ -31,8 +31,8 @@ public class AiService {
         if (event.getDescription() != null && !event.getDescription().isBlank()) {
             builder.append("상품설명: ").append(event.getDescription()).append('\n');
         }
-        if (event.getCategory() != null && !event.getCategory().isBlank()) {
-            builder.append("카테고리: ").append(event.getCategory());
+        if (event.getCategory() != null && !event.getCategory().name().isBlank()) {
+            builder.append("카테고리: ").append(event.getCategory().name());
         }
         return builder.toString();
     }
