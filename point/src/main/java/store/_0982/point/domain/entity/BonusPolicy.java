@@ -56,4 +56,11 @@ public class BonusPolicy {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    @PrePersist
+    protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+    }
 }
