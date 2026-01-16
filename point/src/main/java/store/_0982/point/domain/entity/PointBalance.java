@@ -58,6 +58,14 @@ public class PointBalance {
         }
     }
 
+    public long getPaidBalance() {
+        return pointAmount.paidPoint();
+    }
+
+    public long getBonusBalance() {
+        return pointAmount.bonusPoint();
+    }
+
     public long getTotalBalance() {
         return pointAmount.getTotal();
     }

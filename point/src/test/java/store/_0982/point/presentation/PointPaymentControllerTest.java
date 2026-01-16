@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
-import store._0982.point.application.point.PointBalanceService;
-import store._0982.point.application.dto.PointInfo;
+import store._0982.point.application.point.PointReadService;
+import store._0982.point.application.dto.PointBalanceInfo;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -27,13 +27,13 @@ class PointPaymentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PointBalanceService pointBalanceService;
+    private PointReadService pointReadService;
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointBalanceService memberPointService() {
-            return mock(PointBalanceService.class);
+        public PointReadService memberPointService() {
+            return mock(PointReadService.class);
         }
     }
 
@@ -42,9 +42,9 @@ class PointPaymentControllerTest {
     void getPoints() throws Exception {
         // given
         UUID memberId = UUID.randomUUID();
-        PointInfo info = new PointInfo(memberId, 15000, 0, OffsetDateTime.now());
+        PointBalanceInfo info = new PointBalanceInfo(memberId, 15000, 0, OffsetDateTime.now());
 
-        when(pointBalanceService.getPoints(memberId)).thenReturn(info);
+        when(pointReadService.getPoints(memberId)).thenReturn(info);
 
         // when & then
         mockMvc.perform(get("/api/points")
@@ -57,6 +57,6 @@ class PointPaymentControllerTest {
                 .andExpect(jsonPath("$.data.paidPoint").value(15000))
                 .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
-        verify(pointBalanceService).getPoints(memberId);
+        verify(pointReadService).getPoints(memberId);
     }
 }

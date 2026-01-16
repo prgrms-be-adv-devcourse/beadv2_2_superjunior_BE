@@ -1,5 +1,7 @@
 package store._0982.point.domain.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointTransaction;
 
@@ -17,4 +19,6 @@ public interface PointTransactionRepository {
     PointTransaction saveAndFlush(PointTransaction pointTransaction);
 
     Optional<PointTransaction> findByOrderIdAndStatus(UUID orderId, PointTransactionStatus status);
+
+    Page<PointTransaction> findByMemberId(UUID memberId, Pageable pageable);
 }

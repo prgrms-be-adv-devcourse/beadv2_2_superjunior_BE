@@ -1,6 +1,8 @@
 package store._0982.point.infrastructure;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointTransaction;
@@ -38,5 +40,10 @@ public class PointTransactionRepositoryAdapter implements PointTransactionReposi
     @Override
     public Optional<PointTransaction> findByOrderIdAndStatus(UUID orderId, PointTransactionStatus status) {
         return pointTransactionJpaRepository.findByOrderIdAndStatus(orderId, status);
+    }
+
+    @Override
+    public Page<PointTransaction> findByMemberId(UUID memberId, Pageable pageable) {
+        return pointTransactionJpaRepository.findByMemberId(memberId, pageable);
     }
 }

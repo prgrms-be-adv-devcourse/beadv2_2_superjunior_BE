@@ -5,17 +5,17 @@ import store._0982.point.domain.entity.PointBalance;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-public record PointInfo(
+public record PointBalanceInfo(
         UUID memberId,
         long paidPoint,
         long bonusPoint,
         OffsetDateTime lastUsedAt
 ) {
-    public static PointInfo from(PointBalance pointBalance) {
-        return new PointInfo(
+    public static PointBalanceInfo from(PointBalance pointBalance) {
+        return new PointBalanceInfo(
                 pointBalance.getMemberId(),
-                pointBalance.getPointAmount().paidPoint(),
-                pointBalance.getPointAmount().bonusPoint(),
+                pointBalance.getPaidBalance(),
+                pointBalance.getBonusBalance(),
                 pointBalance.getLastUsedAt()
         );
     }

@@ -1,5 +1,7 @@
 package store._0982.point.infrastructure;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointTransaction;
@@ -13,4 +15,6 @@ public interface PointTransactionJpaRepository extends JpaRepository<PointTransa
     boolean existsByOrderIdAndStatus(UUID orderId, PointTransactionStatus status);
 
     Optional<PointTransaction> findByOrderIdAndStatus(UUID orderId, PointTransactionStatus status);
+
+    Page<PointTransaction> findByMemberId(UUID memberId, Pageable pageable);
 }

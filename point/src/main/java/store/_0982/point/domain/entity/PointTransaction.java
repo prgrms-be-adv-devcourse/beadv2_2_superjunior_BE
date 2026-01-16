@@ -76,6 +76,15 @@ public class PointTransaction {
                 .build();
     }
 
+    public static PointTransaction transferred(UUID memberId, UUID idempotencyKey, PointAmount amount) {
+        return PointTransaction.builder()
+                .memberId(memberId)
+                .idempotencyKey(idempotencyKey)
+                .status(PointTransactionStatus.TRANSFERRED)
+                .pointAmount(amount)
+                .build();
+    }
+
     public static PointTransaction returned(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount, String cancelReason) {
         return PointTransaction.builder()
                 .memberId(memberId)
@@ -89,6 +98,14 @@ public class PointTransaction {
 
     public PointAmount calculateRefund(long amount) {
         return pointAmount.calculateRefund(amount);
+    }
+
+    public long getPaidAmount() {
+        return pointAmount.paidPoint();
+    }
+
+    public long getBonusAmount() {
+        return pointAmount.bonusPoint();
     }
 
     public long getTotalAmount() {
