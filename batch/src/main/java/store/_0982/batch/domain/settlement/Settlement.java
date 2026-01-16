@@ -88,6 +88,10 @@ public class Settlement {
         this.settledAt = OffsetDateTime.now();
     }
 
+    public boolean isCompleted() {
+        return this.status == SettlementStatus.COMPLETED;
+    }
+
     public void markAsFailed() {
         this.status = SettlementStatus.FAILED;
     }

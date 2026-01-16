@@ -6,6 +6,8 @@ import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
@@ -21,5 +23,10 @@ public class SettlementRepositoryAdapter implements SettlementRepository {
     @Override
     public void saveAll(List<Settlement> settlements) {
         settlementJpaRepository.saveAll(settlements);
+    }
+
+    @Override
+    public Optional<Settlement> findById(UUID settlementId) {
+        return settlementJpaRepository.findById(settlementId);
     }
 }
