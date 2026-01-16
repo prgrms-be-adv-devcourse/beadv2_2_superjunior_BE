@@ -1,5 +1,7 @@
 package store._0982.batch.batch.settlement.config;
 
+import feign.FeignException;
+import feign.RetryableException;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
@@ -19,6 +21,7 @@ import store._0982.batch.batch.settlement.processor.SettlementWithdrawalProcesso
 import store._0982.batch.batch.settlement.writer.SettlementWithdrawalWriter;
 import store._0982.batch.domain.sellerbalance.SellerBalance;
 import store._0982.batch.domain.settlement.Settlement;
+import store._0982.common.exception.CustomException;
 
 import java.util.Map;
 
@@ -54,6 +57,12 @@ public class SettlementWithdrawalStepConfig {
                 .listener(stepListener)
                 .listener(settlementWithdrawalReaderListener)
                 .listener(settlementWithdrawalWriterListener)
+                // 재시도 정책
+                .faultTolerant()
+                .retry(RetryableException.class)
+                .retry(FeignException.class)
+                .retryLimit(3)
+                .noRetry(CustomException.class)
                 .build();
     }
 
