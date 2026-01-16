@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.PointBalanceInfo;
+import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.exception.CustomErrorCode;

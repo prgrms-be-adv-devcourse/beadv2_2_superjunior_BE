@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import store._0982.point.application.dto.PgCreateCommand;
-import store._0982.point.application.dto.PgCreateInfo;
+import store._0982.point.application.dto.pg.PgCreateCommand;
+import store._0982.point.application.dto.pg.PgCreateInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
 

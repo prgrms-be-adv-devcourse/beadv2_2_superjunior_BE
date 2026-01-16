@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.PgCancelCommand;
+import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 

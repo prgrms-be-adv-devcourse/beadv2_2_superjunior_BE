@@ -3,7 +3,7 @@ package store._0982.point.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.pg.PgFailCommand;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

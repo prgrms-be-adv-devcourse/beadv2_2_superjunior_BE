@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;

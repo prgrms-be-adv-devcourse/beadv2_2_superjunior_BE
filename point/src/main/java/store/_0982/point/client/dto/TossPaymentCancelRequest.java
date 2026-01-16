@@ -1,6 +1,6 @@
 package store._0982.point.client.dto;
 
-import store._0982.point.application.dto.PgCancelCommand;
+import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.domain.entity.PgPayment;
 
 public record TossPaymentCancelRequest(

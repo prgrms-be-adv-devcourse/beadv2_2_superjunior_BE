@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import store._0982.common.exception.CustomException;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.domain.constant.PointTransactionStatus;
+import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -110,6 +112,12 @@ public class PointTransaction {
 
     public long getTotalAmount() {
         return pointAmount.getTotal();
+    }
+
+    public void validateOwner(UUID memberId) {
+        if (!this.memberId.equals(memberId)) {
+            throw new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH);
+        }
     }
 
     @PrePersist

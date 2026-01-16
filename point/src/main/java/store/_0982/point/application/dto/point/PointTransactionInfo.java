@@ -1,4 +1,4 @@
-package store._0982.point.application.dto;
+package store._0982.point.application.dto.point;
 
 import lombok.Builder;
 import store._0982.point.domain.constant.PointTransactionStatus;

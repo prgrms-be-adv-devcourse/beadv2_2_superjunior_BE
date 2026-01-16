@@ -5,7 +5,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.RetryForTransactional;
 import store._0982.point.domain.entity.PgPayment;

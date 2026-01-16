@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.PgCancelCommand;
+import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;

@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.pg.PgTxManager;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;

@@ -10,8 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.OrderValidator;
-import store._0982.point.application.dto.PointBalanceInfo;
-import store._0982.point.application.dto.PointDeductCommand;
+import store._0982.point.application.dto.point.PointBalanceInfo;
+import store._0982.point.application.dto.point.PointDeductCommand;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.exception.CustomErrorCode;
 

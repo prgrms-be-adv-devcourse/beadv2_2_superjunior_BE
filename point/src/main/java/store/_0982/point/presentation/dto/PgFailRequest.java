@@ -3,7 +3,7 @@ package store._0982.point.presentation.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.pg.PgFailCommand;
 
 import java.util.UUID;
 

@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.client.CommerceServiceClient;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.client.dto.TossPaymentInfo;

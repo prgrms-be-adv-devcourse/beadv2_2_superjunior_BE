@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.PgCancelCommand;
+import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;

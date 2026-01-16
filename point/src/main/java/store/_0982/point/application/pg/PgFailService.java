@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.log.ServiceLog;
-import store._0982.point.application.dto.PgFailCommand;
+import store._0982.point.application.dto.pg.PgFailCommand;
 
 import java.util.UUID;
 

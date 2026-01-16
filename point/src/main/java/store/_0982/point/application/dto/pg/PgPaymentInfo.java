@@ -1,4 +1,4 @@
-package store._0982.point.application.dto;
+package store._0982.point.application.dto.pg;
 
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;

@@ -1,4 +1,4 @@
-package store._0982.point.application.dto;
+package store._0982.point.application.dto.pg;
 
 import java.util.UUID;
 

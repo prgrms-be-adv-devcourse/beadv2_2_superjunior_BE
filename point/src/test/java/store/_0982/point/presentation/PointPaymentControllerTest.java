@@ -10,7 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.point.application.point.PointReadService;
-import store._0982.point.application.dto.PointBalanceInfo;
+import store._0982.point.application.dto.point.PointBalanceInfo;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

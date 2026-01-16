@@ -2,7 +2,7 @@ package store._0982.point.presentation.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import store._0982.point.application.dto.PointTransferCommand;
+import store._0982.point.application.dto.point.PointTransferCommand;
 
 import java.util.UUID;
 

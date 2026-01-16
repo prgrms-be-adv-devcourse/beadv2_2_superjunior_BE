@@ -1,6 +1,6 @@
 package store._0982.point.client.dto;
 
-import store._0982.point.application.dto.PgConfirmCommand;
+import store._0982.point.application.dto.pg.PgConfirmCommand;
 
 import java.util.UUID;
 
