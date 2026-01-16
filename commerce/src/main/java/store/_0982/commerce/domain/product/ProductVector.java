@@ -32,6 +32,9 @@ public class ProductVector {
     @Column(name = "model_version")
     private String modelVersion;
 
+    @Column(name = "dimension_size")
+    private int dimensionSize;
+
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
@@ -40,5 +43,6 @@ public class ProductVector {
         this.productId = completeEvent.getProductId();
         this.vector = completeEvent.getVector();
         this.modelVersion = modelVersion;
+        this.dimensionSize = vector.getVector() == null ? 0 : vector.getVector().length;
     }
 }
