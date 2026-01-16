@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: ai
+
+  datasource:
+    url: ${PRODUCT_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME}
+    password: ${PRODUCT_DATABASE_PASSWORD}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: text-embedding-3-small
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

@@ -24,6 +24,10 @@ public final class KafkaTopics {
 
     public static final String PAYMENT_CHANGED = "payment.changed";
 
+    public static final String PRODUCT_EMBEDDING_REQUESTED = "product.embedding.requested";
+
+    public static final String PRODUCT_EMBEDDING_COMPLETED = "product.embedding.completed";
+
     @Deprecated(forRemoval = true)
     public static final String PRODUCT_UPSERTED = "product.upserted";
 
