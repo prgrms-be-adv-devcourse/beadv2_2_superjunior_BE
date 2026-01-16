@@ -43,6 +43,7 @@ public class ProductService {
 
         //ai 모듈 kafka
         eventPublisher.publishEvent(new ProductCreatedEvent(product));
+
         return ProductRegisterInfo.from(savedProduct);
     }
 

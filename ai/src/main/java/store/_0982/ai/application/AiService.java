@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
