@@ -16,6 +16,7 @@ import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.common.exception.CustomException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
     private final SettlementRepository settlementRepository;
+    private final SettlementFailureRepository settlementFailureRepository;
     private final BankTransferService bankTransferService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -39,6 +41,7 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
 
         Map<UUID, SellerAccountInfo> accountMap = memberClient.fetchAccounts(settlements);
 
+        List<SettlementFailure> failures = new ArrayList<>();
         for (Settlement settlement : settlements) {
             try {
                 SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
@@ -52,11 +55,22 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
                 eventPublisher.publishEvent(new SettlementCompletedEvent(settlement));
             } catch (Exception e) {
                 settlement.markAsFailed();
+                failures.add(new SettlementFailure(
+                        settlement.getSellerId(),
+                        settlement.getPeriodStart(),
+                        settlement.getPeriodEnd(),
+                        e.getMessage(),
+                        0,
+                        settlement.getSettlementId()
+                ));
                 eventPublisher.publishEvent(new SettlementFailedEvent(settlement, e.getMessage()));
             }
         }
 
         settlementRepository.saveAll(settlements);
+        if (!failures.isEmpty()) {
+            settlementFailureRepository.saveAll(failures);
+        }
     }
 
     private boolean isValidAccount(SellerAccountInfo accountInfo) {

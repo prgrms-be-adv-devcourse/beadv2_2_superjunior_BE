@@ -20,20 +20,14 @@ import store._0982.common.kafka.dto.SettlementDoneEvent;
 public class SettlementListener {
 
     private final SellerBalanceService sellerBalanceService;
-    private final SettlementService settlementService;
     private final KafkaTemplate<String, SettlementDoneEvent> settlementKafkaTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(SettlementCompletedEvent event) {
         Settlement settlement = event.settlement();
+        sellerBalanceService.clearBalance(settlement);
 
-        if (settlement.getStatus() == SettlementStatus.COMPLETED) {
-            sellerBalanceService.clearBalance(settlement);
-        }
-
-        SettlementDoneEvent kafkaEvent = settlement.toEvent(
-                SettlementDoneEvent.Status.valueOf(settlement.getStatus().name())
-        );
+        SettlementDoneEvent kafkaEvent = settlement.toEvent(SettlementDoneEvent.Status.SUCCESS);
         settlementKafkaTemplate.send(
                 KafkaTopics.SETTLEMENT_DONE,
                 kafkaEvent.getId().toString(),
@@ -45,8 +39,11 @@ public class SettlementListener {
     public void handle(SettlementFailedEvent event) {
         Settlement settlement = event.settlement();
 
-        if (settlement.getStatus() == SettlementStatus.FAILED) {
-            settlementService.saveSettlementFailure(settlement, event.failureReason());
-        }
+        SettlementDoneEvent kafkaEvent = settlement.toEvent(SettlementDoneEvent.Status.FAILED);
+        settlementKafkaTemplate.send(
+                KafkaTopics.SETTLEMENT_DONE,
+                kafkaEvent.getId().toString(),
+                kafkaEvent
+        );
     }
 }
