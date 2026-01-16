@@ -14,7 +14,10 @@ public class AiService {
     private final EmbeddingModel embeddingModel;
 
     public ProductEmbeddingCompleteEvent vectorize(ProductEmbeddingEvent event) {
-        String input = buildInput(event);
+        String input = buildInput(event)
+                .replaceAll("\\s+", " ")
+                .trim();
+
         log.info("{} \n 벡터화", input);
         float[] embedding = embeddingModel.embed(input);
         return new ProductEmbeddingCompleteEvent(event.getProductId(), embedding);
