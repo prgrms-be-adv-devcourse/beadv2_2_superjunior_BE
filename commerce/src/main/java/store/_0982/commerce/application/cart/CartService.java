@@ -17,6 +17,7 @@ import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -51,6 +52,10 @@ public class CartService {
     public PageResponse<CartInfo> getCarts(UUID memberId, Pageable pageable) {
         Page<CartInfo> cartPage = cartRepository.findAllByMemberId(memberId, pageable).map(CartInfo::from);
         return new PageResponse<>(cartPage.getContent(), cartPage.getTotalPages(), cartPage.getTotalElements(), cartPage.isFirst(), cartPage.isLast(), cartPage.getSize(), cartPage.getNumberOfElements());
+    }
+
+    public List<Cart> getCarts(UUID memberId){
+        return cartRepository.findAllByMemberId(memberId);
     }
 
     @Transactional
