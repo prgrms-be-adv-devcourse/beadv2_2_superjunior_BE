@@ -7,13 +7,12 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AiService {
     private final EmbeddingModel embeddingModel;
+    private final CommerceQueryPort commerceQueryPort;
 
     public ProductEmbeddingCompleteEvent vectorize(ProductEmbeddingEvent event) {
         String input = buildInput(event);

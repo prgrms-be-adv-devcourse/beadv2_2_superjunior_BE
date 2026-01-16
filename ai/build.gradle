@@ -11,6 +11,9 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    //OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 }
 
 repositories {
