@@ -59,7 +59,7 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
                 sellerBalanceService.clearBalance(settlement);
 
                 eventPublisher.publishEvent(new SettlementCompletedEvent(settlement));
-            } catch (Exception e) {
+            } catch (CustomException e) {
                 settlement.markAsFailed();
                 failures.add(new SettlementFailure(
                         settlement.getSellerId(),
