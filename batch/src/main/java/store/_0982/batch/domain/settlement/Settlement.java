@@ -92,6 +92,10 @@ public class Settlement {
         this.status = SettlementStatus.FAILED;
     }
 
+    public void markAsDeferred() {
+        this.status = SettlementStatus.DEFERRED;
+    }
+
     public void setAccountInfo(String accountNumber, String bankCode) {
         this.accountNumber = accountNumber;
         this.bankCode = bankCode;

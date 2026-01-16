@@ -5,12 +5,9 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.settlement.event.SettlementProcessedEvent;
+import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
-import store._0982.batch.application.settlement.SettlementListener;
-import store._0982.batch.exception.CustomErrorCode;
-import store._0982.common.exception.CustomException;
 
 import java.util.List;
 
@@ -27,13 +24,12 @@ public class LowBalanceNotificationWriter implements ItemWriter<Settlement> {
                 .map(settlement -> (Settlement) settlement)
                 .toList();
 
-        settlementRepository.saveAll(settlements);
         for (Settlement settlement : settlements) {
+            settlement.markAsDeferred();
             eventPublisher.publishEvent(
-                    new SettlementProcessedEvent(
-                            settlement
-                    )
+                    new SettlementCompletedEvent(settlement)
             );
         }
+        settlementRepository.saveAll(settlements);
     }
 }
