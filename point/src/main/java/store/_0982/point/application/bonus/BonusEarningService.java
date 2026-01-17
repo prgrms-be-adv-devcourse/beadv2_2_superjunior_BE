@@ -9,7 +9,6 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.bonus.BonusEarnCommand;
 import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.common.RetryForTransactional;
-import store._0982.point.domain.constant.BonusEarningType;
 import store._0982.point.domain.constant.BonusPolicyType;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.BonusEarning;
@@ -47,7 +46,7 @@ public class BonusEarningService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
         findApplicablePolicy(transaction.getPaidAmount(), orderInfo)
-                .ifPresent(policy -> applyBonusPolicy(memberId, command.idempotencyKey(), balance, transaction, policy));
+                .ifPresent(policy -> applyBonusPolicy(memberId, command, balance, transaction, policy));
     }
 
     private PointTransaction getValidTransaction(UUID memberId, UUID orderId) {
@@ -68,26 +67,26 @@ public class BonusEarningService {
         );
     }
 
-    private void applyBonusPolicy(UUID memberId, UUID idempotencyKey,
+    private void applyBonusPolicy(UUID memberId, BonusEarnCommand command,
                                   PointBalance balance, PointTransaction transaction,
                                   BonusPolicy policy) {
         policy.calculateBonusAmount(transaction.getPaidAmount())
                 .ifPresentOrElse(
-                        bonusAmount -> earnBonus(memberId, idempotencyKey, balance, policy, bonusAmount),
+                        bonusAmount -> earnBonus(memberId, command, balance, policy, bonusAmount),
                         () -> log.debug("보너스 금액 계산 실패")
                 );
     }
 
-    private void earnBonus(UUID memberId, UUID idempotencyKey,
+    private void earnBonus(UUID memberId, BonusEarnCommand command,
                            PointBalance balance, BonusPolicy policy, Long bonusAmount) {
         PointTransaction earningTx = PointTransaction.charged(
-                memberId, idempotencyKey, PointAmount.bonus(bonusAmount));
+                memberId, command.idempotencyKey(), PointAmount.bonus(bonusAmount));
 
-        BonusEarning bonusEarning = BonusEarning.earned(
+        BonusEarning bonusEarning = BonusEarning.fromOrder(
                 memberId,
                 bonusAmount,
-                BonusEarningType.PURCHASE_REWARD,
-                OffsetDateTime.now().plusDays(policy.getExpirationDays()),
+                command.orderId(),
+                OffsetDateTime.now().plusDays(policy.getExpirationDays()).withHour(23).withMinute(59).withSecond(59),
                 policy.getId(),
                 policy.getName()
         );

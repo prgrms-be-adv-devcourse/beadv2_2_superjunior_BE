@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface BonusEarningJpaRepository extends JpaRepository<BonusEarning, UUID> {
 
-    List<BonusEarning> findByMemberIdAndStatus(UUID memberId, BonusEarningStatus status);
+    List<BonusEarning> findByMemberIdAndStatusInOrderByExpiresAtAsc(UUID memberId, List<BonusEarningStatus> statuses);
 }

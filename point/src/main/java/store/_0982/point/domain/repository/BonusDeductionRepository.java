@@ -11,7 +11,7 @@ public interface BonusDeductionRepository {
 
     BonusDeduction saveAndFlush(BonusDeduction bonusDeduction);
 
-    List<BonusDeduction> findByBonusEarningId(UUID bonusEarningId);
+    void saveAll(Iterable<BonusDeduction> deductions);
 
     List<BonusDeduction> findByTransactionId(UUID transactionId);
 }

@@ -25,8 +25,8 @@ public class BonusDeductionRepositoryAdapter implements BonusDeductionRepository
     }
 
     @Override
-    public List<BonusDeduction> findByBonusEarningId(UUID bonusEarningId) {
-        return bonusDeductionJpaRepository.findByBonusEarningId(bonusEarningId);
+    public void saveAll(Iterable<BonusDeduction> deductions) {
+        bonusDeductionJpaRepository.saveAll(deductions);
     }
 
     @Override

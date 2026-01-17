@@ -4,6 +4,7 @@ import store._0982.point.domain.constant.BonusEarningStatus;
 import store._0982.point.domain.entity.BonusEarning;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface BonusEarningRepository {
@@ -12,5 +13,7 @@ public interface BonusEarningRepository {
 
     BonusEarning saveAndFlush(BonusEarning bonusEarning);
 
-    List<BonusEarning> findByMemberIdAndStatus(UUID memberId, BonusEarningStatus status);
+    List<BonusEarning> findByMemberIdAndStatusInOrderByExpiresAtAsc(UUID memberId, List<BonusEarningStatus> statuses);
+
+    Optional<BonusEarning> findById(UUID id);
 }

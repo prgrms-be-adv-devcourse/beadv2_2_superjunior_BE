@@ -29,6 +29,9 @@ public class BonusEarning {
     @Column(name = "amount", nullable = false, updatable = false)
     private long amount;
 
+    @Column(name = "remaining_amount", nullable = false)
+    private long remainingAmount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, updatable = false)
     private BonusEarningType type;
@@ -45,7 +48,7 @@ public class BonusEarning {
     @Column(name = "description", updatable = false)
     private String description;
 
-    @Column(name = "expires_at", nullable = false, updatable = false)
+    @Column(name = "expires_at", nullable = false)
     private OffsetDateTime expiresAt;
 
     @Enumerated(EnumType.STRING)
@@ -57,10 +60,11 @@ public class BonusEarning {
     private OffsetDateTime earnedAt;
 
     public static BonusEarning earned(UUID memberId, long amount, BonusEarningType type,
-                                       OffsetDateTime expiresAt, UUID policyId, String description) {
+                                      OffsetDateTime expiresAt, UUID policyId, String description) {
         return BonusEarning.builder()
                 .memberId(memberId)
                 .amount(amount)
+                .remainingAmount(amount)
                 .type(type)
                 .status(BonusEarningStatus.ACTIVE)
                 .expiresAt(expiresAt)
@@ -70,10 +74,11 @@ public class BonusEarning {
     }
 
     public static BonusEarning fromOrder(UUID memberId, long amount, UUID orderId,
-                                          OffsetDateTime expiresAt, UUID policyId, String description) {
+                                         OffsetDateTime expiresAt, UUID policyId, String description) {
         return BonusEarning.builder()
                 .memberId(memberId)
                 .amount(amount)
+                .remainingAmount(amount)
                 .type(BonusEarningType.PURCHASE_REWARD)
                 .status(BonusEarningStatus.ACTIVE)
                 .expiresAt(expiresAt)
@@ -83,44 +88,62 @@ public class BonusEarning {
                 .build();
     }
 
-    public static BonusEarning refunded(UUID memberId, long amount, UUID originalOrderId,
-                                         OffsetDateTime expiresAt, String description) {
-        return BonusEarning.builder()
-                .memberId(memberId)
-                .amount(amount)
-                .type(BonusEarningType.REFUND)
-                .status(BonusEarningStatus.ACTIVE)
-                .expiresAt(expiresAt)
-                .referenceId(originalOrderId)
-                .description(description)
-                .build();
+    public long deduct(long deductAmount) {
+        validateActive();
+
+        long actualDeductedAmount;
+        if (remainingAmount <= deductAmount) {
+            actualDeductedAmount = remainingAmount;
+            remainingAmount = 0;
+            status = BonusEarningStatus.FULLY_USED;
+        } else {
+            actualDeductedAmount = deductAmount;
+            remainingAmount -= deductAmount;
+            status = BonusEarningStatus.PARTIALLY_USED;
+        }
+
+        return actualDeductedAmount;
+    }
+
+    public void refund(long refundAmount) {
+        if (remainingAmount + refundAmount > amount) {
+            throw new CustomException(CustomErrorCode.INVALID_REFUND_AMOUNT);
+        }
+        remainingAmount += refundAmount;
+        status = (remainingAmount == amount) ? BonusEarningStatus.ACTIVE : BonusEarningStatus.PARTIALLY_USED;
+
+        // 최소 유효기간 보장 (7일)
+        OffsetDateTime minExpiresAt = OffsetDateTime.now().plusDays(7);
+        if (this.expiresAt.isBefore(minExpiresAt)) {
+            this.expiresAt = minExpiresAt;
+        }
     }
 
     public void markPartiallyUsed() {
         validateActive();
-        this.status = BonusEarningStatus.PARTIALLY_USED;
+        status = BonusEarningStatus.PARTIALLY_USED;
     }
 
     public void markFullyUsed() {
         validateActive();
-        this.status = BonusEarningStatus.FULLY_USED;
+        status = BonusEarningStatus.FULLY_USED;
     }
 
     public void markExpired() {
         validateActive();
-        this.status = BonusEarningStatus.EXPIRED;
+        status = BonusEarningStatus.EXPIRED;
+    }
+
+    private void validateActive() {
+        if (status != BonusEarningStatus.ACTIVE && status != BonusEarningStatus.PARTIALLY_USED) {
+            throw new CustomException(CustomErrorCode.INVALID_BONUS_STATUS);
+        }
     }
 
     @PrePersist
     protected void onCreate() {
         if (id == null) {
             id = UUID.randomUUID();
-        }
-    }
-
-    private void validateActive() {
-        if (this.status != BonusEarningStatus.ACTIVE) {
-            throw new CustomException(CustomErrorCode.INVALID_BONUS_STATUS);
         }
     }
 }

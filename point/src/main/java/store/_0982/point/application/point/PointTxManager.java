@@ -5,6 +5,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.bonus.BonusDeductionService;
+import store._0982.point.application.bonus.BonusRefundService;
 import store._0982.point.common.RetryForTransactional;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
@@ -27,6 +29,8 @@ public class PointTxManager {
     private final PointBalanceRepository pointBalanceRepository;
     private final PointTransactionRepository pointTransactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final BonusDeductionService bonusDeductionService;
+    private final BonusRefundService bonusRefundService;
 
     public PointBalance findPointBalance(UUID memberId) {
         return pointBalanceRepository.findByMemberId(memberId)
@@ -75,9 +79,20 @@ public class PointTxManager {
 
         PointBalance point = findPointBalanceForDeduction(memberId, amount);
 
-        PointAmount deduction = point.use(amount);
-        PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deduction);
+        // 차감될 금액(Delta) 계산
+        PointAmount deductionDelta = point.getPointAmount().calculateDeduction(amount);
+        
+        // 잔액 업데이트
+        point.use(amount);
+
+        // 트랜잭션에는 차감된 금액(Delta)을 기록
+        PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deductionDelta);
         used = pointTransactionRepository.saveAndFlush(used);
+
+        // 보너스 차감 상세 기록
+        if (deductionDelta.getBonusPoint() > 0) {
+            bonusDeductionService.deductBonus(memberId, used.getId(), deductionDelta.getBonusPoint());
+        }
 
         applicationEventPublisher.publishEvent(PointDeductedTxEvent.from(used));
 
@@ -99,9 +114,14 @@ public class PointTxManager {
                 memberId, orderId, idempotencyKey, refundAmount, cancelReason);
 
         returned = pointTransactionRepository.saveAndFlush(returned);
-            // 2. 환불 금액만큼 포인트 복구 (충전 포인트 우선 복구 로직에 따라 PointAmount에서 계산된 값 사용)
-            point.charge(refundAmount.getPaidPoint());
-            point.earnBonus(refundAmount.getBonusPoint());
+        point.charge(refundAmount.getPaidPoint());
+        point.earnBonus(refundAmount.getBonusPoint());
+
+        // 보너스 환불 상세 처리
+        if (refundAmount.getBonusPoint() > 0) {
+            // 사용 트랜잭션 ID로 보너스 차감 내역을 찾아 환불 처리
+            bonusRefundService.refundBonus(usedHistory.getId());
+        }
 
         applicationEventPublisher.publishEvent(PointReturnedTxEvent.from(returned));
     }

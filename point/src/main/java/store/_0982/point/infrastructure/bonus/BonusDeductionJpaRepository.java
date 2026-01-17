@@ -8,7 +8,5 @@ import java.util.UUID;
 
 public interface BonusDeductionJpaRepository extends JpaRepository<BonusDeduction, UUID> {
 
-    List<BonusDeduction> findByBonusEarningId(UUID bonusEarningId);
-
     List<BonusDeduction> findByTransactionId(UUID transactionId);
 }
