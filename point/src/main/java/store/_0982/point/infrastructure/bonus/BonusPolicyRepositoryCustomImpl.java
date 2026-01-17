@@ -15,7 +15,7 @@ import static store._0982.point.domain.entity.QBonusPolicy.bonusPolicy;
 
 @Repository
 @RequiredArgsConstructor
-public class BonusPolicyRepositoryImpl implements BonusPolicyRepositoryCustom {
+public class BonusPolicyRepositoryCustomImpl implements BonusPolicyRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
