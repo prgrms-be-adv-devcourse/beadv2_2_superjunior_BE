@@ -1,4 +1,4 @@
-package store._0982.point.infrastructure;
+package store._0982.point.infrastructure.bonus;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -19,6 +19,7 @@ public class BonusPolicyRepositoryImpl implements BonusPolicyRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
+    // TODO: 적합한 보너스 정책을 찾는 기능을 좀 더 구체화하자
     @Override
     public Optional<BonusPolicy> findBestPolicy(
             BonusPolicyType type,
@@ -47,7 +48,7 @@ public class BonusPolicyRepositoryImpl implements BonusPolicyRepositoryCustom {
     }
 
     private BooleanExpression isValidPeriod(OffsetDateTime now) {
-        return bonusPolicy.validFrom.loe(now)
+        return (bonusPolicy.validFrom.isNull().or(bonusPolicy.validFrom.loe(now)))
                 .and(bonusPolicy.validUntil.isNull().or(bonusPolicy.validUntil.after(now)));
     }
 

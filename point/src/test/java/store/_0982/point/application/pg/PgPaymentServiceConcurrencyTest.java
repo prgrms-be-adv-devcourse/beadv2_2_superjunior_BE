@@ -9,7 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCreateCommand;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.infrastructure.PgPaymentJpaRepository;
+import store._0982.point.infrastructure.pg.PgPaymentJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package store._0982.point.infrastructure;
+package store._0982.point.infrastructure.pg;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

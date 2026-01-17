@@ -2,10 +2,12 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Check;
 import store._0982.point.domain.constant.BonusPolicyType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.OptionalLong;
 import java.util.UUID;
 
 @Entity
@@ -13,6 +15,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Check(
+        constraints = "(reward_rate IS NOT NULL AND fixed_amount IS NULL AND max_reward_amount IS NOT NULL) " +
+                "OR (reward_rate IS NULL AND fixed_amount IS NOT NULL) "
+)
 @Table(name = "bonus_policy", schema = "payment_schema")
 public class BonusPolicy {
 
@@ -56,6 +62,19 @@ public class BonusPolicy {
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
+
+    public OptionalLong calculateBonusAmount(long paidAmount) {
+        if (rewardRate != null) {
+            long earning = BigDecimal.valueOf(paidAmount)
+                    .multiply(rewardRate)
+                    .longValue();
+            return OptionalLong.of(Math.min(earning, maxRewardAmount));
+        }
+        if (fixedAmount != null) {
+            return OptionalLong.of(fixedAmount);
+        }
+        return OptionalLong.empty();
+    }
 
     @PrePersist
     protected void onCreate() {

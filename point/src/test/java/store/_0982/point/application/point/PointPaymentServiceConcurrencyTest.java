@@ -16,8 +16,8 @@ import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.vo.PointAmount;
-import store._0982.point.infrastructure.PointBalanceJpaRepository;
-import store._0982.point.infrastructure.PointTransactionJpaRepository;
+import store._0982.point.infrastructure.point.PointBalanceJpaRepository;
+import store._0982.point.infrastructure.point.PointTransactionJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.util.List;

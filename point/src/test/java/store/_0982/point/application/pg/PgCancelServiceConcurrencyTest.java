@@ -15,8 +15,8 @@ import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.infrastructure.PgPaymentCancelJpaRepository;
-import store._0982.point.infrastructure.PgPaymentJpaRepository;
+import store._0982.point.infrastructure.pg.PgPaymentCancelJpaRepository;
+import store._0982.point.infrastructure.pg.PgPaymentJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
 import java.time.OffsetDateTime;

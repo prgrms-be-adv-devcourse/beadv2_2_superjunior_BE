@@ -1,4 +1,4 @@
-package store._0982.point.infrastructure;
+package store._0982.point.infrastructure.pg;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

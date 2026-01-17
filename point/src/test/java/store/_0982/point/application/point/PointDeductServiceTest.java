@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.OrderValidator;
+import store._0982.point.application.OrderQueryService;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointDeductCommand;
 import store._0982.point.domain.entity.PointBalance;
@@ -28,7 +28,7 @@ class PointDeductServiceTest {
     private PointTxManager pointTxManager;
 
     @Mock
-    private OrderValidator orderValidator;
+    private OrderQueryService orderQueryService;
 
     @InjectMocks
     private PointDeductService pointDeductService;
@@ -57,7 +57,7 @@ class PointDeductServiceTest {
             pointBalance.charge(10000);
             pointBalance.use(5000);
 
-            doNothing().when(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000)).thenReturn(pointBalance);
 
             // when
@@ -66,7 +66,7 @@ class PointDeductServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(5000);
-            verify(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            verify(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             verify(pointTxManager).deductPoints(memberId, orderId, idempotencyKey, 5000);
         }
 
@@ -77,14 +77,14 @@ class PointDeductServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             doThrow(new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST))
-                    .when(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+                    .when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
 
             // when & then
             assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
 
-            verify(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            verify(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             verify(pointTxManager, never()).deductPoints(any(), any(), any(), anyLong());
         }
 
@@ -94,7 +94,7 @@ class PointDeductServiceTest {
             // given
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            doNothing().when(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
                     .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
@@ -110,7 +110,7 @@ class PointDeductServiceTest {
             // given
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            doNothing().when(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
                     .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
 
@@ -126,7 +126,7 @@ class PointDeductServiceTest {
             // given
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
-            doNothing().when(orderValidator).validateOrderPayable(memberId, orderId, 5000);
+            doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
                     .thenThrow(new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST));
 

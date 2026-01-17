@@ -8,7 +8,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
-import store._0982.point.application.OrderValidator;
+import store._0982.point.application.OrderQueryService;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
@@ -22,7 +22,7 @@ public class PgConfirmService {
 
     private final TossPaymentService tossPaymentService;
     private final PgTxManager pgTxManager;
-    private final OrderValidator orderValidator;
+    private final OrderQueryService orderQueryService;
 
     // TODO: 결제 승인에 대한 동시성 처리 필요
     @ServiceLog
@@ -31,7 +31,7 @@ public class PgConfirmService {
         PgPayment pgPayment = pgTxManager.findCompletablePayment(paymentKey, memberId);
 
         UUID orderId = command.orderId();
-        orderValidator.validateOrderPayable(memberId, orderId, command.amount());
+        orderQueryService.validateOrderPayable(memberId, orderId, command.amount());
 
         TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {

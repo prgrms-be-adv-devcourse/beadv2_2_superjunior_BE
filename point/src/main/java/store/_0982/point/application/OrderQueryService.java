@@ -9,12 +9,16 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class OrderValidator {
+public class OrderQueryService {
 
     private final CommerceServiceClient commerceServiceClient;
 
+    public OrderInfo getOrderDetails(UUID memberId, UUID orderId) {
+        return commerceServiceClient.getOrder(orderId, memberId);
+    }
+
     public void validateOrderPayable(UUID memberId, UUID orderId, long amount) {
-        OrderInfo orderInfo = commerceServiceClient.getOrder(orderId, memberId);
+        OrderInfo orderInfo = getOrderDetails(memberId, orderId);
         orderInfo.validatePayable(memberId, orderId, amount);
     }
 }

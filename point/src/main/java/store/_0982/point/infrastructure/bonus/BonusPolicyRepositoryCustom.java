@@ -1,4 +1,4 @@
-package store._0982.point.infrastructure;
+package store._0982.point.infrastructure.bonus;
 
 import store._0982.point.domain.constant.BonusPolicyType;
 import store._0982.point.domain.entity.BonusPolicy;
