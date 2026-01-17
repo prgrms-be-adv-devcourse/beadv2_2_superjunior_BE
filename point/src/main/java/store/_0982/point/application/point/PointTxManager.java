@@ -99,8 +99,9 @@ public class PointTxManager {
                 memberId, orderId, idempotencyKey, refundAmount, cancelReason);
 
         returned = pointTransactionRepository.saveAndFlush(returned);
-        point.charge(refundAmount.paidPoint());
-        point.earnBonus(refundAmount.bonusPoint());
+            // 2. 환불 금액만큼 포인트 복구 (충전 포인트 우선 복구 로직에 따라 PointAmount에서 계산된 값 사용)
+            point.charge(refundAmount.getPaidPoint());
+            point.earnBonus(refundAmount.getBonusPoint());
 
         applicationEventPublisher.publishEvent(PointReturnedTxEvent.from(returned));
     }

@@ -2,17 +2,23 @@ package store._0982.point.domain.vo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.*;
 import store._0982.common.exception.CustomException;
 import store._0982.point.exception.CustomErrorCode;
 
 @Embeddable
-public record PointAmount(
-        @Column(name = "paid_point", nullable = false)
-        long paidPoint,
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@EqualsAndHashCode
+public class PointAmount {
 
-        @Column(name = "bonus_point", nullable = false)
-        long bonusPoint
-) {
+    @Column(name = "paid_point", nullable = false)
+    private long paidPoint;
+
+    @Column(name = "bonus_point", nullable = false)
+    private long bonusPoint;
+
     public static PointAmount zero() {
         return new PointAmount(0, 0);
     }

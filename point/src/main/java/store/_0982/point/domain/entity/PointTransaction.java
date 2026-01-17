@@ -103,11 +103,11 @@ public class PointTransaction {
     }
 
     public long getPaidAmount() {
-        return pointAmount.paidPoint();
+        return pointAmount.getPaidPoint();
     }
 
     public long getBonusAmount() {
-        return pointAmount.bonusPoint();
+        return pointAmount.getBonusPoint();
     }
 
     public long getTotalAmount() {

@@ -60,17 +60,17 @@ public class PointBalance {
     }
 
     public void validateWithdrawable(long amount) {
-        if (pointAmount.paidPoint() < amount) {
+        if (pointAmount.getPaidPoint() < amount) {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
     }
 
     public long getPaidBalance() {
-        return pointAmount.paidPoint();
+        return pointAmount.getPaidPoint();
     }
 
     public long getBonusBalance() {
-        return pointAmount.bonusPoint();
+        return pointAmount.getBonusPoint();
     }
 
     public long getTotalBalance() {

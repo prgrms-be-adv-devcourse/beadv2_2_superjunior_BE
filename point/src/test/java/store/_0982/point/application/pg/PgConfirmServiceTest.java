@@ -68,15 +68,14 @@ class PgConfirmServiceTest {
                 .approvedAt(OffsetDateTime.now())
                 .build();
 
-        OrderInfo orderInfo = new OrderInfo(
-                orderId,
-                10000,
-                OrderInfo.Status.PENDING,
-                memberId,
-                1
-        );
+        OrderInfo orderInfo = OrderInfo.builder()
+                .orderId(orderId)
+                .price(10000)
+                .quantity(1)
+                .status(OrderInfo.Status.PENDING)
+                .memberId(memberId)
+                .build();
 
-        // Mocks - PgTransactionManager 사용
         when(pgTxManager.findCompletablePayment(paymentKey, memberId))
                 .thenReturn(pgPayment);
         when(commerceServiceClient.getOrder(orderId, memberId))

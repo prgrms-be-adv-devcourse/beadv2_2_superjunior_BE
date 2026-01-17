@@ -74,7 +74,13 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
     void concurrent_use_idempotent() throws InterruptedException {
         // given
         PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
-        OrderInfo orderInfo = new OrderInfo(command.orderId(), command.amount(), OrderInfo.Status.PENDING, memberId, 1);
+        OrderInfo orderInfo = OrderInfo.builder()
+                .orderId(command.orderId())
+                .price(command.amount())
+                .quantity(1)
+                .memberId(memberId)
+                .status(OrderInfo.Status.PENDING)
+                .build();
 
         when(commerceServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
@@ -98,7 +104,13 @@ class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
                 .setNotNull("idempotencyKey")
                 .sampleList(getDefaultThreadCount());
 
-        OrderInfo orderInfo = new OrderInfo(orderId, AMOUNT, OrderInfo.Status.PENDING, memberId, 1);
+        OrderInfo orderInfo = OrderInfo.builder()
+                .orderId(orderId)
+                .price(AMOUNT)
+                .quantity(1)
+                .memberId(memberId)
+                .status(OrderInfo.Status.PENDING)
+                .build();
 
         when(commerceServiceClient.getOrder(any(UUID.class), eq(memberId))).thenReturn(orderInfo);
         doNothing().when(applicationEventPublisher).publishEvent(any());
