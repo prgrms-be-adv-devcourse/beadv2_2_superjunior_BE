@@ -8,10 +8,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.OrderQueryService;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
-import store._0982.point.client.CommerceServiceClient;
-import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.exception.CustomErrorCode;
@@ -34,7 +33,7 @@ class PgConfirmServiceTest {
     private PgTxManager pgTxManager;
 
     @Mock
-    private CommerceServiceClient commerceServiceClient;
+    private OrderQueryService orderQueryService;
 
     @InjectMocks
     private PgConfirmService pgConfirmService;
@@ -54,32 +53,23 @@ class PgConfirmServiceTest {
     @DisplayName("결제 승인을 완료하고 포인트를 충전한다")
     void confirmPayment_success() {
         // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
-        PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
+        int amount = 10000;
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgConfirmCommand command = new PgConfirmCommand(orderId, amount, paymentKey);
 
         TossPaymentInfo tossResponse = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
-                .amount(10000)
+                .amount(amount)
                 .method("카드")
                 .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
                 .build();
 
-        OrderInfo orderInfo = OrderInfo.builder()
-                .orderId(orderId)
-                .price(10000)
-                .quantity(1)
-                .status(OrderInfo.Status.PENDING)
-                .memberId(memberId)
-                .build();
-
         when(pgTxManager.findCompletablePayment(paymentKey, memberId))
                 .thenReturn(pgPayment);
-        when(commerceServiceClient.getOrder(orderId, memberId))
-                .thenReturn(orderInfo);
+        doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, amount);
         when(tossPaymentService.confirmPayment(any(), any()))
                 .thenReturn(tossResponse);
         doNothing().when(pgTxManager)
@@ -92,7 +82,7 @@ class PgConfirmServiceTest {
         verify(pgTxManager).markConfirmedPayment(
                 any(TossPaymentInfo.class), eq(paymentKey), eq(memberId)
         );
-        verify(commerceServiceClient).getOrder(orderId, memberId);
+        verify(orderQueryService).validateOrderPayable(memberId, orderId, amount);
     }
 
     @Test

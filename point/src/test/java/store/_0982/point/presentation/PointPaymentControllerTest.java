@@ -9,8 +9,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
-import store._0982.point.application.point.PointReadService;
 import store._0982.point.application.dto.point.PointBalanceInfo;
+import store._0982.point.application.point.PointChargeService;
+import store._0982.point.application.point.PointDeductService;
+import store._0982.point.application.point.PointReadService;
+import store._0982.point.application.point.PointTransferService;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -32,8 +35,23 @@ class PointPaymentControllerTest {
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointReadService memberPointService() {
+        public PointReadService pointReadService() {
             return mock(PointReadService.class);
+        }
+
+        @Bean
+        public PointChargeService pointChargeService() {
+            return mock(PointChargeService.class);
+        }
+
+        @Bean
+        public PointDeductService pointDeductService() {
+            return mock(PointDeductService.class);
+        }
+
+        @Bean
+        public PointTransferService pointTransferService() {
+            return mock(PointTransferService.class);
         }
     }
 

@@ -39,6 +39,8 @@ public class BonusPolicyRepositoryCustomImpl implements BonusPolicyRepositoryCus
                         matchesTarget(groupPurchaseId, category)
                 )
                 // 혜택이 큰 순서: 적립률 > 고정금액 > 최신순
+                // 구매 적립은 정률 적립만 하고, 이벤트나 리뷰 적립은 정액 적립만 하는 경우가 대부분이다.
+                // 그래서 굳이 (구매 금액 * 적립률)과 정액을 비교하는 쿼리를 만들 필요는 없어 보인다.
                 .orderBy(
                         bonusPolicy.rewardRate.desc().nullsLast(),
                         bonusPolicy.fixedAmount.desc().nullsLast(),

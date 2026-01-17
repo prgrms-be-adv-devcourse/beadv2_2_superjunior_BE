@@ -37,7 +37,7 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
     }
 
     @Test
-    @DisplayName("포인트 충전 요청이 여러 번 요청되었을 때 하나의 객체만 생성한다")
+    @DisplayName("결제 생성이 여러 번 요청되었을 때 하나의 객체만 생성한다")
     void concurrent_create() throws InterruptedException {
         // given
         UUID memberId = UUID.randomUUID();
