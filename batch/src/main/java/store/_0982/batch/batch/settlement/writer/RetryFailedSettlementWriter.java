@@ -6,7 +6,6 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
@@ -37,7 +36,6 @@ public class RetryFailedSettlementWriter implements ItemWriter<Settlement> {
 
     private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional
     @Override
     public void write(Chunk<? extends Settlement> chunk) {
         List<Settlement> settlements = chunk.getItems().stream()
