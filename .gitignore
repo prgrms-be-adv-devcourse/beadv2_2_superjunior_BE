@@ -5,6 +5,7 @@
 **/.gradle
 **/build
 **/.DS_Store
+**/bin
 
 # Docker 관련
 docker/postgres/init/*.sql
