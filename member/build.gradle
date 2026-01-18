@@ -42,6 +42,11 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
+    //OpenFeign
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    //Resilience4j
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+
     jib {
         from {
             image = 'eclipse-temurin:17-jre'

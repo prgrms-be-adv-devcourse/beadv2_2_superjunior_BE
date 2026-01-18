@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "settlement_failure", schema = "order_schema")
+@Table(name = "settlement_failure", schema = "settlement_schema")
 public class SettlementFailure {
 
     @Id

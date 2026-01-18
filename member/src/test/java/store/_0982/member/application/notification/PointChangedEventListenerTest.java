@@ -46,7 +46,7 @@ class PointChangedEventListenerTest {
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.POINT_RECHARGED, memberId.toString(), event);
+        kafkaTemplate.send(KafkaTopics.POINT_CHANGED, memberId.toString(), event);
 
         // then
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {

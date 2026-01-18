@@ -27,4 +27,9 @@ public class SellerRepositoryAdapter implements SellerRepository {
     public List<Seller> findAllById(List<UUID> sellerIds) {
         return sellerJpaRepository.findAllById(sellerIds);
     }
+
+    @Override
+    public void delete(Seller seller) {
+        sellerJpaRepository.delete(seller);
+    }
 }

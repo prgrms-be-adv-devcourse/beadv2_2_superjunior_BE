@@ -12,6 +12,9 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 public class ProductDocumentEmbedded {
 
     @Field(type = FieldType.Keyword)
+    private String productId;
+
+    @Field(type = FieldType.Keyword)
     private String category;
 
     @Field(type = FieldType.Long)
@@ -20,8 +23,9 @@ public class ProductDocumentEmbedded {
     @Field(type = FieldType.Keyword)
     private String sellerId;
 
-    public static ProductDocumentEmbedded from(String sellerId, String category, Long price) {
+    public static ProductDocumentEmbedded from(String productId, String sellerId, String category, Long price) {
         return new ProductDocumentEmbedded(
+                productId,
                 category,
                 price,
                 sellerId

@@ -13,12 +13,16 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public class PaymentChangedEvent extends BaseEvent {
 
+    private UUID memberId;
     private UUID orderId;
+    private PaymentMethod method;
     private Status status;
 
-    public PaymentChangedEvent(Clock clock, UUID orderId, Status status) {
+    public PaymentChangedEvent(Clock clock, UUID memberId, UUID orderId, PaymentMethod method, Status status) {
         super(clock);
+        this.memberId = memberId;
         this.orderId = orderId;
+        this.method = method;
         this.status = status;
     }
 
@@ -27,5 +31,10 @@ public class PaymentChangedEvent extends BaseEvent {
         COMPLETED,
         FAILED,
         REFUNDED
+    }
+
+    public enum PaymentMethod {
+        POINT,
+        PG
     }
 }

@@ -14,21 +14,16 @@ public final class KafkaTopics {
      */
     public static final String ORDER_CHANGED = "order.changed";
 
-    /**
-     * @deprecated {@link KafkaTopics#POINT_CHANGED}에서 같이 이용해 주세요.
-     */
-    @Deprecated(forRemoval = true)
-    public static final String POINT_RECHARGED = "point.recharged";
-
     public static final String POINT_CHANGED = "point.changed";
 
     public static final String PAYMENT_CHANGED = "payment.changed";
 
-    @Deprecated(forRemoval = true)
     public static final String PRODUCT_UPSERTED = "product.upserted";
 
     @Deprecated(forRemoval = true)
     public static final String PRODUCT_DELETED = "product.deleted";
+
+    public static final String PRODUCT_EMBEDDING_COMPLETED = "product.embedding.completed";
 
     /**
      * @deprecated {@link KafkaTopics#GROUP_PURCHASE_CHANGED}에서 같이 관리합니다.
@@ -44,6 +39,7 @@ public final class KafkaTopics {
     public static final String GROUP_PURCHASE_CHANGED = "group-purchase.update";
 
     public static final String MEMBER_DELETED = "member.deleted";
+    public static final String MEMBER_LOGGED_IN = "member.logged-in";
 
     @Deprecated(forRemoval = true)
     public static final String DAILY_SETTLEMENT_COMPLETED = "settlement.daily.completed";

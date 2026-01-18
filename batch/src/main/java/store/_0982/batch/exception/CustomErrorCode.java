@@ -30,9 +30,12 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 500 Internal Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
+    ES_BULK_INSERT_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "ES를 벌크로 재색인 하는 중 오류가 발생하였습니다."),
+    ES_REINDEX_RETRY_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ES 재색인을 실패한 문서가 있습니다."),
 
     // 503 Service Unavailable
     SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
+    MEMBER_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Member 서비스를 사용할 수 없습니다."),
 
 
     //400 Bad Request
@@ -43,6 +46,8 @@ public enum CustomErrorCode implements ErrorCode {
     SELLER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "SellerId 값이 없습니다."),
     GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
     INVALID_SETTLEMENT_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 정산 금액입니다."),
+    INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST, "정산 잔액이 부족합니다."),
+    INVALID_ACCOUNT_INFO(HttpStatus.BAD_REQUEST, "유효하지 않은 계좌 정보입니다."),
     GROUP_PURCHASE_IS_NOT_OPEN(HttpStatus.BAD_REQUEST, "공동 구매가 시작하지 않았습니다."),
     GROUP_PURCHASE_IS_END(HttpStatus.BAD_REQUEST, "종료된 공동 구매입니다."),
     GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
@@ -58,7 +63,10 @@ public enum CustomErrorCode implements ErrorCode {
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다."),
     CART_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니에서 해당 공동구매를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다.");
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+
+    // 409 Conflict
+    DB_ES_COUNT_MISMATCH(HttpStatus.CONFLICT, "DB와 ES의 갯수가 다릅니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

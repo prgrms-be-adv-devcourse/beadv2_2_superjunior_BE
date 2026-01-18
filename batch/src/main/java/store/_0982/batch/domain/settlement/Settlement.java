@@ -15,7 +15,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "settlement", schema = "order_schema")
+@Table(name = "settlement", schema = "settlement_schema")
 public class Settlement {
 
     @Id
@@ -55,13 +55,21 @@ public class Settlement {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Column(name = "account_number")
+    private String accountNumber;
+
+    @Column(name = "bank_code")
+    private String bankCode;
+
     public Settlement(
             UUID sellerId,
             OffsetDateTime periodStart,
             OffsetDateTime periodEnd,
             Long totalAmount,
             BigDecimal serviceFee,
-            BigDecimal settlementAmount
+            BigDecimal settlementAmount,
+            String accountNumber,
+            String bankCode
     ) {
         this.settlementId = UUID.randomUUID();
         this.sellerId = sellerId;
@@ -70,6 +78,8 @@ public class Settlement {
         this.totalAmount = totalAmount;
         this.serviceFee = serviceFee;
         this.settlementAmount = settlementAmount;
+        this.accountNumber = accountNumber;
+        this.bankCode = bankCode;
         this.status = SettlementStatus.PENDING;
     }
 
@@ -78,47 +88,33 @@ public class Settlement {
         this.settledAt = OffsetDateTime.now();
     }
 
+    public boolean isCompleted() {
+        return this.status == SettlementStatus.COMPLETED;
+    }
+
     public void markAsFailed() {
         this.status = SettlementStatus.FAILED;
     }
 
-    public SettlementDoneEvent toCompletedEvent() {
+    public void markAsDeferred() {
+        this.status = SettlementStatus.DEFERRED;
+    }
+
+    public void setAccountInfo(String accountNumber, String bankCode) {
+        this.accountNumber = accountNumber;
+        this.bankCode = bankCode;
+    }
+
+    public SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
         return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
                 this.periodStart,
                 this.periodEnd,
-                SettlementDoneEvent.Status.SUCCESS,
+                status,
                 this.totalAmount,
                 this.serviceFee,
                 this.settlementAmount
         );
     }
-
-    public SettlementDoneEvent toFailedEvent() {
-        return new SettlementDoneEvent(
-                this.settlementId,
-                this.sellerId,
-                this.periodStart,
-                this.periodEnd,
-                SettlementDoneEvent.Status.FAILED,
-                this.totalAmount,
-                this.serviceFee,
-                this.settlementAmount
-        );
-    }
-
-    public SettlementDoneEvent toDeferredEvent() {
-        return new SettlementDoneEvent(
-                this.settlementId,
-                this.sellerId,
-                this.periodStart,
-                this.periodEnd,
-                SettlementDoneEvent.Status.DEFERRED,
-                this.totalAmount,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
-        );
-    }
-
 }

@@ -1,5 +1,6 @@
 package store._0982.member.application.member;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import store._0982.member.domain.member.Seller;
 import store._0982.member.domain.member.SellerRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,8 @@ import java.util.List;
 public class SellerService {
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
+
+    private final CommerceQueryPort commerceQueryPort;
 
     @ServiceLog
     @Transactional
@@ -29,6 +33,23 @@ public class SellerService {
         return SellerRegisterInfo.from(sellerRepository.save(seller));
     }
 
+    @ServiceLog
+    @Transactional(noRollbackFor = CustomException.class) //사용자에게는 Error 메세지를 보내지만 결과는 커밋
+    public void createSellerBalance(UUID sellerId) {
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_SELLER));
+        try {
+            commerceQueryPort.postSellerBalance(sellerId);
+            seller.confirm();
+        } catch (FeignException e) {
+            sellerRepository.delete(seller);
+            seller.getMember().unregisterSeller();
+            memberRepository.save(seller.getMember());
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);   // seller_balance는 생성 실패
+        }
+    }
+
+    @ServiceLog
+    @Transactional
     public SellerInfo getSeller(SellerCommand command) {
         Seller foundSeller = sellerRepository.findById(command.searchedSellerId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_SELLER));
         SellerInfo sellerInfo = SellerInfo.from(foundSeller);

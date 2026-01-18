@@ -37,6 +37,11 @@ public class CartRepositoryAdapter implements CartRepository {
     }
 
     @Override
+    public List<Cart> findAllByMemberId(UUID memberId) {
+        return cartJpaRepository.findAllByMemberId(memberId);
+    }
+
+    @Override
     public Optional<Cart> findById(UUID cartId) {
         return cartJpaRepository.findById(cartId);
     }
@@ -52,8 +57,8 @@ public class CartRepositoryAdapter implements CartRepository {
     }
 
     @Override
-    public void deleteAll(List<Cart> carts) {
-        cartJpaRepository.deleteAll(carts);
+    public void deleteAllById(List<UUID> carts) {
+        cartJpaRepository.deleteAllByCartIdIn(carts);
     }
 
 }

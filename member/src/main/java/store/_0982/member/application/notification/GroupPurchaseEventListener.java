@@ -39,7 +39,7 @@ public class GroupPurchaseEventListener {
     // TODO: 나중에 제대로 알림 분기 및 내용 수정
     private NotificationContent createContent(GroupPurchaseEvent event) {
         return switch (event.getGroupPurchaseStatus()) {
-            case SCHEDULED, OPENED -> null;
+            case SCHEDULED, OPEN -> null;
             case SUCCESS -> new NotificationContent(
                     NotificationType.GROUP_PURCHASE_COMPLETED,
                     "공동 구매 성사 완료",

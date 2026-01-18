@@ -31,6 +31,14 @@ spec:
               value: "6379"
             - name: MEMBER_SERVICE_URL
               value: http://member-service:8083
+            - name: COMMERCE_SERVICE_URL
+              value: http://commerce-service:8087
+            - name: POINT_SERVICE_URL
+              value: http://point-service:8086
+            - name: SEARCH_SERVICE_URL
+              value: http://search-service:8082
+            - name: AI_SERVICE_URL
+              value: http://ai-service:8088
           envFrom:
             - secretRef:
                 name: gateway-secret

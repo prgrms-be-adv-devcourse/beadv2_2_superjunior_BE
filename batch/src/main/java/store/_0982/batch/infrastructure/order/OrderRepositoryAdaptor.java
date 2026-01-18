@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.batch.domain.order.Order;
 import store._0982.batch.domain.order.OrderRepository;
+import store._0982.batch.domain.order.OrderStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +67,14 @@ public class OrderRepositoryAdaptor implements OrderRepository {
             UUID groupPurchaseId, OrderStatus status) {
         return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(
                 groupPurchaseId, status
+        );
+    }
+
+    @Override
+    public List<Order> findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+            List<UUID> groupPurchaseIds, OrderStatus status) {
+        return orderJpaRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+                groupPurchaseIds, status
         );
     }
 

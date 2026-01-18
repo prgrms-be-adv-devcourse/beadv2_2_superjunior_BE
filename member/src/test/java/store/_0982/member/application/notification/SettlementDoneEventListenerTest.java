@@ -47,7 +47,7 @@ class SettlementDoneEventListenerTest {
                 sellerId,
                 java.time.OffsetDateTime.now().minusDays(1),
                 java.time.OffsetDateTime.now(),
-                SettlementDoneEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.COMPLETED,
                 50000L,
                 java.math.BigDecimal.valueOf(500),
                 java.math.BigDecimal.valueOf(49500)
@@ -117,7 +117,7 @@ class SettlementDoneEventListenerTest {
                 sellerId,
                 java.time.OffsetDateTime.now().minusMonths(1),
                 java.time.OffsetDateTime.now(),
-                SettlementDoneEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.COMPLETED,
                 1000000L,
                 java.math.BigDecimal.valueOf(10000),
                 java.math.BigDecimal.valueOf(990000)

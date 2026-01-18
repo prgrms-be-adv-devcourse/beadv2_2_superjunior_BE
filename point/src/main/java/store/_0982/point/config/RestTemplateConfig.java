@@ -5,12 +5,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
+
 @Configuration
 public class RestTemplateConfig {
 
-    // TODO: 외부 API 요청에 대한 timeout 설정 필요
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+        return builder
+                .connectTimeout(Duration.ofSeconds(1))
+                .readTimeout(Duration.ofSeconds(5))
+                .build();
     }
 }

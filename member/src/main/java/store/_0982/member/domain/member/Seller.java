@@ -43,6 +43,9 @@ public class Seller {
     @Column(name = "business_registration_number", length = 15, nullable = false, unique = true)
     private String businessRegistrationNumber;
 
+    @Column(name = "status")
+    private Seller.Status staus = Status.PENDING;
+
     public static Seller create(Member member, String bankCode, String accountNumber, String accountHolder, String businessRegistrationNumber) {
         Seller seller = new Seller();
         seller.member = member;
@@ -60,5 +63,14 @@ public class Seller {
         this.accountNumber = accountNumber;
         this.accountHolder = accountHolder;
         this.businessRegistrationNumber = businessRegistrationNumber;
+    }
+
+    public void confirm() {
+        this.staus = Status.ACTIVE;
+    }
+
+
+    private enum Status {
+        PENDING, ACTIVE
     }
 }

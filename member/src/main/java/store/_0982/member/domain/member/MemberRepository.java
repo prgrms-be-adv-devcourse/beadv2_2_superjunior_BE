@@ -11,4 +11,6 @@ public interface MemberRepository {
     Optional<Member> findById(UUID memberId);
 
     Optional<Member> findByName(String name);
+
+    void hardDelete(Member member);
 }

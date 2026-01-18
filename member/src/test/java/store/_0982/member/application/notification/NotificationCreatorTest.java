@@ -88,7 +88,7 @@ class NotificationCreatorTest {
                 sellerId,
                 java.time.OffsetDateTime.now().minusDays(1),
                 java.time.OffsetDateTime.now(),
-                SettlementDoneEvent.Status.SUCCESS,
+                SettlementDoneEvent.Status.COMPLETED,
                 50000L,
                 java.math.BigDecimal.valueOf(500),
                 java.math.BigDecimal.valueOf(49500)

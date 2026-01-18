@@ -47,6 +47,8 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Long)
     private Long discountRate;
 
+    @Field(type = FieldType.Dense_Vector, dims = 1536)
+    private float[] productVector;
 
     @Field(type = FieldType.Nested)
     private ProductDocumentEmbedded productDocumentEmbedded;
@@ -62,7 +64,9 @@ public class GroupPurchaseDocument {
                 .endDate(toOffsetDateTime(row.endDate()))
                 .updatedAt(toOffsetDateTime(row.updatedAt()))
                 .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
+                .productVector(row.productVector())
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
+                        toStringOrNull(row.productId()),
                         row.category(),
                         row.price(),
                         row.sellerId().toString()
@@ -85,6 +89,10 @@ public class GroupPurchaseDocument {
             return 0L;
         }
         return Math.round(((double) (price - discountedPrice) / price) * 100);
+    }
+
+    private static String toStringOrNull(Object value) {
+        return value == null ? null : value.toString();
     }
 
 }

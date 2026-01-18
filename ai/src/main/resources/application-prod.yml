@@ -1,0 +1,4 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}

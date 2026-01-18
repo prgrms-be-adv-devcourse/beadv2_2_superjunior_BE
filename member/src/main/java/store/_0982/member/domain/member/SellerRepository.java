@@ -11,4 +11,6 @@ public interface SellerRepository {
     Optional<Seller> findById(UUID sellerId);
 
     List<Seller> findAllById(List<UUID> sellerIds);
+
+    void delete(Seller seller);
 }

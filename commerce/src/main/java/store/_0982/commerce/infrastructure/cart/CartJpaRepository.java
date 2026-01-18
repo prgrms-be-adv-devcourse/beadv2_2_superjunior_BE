@@ -22,9 +22,16 @@ public interface CartJpaRepository extends JpaRepository<Cart, UUID> {
     @Query("select c from Cart c where c.memberId = :memberId and c.quantity > 0")
     Page<Cart> findAllByMemberId(@Param("memberId") UUID memberId, Pageable pageable);
 
+    @Query("select c from Cart c where c.memberId = :memberId and c.quantity > 0")
+    List<Cart> findAllByMemberId(@Param("memberId") UUID memberId);
+
     @Modifying
     @Query("update Cart c set c.quantity = 0 where c.memberId = :memberId")
     void flushCart(UUID memberId);
 
     List<Cart> findAllByCartIdIn(List<UUID> cartIds);
+
+    @Modifying
+    @Query("delete from Cart c where c.cartId in :cartIds")
+    void deleteAllByCartIdIn(@Param("cartIds") List<UUID> cartIds);
 }

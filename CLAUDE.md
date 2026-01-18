@@ -90,7 +90,7 @@ docker-compose up -d
 **Business Services:**
 - **member** (port 8083): Authentication, user management, JWT token generation, notification management
 - **commerce** (port 8087): Product catalog, group purchase management, order processing, cart, seller balance
-- **point** (port 8086): Point recharge/payment via Toss Payments API, point usage/refund with concurrency control
+- **point** (port 8086): Unified payment service handling both PG payments (via Toss Payments API) and point payments with concurrency control
 - **batch** (port 8085): Daily/monthly settlement automation, group purchase status management
 - **elastic-search** (port 8082): Product and group purchase search indexing with Nori analyzer
 
@@ -114,13 +114,20 @@ docker-compose up -d
 **Asynchronous (Kafka):**
 - Event-driven communication between services
 - Topics defined in `common/src/main/java/store/_0982/common/kafka/KafkaTopics.java`:
-  - `order.created`, `order.changed`
-  - `point.recharged`, `point.changed`
-  - `product.upserted`, `product.deleted`
-  - `group-purchase.created`, `group-purchase.changed`, `group-purchase.update`
-  - `group-purchase.added` (Deprecated - will be removed)
-  - `settlement.daily.completed`, `settlement.daily.failed`
-  - `settlement.monthly.completed`, `settlement.monthly.failed`
+  - **Active Topics:**
+    - `order.created`, `order.changed`, `order.canceled`
+    - `point.changed` (replaces point.recharged)
+    - `payment.changed` (unified event for both PG and point payments)
+    - `group-purchase.update`
+    - `member.deleted`
+    - `seller-balance.changed`
+    - `settlement.done` (replaces separate daily/monthly events)
+  - **Deprecated Topics (will be removed):**
+    - `point.recharged` → Use `point.changed`
+    - `product.upserted`, `product.deleted`
+    - `group-purchase.created`, `group-purchase.changed` → Use `group-purchase.update`
+    - `settlement.daily.completed`, `settlement.daily.failed`
+    - `settlement.monthly.completed`, `settlement.monthly.failed` → Use `settlement.done`
 
 ### Data Storage
 
@@ -128,7 +135,7 @@ docker-compose up -d
 - Schema-based isolation per service:
   - `member_schema`: Member service (users, sellers, admins)
   - `notification_schema`: Notification service (integrated in member)
-  - `point_schema`: Point service (member points, payment transactions)
+  - `payment_schema`: Point service (point balance, PG payments, point payments)
   - `product` schema: Commerce service (products, group purchases)
   - `order` schema: Commerce service (orders, carts)
   - `batch_order_schema`: Batch service (Spring Batch metadata for order processing)
@@ -160,6 +167,42 @@ docker-compose up -d
 5. Services read headers to identify authenticated user
 6. Internal service endpoints (`/internal/**`) use separate token authentication
 
+### Point Service Architecture
+
+The Point service follows a unified payment architecture handling both PG payments and point payments:
+
+**Domain Layer (`domain/entity`):**
+- `PointBalance`: Aggregate root tracking member's point balance (paid + bonus points)
+- `PointPayment`: Immutable record of point transactions (charged, used, returned)
+- `PgPayment`: Immutable record of PG payment transactions
+- `PgPaymentCancel`: Records of PG payment cancellations
+- `PgPaymentFailure`: Records of PG payment failures
+
+**Application Layer:**
+- `application/point/`: Point payment operations
+  - `PointPaymentService`: Charge/use/return point operations
+  - `PointReturnService`: Point refund processing
+- `application/pg/`: PG payment operations via Toss Payments
+  - `PgPaymentService`: PG payment creation
+  - `PgConfirmService`: PG payment confirmation
+  - `PgCancelService`: PG payment cancellation
+  - `PgFailService`: PG payment failure handling
+  - `PgTransactionManager`: Manages PG payment lifecycle
+- `OrderCanceledEventListener`: Listens to order cancellations and triggers refunds
+
+**Key Design Patterns:**
+- **Idempotency**: All payment operations use unique idempotency keys
+- **Immutability**: Payment records are immutable (insert-only, no updates)
+- **Event Sourcing**: Each state change creates a new payment record
+- **Unique Constraints**: Combination of (order_id + status) prevents duplicate payments
+
+**Payment Flows:**
+1. **Point Charge Flow**: Recharge → Update balance → Record CHARGED transaction
+2. **Point Usage Flow**: Order payment → Deduct balance → Record USED transaction
+3. **Point Return Flow**: Order cancel → Restore balance → Record RETURNED transaction
+4. **PG Payment Flow**: Create → Confirm → Complete (with webhook validation)
+5. **PG Cancel Flow**: Cancel request → Toss API → Record cancellation
+
 ### Event-Driven Architecture
 
 **Publishing Events:**
@@ -181,8 +224,11 @@ docker-compose up -d
 - **GroupPurchase** references **Product** via `productId`
 - **Order** references **Member**, **Seller**, and **GroupPurchase**
 - **Notification** references entities via `referenceType` and `referenceId`
-- **MemberPoint** tracks point balance per member
-- **PaymentPoint** tracks individual payment/refund transactions
+- **PointBalance** tracks point balance per member (paid points + bonus points)
+- **PointPayment** tracks individual point charge/use/return transactions
+- **PgPayment** tracks PG payment transactions via Toss Payments
+- **PgPaymentCancel** tracks PG payment cancellations
+- **PgPaymentFailure** tracks PG payment failures
 - **Cart** references **Member** and **GroupPurchase**
 - **SellerBalance** tracks seller earnings and withdrawals
 
@@ -196,9 +242,9 @@ docker-compose up -d
   ```
 
 **Idempotency Key Pattern:**
-- Point service uses idempotency keys to prevent duplicate requests
-- Checked before processing point usage/refund operations
-- Example: `existsByIdempotencyKey()` in `MemberPointService.java:111`
+- Point service uses idempotency keys to prevent duplicate payment requests
+- Checked before processing point charge/use/return operations
+- Unique constraint on `idempotency_key` column in both `PointPayment` and `PgPayment` tables
 
 **Database Constraints:**
 - Unique constraints on critical fields (e.g., order_id + status)
@@ -247,9 +293,9 @@ docker-compose up -d
   - Located at: `point/src/test/java/store/_0982/point/support/BaseConcurrencyTest.java`
 
 **Concurrency Test Examples:**
-- `MemberPointServiceConcurrencyTest.java`: Point deduction/refund concurrency
-- `PaymentPointServiceConcurrencyTest.java`: Point recharge concurrency
-- `RefundServiceConcurrencyTest.java`: Refund concurrency
+- `PointPaymentServiceConcurrencyTest.java`: Point charge/use/return concurrency
+- `PgPaymentServiceConcurrencyTest.java`: PG payment concurrency
+- `PgCancelServiceConcurrencyTest.java`: PG payment cancellation concurrency
 
 **Recent Testing Improvements:**
 - Migrated from H2 to TestContainers (PostgreSQL) for production parity
@@ -310,6 +356,32 @@ docker-compose up -d
 - **Discovery** service excludes Eureka Client dependency (it's the server)
 - **Config** service is disabled and not in use
 - **Notification** is not a separate service - it's part of **member** service
+
+### Recent Major Changes (Point Service Refactoring)
+
+**Domain Structure Unification (January 2025):**
+- **Unified Payment Architecture**: Point service now handles both PG payments and point payments under a single domain model
+- **Entity Renaming:**
+  - `Point` → `PointBalance` (tracks member's point balance with paid/bonus separation)
+  - `PointHistory` → `PointPayment` (immutable payment transaction records)
+  - `Payment` → `PgPayment` (PG payment transactions)
+  - `PaymentCancel` → `PgPaymentCancel` (PG cancellation records)
+  - `PaymentFailure` → `PgPaymentFailure` (PG failure records)
+- **Schema Rename:** `point_schema` → `payment_schema` to reflect unified payment handling
+- **Service Layer Restructure:**
+  - Split into `application/pg/` and `application/point/` packages
+  - `PaymentService` → `PgPaymentService` + `PointPaymentService`
+  - `PaymentRefundService` → `PgCancelService` + `PointReturnService`
+- **New Kafka Events:**
+  - `payment.changed`: Unified event for both PG and point payment status changes
+  - `order.canceled`: Dedicated event for order cancellations (triggers payment refunds)
+- **Test Alignment:** All test classes renamed to match new service/entity names
+
+**Migration Notes:**
+- Database migration handled via Flyway: `V3__change_domain_structure.sql`
+- Old entity names and service classes have been completely removed
+- All tests updated to use new naming conventions
+- API endpoints remain backward compatible where possible
 
 ### Technology Stack
 - Java 17 (toolchain)
