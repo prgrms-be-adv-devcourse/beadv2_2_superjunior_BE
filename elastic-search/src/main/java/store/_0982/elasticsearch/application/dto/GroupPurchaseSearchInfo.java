@@ -42,7 +42,8 @@ public record GroupPurchaseSearchInfo(
                         row.category(),
                         row.price(),
                         row.originalUrl(),
-                        row.sellerId().toString()
+                        row.sellerId().toString(),
+                        row.productVector()
                 )
         );
     }

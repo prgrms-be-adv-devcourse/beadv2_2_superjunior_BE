@@ -28,9 +28,11 @@ public interface GroupPurchaseSearchJpaRepository extends Repository<GroupPurcha
                 p.category as category,
                 p.price as price,
                 p.original_url as originalUrl,
-                p.seller_id as sellerId
+                p.seller_id as sellerId,
+                pv.vector as productVector
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
+            left join product_schema.product_vector pv on pv.product_id = p.product_id
             where gp.group_purchase_id in (:ids)
             """, nativeQuery = true)
     List<GroupPurchaseSearchProjection> findAllByIds(@Param("ids") List<UUID> ids);

@@ -86,4 +86,13 @@ public class Product {
     public void softDelete() {
         this.deletedAt = OffsetDateTime.now();
     }
+
+    public ProductEmbeddingEvent toEvent(ProductCategory category) {
+        return new ProductEmbeddingEvent(
+                this.productId,
+                this.name,
+                this.description,
+                category.toString()
+        );
+    }
 }
