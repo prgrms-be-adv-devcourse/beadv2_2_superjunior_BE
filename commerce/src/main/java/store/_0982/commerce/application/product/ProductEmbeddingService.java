@@ -17,7 +17,8 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
+
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.log.ServiceLog;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class ProductEmbeddingService {
 
     @ServiceLog
     @Transactional
-    public ProductEmbeddingCompleteInfo updateEmbedding(ProductEmbeddingCompleteEvent completeEvent) {
+    public ProductEmbeddingCompleteInfo updateEmbedding(ProductEmbeddingCompletedEvent completeEvent) {
         ProductVector vector = new ProductVector(completeEvent, currentModelVersion);
         ProductVector saved = vectorizeRepository.save(vector);
         return ProductEmbeddingCompleteInfo.from(saved);

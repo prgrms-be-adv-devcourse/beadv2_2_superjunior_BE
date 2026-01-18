@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class ProductVector {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    public ProductVector(ProductEmbeddingCompleteEvent completeEvent, String modelVersion) {
+    public ProductVector(ProductEmbeddingCompletedEvent completeEvent, String modelVersion) {
         this.productId = completeEvent.getProductId();
         this.vector = completeEvent.getVector();
         this.modelVersion = modelVersion;

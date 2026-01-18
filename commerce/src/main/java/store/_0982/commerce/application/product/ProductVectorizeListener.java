@@ -7,10 +7,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.product.dto.ProductEmbeddingCompleteInfo;
-import store._0982.common.dto.ResponseDto;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.log.ServiceLog;
 
 @Slf4j
@@ -23,7 +21,7 @@ public class ProductVectorizeListener {
     @RetryableTopic
     @ServiceLog
     @KafkaListener(topics = KafkaTopics.PRODUCT_EMBEDDING_COMPLETED, groupId = "ai-service-group", containerFactory = "productEmbeddingCompleteEventKafkaListenerFactory")
-    public void saveVector(ProductEmbeddingCompleteEvent completeEvent){
+    public void saveVector(ProductEmbeddingCompletedEvent completeEvent){
         ProductEmbeddingCompleteInfo info = embeddingService.updateEmbedding(completeEvent);
         log.info("{} 벡터 생성 완료.", info.productId());
     }
