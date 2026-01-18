@@ -1,6 +1,8 @@
 package store._0982.member.application.member;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,8 +13,9 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.member.dto.*;
-import store._0982.member.exception.CustomErrorCode;
+import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.domain.member.*;
+import store._0982.member.exception.CustomErrorCode;
 
 import java.util.UUID;
 
@@ -29,6 +32,9 @@ public class MemberService {
     private final EmailService emailService;
     private final MemberRoleCache memberRoleCache;
 
+    private final ApplicationEventPublisher eventPublisher;
+    private final PointQueryPort pointQueryPort;
+
     @ServiceLog
     @Transactional
     public MemberSignUpInfo createMember(MemberSignUpCommand command) {
@@ -39,6 +45,22 @@ public class MemberService {
         member.encodePassword(passwordEncoder.encode(member.getSaltKey() + member.getPassword()));
         return MemberSignUpInfo.from(memberRepository.save(member));
     }
+
+    @Transactional(noRollbackFor = CustomException.class) //사용자에게는 Error 메세지를 보내지만 결과는 커밋
+    @ServiceLog
+    public void createPointBalance(UUID memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() ->
+                new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
+        try {
+            pointQueryPort.postPointBalance(memberId);
+            member.confirm();
+        } catch (FeignException e) {
+            memberRepository.hardDelete(member);
+            throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);   //point_balance는 생성 실패
+        }
+    }
+
+
     @ServiceLog
     @Transactional
     public void changePassword(PasswordChangeCommand command) {
@@ -46,12 +68,14 @@ public class MemberService {
         checkPassword(command.password(), member);
         member.changePassword(passwordEncoder.encode(member.getSaltKey() + command.newPassword()));
     }
+
     @ServiceLog
     @Transactional
     public void deleteMember(MemberDeleteCommand command) {
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         checkPassword(command.password(), member);
         member.delete();
+        eventPublisher.publishEvent(new MemberDeletedServiceEvent(command.memberId()));
         memberRepository.save(member);
     }
 
@@ -96,13 +120,13 @@ public class MemberService {
     @Transactional
     public void verifyEmail(String token) {
         EmailToken emailToken = emailTokenRepository.findByToken(token).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
-        if(emailToken.isExpired()) throw new CustomException(CustomErrorCode.TIME_OUT);
+        if (emailToken.isExpired()) throw new CustomException(CustomErrorCode.TIME_OUT);
         emailToken.verify();
     }
 
     private void checkEmailVerification(String email) {
         EmailToken emailToken = emailTokenRepository.findByEmail(email).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
-        if(!emailToken.isVerified())
+        if (!emailToken.isVerified())
             throw new CustomException(CustomErrorCode.NOT_VERIFIED_EMAIL);
     }
 
@@ -128,16 +152,16 @@ public class MemberService {
     }
 
     private void checkAddressOwner(Address address, UUID memberId) {
-        if(!address.getMember().getMemberId().equals(memberId))
+        if (!address.getMember().getMemberId().equals(memberId))
             throw new CustomException(CustomErrorCode.FORBIDDEN);
     }
 
     public RoleInfo getRoleOfMember(UUID memberId) {
         Role role = memberRoleCache.find(memberId).orElse(null);
-        if(role == null) {
+        if (role == null) {
             Member member = memberRepository.findById(memberId).orElse(Member.createGuest());
             role = member.getRole();
-            if(role != Role.GUEST)
+            if (role != Role.GUEST)
                 memberRoleCache.save(member.getMemberId(), member.getRole());
         }
         return new RoleInfo(memberId, role);

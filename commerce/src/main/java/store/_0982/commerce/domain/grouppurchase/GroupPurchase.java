@@ -53,6 +53,10 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -60,6 +64,9 @@ public class GroupPurchase {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
 
     @Column(name = "settled_at")
     private OffsetDateTime settledAt;
@@ -90,15 +97,61 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public void syncCurrentQuantity(int count){
-        this.currentQuantity = count;
-        checkAndUpdateStatusIfMaxReached();
+
+    public boolean applyParticipationResult(boolean success, int quantity){
+        if(success){
+            return increaseQuantity(quantity);
+        }else{
+            return decreaseQuantity(quantity);
+        }
+    }
+
+    private boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
     }
 
     private void checkAndUpdateStatusIfMaxReached() {
         if (this.currentQuantity == this.maxQuantity) {
             this.status = GroupPurchaseStatus.SUCCESS;
         }
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (!canParticipate(quantity)) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    public boolean decreaseQuantity(int quantity){
+        if(this.currentQuantity - quantity < 0){
+            throw new IllegalStateException("currentQuantity 음수 불가능");
+        }
+        this.currentQuantity -= quantity;
+        return true;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.currentQuantity += quantity;
+    }
+
+    public boolean isInReversedPeriod() {
+        if (this.succeededAt == null) {
+            return false;
+        }
+        return OffsetDateTime.now().isBefore(this.succeededAt.plusDays(2));
+    }
+
+    public boolean isInReturnedPeriod() {
+        if (this.succeededAt == null)
+            return false;
+        return OffsetDateTime.now().isAfter(this.succeededAt.plusDays(2))
+                && OffsetDateTime.now().isBefore(this.succeededAt.plusWeeks(2));
     }
 
     public void updateGroupPurchase(int mintQuantity,
