@@ -7,7 +7,6 @@ import store._0982.point.domain.entity.BonusEarning;
 import store._0982.point.domain.repository.BonusEarningRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -32,7 +31,12 @@ public class BonusEarningRepositoryAdapter implements BonusEarningRepository {
     }
 
     @Override
-    public Optional<BonusEarning> findById(UUID id) {
-        return bonusEarningJpaRepository.findById(id);
+    public List<BonusEarning> findAllById(Iterable<UUID> ids) {
+        return bonusEarningJpaRepository.findAllById(ids);
+    }
+
+    @Override
+    public void saveAll(Iterable<BonusEarning> earnings) {
+        bonusEarningJpaRepository.saveAll(earnings);
     }
 }
