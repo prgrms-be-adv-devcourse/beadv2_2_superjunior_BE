@@ -20,7 +20,6 @@ public record GroupPurchaseSearchRow(
         String category,
         Long price,
         String originalUrl,
-        UUID sellerId,
-        float[] productVector
+        UUID sellerId
 ) {
 }
