@@ -20,9 +20,14 @@ public record GroupPurchaseSearchInfo(
         OffsetDateTime updatedAt,
         Integer currentQuantity,
         Long discountRate,
+        Double score,
         ProductSearchInfo productSearchInfo
 ) {
     public static GroupPurchaseSearchInfo from(GroupPurchaseSearchRow row) {
+        return from(row, null);
+    }
+
+    public static GroupPurchaseSearchInfo from(GroupPurchaseSearchRow row, Double score) {
         return new GroupPurchaseSearchInfo(
                 row.groupPurchaseId().toString(),
                 row.minQuantity(),
@@ -37,13 +42,13 @@ public record GroupPurchaseSearchInfo(
                 toOffsetDateTime(row.updatedAt()),
                 row.currentQuantity(),
                 calculateDiscountRate(row.price(), row.discountedPrice()),
+                score,
                 new ProductSearchInfo(
                         row.productId().toString(),
                         row.category(),
                         row.price(),
                         row.originalUrl(),
-                        row.sellerId().toString(),
-                        row.productVector()
+                        row.sellerId().toString()
                 )
         );
     }

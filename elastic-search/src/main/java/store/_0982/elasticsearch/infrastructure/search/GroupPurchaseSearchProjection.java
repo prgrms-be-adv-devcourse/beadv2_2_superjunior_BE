@@ -21,5 +21,4 @@ public interface GroupPurchaseSearchProjection {
     Long getPrice();
     String getOriginalUrl();
     UUID getSellerId();
-    Object getProductVector();
 }

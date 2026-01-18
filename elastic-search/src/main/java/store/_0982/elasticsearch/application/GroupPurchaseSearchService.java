@@ -52,7 +52,7 @@ public class GroupPurchaseSearchService {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, null);
             return PageResponse.from(mappedPage);
         });
     }
@@ -65,7 +65,7 @@ public class GroupPurchaseSearchService {
         return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, toScoreMap(hits));
             return PageResponse.from(mappedPage);
         });
     }
@@ -90,7 +90,11 @@ public class GroupPurchaseSearchService {
         throw exceptionTranslator.translate(new IllegalStateException("search retry exhausted"));
     }
 
-    private Page<GroupPurchaseSearchInfo> toSearchResultPage(SearchHits<GroupPurchaseDocument> hits, Pageable pageable) {
+    private Page<GroupPurchaseSearchInfo> toSearchResultPage(
+            SearchHits<GroupPurchaseDocument> hits,
+            Pageable pageable,
+            Map<UUID, Double> scores
+    ) {
         if (hits.getSearchHits().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
         }
@@ -108,10 +112,20 @@ public class GroupPurchaseSearchService {
         for (UUID id : ids) {
             GroupPurchaseSearchRow row = rowMap.get(id);
             if (row != null) {
-                ordered.add(GroupPurchaseSearchInfo.from(row));
+                Double score = scores != null ? scores.get(id) : null;
+                ordered.add(GroupPurchaseSearchInfo.from(row, score));
             }
         }
 
         return new PageImpl<>(ordered, pageable, hits.getTotalHits());
+    }
+
+    private Map<UUID, Double> toScoreMap(SearchHits<GroupPurchaseDocument> hits) {
+        return hits.getSearchHits().stream()
+                .collect(Collectors.toMap(
+                        hit -> UUID.fromString(hit.getId()),
+                        hit -> (double) hit.getScore(),
+                        (left, right) -> left
+                ));
     }
 }
