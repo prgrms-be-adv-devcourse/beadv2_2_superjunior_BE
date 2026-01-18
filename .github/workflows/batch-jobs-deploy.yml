@@ -85,14 +85,6 @@ jobs:
         echo "=== CronJob List ==="
         kubectl get cronjobs -l app=batch-service
 
-        echo "=== CronJob Images ==="
-        kubectl get cronjobs -l app=batch-service \
-          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.jobTemplate.spec.template.spec.containers[0].image}{"\n"}{end}'
-
-        echo "=== Next Schedule ==="
-        kubectl get cronjobs -l app=batch-service \
-          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.lastScheduleTime}{"\t"}{.spec.schedule}{"\n"}{end}'
-
         echo "=== Deployment Summary ==="
         echo "Image: ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}"
         echo "Commit: ${{ github.sha }}"
