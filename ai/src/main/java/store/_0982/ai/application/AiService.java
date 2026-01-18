@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
+import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -11,17 +14,17 @@ import org.springframework.stereotype.Service;
 public class AiService {
     private final EmbeddingModel embeddingModel;
 
-    public ProductEmbeddingCompleteEvent vectorize(ProductEmbeddingEvent event) {
+    public ProductEmbeddingCompletedEvent vectorize(ProductUpsertedEvent event) {
         String input = buildInput(event)
                 .replaceAll("\\s+", " ")
                 .trim();
 
         log.info("{} \n 벡터화", input);
         float[] embedding = embeddingModel.embed(input);
-        return new ProductEmbeddingCompleteEvent(event.getProductId(), embedding);
+        return new ProductEmbeddingCompletedEvent(event.getProductId(), embedding);
     }
 
-    private String buildInput(ProductEmbeddingEvent event) {
+    private String buildInput(ProductUpsertedEvent event) {
         StringBuilder builder = new StringBuilder();
         if (event.getName() != null && !event.getName().isBlank()) {
             builder.append("상품명: ").append(event.getName()).append('\n');
