@@ -56,6 +56,7 @@ management:
 
 client:
   member: ${CLIENT_MEMBER:http://localhost:8083}
+  commerce: ${CLIENT_COMMERCE:http://localhost:8087}
 
 kafka:
   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
