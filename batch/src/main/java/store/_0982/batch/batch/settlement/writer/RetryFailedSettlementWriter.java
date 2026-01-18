@@ -10,13 +10,14 @@ import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
 import store._0982.batch.application.settlement.event.SettlementFailedEvent;
-import store._0982.batch.domain.settlement.*;
+import store._0982.batch.domain.settlement.Settlement;
+import store._0982.batch.domain.settlement.SettlementFailureRepository;
+import store._0982.batch.domain.settlement.SettlementRepository;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.common.exception.CustomException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
+public class RetryFailedSettlementWriter implements ItemWriter<Settlement> {
 
     private final MemberClient memberClient;
     private final SettlementRepository settlementRepository;
@@ -43,7 +44,6 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
 
         Map<UUID, SellerAccountInfo> accountMap = memberClient.fetchAccounts(settlements);
 
-        List<SettlementFailure> failures = new ArrayList<>();
         for (Settlement settlement : settlements) {
             try {
                 SellerAccountInfo accountInfo = accountMap.get(settlement.getSellerId());
@@ -56,26 +56,18 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
                 settlement.markAsCompleted();
                 sellerBalanceService.clearBalance(settlement);
 
+                settlementFailureRepository.deleteBySettlementId(settlement.getSettlementId());
+
                 eventPublisher.publishEvent(new SettlementCompletedEvent(settlement));
             } catch (CustomException e) {
                 settlement.markAsFailed();
-                failures.add(new SettlementFailure(
-                        settlement.getSellerId(),
-                        settlement.getPeriodStart(),
-                        settlement.getPeriodEnd(),
-                        e.getMessage(),
-                        0,
-                        settlement.getSettlementId()
-                ));
+                settlementFailureRepository.incrementRetryCount(settlement.getSettlementId());
 
                 eventPublisher.publishEvent(new SettlementFailedEvent(settlement, e.getMessage()));
             }
         }
 
         settlementRepository.saveAll(settlements);
-        if (!failures.isEmpty()) {
-            settlementFailureRepository.saveAll(failures);
-        }
     }
 
     private boolean isValidAccount(SellerAccountInfo accountInfo) {

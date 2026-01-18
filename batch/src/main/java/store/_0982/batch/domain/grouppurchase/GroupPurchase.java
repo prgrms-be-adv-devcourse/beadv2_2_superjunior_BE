@@ -66,7 +66,10 @@ public class GroupPurchase {
 
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
-    
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
+
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
                          String title,

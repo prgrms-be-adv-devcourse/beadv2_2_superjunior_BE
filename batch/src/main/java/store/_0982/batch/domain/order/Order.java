@@ -208,6 +208,7 @@ public class Order {
         return this.returnedAt != null;
     }
 
+
     public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
         return new OrderCanceledEvent(
                 this.memberId,
@@ -224,4 +225,9 @@ public class Order {
         );
     }
 
+
+    // 총 주문 금액 계산
+    public Long getTotalAmount() {
+        return this.price * this.quantity;
+    }
 }
