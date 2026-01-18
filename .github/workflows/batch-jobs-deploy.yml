@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - dev
+      - feature/ci-cd
     paths:
       - 'batch/**'
       - 'common/**'
