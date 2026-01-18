@@ -3,19 +3,22 @@ package store._0982.commerce.application.order;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.cart.CartService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
+import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
+import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
@@ -29,10 +32,10 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 
-import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
 
 @Slf4j
 @Service
@@ -41,11 +44,16 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
+    private final CartService cartService;
+
     private final GroupPurchaseService groupPurchaseService;
+    private final SellerBalanceService sellerBalanceService;
     private final ParticipateService participateService;
+
     private final MemberClient memberClient;
     private final PaymentClient paymentClient;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성
@@ -70,7 +78,7 @@ public class OrderService {
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
         // 참여
-        participate(groupPurchase.getGroupPurchaseId(), command, memberName);
+        participateService.participate(groupPurchase.getGroupPurchaseId(), command.quantity(), memberName, command.requestId());
 
         // order 생성
         Order order = Order.create(
@@ -106,92 +114,23 @@ public class OrderService {
         String memberName = validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
-        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
-        if (carts.size() != command.cartIds().size()) {
-            throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
-        }
+        List<Cart> carts = cartService.validateAndGetCartForOrder(memberId,command.cartIds());
 
-        // 장바구니가 해당 회원 것인지 확인
-        carts.forEach(cart -> {
-            if (!cart.getMemberId().equals(memberId)) {
-                throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
-            }
-
-            if (cart.getQuantity() < 0) {
-                throw new CustomException(CustomErrorCode.INVALID_QUANTITY);
-            }
-        });
-
-        // 공동 구매 유효한지 확인 -> 참여 -> 포인트 차감
+        // 공동 구매 유효한지 확인
         Set<UUID> groupPurchaseIds = carts.stream()
                 .map(Cart::getGroupPurchaseId)
                 .collect(Collectors.toSet());
 
         // 공동 구매 리스트 조회
-        List<GroupPurchase> groupPurchaseList = groupPurchaseService.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
-
-        Map<UUID, GroupPurchase> purchasesMap = groupPurchaseList.stream()
-                .collect(Collectors.toMap(
-                        GroupPurchase::getGroupPurchaseId,
-                        Function.identity()
-                ));
-
-        // 각 공동 구매가 조건에 맞는지 확인
-        purchasesMap.values().forEach(purchase -> {
-            if (purchase.getStatus() != GroupPurchaseStatus.OPEN) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
-            }
-            if (purchase.getEndDate().isBefore(OffsetDateTime.now())) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
-            }
-        });
+        Map<UUID, GroupPurchase> purchasesMap = groupPurchaseService.getAvailableGroupPurchasesOrder(groupPurchaseIds);
 
         // 주문 생성
-        List<OrderRegisterInfo> results = new ArrayList<>();
-
-        for (Cart cart : carts) {
-            GroupPurchase purchase = purchasesMap.get(cart.getGroupPurchaseId());
-
-            if (purchase == null) {
-                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
-            }
-
-            // 공동 구매 참여
-            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
-                    cart.getQuantity(),
-                    command.address(),
-                    command.addressDetail(),
-                    command.postalCode(),
-                    command.receiverName(),
-                    purchase.getSellerId(),
-                    purchase.getGroupPurchaseId(),
-                    command.requestId()
-            );
-
-            // Order 생성
-            Order order = Order.create(
-                    cart.getQuantity(),
-                    purchase.getDiscountedPrice(),
-                    memberId,
-                    command.address(),
-                    command.addressDetail(),
-                    command.postalCode(),
-                    command.receiverName(),
-                    purchase.getSellerId(),
-                    cart.getGroupPurchaseId(),
-                    command.requestId()
-            );
-
-            Order savedOrder = orderRepository.save(order);
-
-            //participate(cart.getGroupPurchaseId(), orderCommand, memberName);
-            results.add(OrderRegisterInfo.from(savedOrder));
-        }
+        List<OrderRegisterInfo> orders = createOrderFromCart(memberId, carts, purchasesMap, command, memberName);
 
         // 장바구니 비우기
-        cartRepository.deleteAll(carts);
+        eventPublisher.publishEvent(new OrderCartCompletedEvent(carts));
 
-        return results;
+        return orders;
     }
 
 
@@ -211,8 +150,42 @@ public class OrderService {
         return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
-    private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
-        participateService.participate(groupPurchaseId, command.quantity(), name, command.requestId());
+    private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command, String memberName){
+        List<Order> orderToSave = new ArrayList<>();
+
+        for(Cart cart: carts){
+            GroupPurchase groupPurchase = purchaseMap.get(cart.getGroupPurchaseId());
+
+            if(groupPurchase == null){
+                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+            }
+
+            String orderRequestId = command.requestId() + "-" + cart.getCartId();
+
+
+            participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity(), memberName, orderRequestId);
+
+            Order order = Order.create(
+                    cart.getQuantity(),
+                    groupPurchase.getDiscountedPrice(),
+                    memberId,
+                    command.address(),
+                    command.addressDetail(),
+                    command.postalCode(),
+                    command.receiverName(),
+                    groupPurchase.getSellerId(),
+                    groupPurchase.getGroupPurchaseId(),
+                    orderRequestId
+            );
+
+            orderToSave.add(order);
+        }
+
+        List<Order> savedOrders = orderRepository.saveAll(orderToSave);
+
+        return savedOrders.stream()
+                .map(OrderRegisterInfo::from)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -338,5 +311,71 @@ public class OrderService {
             orderRepository.saveAll(toUpdate);
             log.info("환불 상태 업데이트 완료 : 성공 = {}, 실패 = {}", success, fail);
         }
+    }
+
+    @Transactional
+    public void cancelOrder(OrderCancelCommand command) {
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        GroupPurchase groupPurchase = groupPurchaseService
+                .findByGroupPurchase(order.getGroupPurchaseId());
+
+        if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
+            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReversedPeriod()) {
+            processCancellationWithin48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReturnedPeriod()) {
+            processReturnAfter48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+        throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+    }
+
+    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
+        groupPurchaseService.cancelOrder(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
+        order.requestCancel();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processCancellationWithin48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReversed();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.WITHIN_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processReturnAfter48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReturned();
+
+        RefundAmount refundAmount = calculate(order, CancellationType.AFTER_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
+        eventPublisher.publishEvent(
+                new OrderCancelProcessedEvent(order, reason, refundAmount)
+        );
     }
 }

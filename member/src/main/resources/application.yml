@@ -18,6 +18,14 @@ spring:
         show-sql: false
     open-in-view: false
 
+  flyway:
+    enabled: true
+    default-schema: member_schema
+    schemas:
+      - member_schema
+      - notification_schema
+    create-schemas: true
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -29,12 +37,6 @@ spring:
           auth: true
           starttls:
             enable: true
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      database: ${REDIS_DATABASE:0}
-
 
 server:
   port: 8083

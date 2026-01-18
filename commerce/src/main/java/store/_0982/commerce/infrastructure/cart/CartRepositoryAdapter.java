@@ -52,8 +52,8 @@ public class CartRepositoryAdapter implements CartRepository {
     }
 
     @Override
-    public void deleteAll(List<Cart> carts) {
-        cartJpaRepository.deleteAll(carts);
+    public void deleteAllById(List<UUID> carts) {
+        cartJpaRepository.deleteAllByCartIdIn(carts);
     }
 
 }
