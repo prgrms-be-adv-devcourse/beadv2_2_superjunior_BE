@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
-
 public class PersonalVector {
     @Id
     private UUID memberId;
@@ -26,5 +25,12 @@ public class PersonalVector {
     @UpdateTimestamp
     @CreationTimestamp
     private OffsetDateTime updateTime;
-    public PersonalVector(UUID memberId, float[] vector) {}
+
+    private PersonalVector(UUID memberId, float[] vector) {
+        this.memberId = memberId;
+        this.vector = vector;
+    }
+    public static PersonalVector create(UUID memberId, float[] vector) {
+        return new PersonalVector(memberId, vector);
+    }
 }
