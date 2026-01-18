@@ -16,13 +16,25 @@ public class ProductEmbeddingEvent extends BaseEvent{
     private UUID productId;
     private String name;
     private String description;
-    private String category;
+    private ProductCategory category;
 
-    public ProductEmbeddingEvent(Clock clock, UUID productId, String name, String description, String category) {
+    public ProductEmbeddingEvent(Clock clock, UUID productId, String name, String description, ProductCategory category) {
         super(clock);
         this.productId = productId;
         this.name = name;
         this.description = description;
         this.category = category;
+    }
+
+    public enum ProductCategory {
+        HOME,
+        FOOD,
+        HEALTH,
+        BEAUTY,
+        FASHION,
+        ELECTRONICS,
+        KIDS,
+        HOBBY,
+        PET
     }
 }
