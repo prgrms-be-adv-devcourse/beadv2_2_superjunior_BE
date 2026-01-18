@@ -20,6 +20,7 @@ on:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip deploy]')"
     outputs:
       gateway: ${{ steps.filter.outputs.gateway }}
       member: ${{ steps.filter.outputs.member }}

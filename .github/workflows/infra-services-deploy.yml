@@ -16,8 +16,10 @@ on:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip deploy]')"
     outputs:
       search: ${{ steps.filter.outputs.search }}
+      ai: ${{ steps.filter.outputs.ai }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -41,6 +43,13 @@ jobs:
           else
             echo "search=false" >> $GITHUB_OUTPUT
           fi
+          
+          # AI
+          if echo "$CHANGED_FILES" | grep -qE '^(ai/|common/|build\.gradle|settings\.gradle|docs/k8s/service/ai\.yml)'; then
+            echo "ai=true" >> $GITHUB_OUTPUT
+          else
+            echo "ai=false" >> $GITHUB_OUTPUT
+          fi
 
   # Search 배포
   deploy-search:
@@ -60,6 +69,29 @@ jobs:
           module-name: elastic-search
           image-name: ${{ secrets.DOCKERHUB_USERNAME }}/search
           manifest-path: docs/k8s/service/search.yml
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  deploy-ai:
+    needs:
+      - detect-changes
+      - deploy-search
+    if: always() && needs.detect-changes.outputs.ai == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search 배포
+        uses: ./.github/actions/deploy-infra-service
+        with:
+          service-name: ai
+          module-name: ai
+          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/ai
+          manifest-path: docs/k8s/service/ai.yml
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
