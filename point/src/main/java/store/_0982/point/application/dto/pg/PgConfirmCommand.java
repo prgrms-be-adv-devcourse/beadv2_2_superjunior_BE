@@ -1,0 +1,10 @@
+package store._0982.point.application.dto.pg;
+
+import java.util.UUID;
+
+public record PgConfirmCommand(
+        UUID orderId,
+        long amount,
+        String paymentKey
+) {
+}

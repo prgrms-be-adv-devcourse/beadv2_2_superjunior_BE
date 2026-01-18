@@ -6,8 +6,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PointChangedEvent;
-import store._0982.point.domain.entity.Payment;
-import store._0982.point.domain.entity.PointHistory;
+import store._0982.point.domain.entity.PgPayment;
+import store._0982.point.domain.entity.PointTransaction;
 
 @Slf4j
 @Service
@@ -16,30 +16,36 @@ public class PointEventPublisher {
     private final KafkaTemplate<String, PointChangedEvent> kafkaTemplate;
 
 
-    public void publishPaymentConfirmedEvent(Payment payment) {
+    public void publishPaymentConfirmedEvent(PgPayment pgPayment) {
         // TODO: 결제 승인 이벤트 발송 추가
     }
 
-    public void publishPointChargedEvent(PointHistory history) {
+    public void publishPointChargedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.CHARGED);
-        send(KafkaTopics.POINT_RECHARGED, history.getMemberId().toString(), event);
+        send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    public void publishPointDeductedEvent(PointHistory history) {
+    public void publishPointDeductedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    public void publishPointReturnedEvent(PointHistory history) {
+    public void publishPointReturnedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.RETURNED);
         send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
     }
 
-    private static PointChangedEvent createPointChangedEvent(PointHistory history, PointChangedEvent.Status status) {
+    // TODO: Kafka 이벤트 객체에 '출금됨' 상태를 추가할까?
+    public void publishPointTransferredEvent(PointTransaction history) {
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
+        send(KafkaTopics.POINT_CHANGED, history.getMemberId().toString(), event);
+    }
+
+    private static PointChangedEvent createPointChangedEvent(PointTransaction history, PointChangedEvent.Status status) {
         return new PointChangedEvent(
                 history.getId(),
                 history.getMemberId(),
-                history.getAmount(),
+                history.getTotalAmount(),
                 status,
                 null
         );

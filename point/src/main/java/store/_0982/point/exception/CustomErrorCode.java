@@ -18,6 +18,7 @@ public enum CustomErrorCode implements ErrorCode {
     ORDER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "OrderId 값이 없습니다."),
 
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    INVALID_REFUND_AMOUNT(HttpStatus.BAD_REQUEST, "환불 요청 금액이 실제 주문 금액을 초과합니다."),
     REFUND_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "환불 조건에 맞지 않아 환불이 불가합니다."),
 
     // 403 Forbidden
@@ -25,13 +26,16 @@ public enum CustomErrorCode implements ErrorCode {
 
     // 404 Not Found
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버를 찾을 수 없습니다."),
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 요청을 찾을 수 없습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 내역을 찾을 수 없습니다."),
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
 
     // 409 Conflict
     ALREADY_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
-    CANNOT_HANDLE_FAILURE(HttpStatus.CONFLICT, "결제가 이미 완료 또는 환불되었습니다."),
+    ALREADY_REFUNDED_PAYMENT(HttpStatus.CONFLICT, "이미 환불된 결제입니다."),
+    CANNOT_HANDLE_FAILURE(HttpStatus.CONFLICT, "실패 처리할 수 없는 결제입니다."),
     DIFFERENT_AMOUNT(HttpStatus.CONFLICT, "결제 금액이 불일치합니다."),
+    IDEMPOTENT_REQUEST(HttpStatus.CONFLICT, "중복된 요청입니다."),
+    INVALID_BONUS_STATUS(HttpStatus.CONFLICT, "보너스 포인트의 상태가 올바르지 않습니다."),
     ORDER_ID_MISMATCH(HttpStatus.CONFLICT, "주문 번호가 일치하지 않습니다."),
     NOT_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "환불할 수 없는 상태입니다."),
 
