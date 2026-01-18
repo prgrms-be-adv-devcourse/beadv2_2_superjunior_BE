@@ -9,8 +9,11 @@ import store._0982.commerce.application.cart.dto.CartAddCommand;
 import store._0982.commerce.application.cart.dto.CartDeleteCommand;
 import store._0982.commerce.application.cart.dto.CartInfo;
 import store._0982.commerce.application.cart.dto.CartUpdateCommand;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
@@ -25,9 +28,14 @@ import java.util.UUID;
 public class CartService {
     private final CartRepository cartRepository;
 
+    private final GroupPurchaseService groupPurchaseService;
+
     @Transactional
     public CartInfo addIntoCart(CartAddCommand command) {
         Cart cart = cartRepository.findByMemberIdAndGroupPurchaseId(command.memberId(), command.groupPurchaseId()).orElse(Cart.create(command.memberId(), command.groupPurchaseId()));
+        GroupPurchaseDetailInfo groupPurchaseDetailInfo = groupPurchaseService.getGroupPurchaseById(cart.getGroupPurchaseId());
+        if(groupPurchaseDetailInfo.status() != GroupPurchaseStatus.OPEN)
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_AVAILABLE);
         cart.add(command.quantity());
         return CartInfo.from(cartRepository.save(cart));
     }
