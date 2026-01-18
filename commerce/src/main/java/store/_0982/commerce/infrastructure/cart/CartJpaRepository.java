@@ -22,6 +22,9 @@ public interface CartJpaRepository extends JpaRepository<Cart, UUID> {
     @Query("select c from Cart c where c.memberId = :memberId and c.quantity > 0")
     Page<Cart> findAllByMemberId(@Param("memberId") UUID memberId, Pageable pageable);
 
+    @Query("select c from Cart c where c.memberId = :memberId and c.quantity > 0")
+    List<Cart> findAllByMemberId(@Param("memberId") UUID memberId);
+
     @Modifying
     @Query("update Cart c set c.quantity = 0 where c.memberId = :memberId")
     void flushCart(UUID memberId);
