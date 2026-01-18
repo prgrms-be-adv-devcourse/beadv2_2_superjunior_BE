@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - group-purchase-cronjob.yml
+  - seller-balance-cronjob.yml
+  - monthly-settlement-cronjob.yml
+  - retry-settlement-cronjob.yml
+
+labels:
+  - pairs:
+      environment: production
+      managed-by: kustomize
+    includeSelectors: false  # selector 필드에는 적용하지 않음
+
+# 이미지 태그 설정
+images:
+  - name: minbros/batch
+    newTag: latest

@@ -1,0 +1,97 @@
+#file: noinspection SpellCheckingInspection
+name: Batch Jobs Deploy
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'batch/**'
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'docs/k8s/job/*.yml'
+      - '!docs/k8s/job/group-purchase-reindex-job.yml'
+
+env:
+  DOCKER_IMAGE: minbros/batch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 코드 체크아웃
+      uses: actions/checkout@v4
+
+    - name: JDK 17 설정
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Gradle 실행 권한 부여
+      shell: bash
+      run: chmod +x ./gradlew
+
+    - name: Docker Hub 로그인
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: 버전 태그 생성
+      id: version
+      shell: bash
+      run: |
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        echo "tag=${SHORT_SHA}" >> $GITHUB_OUTPUT
+        echo "Image tag: $SHORT_SHA"
+
+    - name: Jib로 Docker 이미지 빌드 및 Push
+      run: |
+        ./gradlew :batch:jib \
+          -Djib.to.image=${{ env.DOCKER_IMAGE }} \
+          -Djib.to.tags=${{ steps.version.outputs.tag }} \
+          -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
+          -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Kubectl 설치
+      uses: azure/setup-kubectl@v4
+      with:
+        version: 'latest'
+
+    - name: Kubectl 설정
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Kustomize로 이미지 태그 설정
+      run: |
+        cd docs/k8s/job
+        kustomize edit set image ${{ env.DOCKER_IMAGE }}=${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}
+        cat kustomization.yml
+
+    - name: Kustomize로 cronjob 배포
+      run: |
+        kubectl apply -k docs/k8s/job
+
+    - name: CronJob 배포 검증
+      run: |
+        echo "=== CronJob List ==="
+        kubectl get cronjobs -l app=batch-service
+
+        echo "=== CronJob Images ==="
+        kubectl get cronjobs -l app=batch-service \
+          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.jobTemplate.spec.template.spec.containers[0].image}{"\n"}{end}'
+
+        echo "=== Next Schedule ==="
+        kubectl get cronjobs -l app=batch-service \
+          -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.lastScheduleTime}{"\t"}{.spec.schedule}{"\n"}{end}'
+
+        echo "=== Deployment Summary ==="
+        echo "Image: ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Deployed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"

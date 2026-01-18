@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: retry-settlement-cronjob
+  labels:
+    app: batch-service
+    component: cronjob
+    job-type: retry-settlement
+spec:
+  schedule: "30 0 2 * *"
+  timeZone: "Asia/Seoul"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  jobTemplate:
+    spec:
+      backoffLimit: 3  # 재시도 작업이므로 더 많은 재시도 허용
+      activeDeadlineSeconds: 3600  # 60분 제한
+      template:
+        metadata:
+          labels:
+            app: batch-service
+            job-type: retry-settlement
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: batch-job
+            image: minbros/batch:latest
+            imagePullPolicy: Always
+            env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: TZ
+              value: "Asia/Seoul"
+            - name: SPRING_BATCH_JOB_NAME
+              value: "retryFailedSettlementJob"
+            - name: JOB_DESCRIPTION
+              value: "실패한 정산 재시도 작업"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+            - name: ELASTICSEARCH_URIS
+              value: "http://elasticsearch-service:9200"
+            - name: CLIENT_MEMBER
+              value: "http://member-service:8083"
+            envFrom:
+              - secretRef:
+                  name: batch-secret
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+                ephemeral-storage: "512Mi"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+                ephemeral-storage: "1Gi"
