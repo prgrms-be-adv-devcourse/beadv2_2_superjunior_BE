@@ -1,62 +1,50 @@
-#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway
+  name: ai
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: gateway
+      app: ai
   template:
     metadata:
       labels:
-        app: gateway
+        app: ai
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-5
+        kubernetes.io/hostname: ip-10-0-0-244
       containers:
-        - name: gateway
-          image: minbros/gateway:latest
+        - name: ai
+          image: minbros/ai:latest
           imagePullPolicy: Always
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
-            - name: REDIS_HOST
-              value: "redis-service"
-            - name: REDIS_PORT
-              value: "6379"
-            - name: MEMBER_SERVICE_URL
-              value: http://member-service:8083
-            - name: COMMERCE_SERVICE_URL
-              value: http://commerce-service:8087
-            - name: POINT_SERVICE_URL
-              value: http://point-service:8086
-            - name: SEARCH_SERVICE_URL
-              value: http://search-service:8082
-            - name: AI_SERVICE_URL
-              value: http://ai-service:8088
+            - name: OPENAI_EMBEDDING_MODEL
+              value: text-embedding-3-small
           envFrom:
             - secretRef:
-                name: gateway-secret
+                name: ai-secret
+          ports:
+            - containerPort: 8088
+              protocol: TCP
           resources:
             requests:
               cpu: "200m"
-              memory: "384Mi"
-              ephemeral-storage: "768Mi"
+              memory: "256Mi"
+              ephemeral-storage: "512Mi"
             limits:
               cpu: "500m"
               memory: "512Mi"
               ephemeral-storage: "1Gi"
-          ports:
-            - containerPort: 8000
           readinessProbe:
             httpGet:
               path: /actuator/health
-              port: 8000
+              port: 8088
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -64,7 +52,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health
-              port: 8000
+              port: 8088
             initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
@@ -73,13 +61,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway-service
+  name: ai-service
 spec:
   type: ClusterIP
   selector:
-    app: gateway
+    app: ai
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: 8088
+      targetPort: 8088
       protocol: TCP
       name: http
