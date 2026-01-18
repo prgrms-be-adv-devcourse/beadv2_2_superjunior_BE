@@ -53,10 +53,6 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -97,24 +93,9 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public int getRemainingQuantity() {
-        return this.maxQuantity - this.currentQuantity;
-    }
-
-    public boolean increaseQuantity(int quantity) {
-        if (!canParticipate(quantity)) {
-            return false;
-        }
-
-        this.currentQuantity += quantity;
+    public void syncCurrentQuantity(int count){
+        this.currentQuantity = count;
         checkAndUpdateStatusIfMaxReached();
-
-        return true;
-    }
-
-    private boolean canParticipate(int quantity) {
-        return status == GroupPurchaseStatus.OPEN
-                && (this.currentQuantity + quantity <= this.maxQuantity);
     }
 
     private void checkAndUpdateStatusIfMaxReached() {
@@ -148,7 +129,29 @@ public class GroupPurchase {
     public boolean isSettled() {
         return this.settledAt != null;
     }
-  
+
+    public void open() {
+        if(this.status != GroupPurchaseStatus.SCHEDULED){
+            throw new IllegalStateException("SCHEDULED 일 때만 변경 가능");
+        }
+        this.status = GroupPurchaseStatus.OPEN;
+    }
+
+    public void markSuccess(){
+        if(this.status != GroupPurchaseStatus.OPEN){
+            throw new IllegalStateException("OPEN 일 때만 변경 가능");
+        }
+        this.status = GroupPurchaseStatus.SUCCESS;
+    }
+
+    public void markFailed(){
+        if(this.status != GroupPurchaseStatus.OPEN){
+            throw new IllegalStateException("OPEN 일 때만 변경 가능");
+        }
+        this.status = GroupPurchaseStatus.FAILED;
+    }
+
+
     public void updateStatus(GroupPurchaseStatus status){
         this.status = status;
     }

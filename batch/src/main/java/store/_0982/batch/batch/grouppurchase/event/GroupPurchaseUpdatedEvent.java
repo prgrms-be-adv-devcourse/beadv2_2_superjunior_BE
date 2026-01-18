@@ -1,4 +1,4 @@
-package store._0982.batch.batch.grouppurchase.config.tasklet.event;
+package store._0982.batch.batch.grouppurchase.event;
 
 import java.util.UUID;
 
