@@ -32,7 +32,7 @@ public class CartService {
     public CartInfo addIntoCart(CartAddCommand command) {
         Cart cart = cartRepository.findByMemberIdAndGroupPurchaseId(command.memberId(), command.groupPurchaseId()).orElse(Cart.create(command.memberId(), command.groupPurchaseId()));
         GroupPurchaseDetailInfo groupPurchaseDetailInfo = groupPurchaseService.getGroupPurchaseById(cart.getGroupPurchaseId());
-        if(!groupPurchaseDetailInfo.status().equals(GroupPurchaseStatus.OPEN))
+        if(groupPurchaseDetailInfo.status() != GroupPurchaseStatus.OPEN)
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_AVAILABLE);
         cart.add(command.quantity());
         return CartInfo.from(cartRepository.save(cart));
