@@ -58,12 +58,12 @@ public record GroupPurchaseDocumentCommand(
                 .endDate(endDate)
                 .updatedAt(updatedAt)
                 .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
+                .productVector(productVector)
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
                         productId,
                         productCategory,
                         originalPrice,
-                        sellerId,
-                        productVector
+                        sellerId
                 ))
                 .build();
     }
