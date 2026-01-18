@@ -14,7 +14,7 @@ import java.util.UUID;
 public class ProductEmbeddingCompletedEvent extends BaseEvent {
 
     private UUID productId;
-    float[] vector;
+    private float[] vector;
 
     public ProductEmbeddingCompletedEvent(Clock clock, UUID productId, float[] vector) {
         super(clock);

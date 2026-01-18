@@ -13,7 +13,7 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public class MemberLoggedInEvent extends BaseEvent {
 
-    UUID memberId;
+    private UUID memberId;
 
     public MemberLoggedInEvent(Clock clock, UUID memberId) {
         super(clock);
