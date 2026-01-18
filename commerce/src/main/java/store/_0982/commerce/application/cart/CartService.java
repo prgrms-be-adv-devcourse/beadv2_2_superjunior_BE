@@ -19,6 +19,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,6 +27,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class CartService {
     private final CartRepository cartRepository;
+
     private final GroupPurchaseService groupPurchaseService;
 
     @Transactional
@@ -73,6 +75,34 @@ public class CartService {
         if (!cart.getMemberId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
         }
+    }
+
+    @Transactional
+    public void deleteCartById(List<Cart> carts){
+        List<UUID> deleteIds = carts.stream()
+                .map(Cart::getCartId)
+                .toList();
+        cartRepository.deleteAllById(deleteIds);
+    }
+
+    public List<Cart> validateAndGetCartForOrder(UUID memberId, List<UUID> cartIds){
+        List<Cart> carts = cartRepository.findAllByCartIdIn(cartIds);
+
+        if(carts.size() != cartIds.size()){
+            throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
+        }
+
+        carts.forEach(cart -> {
+            if(!cart.getMemberId().equals(memberId)){
+                throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
+            }
+
+            if(cart.getQuantity() <= 0){
+                throw new CustomException(CustomErrorCode.CART_IS_EMPTY);
+            }
+        });
+
+        return carts;
     }
 
 }
