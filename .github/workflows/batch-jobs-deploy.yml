@@ -13,6 +13,7 @@ on:
       - 'settings.gradle'
       - 'docs/k8s/job/*.yml'
       - '!docs/k8s/job/group-purchase-reindex-job.yml'
+      - '.github/workflows/batch-jobs-deploy.yml'
 
 env:
   DOCKER_IMAGE: minbros/batch
@@ -39,8 +40,8 @@ jobs:
     - name: Docker Hub 로그인
       uses: docker/login-action@v3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: 버전 태그 생성
       id: version
