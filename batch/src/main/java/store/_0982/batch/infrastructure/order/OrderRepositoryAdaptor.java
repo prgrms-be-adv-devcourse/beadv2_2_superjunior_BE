@@ -71,6 +71,14 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
+    public List<Order> findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+            List<UUID> groupPurchaseIds, OrderStatus status) {
+        return orderJpaRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+                groupPurchaseIds, status
+        );
+    }
+
+    @Override
     public boolean existsByIdempotencyKey(String idempotenceKey) {
         return orderJpaRepository.existsByIdempotencyKey(idempotenceKey);
     }
