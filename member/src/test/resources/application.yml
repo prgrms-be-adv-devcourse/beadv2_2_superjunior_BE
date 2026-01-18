@@ -55,3 +55,12 @@ logging:
   level:
     org.springframework.kafka: WARN
     org.apache.kafka: WARN
+
+jwt:
+  secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
+  access-token-validity-period: 60000
+  refresh-token-validity-period: 120000
+
+token:
+  internal:
+    secret: "this-is-a-long-internal-token-secret-123456"

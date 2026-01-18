@@ -30,4 +30,8 @@ public interface CartJpaRepository extends JpaRepository<Cart, UUID> {
     void flushCart(UUID memberId);
 
     List<Cart> findAllByCartIdIn(List<UUID> cartIds);
+
+    @Modifying
+    @Query("delete from Cart c where c.cartId in :cartIds")
+    void deleteAllByCartIdIn(@Param("cartIds") List<UUID> cartIds);
 }

@@ -24,5 +24,5 @@ public interface CartRepository {
 
     List<Cart> findAllByCartIdIn(List<UUID> cartIds);
 
-    void deleteAll(List<Cart> carts);
+    void deleteAllById(List<UUID> carts);
 }

@@ -1,0 +1,27 @@
+package store._0982.gateway.domain;
+
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.Authentication;
+
+import java.util.UUID;
+
+@Getter
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Member {
+    private UUID memberId;
+    private Role role;
+
+    public static Member of(UUID memberId, Role role) {
+        return new Member(memberId, role);
+    }
+
+    public static Member createGuest(){
+        return new Member(UUID.fromString("00000000-0000-0000-0000-000000000000"), Role.GUEST);
+    }
+
+}

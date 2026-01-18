@@ -8,11 +8,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
-import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.exception.PaymentClientException;
+import store._0982.point.client.dto.TossPaymentInfo;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -57,16 +57,15 @@ class TossPaymentClientTest {
                 paymentKey
         );
 
-        TossPaymentResponse expectedResponse = new TossPaymentResponse(
-                paymentKey,
-                orderId,
-                amount,
-                "CARD",
-                "DONE",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                null
-        );
+        TossPaymentInfo expectedResponse = TossPaymentInfo.builder()
+                .paymentKey(paymentKey)
+                .orderId(orderId)
+                .amount(amount)
+                .method("CARD")
+                .status(TossPaymentInfo.Status.DONE)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .build();
 
         mockServer.expect(requestTo("https://api.tosspayments.com/v1/payments/confirm"))
                 .andExpect(method(HttpMethod.POST))
@@ -77,7 +76,7 @@ class TossPaymentClientTest {
                 .andRespond(withSuccess(objectMapper.writeValueAsString(expectedResponse), MediaType.APPLICATION_JSON));
 
         // when
-        TossPaymentResponse response = tossPaymentClient.confirm(request);
+        TossPaymentInfo response = tossPaymentClient.confirm(request);
 
         // then
         assertThat(response).isNotNull();
@@ -112,8 +111,7 @@ class TossPaymentClientTest {
 
         // when & then
         assertThatThrownBy(() -> tossPaymentClient.confirm(request))
-                .isInstanceOf(PaymentClientException.class)
-                .hasMessageContaining("유효하지 않은 카드 번호입니다");
+                .isInstanceOf(HttpStatusCodeException.class);
 
         mockServer.verify();
     }
@@ -132,22 +130,23 @@ class TossPaymentClientTest {
                 reason
         );
 
-        TossPaymentResponse.CancelInfo cancelInfo = new TossPaymentResponse.CancelInfo(
+        TossPaymentInfo.CancelInfo cancelInfo = new TossPaymentInfo.CancelInfo(
                 amount,
                 reason,
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                "test_transaction_key"
         );
 
-        TossPaymentResponse expectedResponse = new TossPaymentResponse(
-                paymentKey,
-                UUID.randomUUID(),
-                amount,
-                "CARD",
-                "CANCELED",
-                OffsetDateTime.now(),
-                OffsetDateTime.now(),
-                List.of(cancelInfo)
-        );
+        TossPaymentInfo expectedResponse = TossPaymentInfo.builder()
+                .paymentKey(paymentKey)
+                .orderId(UUID.randomUUID())
+                .amount(amount)
+                .method("CARD")
+                .status(TossPaymentInfo.Status.CANCELED)
+                .requestedAt(OffsetDateTime.now())
+                .approvedAt(OffsetDateTime.now())
+                .cancels(List.of(cancelInfo))
+                .build();
 
         mockServer.expect(requestTo("https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel"))
                 .andExpect(method(HttpMethod.POST))
@@ -158,7 +157,7 @@ class TossPaymentClientTest {
                 .andRespond(withSuccess(objectMapper.writeValueAsString(expectedResponse), MediaType.APPLICATION_JSON));
 
         // when
-        TossPaymentResponse response = tossPaymentClient.cancel(request);
+        TossPaymentInfo response = tossPaymentClient.cancel(request);
 
         // then
         assertThat(response).isNotNull();
@@ -193,8 +192,7 @@ class TossPaymentClientTest {
 
         // when & then
         assertThatThrownBy(() -> tossPaymentClient.cancel(request))
-                .isInstanceOf(PaymentClientException.class)
-                .hasMessageContaining("이미 취소된 결제입니다");
+                .isInstanceOf(HttpStatusCodeException.class);
 
         mockServer.verify();
     }
