@@ -27,7 +27,7 @@ public record GroupPurchaseDocumentCommand(
 
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event, float[] productVector) {
         String productId = null;
-        if (event.getProductEvent() != null && event.getProductId() != null) {
+        if (event.getProductId() != null) {
             productId = event.getProductId().toString();
         }
         return new GroupPurchaseDocumentCommand(
