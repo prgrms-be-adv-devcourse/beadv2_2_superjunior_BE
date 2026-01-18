@@ -6,6 +6,12 @@ spring:
   main:
     web-application-type: none
 
+  flyway:
+    enabled: true
+    create-schemas: true
+    default-schema: settlement_schema
+    schemas: settlement_schema
+
   datasource:
     url: ${BATCH_SPRING_DATASOURCE_URL}
     driver-class-name: org.postgresql.Driver
