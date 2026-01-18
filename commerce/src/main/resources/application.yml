@@ -33,12 +33,6 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
-  ai:
-    openai:
-      embedding:
-        options:
-          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
-
 server:
   port: 8087
 
