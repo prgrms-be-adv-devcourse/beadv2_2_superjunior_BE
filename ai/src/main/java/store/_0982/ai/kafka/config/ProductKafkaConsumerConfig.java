@@ -10,16 +10,16 @@ import store._0982.common.kafka.KafkaCommonConfigs;
 @Configuration
 public class ProductKafkaConsumerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, ProductEmbeddingCompleteEvent> productEmbeddingEventConsumerFactory(){
+    public ConsumerFactory<String, ProductEmbeddingEvent> productEmbeddingEventConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "ai-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ProductEmbeddingCompleteEvent> productEmbeddingEventKafkaListenerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ProductEmbeddingEvent> productEmbeddingEventKafkaListenerFactory() {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(productEmbeddingEventConsumerFactory());
     }
 }

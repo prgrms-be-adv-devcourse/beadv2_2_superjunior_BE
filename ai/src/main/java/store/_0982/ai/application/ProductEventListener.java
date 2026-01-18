@@ -18,7 +18,7 @@ public class ProductEventListener {
 
     @RetryableTopic
     @ServiceLog
-    @KafkaListener(topics = KafkaTopics.PRODUCT_EMBEDDING_REQUESTED, groupId = "ai-service-group", containerFactory = "productEmbeddingEventKafkaListenerFactory")
+    @KafkaListener(topics = KafkaTopics.PRODUCT_UPSERTED, groupId = "ai-service-group", containerFactory = "productEmbeddingEventKafkaListenerFactory")
     public void vectorize(ProductEmbeddingEvent event) {
         // 벡터화
         ProductEmbeddingCompleteEvent completeEvent = aiService.vectorize(event);

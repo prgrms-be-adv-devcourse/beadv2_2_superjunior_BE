@@ -8,12 +8,12 @@ spring:
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
       embedding:
         options:
           model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
-
-kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}

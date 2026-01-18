@@ -13,7 +13,7 @@ import store._0982.common.kafka.KafkaTopics;
 @Configuration
 public class ProductKafkaProducerConfig {
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
