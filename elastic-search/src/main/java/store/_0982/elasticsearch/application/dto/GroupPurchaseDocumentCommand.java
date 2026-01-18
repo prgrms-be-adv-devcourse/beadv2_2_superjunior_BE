@@ -16,10 +16,20 @@ public record GroupPurchaseDocumentCommand(
         OffsetDateTime endDate,
         OffsetDateTime updatedAt,
         String sellerId,
+        String productId,
         String productCategory,
-        Long originalPrice
+        Long originalPrice,
+        float[] productVector
 ) {
     public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event) {
+        return from(event, null);
+    }
+
+    public static GroupPurchaseDocumentCommand from(GroupPurchaseEvent event, float[] productVector) {
+        String productId = null;
+        if (event.getProductEvent() != null && event.getProductId() != null) {
+            productId = event.getProductId().toString();
+        }
         return new GroupPurchaseDocumentCommand(
                 event.getId().toString(),
                 event.getTitle(),
@@ -30,8 +40,10 @@ public record GroupPurchaseDocumentCommand(
                 event.getEndDate() != null ? OffsetDateTime.parse(event.getEndDate()) : null,
                 event.getUpdatedAt() != null ? OffsetDateTime.parse(event.getUpdatedAt()) : null,
                 event.getSellerId() != null ? event.getSellerId().toString() : null,
+                productId,
                 event.getProductCategory() != null ? event.getProductCategory().toString() : null,
-                event.getOriginalPrice()
+                event.getOriginalPrice(),
+                productVector
         );
     }
 
@@ -46,7 +58,13 @@ public record GroupPurchaseDocumentCommand(
                 .endDate(endDate)
                 .updatedAt(updatedAt)
                 .discountRate(calculateDiscountRate(originalPrice, discountedPrice))
-                .productDocumentEmbedded(new ProductDocumentEmbedded(productCategory, originalPrice, sellerId))
+                .productVector(productVector)
+                .productDocumentEmbedded(new ProductDocumentEmbedded(
+                        productId,
+                        productCategory,
+                        originalPrice,
+                        sellerId
+                ))
                 .build();
     }
 

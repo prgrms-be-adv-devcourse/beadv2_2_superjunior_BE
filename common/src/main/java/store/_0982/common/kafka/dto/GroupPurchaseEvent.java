@@ -19,6 +19,7 @@ public class GroupPurchaseEvent extends BaseEvent {
     private String title;
     private String description;
     private Long discountedPrice;
+    private UUID productId;
 
     private Status groupPurchaseStatus;
 

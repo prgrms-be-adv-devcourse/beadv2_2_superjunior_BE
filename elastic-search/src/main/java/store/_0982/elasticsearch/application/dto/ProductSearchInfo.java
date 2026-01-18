@@ -5,6 +5,7 @@ public record ProductSearchInfo(
         String category,
         Long price,
         String originalUrl,
-        String sellerId
+        String sellerId,
+        float[] productVector
 ) {
 }
