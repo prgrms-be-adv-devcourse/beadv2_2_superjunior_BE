@@ -56,5 +56,4 @@ public final class KafkaTopics {
     public static final String SELLER_BALANCE_CHANGED = "seller-balance.changed";
 
     public static final String SETTLEMENT_DONE = "settlement.done";
-
 }
