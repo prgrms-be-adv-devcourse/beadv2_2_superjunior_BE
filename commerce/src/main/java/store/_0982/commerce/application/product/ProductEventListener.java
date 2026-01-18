@@ -8,19 +8,20 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.commerce.application.product.event.ProductCreatedEvent;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 @Component
 @RequiredArgsConstructor
 public class ProductEventListener {
 
-    private final KafkaTemplate<String, ProductEmbeddingEvent> kafkaTemplate;
+    private final KafkaTemplate<String, ProductUpsertedEvent> kafkaTemplate;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCreated(ProductCreatedEvent event) {
-        ProductEmbeddingEvent kafkaEvent = event.product().toEvent(event.product().getCategory());
+        ProductUpsertedEvent kafkaEvent = event.product().toEvent(event.product().getCategory());
 
         kafkaTemplate.send(
-                KafkaTopics.PRODUCT_EMBEDDING_REQUESTED,
+                KafkaTopics.PRODUCT_UPSERTED,
                 kafkaEvent.getProductId().toString(),
                 kafkaEvent
         );

@@ -11,6 +11,7 @@ import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
+import store._0982.elasticsearch.infrastructure.product.ProductVectorRepository;
 
 
 @Service
@@ -18,6 +19,7 @@ import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 public class GroupPurchaseEventListener {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ElasticsearchExecutor elasticsearchExecutor;
+    private final ProductVectorRepository productVectorRepository;
 
     @RetryableTopic
     @ServiceLog
@@ -27,7 +29,11 @@ public class GroupPurchaseEventListener {
             elasticsearchExecutor.execute(() -> groupPurchaseRepository.deleteById(event.getId().toString()));
             return;
         }
-        saveGroupPurchaseDocument(GroupPurchaseDocumentCommand.from(event));
+        float[] productVector = null;
+        if (event.getProductId() != null) {
+            productVector = productVectorRepository.findVectorByProductId(event.getProductId());
+        }
+        saveGroupPurchaseDocument(GroupPurchaseDocumentCommand.from(event, productVector));
     }
 
     public void saveGroupPurchaseDocument(GroupPurchaseDocumentCommand command) {

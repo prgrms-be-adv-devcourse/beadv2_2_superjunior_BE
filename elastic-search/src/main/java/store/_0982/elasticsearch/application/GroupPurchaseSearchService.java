@@ -15,6 +15,7 @@ import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
+import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class GroupPurchaseSearchService {
 
     private final ElasticsearchOperations operations;
     private final GroupPurchaseSearchQueryFactory groupPurchaseSearchQueryFactory;
+    private final GroupPurchaseSimilarityQueryFactory groupPurchaseSimilarityQueryFactory;
     private final ElasticsearchExceptionTranslator exceptionTranslator;
     private final ElasticsearchExecutor elasticsearchExecutor;
     private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
@@ -49,6 +51,19 @@ public class GroupPurchaseSearchService {
         return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
+            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
+            return PageResponse.from(mappedPage);
+        });
+    }
+
+    @ServiceLog
+    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseByVector(
+            float[] vector,
+            Pageable pageable
+    ) {
+        return elasticsearchExecutor.execute(() -> {
+            NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
