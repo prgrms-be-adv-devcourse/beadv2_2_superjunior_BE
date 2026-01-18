@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.bonus.BonusDeductionService;
 import store._0982.point.application.bonus.BonusRefundService;
-import store._0982.point.common.RetryForTransactional;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
@@ -24,6 +24,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PointTxManager {
 
     private final PointBalanceRepository pointBalanceRepository;
@@ -55,8 +56,7 @@ public class PointTxManager {
     }
 
     // TODO: 충전, 차감, 반환에서 멱등성, 유효성 검증 + 동시성 제어 필요
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public PointBalance chargePoints(UUID memberId, UUID idempotencyKey, long amount) {
         PointBalance point = findPointBalance(memberId);
 
@@ -70,8 +70,7 @@ public class PointTxManager {
         return point;
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public PointBalance deductPoints(UUID memberId, UUID orderId, UUID idempotencyKey, long amount) {
         if (pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED)) {
             throw new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST);
@@ -99,8 +98,7 @@ public class PointTxManager {
         return point;
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void returnPoints(UUID memberId, UUID orderId, UUID idempotencyKey, long amount, String cancelReason) {
         if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) {
             throw new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST);
@@ -126,8 +124,7 @@ public class PointTxManager {
         applicationEventPublisher.publishEvent(PointReturnedTxEvent.from(returned));
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public PointBalance transfer(UUID memberId, UUID idempotencyKey, long amount) {
         PointBalance balance = findPointBalanceForTransfer(memberId, amount);
 

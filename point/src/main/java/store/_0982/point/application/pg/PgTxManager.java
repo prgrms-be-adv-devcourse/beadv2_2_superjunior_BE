@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
-import store._0982.point.common.RetryForTransactional;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.entity.PgPaymentFailure;
@@ -54,16 +54,14 @@ public class PgTxManager {
         return pgPayment;
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void markConfirmedPayment(TossPaymentInfo tossPaymentInfo, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
         pgPayment.markConfirmed(tossPaymentInfo.paymentMethod(), tossPaymentInfo.approvedAt(), tossPaymentInfo.paymentKey());
         applicationEventPublisher.publishEvent(PaymentConfirmedTxEvent.from(pgPayment));
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
         pgPayment.markFailed();
@@ -71,8 +69,7 @@ public class PgTxManager {
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
         PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
         pgPayment.markFailed();
@@ -80,8 +77,7 @@ public class PgTxManager {
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
         PgPayment pgPayment = markRefundPending(orderId, memberId);
         TossPaymentInfo.CancelInfo cancelInfo = tossPaymentInfo.cancels().get(0);

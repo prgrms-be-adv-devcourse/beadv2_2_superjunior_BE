@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.bonus.BonusEarnCommand;
 import store._0982.point.client.dto.OrderInfo;
-import store._0982.point.common.RetryForTransactional;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.BonusPolicyType;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.BonusEarning;
@@ -38,8 +37,7 @@ public class BonusEarningService {
     private final BonusEarningRepository bonusEarningRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Transactional
-    @RetryForTransactional
+    @RetryableTransactional
     public void processBonus(UUID memberId, BonusEarnCommand command, OrderInfo orderInfo) {
         PointTransaction transaction = getValidTransaction(memberId, command.orderId());
         PointBalance balance = pointBalanceRepository.findByMemberId(memberId)

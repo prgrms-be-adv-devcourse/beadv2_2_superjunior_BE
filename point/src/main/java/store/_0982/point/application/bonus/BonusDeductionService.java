@@ -2,9 +2,9 @@ package store._0982.point.application.bonus;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.BonusEarningStatus;
 import store._0982.point.domain.entity.BonusDeduction;
 import store._0982.point.domain.entity.BonusEarning;
@@ -24,7 +24,7 @@ public class BonusDeductionService {
     private final BonusDeductionRepository bonusDeductionRepository;
 
     @ServiceLog
-    @Transactional
+    @RetryableTransactional
     public void deductBonus(UUID memberId, UUID transactionId, long deductAmount) {
         List<BonusEarning> usableEarnings = bonusEarningRepository.findByMemberIdAndStatusInOrderByExpiresAtAsc(
                 memberId,
