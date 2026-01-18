@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.Settlement;
-
-import java.util.UUID;
+import store._0982.batch.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 
 @RequiredArgsConstructor
 @Service
@@ -15,24 +15,19 @@ public class SellerBalanceService {
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
 
-    /**
-     * 판매자 balance 증가 및 이력 저장
-     */
     @Transactional
-    public void increaseBalance(UUID sellerId, Long amount, UUID groupPurchaseId) {
-        SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
-                .orElseGet(() -> new SellerBalance(sellerId));
+    public void clearBalance(Settlement settlement) {
+        SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(settlement.getSellerId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
-        sellerBalance.increaseBalance(amount);
+        long transferAmount = settlement.getSettlementAmount().longValue();
+        sellerBalance.decreaseBalance(transferAmount);
         sellerBalanceRepository.save(sellerBalance);
 
-        sellerBalanceHistoryRepository.save(
-                new SellerBalanceHistory(sellerId, null, groupPurchaseId, amount, SellerBalanceHistoryStatus.CREDIT)
-        );
+        saveSellerBalanceHistory(settlement, transferAmount);
     }
 
-    @Transactional
-    public void saveSellerBalanceHistory(Settlement settlement, long transferAmount) {
+    private void saveSellerBalanceHistory(Settlement settlement, long transferAmount) {
         SellerBalanceHistory history = new SellerBalanceHistory(
                 settlement.getSellerId(),
                 settlement.getSettlementId(),

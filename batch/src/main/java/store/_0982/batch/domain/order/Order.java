@@ -191,4 +191,8 @@ public class Order {
         return this.returnedAt != null;
     }
 
+    // 총 주문 금액 계산
+    public Long getTotalAmount() {
+        return this.price * this.quantity;
+    }
 }

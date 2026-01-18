@@ -22,5 +22,7 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
 
+    List<Order> findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(List<UUID> groupPurchaseIds, OrderStatus status);
+
     boolean existsByIdempotencyKey(String idempotenceKey);
 }

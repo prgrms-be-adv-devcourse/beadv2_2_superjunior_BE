@@ -13,13 +13,13 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.settlement.listener.SettlementWithdrawalReaderListener;
 import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
-import store._0982.batch.batch.settlement.processor.SettlementWithdrawalProcessor;
-import store._0982.batch.batch.settlement.writer.SettlementWithdrawalWriter;
+import store._0982.batch.batch.settlement.processor.RetryFailedSettlementProcessor;
+import store._0982.batch.batch.settlement.writer.RetryFailedSettlementWriter;
 import store._0982.batch.domain.sellerbalance.SellerBalance;
 import store._0982.batch.domain.settlement.Settlement;
+import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.common.exception.CustomException;
 
 import java.util.Map;
@@ -32,28 +32,26 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @Configuration
-public class SettlementWithdrawalStepConfig {
+public class RetryFailedSettlementStepConfig {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory entityManagerFactory;
 
-    private final SettlementWithdrawalProcessor settlementWithdrawalProcessor;
-    private final SettlementWithdrawalWriter settlementWithdrawalWriter;
+    private final RetryFailedSettlementProcessor retryFailedSettlementProcessor;
+    private final RetryFailedSettlementWriter retryFailedSettlementWriter;
 
     private final SettlementWithdrawalStepListener stepListener;
-    private final SettlementWithdrawalReaderListener settlementWithdrawalReaderListener;
 
     @Bean
-    public Step settlementWithdrawalStep(
-            JpaPagingItemReader<SellerBalance> settlementWithdrawalReader) {
-        return new StepBuilder("settlementWithdrawalStep", jobRepository)
-                .<SellerBalance, Settlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
-                .reader(settlementWithdrawalReader)
-                .processor(settlementWithdrawalProcessor)
-                .writer(settlementWithdrawalWriter)
+    public Step retryFailedSettlementStep(
+            JpaPagingItemReader<SettlementFailure> retryFailedSettlementReader) {
+        return new StepBuilder("retryFailedSettlementStep", jobRepository)
+                .<SettlementFailure, Settlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
+                .reader(retryFailedSettlementReader)
+                .processor(retryFailedSettlementProcessor)
+                .writer(retryFailedSettlementWriter)
                 .listener(stepListener)
-                .listener(settlementWithdrawalReaderListener)
                 // 재시도 정책
                 .faultTolerant()
                 .retry(RetryableException.class)
@@ -65,19 +63,19 @@ public class SettlementWithdrawalStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SellerBalance> settlementWithdrawalReader() {
-        return new JpaPagingItemReaderBuilder<SellerBalance>()
-                .name("settlementWithdrawalReader")
+    public JpaPagingItemReader<SettlementFailure> retryFailedSettlementReader() {
+        return new JpaPagingItemReaderBuilder<SettlementFailure>()
+                .name("retryFailedSettlementReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
-                          SELECT s
-                          FROM SellerBalance s
-                          WHERE s.settlementBalance >= :amount
-                          ORDER BY s.balanceId ASC
+                          SELECT sf
+                          FROM SettlementFailure sf
+                          WHERE sf.retryCount < :maxRetry
+                          ORDER BY sf.createdAt ASC
                           """)
                 .parameterValues(Map.of(
-                        "amount", SettlementPolicy.MINIMUM_TRANSFER_AMOUNT
+                        "maxRetry", SettlementPolicy.MAX_RETRY
                 ))
                 .build();
     }

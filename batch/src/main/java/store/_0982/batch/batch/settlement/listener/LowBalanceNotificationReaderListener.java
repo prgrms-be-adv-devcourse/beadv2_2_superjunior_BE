@@ -16,11 +16,11 @@ import store._0982.common.log.BatchLogMetadataFormat;
 @Slf4j
 @StepScope
 @Component
-public class LowBalanceNotificationItemReaderListener implements ItemReadListener<SellerBalance> {
+public class LowBalanceNotificationReaderListener implements ItemReadListener<SellerBalance> {
 
     private final StepExecution stepExecution;
 
-    public LowBalanceNotificationItemReaderListener(
+    public LowBalanceNotificationReaderListener(
             @Value("#{stepExecution}") StepExecution stepExecution
     ) {
         this.stepExecution = stepExecution;

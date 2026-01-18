@@ -27,7 +27,9 @@ public class SettlementWithdrawalProcessor implements ItemProcessor<SellerBalanc
                 period.end(),
                 currentBalance,
                 BigDecimal.valueOf(serviceFee),
-                BigDecimal.valueOf(transferAmount)
+                BigDecimal.valueOf(transferAmount),
+                null,
+                null
         );
     }
 }

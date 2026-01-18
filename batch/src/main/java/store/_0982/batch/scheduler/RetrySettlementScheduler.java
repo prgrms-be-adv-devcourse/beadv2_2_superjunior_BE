@@ -12,16 +12,16 @@ import org.springframework.stereotype.Component;
 @Profile("local")
 @RequiredArgsConstructor
 @Component
-public class MonthlySettlementScheduler {
+public class RetrySettlementScheduler {
 
     private final JobLauncher jobLauncher;
-    private final Job settlementWithdrawalJob;
+    private final Job retryFailedSettlementJob;
 
-//    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void scheduleMonthlySettlement() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
                 .toJobParameters();
-        jobLauncher.run(settlementWithdrawalJob, jobParameters);
+        jobLauncher.run(retryFailedSettlementJob, jobParameters);
     }
 }
