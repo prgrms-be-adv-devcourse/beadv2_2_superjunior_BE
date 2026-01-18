@@ -8,6 +8,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 
 @Configuration
@@ -17,12 +19,12 @@ public class ProductKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ProductEmbeddingEvent> productEmbeddingEventProducerFactory() {
+    public ProducerFactory<String, ProductUpsertedEvent> productEmbeddingEventProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, ProductEmbeddingEvent> productEmbeddingEventKafkaTemplate() {
+    public KafkaTemplate<String, ProductUpsertedEvent> productEmbeddingEventKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(productEmbeddingEventProducerFactory());
     }
 
@@ -38,6 +40,6 @@ public class ProductKafkaProducerConfig {
 
     @Bean
     public NewTopic productEmbeddingEventTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_EMBEDDING_REQUESTED);
+        return KafkaCommonConfigs.createTopic(KafkaTopics.PRODUCT_UPSERTED);
     }
 }
