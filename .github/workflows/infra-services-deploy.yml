@@ -7,6 +7,7 @@ on:
       - feature/ci-cd
     paths:
       - 'common/**'
+      - 'ai/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'elastic-search/**'
