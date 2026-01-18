@@ -15,6 +15,7 @@ spec:
   startingDeadlineSeconds: 600
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 3600
       backoffLimit: 3  # 재시도 작업이므로 더 많은 재시도 허용
       activeDeadlineSeconds: 3600  # 60분 제한
       template:

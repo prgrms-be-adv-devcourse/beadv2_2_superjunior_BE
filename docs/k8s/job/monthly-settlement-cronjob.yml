@@ -15,6 +15,7 @@ spec:
   startingDeadlineSeconds: 600  # 월별 작업은 시작 지연 허용치를 높임
   jobTemplate:
     spec:
+      ttlSecondsAfterFinished: 3600
       backoffLimit: 2
       activeDeadlineSeconds: 3600  # 60분 제한 (대량 데이터 처리)
       template:

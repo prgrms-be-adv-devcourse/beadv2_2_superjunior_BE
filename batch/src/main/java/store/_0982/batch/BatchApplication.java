@@ -17,7 +17,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class BatchApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(BatchApplication.class, args);
+        System.exit(SpringApplication.exit(SpringApplication.run(BatchApplication.class, args)));
     }
 
 }

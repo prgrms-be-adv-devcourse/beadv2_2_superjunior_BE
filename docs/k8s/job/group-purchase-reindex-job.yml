@@ -28,7 +28,7 @@ spec:
         - name: TZ
           value: "Asia/Seoul"
         - name: SPRING_BATCH_JOB_NAME
-          value: "groupPurchaseReindexJob"
+          value: "groupPurchaseReindex"
         - name: JOB_DESCRIPTION
           value: "공구 ES 인덱스 재생성 작업"
         - name: INDEX_ALIAS
