@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 
 
 @Configuration
@@ -17,12 +18,12 @@ public class ProductKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventProducerFactory() {
+    public ProducerFactory<String, ProductEmbeddingCompletedEvent> productEmbeddingCompleteEventProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventKafkaTemplate() {
+    public KafkaTemplate<String, ProductEmbeddingCompletedEvent> productEmbeddingCompleteEventKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(productEmbeddingCompleteEventProducerFactory());
     }
 

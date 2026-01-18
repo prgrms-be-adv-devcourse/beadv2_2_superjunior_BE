@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 @Configuration
 public class ProductKafkaConsumerConfig {
@@ -14,12 +15,12 @@ public class ProductKafkaConsumerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<String, ProductEmbeddingEvent> productEmbeddingEventConsumerFactory(){
+    public ConsumerFactory<String, ProductUpsertedEvent> productEmbeddingEventConsumerFactory(){
         return KafkaCommonConfigs.defaultConsumerFactory(bootstrapServers, "ai-service-group");
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, ProductEmbeddingEvent> productEmbeddingEventKafkaListenerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, ProductUpsertedEvent> productEmbeddingEventKafkaListenerFactory() {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(productEmbeddingEventConsumerFactory());
     }
 }
