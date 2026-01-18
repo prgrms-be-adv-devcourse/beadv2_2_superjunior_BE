@@ -1,4 +1,4 @@
-package store._0982.commerce.kafka.config;
+package store._0982.commerce.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
