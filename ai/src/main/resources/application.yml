@@ -1,3 +1,4 @@
+#file: noinspection SpellCheckingInspection
 spring:
   application:
     name: ai
@@ -7,9 +8,6 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
   ai:
     openai:

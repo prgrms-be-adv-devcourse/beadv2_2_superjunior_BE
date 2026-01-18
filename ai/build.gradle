@@ -22,3 +22,16 @@ dependencyManagement {
         mavenBom "org.springframework.ai:spring-ai-bom:1.0.0-M5"
     }
 }
+
+bootJar {
+    enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8088']
+    }
+}

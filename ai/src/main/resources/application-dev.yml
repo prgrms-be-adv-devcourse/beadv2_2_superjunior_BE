@@ -1,0 +1,4 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
