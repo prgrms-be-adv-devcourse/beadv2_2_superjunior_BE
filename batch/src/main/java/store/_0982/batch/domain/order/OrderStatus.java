@@ -12,7 +12,6 @@ public enum OrderStatus {
     GROUP_PURCHASE_FAIL,    // 공동 구매 실패
 
     CANCEL_REQUESTED,       // 취소 요청
-    CANCELLED,              // 취소 완료
 
     REVERSED_REQUESTED,     // 번복 요청
     REVERSED,               // 번복 완료
