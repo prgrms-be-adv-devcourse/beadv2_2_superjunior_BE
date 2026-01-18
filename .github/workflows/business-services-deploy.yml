@@ -14,6 +14,7 @@ on:
       - 'build.gradle'
       - 'settings.gradle'
       - 'docs/k8s/service/*.yml'
+      - '!docs/k8s/service/ai.yml'
       - '!docs/k8s/service/search.yml'
       - 'business-services-deploy.yml'
 
