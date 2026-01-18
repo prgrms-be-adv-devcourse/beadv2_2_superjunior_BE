@@ -9,8 +9,8 @@ import store._0982.common.dto.ResponseDto;
 import java.util.UUID;
 
 @FeignClient(
-        name="order",
-        url = "${gateway.host}"
+        name = "order-service",
+        url = "${client.member}"
 )
 public interface OrderClient {
 

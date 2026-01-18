@@ -28,6 +28,10 @@ spec:
               value: prod
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
           resources:
             requests:
               cpu: "200m"

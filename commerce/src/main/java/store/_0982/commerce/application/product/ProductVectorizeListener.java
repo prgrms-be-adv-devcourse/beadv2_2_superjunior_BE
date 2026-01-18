@@ -19,7 +19,7 @@ import store._0982.common.log.ServiceLog;
 public class ProductVectorizeListener {
 
     private final ProductEmbeddingService embeddingService;
-
+  
     @RetryableTopic
     @ServiceLog
     @KafkaListener(topics = KafkaTopics.PRODUCT_EMBEDDING_COMPLETED, groupId = "ai-service-group", containerFactory = "productEmbeddingCompleteEventKafkaListenerFactory")

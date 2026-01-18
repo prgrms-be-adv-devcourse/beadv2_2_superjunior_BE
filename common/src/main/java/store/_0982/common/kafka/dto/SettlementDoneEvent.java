@@ -37,7 +37,7 @@ public class SettlementDoneEvent extends BaseEvent {
     }
 
     public enum Status {
-        SUCCESS,
+        COMPLETED,
         FAILED,
         DEFERRED
     }
