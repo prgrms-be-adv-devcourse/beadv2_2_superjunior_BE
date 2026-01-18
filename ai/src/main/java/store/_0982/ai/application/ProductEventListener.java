@@ -6,8 +6,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 import store._0982.common.log.ServiceLog;
 
 @Service

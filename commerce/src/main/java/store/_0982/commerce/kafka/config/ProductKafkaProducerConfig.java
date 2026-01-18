@@ -8,8 +8,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
 
 @Configuration

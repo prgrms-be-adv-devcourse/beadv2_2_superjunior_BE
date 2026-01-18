@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

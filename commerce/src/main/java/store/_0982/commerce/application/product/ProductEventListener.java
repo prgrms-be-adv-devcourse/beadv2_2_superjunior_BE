@@ -8,7 +8,6 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.commerce.application.product.event.ProductCreatedEvent;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
 @Component
 @RequiredArgsConstructor
