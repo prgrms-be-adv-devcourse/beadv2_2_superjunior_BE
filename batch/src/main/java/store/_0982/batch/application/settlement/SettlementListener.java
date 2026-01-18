@@ -23,7 +23,7 @@ public class SettlementListener {
     public void handle(SettlementCompletedEvent event) {
         Settlement settlement = event.settlement();
 
-        SettlementDoneEvent kafkaEvent = settlement.toEvent(SettlementDoneEvent.Status.SUCCESS);
+        SettlementDoneEvent kafkaEvent = settlement.toEvent(SettlementDoneEvent.Status.COMPLETED);
         settlementKafkaTemplate.send(
                 KafkaTopics.SETTLEMENT_DONE,
                 kafkaEvent.getId().toString(),
