@@ -43,6 +43,6 @@ public class ProductVector {
         this.productId = completeEvent.getProductId();
         this.vector = completeEvent.getVector();
         this.modelVersion = modelVersion;
-        this.dimensionSize = vector.getVector() == null ? 0 : vector.getVector().length;
+        this.dimensionSize = completeEvent.getVector() == null ? 0 : completeEvent.getVector().length;
     }
 }
