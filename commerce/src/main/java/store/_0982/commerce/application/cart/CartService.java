@@ -60,6 +60,10 @@ public class CartService {
         return new PageResponse<>(cartPage.getContent(), cartPage.getTotalPages(), cartPage.getTotalElements(), cartPage.isFirst(), cartPage.isLast(), cartPage.getSize(), cartPage.getNumberOfElements());
     }
 
+    public List<Cart> getCarts(UUID memberId){
+        return cartRepository.findAllByMemberId(memberId);
+    }
+
     @Transactional
     public void flushCart(UUID memberId) {
         cartRepository.flushCart(memberId);

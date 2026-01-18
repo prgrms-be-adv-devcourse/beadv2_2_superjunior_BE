@@ -378,4 +378,8 @@ public class OrderService {
                 new OrderCancelProcessedEvent(order, reason, refundAmount)
         );
     }
+
+    public List<Order> getAllOrderByMemberId(UUID memberId) {
+        return orderRepository.findAllByMemberId(memberId);
+    }
 }

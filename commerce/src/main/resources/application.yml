@@ -16,6 +16,8 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO product_schema, order_schema, public
 
   jackson:
     time-zone: Asia/Seoul
