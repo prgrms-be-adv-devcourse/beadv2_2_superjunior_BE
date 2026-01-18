@@ -16,6 +16,8 @@ import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
+import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
+import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -44,8 +46,9 @@ import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartService cartService;
 
+    private final ProductService productService;
+    private final CartService cartService;
     private final GroupPurchaseService groupPurchaseService;
     private final SellerBalanceService sellerBalanceService;
     private final ParticipateService participateService;
@@ -95,6 +98,13 @@ public class OrderService {
         );
 
         Order savedOrder = orderRepository.save(order);
+
+        String productName = productService.getProductInfo(groupPurchase.getProductId()).name();
+        eventPublisher.publishEvent(
+                new OrderCreateProcessedEvent(
+                        savedOrder, productName
+                )
+        );
 
         return OrderRegisterInfo.from(savedOrder);
 
