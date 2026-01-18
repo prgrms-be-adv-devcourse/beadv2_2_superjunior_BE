@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
-public record GroupPurchaseSearchInfo(
+public record GroupPurchaseSimilaritySearchInfo(
         String groupPurchaseId,
         Integer minQuantity,
         Integer maxQuantity,
@@ -20,10 +20,11 @@ public record GroupPurchaseSearchInfo(
         OffsetDateTime updatedAt,
         Integer currentQuantity,
         Long discountRate,
+        Double score,
         ProductSearchInfo productSearchInfo
 ) {
-    public static GroupPurchaseSearchInfo from(GroupPurchaseSearchRow row) {
-        return new GroupPurchaseSearchInfo(
+    public static GroupPurchaseSimilaritySearchInfo from(GroupPurchaseSearchRow row, Double score) {
+        return new GroupPurchaseSimilaritySearchInfo(
                 row.groupPurchaseId().toString(),
                 row.minQuantity(),
                 row.maxQuantity(),
@@ -37,6 +38,7 @@ public record GroupPurchaseSearchInfo(
                 toOffsetDateTime(row.updatedAt()),
                 row.currentQuantity(),
                 calculateDiscountRate(row.price(), row.discountedPrice()),
+                score,
                 new ProductSearchInfo(
                         row.productId().toString(),
                         row.category(),

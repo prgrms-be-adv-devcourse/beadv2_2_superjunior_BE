@@ -20,6 +20,7 @@ import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchRequest;
+import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
 
 import java.util.UUID;
 
@@ -59,11 +60,11 @@ public class GroupPurchaseSearchController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @PostMapping("/search/similarity")
-    public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchGroupPurchaseBySimilarity(
+    public ResponseDto<PageResponse<GroupPurchaseSimilaritySearchInfo>> searchGroupPurchaseBySimilarity(
             @RequestBody GroupPurchaseSimilaritySearchRequest request,
             Pageable pageable
     ) {
-        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseByVector(
+        PageResponse<GroupPurchaseSimilaritySearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseByVector(
                 request.vector(),
                 pageable
         );

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
@@ -52,20 +53,20 @@ public class GroupPurchaseSearchService {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, null);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
         });
     }
 
     @ServiceLog
-    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseByVector(
+    public PageResponse<GroupPurchaseSimilaritySearchInfo> searchGroupPurchaseByVector(
             float[] vector,
             Pageable pageable
     ) {
         return elasticsearchExecutor.execute(() -> {
             NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, toScoreMap(hits));
+            Page<GroupPurchaseSimilaritySearchInfo> mappedPage = toSimilarityResultPage(hits, pageable, toScoreMap(hits));
             return PageResponse.from(mappedPage);
         });
     }
@@ -92,8 +93,7 @@ public class GroupPurchaseSearchService {
 
     private Page<GroupPurchaseSearchInfo> toSearchResultPage(
             SearchHits<GroupPurchaseDocument> hits,
-            Pageable pageable,
-            Map<UUID, Double> scores
+            Pageable pageable
     ) {
         if (hits.getSearchHits().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
@@ -112,8 +112,37 @@ public class GroupPurchaseSearchService {
         for (UUID id : ids) {
             GroupPurchaseSearchRow row = rowMap.get(id);
             if (row != null) {
-                Double score = scores != null ? scores.get(id) : null;
-                ordered.add(GroupPurchaseSearchInfo.from(row, score));
+                ordered.add(GroupPurchaseSearchInfo.from(row));
+            }
+        }
+
+        return new PageImpl<>(ordered, pageable, hits.getTotalHits());
+    }
+
+    private Page<GroupPurchaseSimilaritySearchInfo> toSimilarityResultPage(
+            SearchHits<GroupPurchaseDocument> hits,
+            Pageable pageable,
+            Map<UUID, Double> scores
+    ) {
+        if (hits.getSearchHits().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
+        }
+
+        List<UUID> ids = hits.getSearchHits()
+                .stream()
+                .map(hit -> UUID.fromString(hit.getId()))
+                .toList();
+
+        List<GroupPurchaseSearchRow> rows = groupPurchaseSearchRepository.findAllByIds(ids);
+        Map<UUID, GroupPurchaseSearchRow> rowMap = rows.stream()
+                .collect(Collectors.toMap(GroupPurchaseSearchRow::groupPurchaseId, Function.identity()));
+
+        List<GroupPurchaseSimilaritySearchInfo> ordered = new ArrayList<>(ids.size());
+        for (UUID id : ids) {
+            GroupPurchaseSearchRow row = rowMap.get(id);
+            if (row != null) {
+                Double score = scores.get(id);
+                ordered.add(GroupPurchaseSimilaritySearchInfo.from(row, score));
             }
         }
 
