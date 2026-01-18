@@ -17,6 +17,6 @@ public enum OrderStatus {
     REVERSED_REQUESTED,     // 번복 요청
     REVERSED,               // 번복 완료
 
-    REFUND_REQUESTED,       // 반품 요청
+    RETURNED_REQUESTED,       // 반품 요청
     RETURNED                // 반품 완료
 }
