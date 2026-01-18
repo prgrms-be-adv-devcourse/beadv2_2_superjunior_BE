@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
-import store._0982.common.kafka.dto.ProductEmbeddingEvent;
 
 @Service
 @RequiredArgsConstructor

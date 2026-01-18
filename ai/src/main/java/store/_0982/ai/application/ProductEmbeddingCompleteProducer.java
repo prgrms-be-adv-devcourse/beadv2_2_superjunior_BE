@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 
 
 @Service
