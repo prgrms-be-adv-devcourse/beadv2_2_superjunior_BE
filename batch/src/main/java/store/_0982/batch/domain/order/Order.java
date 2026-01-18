@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
+import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -139,6 +141,21 @@ public class Order {
         this.paidAt = OffsetDateTime.now();
     }
 
+    public void markGroupPurchaseSuccess(){
+        if(this.status != OrderStatus.PAYMENT_COMPLETED){
+            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
+        }
+        this.status = OrderStatus.GROUP_PURCHASE_SUCCESS;
+    }
+
+    public void markGroupPurchaseFail(){
+        if(this.status != OrderStatus.PAYMENT_COMPLETED){
+            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
+        }
+        this.status = OrderStatus.GROUP_PURCHASE_FAIL;
+    }
+
+
     // 주문 실패 처리
     public void markFailed(){
         validateStatus(OrderStatus.ORDER_FAILED);
@@ -191,4 +208,26 @@ public class Order {
         return this.returnedAt != null;
     }
 
+
+    public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+        return new OrderCanceledEvent(
+                this.memberId,
+                this.orderId,
+                cancelReason,
+                method,
+                amount
+        );
+    }
+
+    public void changeStatus(PaymentChangedEvent.Status status) {
+        this.status = OrderStatus.valueOf(
+                status.name()
+        );
+    }
+
+
+    // 총 주문 금액 계산
+    public Long getTotalAmount() {
+        return this.price * this.quantity;
+    }
 }

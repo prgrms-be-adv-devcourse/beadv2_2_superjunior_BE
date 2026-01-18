@@ -184,14 +184,14 @@ public class Order {
                 break;
             case PAYMENT_COMPLETED:
                 if (newStatus != OrderStatus.CANCELLED
-                        && newStatus != OrderStatus.RETURNED
+                        && newStatus != OrderStatus.REFUNDED
                         && newStatus != OrderStatus.REVERSED) {
                     throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
                 }
                 break;
             case ORDER_FAILED:
             case CANCELLED:
-            case RETURNED:
+            case REFUNDED:
                 throw new IllegalStateException("상태 변경 불가능");
 
             default:

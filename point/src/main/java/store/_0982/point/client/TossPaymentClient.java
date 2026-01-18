@@ -1,21 +1,19 @@
 package store._0982.point.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import store._0982.common.exception.CustomException;
 import store._0982.point.client.dto.TossPaymentCancelRequest;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
-import store._0982.point.client.dto.TossPaymentResponse;
-import store._0982.point.exception.CustomErrorCode;
-import store._0982.point.exception.PaymentClientException;
+import store._0982.point.client.dto.TossPaymentInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -33,12 +31,15 @@ import java.util.function.Supplier;
 @Component
 @RequiredArgsConstructor
 public class TossPaymentClient {
+
     private static final String BASE_URL = "https://api.tosspayments.com/v1/payments";
 
     private final RestTemplate restTemplate;
     private final TossPaymentProperties properties;
 
-    public TossPaymentResponse confirm(TossPaymentConfirmRequest request) {
+    @Retry(name = "pg-api")
+    @CircuitBreaker(name = "pg-confirm")
+    public TossPaymentInfo confirm(TossPaymentConfirmRequest request) {
         HttpHeaders headers = createHeaders();
 
         Map<String, Object> body = new HashMap<>();
@@ -48,10 +49,11 @@ public class TossPaymentClient {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         return handlePaymentApiErrorAndGet(
-                () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentResponse.class));
+                () -> restTemplate.postForObject(BASE_URL + "/confirm", entity, TossPaymentInfo.class));
     }
 
-    public TossPaymentResponse cancel(TossPaymentCancelRequest request) {
+    @Retry(name = "pg-api")
+    public TossPaymentInfo cancel(TossPaymentCancelRequest request) {
         HttpHeaders headers = createHeaders();
 
         // paymentKey, amount, reason을 조합해 해시값을 생성 후 멱등키로 이용
@@ -67,7 +69,7 @@ public class TossPaymentClient {
 
         String url = BASE_URL + "/" + request.paymentKey() + "/cancel";
         return handlePaymentApiErrorAndGet(
-                () -> restTemplate.postForObject(url, entity, TossPaymentResponse.class));
+                () -> restTemplate.postForObject(url, entity, TossPaymentInfo.class));
     }
 
     private HttpHeaders createHeaders() {
@@ -79,22 +81,14 @@ public class TossPaymentClient {
         return headers;
     }
 
-    private TossPaymentResponse handlePaymentApiErrorAndGet(Supplier<TossPaymentResponse> apiCall) {
+    private TossPaymentInfo handlePaymentApiErrorAndGet(Supplier<TossPaymentInfo> apiCall) {
         try {
-            TossPaymentResponse response = apiCall.get();
+            TossPaymentInfo response = apiCall.get();
             log.debug(String.valueOf(response));
             return response;
         } catch (HttpStatusCodeException e) {
             log.debug(e.getResponseBodyAsString());
-            HttpStatus httpStatus = HttpStatus.resolve(e.getStatusCode().value());
-            TossPaymentErrorResponse response = e.getResponseBodyAs(TossPaymentErrorResponse.class);
-            if (response == null) {
-                throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
-            }
-            throw new PaymentClientException(httpStatus, response.code(), response.message());
+            throw e;
         }
-    }
-
-    private record TossPaymentErrorResponse(String code, String message) {
     }
 }

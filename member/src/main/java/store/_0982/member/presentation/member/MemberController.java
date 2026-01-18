@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
-import store._0982.common.auth.RequireRole;
-import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.member.MemberService;
@@ -33,6 +31,7 @@ public class MemberController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<MemberSignUpInfo> createMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
         MemberSignUpInfo memberSignUpInfo = memberService.createMember(memberSignUpRequest.toCommand());
+        memberService.createPointBalance(memberSignUpInfo.memberId());
         return new ResponseDto<>(HttpStatus.CREATED, memberSignUpInfo, "회원가입이 완료되었습니다.");
     }
 
@@ -89,11 +88,12 @@ public class MemberController {
     //아래는 Seller 관련 endpoint
     @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
-    @RequireRole(Role.CONSUMER)
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
-        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
+        SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
+        sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
+        return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
 
     @Operation(summary = "판매자 정보 조회", description = "판매자 정보를 조회합니다.")
@@ -105,7 +105,6 @@ public class MemberController {
 
     @Operation(summary = "판매자 정보 수정", description = "판매자 정보를 수정합니다.")
     @PutMapping("/seller")
-    @RequireRole(Role.SELLER)
     public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
         return new ResponseDto<>(HttpStatus.OK, sellerService.updateSeller(command), "판매자 정보 수정이 완료되었습니다.");
@@ -134,13 +133,17 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, null, "주소 삭제가 완료되었습니다.");
     }
 
+    @GetMapping("/role")
+    public ResponseDto<RoleInfo> getRole(@RequestHeader(value = HeaderName.ID) UUID memberId){
+        return new ResponseDto<>(HttpStatus.OK, memberService.getRoleOfMember(memberId), "사용자 역할 정보");
+    }
+
     @Operation(summary = "헤더 확인", description = "게이트웨이에서 전달된 회원 헤더 정보를 확인합니다.")
     @GetMapping("/header-check")
     public ResponseDto<Map<String, String>> checkHeader(@RequestHeader(value = HeaderName.ID, required = false) String memberId, @RequestHeader(value = HeaderName.EMAIL, required = false) String email, @RequestHeader(value = HeaderName.ROLE, required = false) String role) {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(HeaderName.ID, memberId);
-        headers.put(HeaderName.EMAIL, email);
         headers.put(HeaderName.ROLE, role);
 
         return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");

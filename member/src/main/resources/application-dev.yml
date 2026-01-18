@@ -3,6 +3,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
-token:
-  internal:
-    secret: "abcd"
+  data:
+    redis:
+      host: localhost
+      port: 6379

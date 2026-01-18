@@ -10,15 +10,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.cart.CartService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
+import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
@@ -32,9 +32,7 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 
-import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
@@ -46,7 +44,7 @@ import static store._0982.commerce.domain.order.OrderCancellationPolicy.*;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final CartRepository cartRepository;
+    private final CartService cartService;
 
     private final GroupPurchaseService groupPurchaseService;
     private final SellerBalanceService sellerBalanceService;
@@ -80,7 +78,7 @@ public class OrderService {
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
         // 참여
-        participate(groupPurchase.getGroupPurchaseId(), command, memberName);
+        participateService.participate(groupPurchase.getGroupPurchaseId(), command.quantity(), memberName, command.requestId());
 
         // order 생성
         Order order = Order.create(
@@ -116,92 +114,23 @@ public class OrderService {
         String memberName = validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
-        List<Cart> carts = cartRepository.findAllByCartIdIn(command.cartIds());
-        if (carts.size() != command.cartIds().size()) {
-            throw new CustomException(CustomErrorCode.CART_NOT_FOUND);
-        }
+        List<Cart> carts = cartService.validateAndGetCartForOrder(memberId,command.cartIds());
 
-        // 장바구니가 해당 회원 것인지 확인
-        carts.forEach(cart -> {
-            if (!cart.getMemberId().equals(memberId)) {
-                throw new CustomException(CustomErrorCode.NOT_CART_OWNER);
-            }
-
-            if (cart.getQuantity() < 0) {
-                throw new CustomException(CustomErrorCode.INVALID_QUANTITY);
-            }
-        });
-
-        // 공동 구매 유효한지 확인 -> 참여 -> 포인트 차감
+        // 공동 구매 유효한지 확인
         Set<UUID> groupPurchaseIds = carts.stream()
                 .map(Cart::getGroupPurchaseId)
                 .collect(Collectors.toSet());
 
         // 공동 구매 리스트 조회
-        List<GroupPurchase> groupPurchaseList = groupPurchaseService.getGroupPurchaseByIds(new ArrayList<>(groupPurchaseIds));
-
-        Map<UUID, GroupPurchase> purchasesMap = groupPurchaseList.stream()
-                .collect(Collectors.toMap(
-                        GroupPurchase::getGroupPurchaseId,
-                        Function.identity()
-                ));
-
-        // 각 공동 구매가 조건에 맞는지 확인
-        purchasesMap.values().forEach(purchase -> {
-            if (purchase.getStatus() != GroupPurchaseStatus.OPEN) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
-            }
-            if (purchase.getEndDate().isBefore(OffsetDateTime.now())) {
-                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_END);
-            }
-        });
+        Map<UUID, GroupPurchase> purchasesMap = groupPurchaseService.getAvailableGroupPurchasesOrder(groupPurchaseIds);
 
         // 주문 생성
-        List<OrderRegisterInfo> results = new ArrayList<>();
-
-        for (Cart cart : carts) {
-            GroupPurchase purchase = purchasesMap.get(cart.getGroupPurchaseId());
-
-            if (purchase == null) {
-                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
-            }
-
-            // 공동 구매 참여
-            OrderRegisterCommand orderCommand = new OrderRegisterCommand(
-                    cart.getQuantity(),
-                    command.address(),
-                    command.addressDetail(),
-                    command.postalCode(),
-                    command.receiverName(),
-                    purchase.getSellerId(),
-                    purchase.getGroupPurchaseId(),
-                    command.requestId()
-            );
-
-            // Order 생성
-            Order order = Order.create(
-                    cart.getQuantity(),
-                    purchase.getDiscountedPrice(),
-                    memberId,
-                    command.address(),
-                    command.addressDetail(),
-                    command.postalCode(),
-                    command.receiverName(),
-                    purchase.getSellerId(),
-                    cart.getGroupPurchaseId(),
-                    command.requestId()
-            );
-
-            Order savedOrder = orderRepository.save(order);
-
-            //participate(cart.getGroupPurchaseId(), orderCommand, memberName);
-            results.add(OrderRegisterInfo.from(savedOrder));
-        }
+        List<OrderRegisterInfo> orders = createOrderFromCart(memberId, carts, purchasesMap, command, memberName);
 
         // 장바구니 비우기
-        cartRepository.deleteAll(carts);
+        eventPublisher.publishEvent(new OrderCartCompletedEvent(carts));
 
-        return results;
+        return orders;
     }
 
 
@@ -221,8 +150,42 @@ public class OrderService {
         return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
-    private void participate(UUID groupPurchaseId, OrderRegisterCommand command, String name) {
-        participateService.participate(groupPurchaseId, command.quantity(), name, command.requestId());
+    private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command, String memberName){
+        List<Order> orderToSave = new ArrayList<>();
+
+        for(Cart cart: carts){
+            GroupPurchase groupPurchase = purchaseMap.get(cart.getGroupPurchaseId());
+
+            if(groupPurchase == null){
+                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+            }
+
+            String orderRequestId = command.requestId() + "-" + cart.getCartId();
+
+
+            participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity(), memberName, orderRequestId);
+
+            Order order = Order.create(
+                    cart.getQuantity(),
+                    groupPurchase.getDiscountedPrice(),
+                    memberId,
+                    command.address(),
+                    command.addressDetail(),
+                    command.postalCode(),
+                    command.receiverName(),
+                    groupPurchase.getSellerId(),
+                    groupPurchase.getGroupPurchaseId(),
+                    orderRequestId
+            );
+
+            orderToSave.add(order);
+        }
+
+        List<Order> savedOrders = orderRepository.saveAll(orderToSave);
+
+        return savedOrders.stream()
+                .map(OrderRegisterInfo::from)
+                .collect(Collectors.toList());
     }
 
     /**

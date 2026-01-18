@@ -23,10 +23,14 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: MEMBER_SERVICE_URL
+              value: http://member-service:8083
           envFrom:
             - secretRef:
                 name: gateway-secret

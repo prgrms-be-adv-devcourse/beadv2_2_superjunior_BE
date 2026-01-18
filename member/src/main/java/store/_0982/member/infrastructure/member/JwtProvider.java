@@ -30,8 +30,6 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .setSubject(member.getMemberId().toString())
-                .claim("email", member.getEmail())
-                .claim("role", member.getRole().name())
                 .setIssuer("member-service")
                 .setIssuedAt(now)
                 .setExpiration(expiry)
@@ -45,8 +43,6 @@ public class JwtProvider {
 
         return Jwts.builder()
                 .setSubject(member.getMemberId().toString())
-                .claim("email", member.getEmail())
-                .claim("role", member.getRole().name())
                 .setIssuer("member-service")
                 .setIssuedAt(now)
                 .setExpiration(expiry)
