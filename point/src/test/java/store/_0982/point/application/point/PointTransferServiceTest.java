@@ -40,8 +40,6 @@ class PointTransferServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private PointTxManager pointTxManager;
-
     private PointTransferService pointTransferService;
 
     private UUID memberId;
@@ -49,8 +47,6 @@ class PointTransferServiceTest {
 
     @BeforeEach
     void setUp() {
-        pointTransferService = new PointTransferService(pointTxManager);
-
         memberId = UUID.randomUUID();
         idempotencyKey = UUID.randomUUID();
     }

@@ -45,9 +45,9 @@ class PointDeductServiceTest {
     private OrderQueryService orderQueryService;
 
     @InjectMocks
-    private PointTxManager pointTxManager;
-
     private PointDeductService pointDeductService;
+
+    private PointDeductFacade pointDeductFacade;
 
     private UUID memberId;
     private UUID orderId;
@@ -55,7 +55,7 @@ class PointDeductServiceTest {
 
     @BeforeEach
     void setUp() {
-        pointDeductService = new PointDeductService(pointTxManager, orderQueryService);
+        pointDeductFacade = new PointDeductFacade(pointDeductService, orderQueryService);
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
@@ -85,7 +85,7 @@ class PointDeductServiceTest {
             doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedTxEvent.class));
 
             // when
-            PointBalanceInfo result = pointDeductService.deductPoints(memberId, command);
+            PointBalanceInfo result = pointDeductFacade.deductPoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -107,7 +107,7 @@ class PointDeductServiceTest {
                     .when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
 
             // when & then
-            assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointDeductFacade.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
 
@@ -127,7 +127,7 @@ class PointDeductServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointDeductFacade.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
@@ -146,7 +146,7 @@ class PointDeductServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
-            assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointDeductFacade.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
         }
@@ -162,7 +162,7 @@ class PointDeductServiceTest {
                     .thenReturn(true);
 
             // when & then
-            assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
+            assertThatThrownBy(() -> pointDeductFacade.deductPoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.IDEMPOTENT_REQUEST.getMessage());
         }

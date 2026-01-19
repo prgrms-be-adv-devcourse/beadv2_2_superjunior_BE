@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
@@ -32,6 +31,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PgCancelServiceTest {
 
+    private static final int REFUND_DAYS = 14;
     private static final long REFUND_AMOUNT = 10000;
     private static final String PAYMENT_KEY = "test_payment_key";
 
@@ -44,7 +44,7 @@ class PgCancelServiceTest {
     @Mock
     private PgPaymentCancelRepository pgPaymentCancelRepository;
 
-    @Spy
+    @Mock
     private PaymentRules paymentRules;
 
     @InjectMocks
@@ -59,8 +59,6 @@ class PgCancelServiceTest {
     @BeforeEach
     void setUp() {
         // 단위 테스트이므로 설정값이 자동으로 주입되지 않음. 실제 값 설정.
-        paymentRules.setRefundDays(14);
-
         pgCancelService = new PgCancelService(tossPaymentService, pgTxManager);
 
         memberId = UUID.randomUUID();
@@ -96,6 +94,7 @@ class PgCancelServiceTest {
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         when(tossPaymentService.cancelPayment(pgPayment, command)).thenReturn(response);
+        when(paymentRules.getRefundDays()).thenReturn(REFUND_DAYS);
 
         // when
         pgCancelService.refundPaymentPoint(memberId, command);
@@ -183,9 +182,10 @@ class PgCancelServiceTest {
         
         // 15일 전에 승인된 실제 결제 객체 생성 (환불 기간 14일 초과)
         PgPayment expiredPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
-        expiredPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now().minusDays(15), PAYMENT_KEY);
+        expiredPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now().minusDays(REFUND_DAYS + 1), PAYMENT_KEY);
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(expiredPayment));
+        when(paymentRules.getRefundDays()).thenReturn(REFUND_DAYS);
 
         // when & then
         // Mocking(doThrow) 없이 실제 validateRefundTerms() 로직이 수행되어 날짜 차이를 계산함

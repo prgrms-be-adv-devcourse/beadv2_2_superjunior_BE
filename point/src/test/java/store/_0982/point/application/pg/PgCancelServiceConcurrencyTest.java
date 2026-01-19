@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    private static final int PAYMENT_AMOUNT = 10_000;
+    private static final long PAYMENT_AMOUNT = 10_000;
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)

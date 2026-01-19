@@ -40,8 +40,6 @@ class PointChargeServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private PointTxManager pointTxManager;
-
     private PointChargeService pointChargeService;
 
     private UUID memberId;
@@ -49,8 +47,6 @@ class PointChargeServiceTest {
 
     @BeforeEach
     void setUp() {
-        pointChargeService = new PointChargeService(pointTxManager);
-
         memberId = UUID.randomUUID();
         idempotencyKey = UUID.randomUUID();
     }
@@ -72,7 +68,7 @@ class PointChargeServiceTest {
             doNothing().when(applicationEventPublisher).publishEvent(any(PointChargedTxEvent.class));
 
             // when
-            PointBalanceInfo result = pointChargeService.chargePoints(command, memberId);
+            PointBalanceInfo result = pointChargeService.chargePoints(memberId, command);
 
             // then
             assertThat(result).isNotNull();
@@ -92,7 +88,7 @@ class PointChargeServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointChargeService.chargePoints(command, memberId))
+            assertThatThrownBy(() -> pointChargeService.chargePoints(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }

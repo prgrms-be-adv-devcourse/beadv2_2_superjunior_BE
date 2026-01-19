@@ -10,10 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.point.application.dto.point.PointBalanceInfo;
-import store._0982.point.application.point.PointChargeService;
-import store._0982.point.application.point.PointDeductService;
-import store._0982.point.application.point.PointPaymentService;
-import store._0982.point.application.point.PointTransferService;
+import store._0982.point.application.point.*;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -35,7 +32,7 @@ class PointPaymentControllerTest {
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointPaymentService pointReadService() {
+        public PointPaymentService pointPaymentService() {
             return mock(PointPaymentService.class);
         }
 
@@ -45,8 +42,8 @@ class PointPaymentControllerTest {
         }
 
         @Bean
-        public PointDeductService pointDeductService() {
-            return mock(PointDeductService.class);
+        public PointDeductFacade pointDeductFacade() {
+            return mock(PointDeductFacade.class);
         }
 
         @Bean
