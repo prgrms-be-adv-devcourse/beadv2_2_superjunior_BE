@@ -9,12 +9,20 @@ spring:
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
 
+  flyway:
+    enabled: true
+    default-schema: ai_schema
+    schemas:
+      - ai_schema
+    create-schemas: true
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
       embedding:
         options:
           model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+
 
 server:
   port: 8088
