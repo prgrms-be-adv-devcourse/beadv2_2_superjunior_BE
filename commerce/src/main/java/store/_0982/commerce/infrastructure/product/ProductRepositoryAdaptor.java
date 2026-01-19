@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,11 +19,6 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     @Override
     public Product save(Product product) {
         return productJpaRepository.save(product);
-    }
-
-    @Override
-    public Page<Product> findAll(Pageable pageable) {
-        return null;
     }
 
     @Override
@@ -50,10 +44,4 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public void delete(Product product) {
         productJpaRepository.delete(product);
     }
-
-    @Override
-    public List<Product> findAllByProductIdIn(List<UUID> productIds) {
-        return productJpaRepository.findAllByProductIdIn(productIds);
-    }
-
 }
