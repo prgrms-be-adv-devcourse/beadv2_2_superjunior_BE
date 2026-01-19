@@ -12,7 +12,7 @@ import store._0982.common.HeaderName;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.point.PointChargeService;
 import store._0982.point.application.point.PointDeductService;
-import store._0982.point.application.point.PointReadService;
+import store._0982.point.application.point.PointPaymentService;
 import store._0982.point.application.point.PointTransferService;
 
 import java.time.OffsetDateTime;
@@ -30,13 +30,13 @@ class PointPaymentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PointReadService pointReadService;
+    private PointPaymentService pointPaymentService;
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointReadService pointReadService() {
-            return mock(PointReadService.class);
+        public PointPaymentService pointReadService() {
+            return mock(PointPaymentService.class);
         }
 
         @Bean
@@ -62,7 +62,7 @@ class PointPaymentControllerTest {
         UUID memberId = UUID.randomUUID();
         PointBalanceInfo info = new PointBalanceInfo(memberId, 15000, 0, OffsetDateTime.now());
 
-        when(pointReadService.getPoints(memberId)).thenReturn(info);
+        when(pointPaymentService.getPoints(memberId)).thenReturn(info);
 
         // when & then
         mockMvc.perform(get("/api/points")
@@ -75,6 +75,6 @@ class PointPaymentControllerTest {
                 .andExpect(jsonPath("$.data.paidPoint").value(15000))
                 .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
-        verify(pointReadService).getPoints(memberId);
+        verify(pointPaymentService).getPoints(memberId);
     }
 }

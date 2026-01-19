@@ -13,7 +13,7 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.dto.point.PointTransactionInfo;
-import store._0982.point.application.point.PointReadService;
+import store._0982.point.application.point.PointPaymentService;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.point.PointChargeService;
 import store._0982.point.application.point.PointDeductService;
@@ -29,7 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PointPaymentController {
 
-    private final PointReadService pointReadService;
+    private final PointPaymentService pointPaymentService;
     private final PointChargeService pointChargeService;
     private final PointDeductService pointDeductService;
     private final PointTransferService pointTransferService;
@@ -49,7 +49,7 @@ public class PointPaymentController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ResponseDto<PointBalanceInfo> getPoints(@RequestHeader(HeaderName.ID) UUID memberId) {
-        PointBalanceInfo info = pointReadService.getPoints(memberId);
+        PointBalanceInfo info = pointPaymentService.getPoints(memberId);
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 조회 성공");
     }
 
@@ -72,7 +72,7 @@ public class PointPaymentController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<PointTransactionInfo> response = pointReadService.getTransactions(memberId, pageable);
+        Page<PointTransactionInfo> response = pointPaymentService.getTransactions(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 이력 조회 성공");
     }
 

@@ -22,13 +22,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PointReadServiceTest {
+class PointPaymentServiceTest {
 
     @Mock
     private PointBalanceRepository pointBalanceRepository;
 
     @InjectMocks
-    private PointReadService pointReadService;
+    private PointPaymentService pointPaymentService;
 
     private UUID memberId;
 
@@ -51,7 +51,7 @@ class PointReadServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when
-            PointBalanceInfo result = pointReadService.getPoints(memberId);
+            PointBalanceInfo result = pointPaymentService.getPoints(memberId);
 
             // then
             assertThat(result).isNotNull();
@@ -66,7 +66,7 @@ class PointReadServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(() -> pointReadService.getPoints(memberId))
+            assertThatThrownBy(() -> pointPaymentService.getPoints(memberId))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
         }

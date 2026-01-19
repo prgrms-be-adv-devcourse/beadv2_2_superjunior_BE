@@ -10,11 +10,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BonusFacade {
+public class BonusEarningFacade {
 
     private final OrderQueryService orderQueryService;
     private final BonusEarningService bonusEarningService;
 
+    // TODO: 구매 확정 이벤트가 추가되면 Kafka 리스너에서 호출하자
     public void earnBonusPoint(UUID memberId, BonusEarnCommand command) {
         OrderInfo orderInfo = orderQueryService.getOrderDetails(memberId, command.orderId());
         bonusEarningService.processBonus(memberId, command, orderInfo);

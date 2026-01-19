@@ -29,7 +29,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-class PointPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
+class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private static final int BALANCE = 100_000;
     private static final int AMOUNT = 1_000;
