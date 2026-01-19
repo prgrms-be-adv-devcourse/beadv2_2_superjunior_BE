@@ -1,4 +1,4 @@
-package store._0982.commerce.application.product;
+package store._0982.commerce.infrastructure.kafka.listener;
 
 
 import lombok.RequiredArgsConstructor;
@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
+import store._0982.commerce.application.product.ProductEmbeddingService;
 import store._0982.commerce.application.product.dto.ProductEmbeddingCompleteInfo;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;

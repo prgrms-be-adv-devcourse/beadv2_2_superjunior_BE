@@ -53,10 +53,6 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -65,14 +61,14 @@ public class GroupPurchase {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    @Column(name = "succeeded_at")
-    private OffsetDateTime succeededAt;
-
     @Column(name = "settled_at")
     private OffsetDateTime settledAt;
 
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
     
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
@@ -170,14 +166,6 @@ public class GroupPurchase {
         this.startDate = startDate;
         this.endDate = endDate;
         this.sellerId = productId;
-    }
-
-    public void markAsSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
-
-    public boolean isSettled() {
-        return this.settledAt != null;
     }
   
     public void updateStatus(GroupPurchaseStatus status){
