@@ -4,6 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
+import store._0982.common.HeaderName;
 
 import java.util.UUID;
 
@@ -13,5 +14,5 @@ import java.util.UUID;
 )
 public interface PointFeignClient{ 
     @PostMapping("/internal/points")
-    ResponseEntity<Void> postPointBalance(@RequestHeader("X-Member-Id") UUID memberId);
+    ResponseEntity<Void> postPointBalance(@RequestHeader(value = HeaderName.ID) UUID memberId);
 }
