@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
@@ -13,6 +12,7 @@ import store._0982.common.kafka.dto.ProductUpsertedEvent;
 @Slf4j
 public class AiService {
     private final EmbeddingModel embeddingModel;
+    private final SearchQueryPort searchQueryPort;
 
     public ProductEmbeddingCompletedEvent vectorize(ProductUpsertedEvent event) {
         String input = buildInput(event)
