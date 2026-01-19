@@ -1,4 +1,4 @@
-package store._0982.commerce.kafka.config;
+package store._0982.commerce.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

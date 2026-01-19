@@ -1,4 +1,4 @@
-package store._0982.commerce.application.order;
+package store._0982.commerce.infrastructure.kafka.listener;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,7 +15,7 @@ import store._0982.common.log.ServiceLog;
 
 @RequiredArgsConstructor
 @Service
-public class PointEventListener {
+public class KafkaEventListener {
 
     private final OrderRepository orderRepository;
 

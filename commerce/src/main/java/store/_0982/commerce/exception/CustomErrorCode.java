@@ -38,6 +38,8 @@ public enum CustomErrorCode implements ErrorCode {
     //400 Bad Request
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "잘못된 수량입니다."),
     INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "잘못된 주소입니다."),
+    CANNOT_PAYMENT_COMPLETED_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 진행 중 상태 주문만 결제 완료 처리할 수 있습니다."),
+    CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 진행 중 상태 주문만 결제 실패 처리할 수 있습니다."),
     CANNOT_CANCEL_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태의 주문만 취소할 수 있습니다."),
     CANNOT_REVERSE_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 취소할 수 있습니다."),
     CANNOT_RETURN_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 반품할 수 있습니다."),

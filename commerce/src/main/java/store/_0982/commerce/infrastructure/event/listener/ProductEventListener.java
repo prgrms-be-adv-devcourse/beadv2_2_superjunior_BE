@@ -1,4 +1,4 @@
-package store._0982.commerce.application.product;
+package store._0982.commerce.infrastructure.event.listener;
 
 
 import lombok.RequiredArgsConstructor;

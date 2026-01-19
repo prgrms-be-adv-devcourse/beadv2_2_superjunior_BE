@@ -204,19 +204,6 @@ public class GroupPurchaseService {
                 .toList();
     }
 
-    @Transactional
-    public void markAsSettled(UUID groupPurchaseId) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-
-        if (groupPurchase.isSettled()) {
-            return;
-        }
-
-        groupPurchase.markAsSettled();
-        groupPurchaseRepository.save(groupPurchase);
-    }
-
     public GroupPurchase getAvailableForOrder(UUID groupPurchaseId){
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
