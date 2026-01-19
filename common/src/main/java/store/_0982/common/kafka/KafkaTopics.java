@@ -13,6 +13,7 @@ public final class KafkaTopics {
      * 주문 생성, 취소 외에 상태 변경을 의미합니다.
      */
     public static final String ORDER_CHANGED = "order.changed";
+    public static final String ORDER_CONFIRMED = "order.confirmed";
 
     public static final String POINT_CHANGED = "point.changed";
 
