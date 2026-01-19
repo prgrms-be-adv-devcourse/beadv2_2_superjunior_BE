@@ -16,8 +16,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"product\"", schema = "product_schema")
 public class Product {
+
     @Id
     private UUID productId;
+
+    @Column(name = "idempotency_key", unique = true, nullable = false)
+    private String idempotencyKey;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -41,7 +45,7 @@ public class Product {
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
 
@@ -52,22 +56,23 @@ public class Product {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    public Product(String name,
-                   Long price,
-                   ProductCategory category,
-                   String description,
-                   int stock,
-                   String originalUrl,
-                   UUID sellerId) {
-
-        this.productId = UUID.randomUUID();
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.description = description;
-        this.stock  = stock;
-        this.originalUrl = originalUrl;
-        this.sellerId = sellerId;
+    public static Product createProduct(String name,
+                                 Long price,
+                                 ProductCategory category,
+                                 String description,
+                                 int stock,
+                                 String originalUrl,
+                                 String idempotencyKey,
+                                 UUID sellerId) {
+        return new Product(
+                name,
+                price,
+                category,
+                description,
+                stock,
+                originalUrl,
+                idempotencyKey,
+                sellerId);
     }
 
     public void updateProduct(String name,
@@ -95,5 +100,25 @@ public class Product {
                 this.description,
                 ProductUpsertedEvent.Category.valueOf(category.name())
         );
+    }
+
+    private Product(String name,
+                    Long price,
+                    ProductCategory category,
+                    String description,
+                    int stock,
+                    String originalUrl,
+                    String idempotencyKey,
+                    UUID sellerId) {
+
+        this.productId = UUID.randomUUID();
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.description = description;
+        this.stock  = stock;
+        this.originalUrl = originalUrl;
+        this.idempotencyKey = idempotencyKey;
+        this.sellerId = sellerId;
     }
 }
