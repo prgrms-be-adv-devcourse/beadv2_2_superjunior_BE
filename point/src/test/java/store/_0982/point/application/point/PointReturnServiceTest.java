@@ -7,11 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.point.PointReturnCommand;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.event.PointReturnedTxEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -22,8 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PointReturnServiceTest {
@@ -35,6 +36,9 @@ class PointReturnServiceTest {
 
     @Mock
     private PointTransactionRepository pointTransactionRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private PointTxManager pointTxManager;
@@ -69,6 +73,7 @@ class PointReturnServiceTest {
                 .thenReturn(Optional.of(usedTx));
         when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
+        doNothing().when(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
 
         // when
         pointReturnService.returnPoints(memberId, command);
@@ -78,6 +83,7 @@ class PointReturnServiceTest {
         verify(pointBalanceRepository).findByMemberId(memberId);
         verify(pointTransactionRepository).findByOrderIdAndStatus(orderId, PointTransactionStatus.USED);
         verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
+        verify(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
     }
 
     @Test

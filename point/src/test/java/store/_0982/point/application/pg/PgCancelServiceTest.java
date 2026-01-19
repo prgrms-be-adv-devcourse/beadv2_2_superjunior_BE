@@ -12,14 +12,13 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
-
-import store._0982.point.domain.PaymentRules;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -28,13 +27,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PgCancelServiceTest {
 
-    private static final int REFUND_DAYS = 14;
     private static final long REFUND_AMOUNT = 10000;
     private static final String PAYMENT_KEY = "test_payment_key";
 
@@ -61,8 +58,10 @@ class PgCancelServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 단위 테스트이므로 설정값이 자동으로 주입되지 않음. 실제 값 설정.
+        paymentRules.setRefundDays(14);
+
         pgCancelService = new PgCancelService(tossPaymentService, pgTxManager);
-        paymentRules.setRefundDays(REFUND_DAYS);
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
@@ -126,11 +125,14 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenOwnerMismatch() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
+        // 다른 memberId로 생성
         PgPayment otherPayment = PgPayment.create(UUID.randomUUID(), orderId, REFUND_AMOUNT);
+        otherPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
         
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(otherPayment));
 
         // when & then
+        // 실제 validateOwner() 로직이 수행되어 에러가 발생함
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_OWNER_MISMATCH.getMessage());
@@ -141,11 +143,13 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenNotCompleted() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
+        // markConfirmed를 호출하지 않아 PENDING 상태인 결제
         PgPayment pendingPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pendingPayment));
 
         // when & then
+        // 실제 status 체크 로직이 수행됨
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.NOT_COMPLETED_PAYMENT.getMessage());
@@ -177,12 +181,14 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
         
-        PgPayment mockPayment = mock(PgPayment.class);
-        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(mockPayment));
-        doThrow(new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED))
-            .when(mockPayment).validateRefundable(eq(memberId), any(PaymentRules.class));
+        // 15일 전에 승인된 실제 결제 객체 생성 (환불 기간 14일 초과)
+        PgPayment expiredPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
+        expiredPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now().minusDays(15), PAYMENT_KEY);
+
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(expiredPayment));
 
         // when & then
+        // Mocking(doThrow) 없이 실제 validateRefundTerms() 로직이 수행되어 날짜 차이를 계산함
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.REFUND_NOT_ALLOWED.getMessage());

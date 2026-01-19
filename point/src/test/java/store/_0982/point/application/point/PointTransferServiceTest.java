@@ -70,7 +70,7 @@ class PointTransferServiceTest {
             when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
             when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
-            doNothing().when(applicationEventPublisher).publishEvent(PointTransferredTxEvent.class);
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointTransferredTxEvent.class));
 
             // when
             PointBalanceInfo result = pointTransferService.transfer(memberId, command);
