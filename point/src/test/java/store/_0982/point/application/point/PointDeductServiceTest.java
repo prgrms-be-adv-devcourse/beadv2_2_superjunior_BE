@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.OrderQueryService;
 import store._0982.point.application.dto.point.PointBalanceInfo;
@@ -15,6 +16,7 @@ import store._0982.point.application.dto.point.PointDeductCommand;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.event.PointDeductedTxEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -35,6 +37,9 @@ class PointDeductServiceTest {
 
     @Mock
     private PointTransactionRepository pointTransactionRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
     private OrderQueryService orderQueryService;
@@ -77,6 +82,7 @@ class PointDeductServiceTest {
                     .thenAnswer(inv -> inv.getArgument(0));
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointDeductedTxEvent.class));
 
             // when
             PointBalanceInfo result = pointDeductService.deductPoints(memberId, command);
@@ -88,6 +94,7 @@ class PointDeductServiceTest {
             verify(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             verify(pointBalanceRepository).findByMemberId(memberId);
             verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
+            verify(applicationEventPublisher).publishEvent(any(PointDeductedTxEvent.class));
         }
 
         @Test

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
@@ -18,6 +19,8 @@ import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import store._0982.point.domain.PaymentRules;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,11 +28,13 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PgCancelServiceTest {
 
+    private static final int REFUND_DAYS = 14;
     private static final long REFUND_AMOUNT = 10000;
     private static final String PAYMENT_KEY = "test_payment_key";
 
@@ -41,6 +46,9 @@ class PgCancelServiceTest {
 
     @Mock
     private PgPaymentCancelRepository pgPaymentCancelRepository;
+
+    @Spy
+    private PaymentRules paymentRules;
 
     @InjectMocks
     private PgTxManager pgTxManager;
@@ -54,6 +62,7 @@ class PgCancelServiceTest {
     @BeforeEach
     void setUp() {
         pgCancelService = new PgCancelService(tossPaymentService, pgTxManager);
+        paymentRules.setRefundDays(REFUND_DAYS);
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
@@ -171,7 +180,7 @@ class PgCancelServiceTest {
         PgPayment mockPayment = mock(PgPayment.class);
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(mockPayment));
         doThrow(new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED))
-            .when(mockPayment).validateRefundable(memberId);
+            .when(mockPayment).validateRefundable(eq(memberId), any(PaymentRules.class));
 
         // when & then
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))

@@ -14,7 +14,7 @@ import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.event.PointChargedTxEvent;
 import store._0982.point.domain.event.PointDeductedTxEvent;
 import store._0982.point.domain.event.PointReturnedTxEvent;
-import store._0982.point.domain.event.PointTransferredEvent;
+import store._0982.point.domain.event.PointTransferredTxEvent;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.domain.vo.PointAmount;
@@ -132,7 +132,7 @@ public class PointTxManager {
         transferred = pointTransactionRepository.saveAndFlush(transferred);
         balance.transfer(amount);
 
-        applicationEventPublisher.publishEvent(PointTransferredEvent.from(transferred));
+        applicationEventPublisher.publishEvent(PointTransferredTxEvent.from(transferred));
 
         return balance;
     }

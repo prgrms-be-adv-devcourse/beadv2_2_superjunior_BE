@@ -11,6 +11,7 @@ import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.entity.PgPaymentFailure;
+import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.event.PaymentConfirmedTxEvent;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentFailureRepository;
@@ -28,6 +29,7 @@ public class PgTxManager {
     private final PgPaymentCancelRepository pgPaymentCancelRepository;
     private final PgPaymentFailureRepository pgPaymentFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final PaymentRules paymentRules;
 
     public PgPayment findPayment(String paymentKey) {
         return pgPaymentRepository.findByPaymentKey(paymentKey)
@@ -49,7 +51,7 @@ public class PgTxManager {
     public PgPayment markRefundPending(UUID orderId, UUID memberId) {
         PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-        pgPayment.validateRefundable(memberId);
+        pgPayment.validateRefundable(memberId, paymentRules);
         return pgPayment;
     }
 
