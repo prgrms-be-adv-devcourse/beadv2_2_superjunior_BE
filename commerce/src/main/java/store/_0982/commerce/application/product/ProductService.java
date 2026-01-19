@@ -34,7 +34,7 @@ public class ProductService {
     @ServiceLog
     @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        Product product = new Product(command.name(),
+        Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
                 command.originalUrl(), command.sellerId());

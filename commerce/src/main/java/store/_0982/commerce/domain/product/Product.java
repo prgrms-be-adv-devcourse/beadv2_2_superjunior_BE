@@ -52,22 +52,21 @@ public class Product {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    public Product(String name,
-                   Long price,
-                   ProductCategory category,
-                   String description,
-                   int stock,
-                   String originalUrl,
-                   UUID sellerId) {
-
-        this.productId = UUID.randomUUID();
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.description = description;
-        this.stock  = stock;
-        this.originalUrl = originalUrl;
-        this.sellerId = sellerId;
+    public static Product createProduct(String name,
+                                 Long price,
+                                 ProductCategory category,
+                                 String description,
+                                 int stock,
+                                 String originalUrl,
+                                 UUID sellerId) {
+        return new Product(
+                name,
+                price,
+                category,
+                description,
+                stock,
+                originalUrl,
+                sellerId);
     }
 
     public void updateProduct(String name,
@@ -95,5 +94,23 @@ public class Product {
                 this.description,
                 ProductUpsertedEvent.Category.valueOf(category.name())
         );
+    }
+
+    private Product(String name,
+                    Long price,
+                    ProductCategory category,
+                    String description,
+                    int stock,
+                    String originalUrl,
+                    UUID sellerId) {
+
+        this.productId = UUID.randomUUID();
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.description = description;
+        this.stock  = stock;
+        this.originalUrl = originalUrl;
+        this.sellerId = sellerId;
     }
 }
