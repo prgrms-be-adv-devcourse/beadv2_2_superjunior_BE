@@ -2,6 +2,7 @@ package store._0982.ai.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import store._0982.ai.application.dto.LlmCommand;
 import store._0982.ai.application.dto.RecommandationInfo;
 import store._0982.ai.application.dto.RecommandationSearchRequest;
 import store._0982.ai.application.dto.RecommandationSearchResponse;
@@ -22,10 +23,14 @@ public class RecommandationService {
 
     private final SearchQueryPort searchQueryPort;
     private final PersonalVectorRepository personalVectorRepository;
+    private final PromptService promptService ;
 
     public List<RecommandationInfo> getRecommandations(UUID memberId, String keyword, String category) {
         PersonalVector personalVector = personalVectorRepository.findById(memberId).orElseThrow(()->new CustomException(CustomErrorCode.BAD_REQUEST));
         List<RecommandationSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new RecommandationSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO * 3));
+
+        promptService.askLlm(candidates.stream().map(LlmCommand::from).toList());
+
 
         return new LinkedList<RecommandationInfo>();
     }
