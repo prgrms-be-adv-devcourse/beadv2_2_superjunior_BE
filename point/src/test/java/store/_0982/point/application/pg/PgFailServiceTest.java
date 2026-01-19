@@ -34,8 +34,6 @@ class PgFailServiceTest {
     private PgPaymentFailureRepository pgPaymentFailureRepository;
 
     @InjectMocks
-    private PgTxManager pgTxManager;
-
     private PgFailService pgFailService;
 
     private UUID memberId;
@@ -44,8 +42,6 @@ class PgFailServiceTest {
 
     @BeforeEach
     void setUp() {
-        pgFailService = new PgFailService(pgTxManager);
-
         memberId = UUID.randomUUID();
         paymentKey = "test_payment_key";
         command = new PgFailCommand(

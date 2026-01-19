@@ -5,13 +5,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.RetryableTransactional;
+import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.entity.PgPaymentFailure;
-import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.event.PaymentConfirmedTxEvent;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentFailureRepository;
@@ -67,14 +66,6 @@ public class PgTxManager {
         PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
         pgPayment.markFailed();
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment, errorMessage);
-        pgPaymentFailureRepository.save(pgPaymentFailure);
-    }
-
-    @RetryableTransactional
-    public void markFailedPaymentByPg(PgFailCommand command, UUID memberId) {
-        PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
-        pgPayment.markFailed();
-        PgPaymentFailure pgPaymentFailure = PgPaymentFailure.pgError(pgPayment, command);
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
