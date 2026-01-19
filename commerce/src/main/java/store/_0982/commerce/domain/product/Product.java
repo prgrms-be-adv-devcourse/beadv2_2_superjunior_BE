@@ -45,7 +45,7 @@ public class Product {
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
 
