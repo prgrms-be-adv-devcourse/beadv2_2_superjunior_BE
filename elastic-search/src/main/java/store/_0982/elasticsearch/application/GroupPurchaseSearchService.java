@@ -4,20 +4,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
-import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
+import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchWithEmbeddingQueryFactory;
+import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +38,7 @@ public class GroupPurchaseSearchService {
     private final ElasticsearchOperations operations;
     private final GroupPurchaseSearchQueryFactory groupPurchaseSearchQueryFactory;
     private final GroupPurchaseSimilarityQueryFactory groupPurchaseSimilarityQueryFactory;
+    private final GroupPurchaseSearchWithEmbeddingQueryFactory groupPurchaseSearchWithEmbeddingQueryFactory;
     private final ElasticsearchExceptionTranslator exceptionTranslator;
     private final ElasticsearchExecutor elasticsearchExecutor;
     private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
@@ -156,5 +161,51 @@ public class GroupPurchaseSearchService {
                         hit -> (double) hit.getScore(),
                         (left, right) -> left
                 ));
+    }
+
+    @ServiceLog
+    public List<GroupPurchaseSearchInfo> searchGroupPurchaseDocumentWithEmbedding(
+            String keyword,
+            String status,
+            UUID effectiveSellerId,
+            String category,
+            float[] vector,
+            int topK
+    ) {
+        if (vector == null || vector.length == 0) {
+            throw new CustomException(CustomErrorCode.VECTOR_IS_NULL);
+        }
+        if (topK <= 0){
+            throw new CustomException((CustomErrorCode.INVALID_TOPK));
+        }
+        String sellerId = effectiveSellerId != null ? effectiveSellerId.toString() : null;
+
+        return elasticsearchExecutor.execute(() -> {
+            Pageable vectorPageable = PageRequest.of(0, topK);
+            NativeQuery query = groupPurchaseSearchWithEmbeddingQueryFactory.createSearchQuery(
+                    keyword,
+                    status,
+                    sellerId,
+                    category,
+                    vector,
+                    vectorPageable
+            );
+            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, vectorPageable);
+            return mappedPage.getContent();
+        });
+    }
+
+    @ServiceLog
+    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocumentByVector(
+            float[] vector,
+            Pageable pageable
+    ) {
+        return elasticsearchExecutor.execute(() -> {
+            NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
+            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
+            return PageResponse.from(mappedPage);
+        });
     }
 }
