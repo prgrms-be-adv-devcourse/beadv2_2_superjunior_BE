@@ -1,4 +1,6 @@
-CREATE TABLE batch_schema.personal_vector
+CREATE EXTENSION IF NOT EXISTS vector SCHEMA public;
+
+CREATE TABLE ai_schema.personal_vector
 (
     member_id  UUID NOT NULL,
     vector     VECTOR(1536) NOT NULL,
