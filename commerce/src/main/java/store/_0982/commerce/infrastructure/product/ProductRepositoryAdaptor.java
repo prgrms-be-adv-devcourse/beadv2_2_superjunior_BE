@@ -36,6 +36,12 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public Page<Product> findBySellerId(UUID sellerId, Pageable pageable) {
         return productJpaRepository.findBySellerId(sellerId,pageable);
     }
+
+    @Override
+    public Optional<Product> findByIdempotencyKey(String idempotencyKey) {
+        return productJpaRepository.findByIdempotencyKey(idempotencyKey);
+    }
+
     public Optional<Product> findById(UUID productId) {
         return productJpaRepository.findById(productId);
     }

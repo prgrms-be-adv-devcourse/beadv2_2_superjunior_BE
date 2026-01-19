@@ -16,8 +16,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"product\"", schema = "product_schema")
 public class Product {
+
     @Id
     private UUID productId;
+
+    @Column(name = "idempotency_key", unique = true, nullable = false)
+    private String idempotencyKey;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -58,6 +62,7 @@ public class Product {
                                  String description,
                                  int stock,
                                  String originalUrl,
+                                 String idempotencyKey,
                                  UUID sellerId) {
         return new Product(
                 name,
@@ -66,6 +71,7 @@ public class Product {
                 description,
                 stock,
                 originalUrl,
+                idempotencyKey,
                 sellerId);
     }
 
@@ -102,6 +108,7 @@ public class Product {
                     String description,
                     int stock,
                     String originalUrl,
+                    String idempotencyKey,
                     UUID sellerId) {
 
         this.productId = UUID.randomUUID();
@@ -111,6 +118,7 @@ public class Product {
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+        this.idempotencyKey = idempotencyKey;
         this.sellerId = sellerId;
     }
 }
