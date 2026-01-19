@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -86,20 +85,5 @@ public class Product {
 
     public void softDelete() {
         this.deletedAt = OffsetDateTime.now();
-    }
-
-    public ProductEvent toEvent() {
-        return new ProductEvent(
-                this.productId,
-                this.name,
-                this.price,
-                this.category.name(),
-                this.description,
-                this.stock,
-                this.originalUrl,
-                this.sellerId,
-                this.createdAt.toString(),
-                this.updatedAt != null ? this.updatedAt.toString() : null
-        );
     }
 }

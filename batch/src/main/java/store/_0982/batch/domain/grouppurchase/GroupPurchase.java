@@ -61,9 +61,6 @@ public class GroupPurchase {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    @Column(name = "settled_at")
-    private OffsetDateTime settledAt;
-
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
