@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.CartService;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseDecreaseService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
@@ -44,6 +45,7 @@ public class OrderCommandService {
     private final CartService cartService;
 
     private final GroupPurchaseService groupPurchaseService;
+    private final GroupPurchaseDecreaseService groupPurchaseDecreaseService;
     private final ParticipateService participateService;
     private final SellerBalanceService sellerBalanceService;
 
@@ -196,7 +198,7 @@ public class OrderCommandService {
     }
 
     private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
-        groupPurchaseService.cancelOrder(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+        groupPurchaseDecreaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
         order.requestCancel();
 

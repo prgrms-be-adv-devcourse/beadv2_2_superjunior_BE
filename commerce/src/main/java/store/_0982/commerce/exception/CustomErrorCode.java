@@ -52,6 +52,7 @@ public enum CustomErrorCode implements ErrorCode {
     GROUP_PURCHASE_IS_NOT_OPEN(HttpStatus.BAD_REQUEST, "공동 구매가 시작하지 않았습니다."),
     GROUP_PURCHASE_IS_END(HttpStatus.BAD_REQUEST, "종료된 공동 구매입니다."),
     GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
+    DECREASE_QUANTITY_FAILED(HttpStatus.BAD_REQUEST, "공동구매 수량 감소에 실패했습니다."),
     ORDER_NOT_CANCELLABLE(HttpStatus.BAD_REQUEST, "취소할 수 없습니다. 공동 구매가 시작되었습니다."),
     LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
     CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
