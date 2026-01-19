@@ -172,10 +172,15 @@ public class OrderCommandService {
                 .collect(Collectors.toList());
     }
 
+    @ServiceLog
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (!command.memberId().equals(order.getMemberId())) {
+            throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
+        }
 
         GroupPurchase groupPurchase = groupPurchaseService
                 .findByGroupPurchase(order.getGroupPurchaseId());
