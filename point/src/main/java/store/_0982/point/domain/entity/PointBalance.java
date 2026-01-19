@@ -53,9 +53,12 @@ public class PointBalance {
         return pointAmount;
     }
 
-    public PointAmount transfer(long amount) {
+    public void transfer(long amount) {
         pointAmount = pointAmount.transfer(amount);
-        return pointAmount;
+    }
+
+    public PointAmount calculateDeduction(long amount) {
+        return pointAmount.calculateDeduction(amount);
     }
 
     public void validateDeductible(long amount) {
