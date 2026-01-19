@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.bonus.BonusDeductionService;
+import store._0982.point.application.dto.bonus.BonusDeductCommand;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointDeductCommand;
 import store._0982.point.common.RetryableTransactional;
@@ -36,7 +37,8 @@ public class PointDeductService {
 
         PointTransaction transaction = result.transaction();
         if (result.deductedAmount().getBonusPoint() > 0) {
-            bonusDeductionService.deductBonus(memberId, transaction.getId(), result.deductedAmount().getBonusPoint());
+            BonusDeductCommand bonusDeductCommand = new BonusDeductCommand(transaction.getId(), result.deductedAmount().getBonusPoint());
+            bonusDeductionService.deductBonus(memberId, bonusDeductCommand);
         }
 
         applicationEventPublisher.publishEvent(PointDeductedTxEvent.from(transaction));
