@@ -192,18 +192,6 @@ public class GroupPurchaseService {
         );
     }
 
-    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
-        OffsetDateTime twoWeeksAgo = OffsetDateTime.now().minusWeeks(2);
-
-        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
-                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
-
-        return unsettledGroupPurchases.stream()
-                .filter(gp -> gp.getEndDate().isBefore(twoWeeksAgo))
-                .map(GroupPurchaseInternalInfo::from)
-                .toList();
-    }
-
     public GroupPurchase getAvailableForOrder(UUID groupPurchaseId){
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
