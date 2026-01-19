@@ -18,7 +18,7 @@ spring:
     username: ${BATCH_SPRING_DATASOURCE_USERNAME}
     password: ${BATCH_SPRING_DATASOURCE_PASSWORD}
     hikari:
-      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema
+      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema, settlement_schema
 
   jackson:
     time-zone: Asia/Seoul

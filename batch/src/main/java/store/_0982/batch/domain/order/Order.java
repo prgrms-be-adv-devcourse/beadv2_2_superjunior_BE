@@ -58,12 +58,6 @@ public class Order {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
-    @Column(name = "expired_at")
-    private OffsetDateTime expiredAt;
-
-    @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -71,6 +65,12 @@ public class Order {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
+
+    @Column(name = "expired_at")
+    private OffsetDateTime expiredAt;
+
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt;
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
@@ -180,14 +180,14 @@ public class Order {
                 break;
             case PAYMENT_COMPLETED:
                 if(newStatus != OrderStatus.CANCELLED
-                && newStatus != OrderStatus.RETURNED
+                && newStatus != OrderStatus.REFUNDED
                 && newStatus != OrderStatus.REVERSED){
                     throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
                 }
                 break;
             case ORDER_FAILED:
             case CANCELLED:
-            case RETURNED:
+            case REFUNDED:
                 throw new IllegalStateException("상태 변경 불가능");
 
             default:
