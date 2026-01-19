@@ -10,9 +10,9 @@ import store._0982.common.kafka.dto.ProductUpsertedEvent;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AiService {
+public class EmbeddingService {
     private final EmbeddingModel embeddingModel;
-    private final SearchQueryPort searchQueryPort;
+
 
     public ProductEmbeddingCompletedEvent vectorize(ProductUpsertedEvent event) {
         String input = buildInput(event)
@@ -37,4 +37,5 @@ public class AiService {
         }
         return builder.toString();
     }
+
 }
