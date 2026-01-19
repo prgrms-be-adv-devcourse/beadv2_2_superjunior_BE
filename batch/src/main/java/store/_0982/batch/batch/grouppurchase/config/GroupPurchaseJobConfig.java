@@ -21,7 +21,6 @@ public class GroupPurchaseJobConfig {
 
     private final Step openGroupPurchaseStep;
     private final Step updateStatusClosedGroupPurchaseStep;
-    private final Step updateStatusOrderStep;
 
     @Bean
     public Job groupPurchaseJob(){
@@ -30,7 +29,6 @@ public class GroupPurchaseJobConfig {
                 .listener(jobListener)
                 .start(openGroupPurchaseStep)
                 .next(updateStatusClosedGroupPurchaseStep)
-                .next(updateStatusOrderStep)
                 .build();
     }
 
