@@ -48,7 +48,7 @@ public class PgTxManager {
         return pgPayment;
     }
 
-    public PgPayment markRefundPending(UUID orderId, UUID memberId) {
+    public PgPayment findRefundablePayment(UUID orderId, UUID memberId) {
         PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         pgPayment.validateRefundable(memberId, paymentRules);
@@ -80,7 +80,7 @@ public class PgTxManager {
 
     @RetryableTransactional
     public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
-        PgPayment pgPayment = markRefundPending(orderId, memberId);
+        PgPayment pgPayment = findRefundablePayment(orderId, memberId);
         TossPaymentInfo.CancelInfo cancelInfo = tossPaymentInfo.cancels().get(0);
         pgPayment.markRefunded(cancelInfo.canceledAt());
 

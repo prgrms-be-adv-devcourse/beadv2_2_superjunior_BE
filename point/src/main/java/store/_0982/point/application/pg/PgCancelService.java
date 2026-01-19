@@ -20,7 +20,7 @@ public class PgCancelService {
     @ServiceLog
     public void refundPaymentPoint(UUID memberId, PgCancelCommand command) {
         UUID orderId = command.orderId();
-        PgPayment pgPayment = pgTxManager.markRefundPending(orderId, memberId);
+        PgPayment pgPayment = pgTxManager.findRefundablePayment(orderId, memberId);
         TossPaymentInfo response = tossPaymentService.cancelPayment(pgPayment, command);
         pgTxManager.markRefundedPayment(response, orderId, memberId);
     }

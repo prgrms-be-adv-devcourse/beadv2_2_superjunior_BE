@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.bonus.BonusDeductionService;
 import store._0982.point.application.bonus.BonusRefundService;
+import store._0982.point.application.dto.point.PointReturnCommand;
 import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
@@ -99,7 +100,9 @@ public class PointTxManager {
     }
 
     @RetryableTransactional
-    public void returnPoints(UUID memberId, UUID orderId, UUID idempotencyKey, long amount, String cancelReason) {
+    public void returnPoints(UUID memberId, PointReturnCommand command) {
+        UUID idempotencyKey = command.idempotencyKey();
+        UUID orderId = command.orderId();
         if (pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)) {
             throw new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST);
         }
@@ -107,13 +110,14 @@ public class PointTxManager {
         PointBalance point = findPointBalance(memberId);
         PointTransaction usedHistory = findUsedTransaction(orderId);
 
-        PointAmount refundAmount = usedHistory.calculateRefund(amount);
+        PointAmount refundAmount = (command.amount() == null) ?
+                usedHistory.getPointAmount() : usedHistory.calculateRefund(command.amount());
+
         PointTransaction returned = PointTransaction.returned(
-                memberId, orderId, idempotencyKey, refundAmount, cancelReason);
+                memberId, orderId, idempotencyKey, refundAmount, command.cancelReason());
 
         returned = pointTransactionRepository.saveAndFlush(returned);
-        point.charge(refundAmount.getPaidPoint());
-        point.earnBonus(refundAmount.getBonusPoint());
+        point.addAmount(refundAmount);
 
         // 보너스 환불 상세 처리
         if (refundAmount.getBonusPoint() > 0) {

@@ -17,10 +17,7 @@ public class PointReturnService {
     public void returnPoints(UUID memberId, PointReturnCommand command) {
         pointTxManager.returnPoints(
                 memberId,
-                command.orderId(),
-                command.idempotencyKey(),
-                command.amount(),
-                command.cancelReason()
+                command
         );
     }
 }

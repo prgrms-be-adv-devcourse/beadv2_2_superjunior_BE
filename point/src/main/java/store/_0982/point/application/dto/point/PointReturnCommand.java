@@ -6,6 +6,6 @@ public record PointReturnCommand(
         UUID idempotencyKey,
         UUID orderId,
         String cancelReason,
-        long amount
+        Long amount             // null일 경우 사용 기록에 나와 있는대로 처리 (전액 환불)
 ) {
 }

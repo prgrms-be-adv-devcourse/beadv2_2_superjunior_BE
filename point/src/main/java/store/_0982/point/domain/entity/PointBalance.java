@@ -42,6 +42,11 @@ public class PointBalance {
         this.pointAmount = this.pointAmount.addBonus(bonus);
     }
 
+    public void addAmount(PointAmount amount) {
+        charge(amount.getPaidPoint());
+        earnBonus(amount.getBonusPoint());
+    }
+
     public PointAmount use(long amount) {
         this.pointAmount = this.pointAmount.use(amount);
         lastUsedAt = OffsetDateTime.now();
