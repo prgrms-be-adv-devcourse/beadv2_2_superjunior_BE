@@ -12,25 +12,36 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.OrderQueryService;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointDeductCommand;
+import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointBalance;
+import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PointDeductServiceTest {
 
     @Mock
-    private PointTxManager pointTxManager;
+    private PointBalanceRepository pointBalanceRepository;
+
+    @Mock
+    private PointTransactionRepository pointTransactionRepository;
 
     @Mock
     private OrderQueryService orderQueryService;
 
     @InjectMocks
+    private PointTxManager pointTxManager;
+
     private PointDeductService pointDeductService;
 
     private UUID memberId;
@@ -39,6 +50,8 @@ class PointDeductServiceTest {
 
     @BeforeEach
     void setUp() {
+        pointDeductService = new PointDeductService(pointTxManager, orderQueryService);
+
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         idempotencyKey = UUID.randomUUID();
@@ -55,10 +68,15 @@ class PointDeductServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
-            pointBalance.use(5000);
+            
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(false);
+
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000)).thenReturn(pointBalance);
 
             // when
             PointBalanceInfo result = pointDeductService.deductPoints(memberId, command);
@@ -66,8 +84,10 @@ class PointDeductServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(5000);
+            
             verify(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            verify(pointTxManager).deductPoints(memberId, orderId, idempotencyKey, 5000);
+            verify(pointBalanceRepository).findByMemberId(memberId);
+            verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
         }
 
         @Test
@@ -85,7 +105,7 @@ class PointDeductServiceTest {
                     .hasMessageContaining(CustomErrorCode.INVALID_PAYMENT_REQUEST.getMessage());
 
             verify(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            verify(pointTxManager, never()).deductPoints(any(), any(), any(), anyLong());
+            verify(pointTransactionRepository, never()).saveAndFlush(any());
         }
 
         @Test
@@ -95,8 +115,9 @@ class PointDeductServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
-                    .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(false);
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
@@ -109,10 +130,13 @@ class PointDeductServiceTest {
         void deduct_fail_whenInsufficientBalance() {
             // given
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(1000);
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
-                    .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(false);
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
             assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))
@@ -127,8 +151,8 @@ class PointDeductServiceTest {
             PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
-            when(pointTxManager.deductPoints(memberId, orderId, idempotencyKey, 5000))
-                    .thenThrow(new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST));
+            when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                    .thenReturn(true);
 
             // when & then
             assertThatThrownBy(() -> pointDeductService.deductPoints(memberId, command))

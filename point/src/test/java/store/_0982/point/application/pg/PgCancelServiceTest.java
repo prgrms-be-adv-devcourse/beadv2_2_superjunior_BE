@@ -13,13 +13,18 @@ import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
+import store._0982.point.domain.entity.PgPaymentCancel;
+import store._0982.point.domain.repository.PgPaymentCancelRepository;
+import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,9 +37,13 @@ class PgCancelServiceTest {
     private TossPaymentService tossPaymentService;
 
     @Mock
-    private PgTxManager pgTxManager;
+    private PgPaymentRepository pgPaymentRepository;
+
+    @Mock
+    private PgPaymentCancelRepository pgPaymentCancelRepository;
 
     @InjectMocks
+    private PgTxManager pgTxManager;
     private PgCancelService pgCancelService;
 
     private UUID memberId;
@@ -44,6 +53,8 @@ class PgCancelServiceTest {
 
     @BeforeEach
     void setUp() {
+        pgCancelService = new PgCancelService(tossPaymentService, pgTxManager);
+
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
 
@@ -54,6 +65,7 @@ class PgCancelServiceTest {
                 .cancelAmount(REFUND_AMOUNT)
                 .cancelReason("단순 변심")
                 .canceledAt(OffsetDateTime.now())
+                .transactionKey("test_transaction_key")
                 .build();
 
         response = TossPaymentInfo.builder()
@@ -74,17 +86,16 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTxManager.markRefundPending(orderId, memberId)).thenReturn(pgPayment);
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         when(tossPaymentService.cancelPayment(pgPayment, command)).thenReturn(response);
-        doNothing().when(pgTxManager).markRefundedPayment(response, orderId, memberId);
 
         // when
         pgCancelService.refundPaymentPoint(memberId, command);
 
         // then
-        verify(pgTxManager).markRefundPending(orderId, memberId);
+        verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(tossPaymentService).cancelPayment(pgPayment, command);
-        verify(pgTxManager).markRefundedPayment(response, orderId, memberId);
+        verify(pgPaymentCancelRepository).save(any(PgPaymentCancel.class));
     }
 
     @Test
@@ -93,8 +104,7 @@ class PgCancelServiceTest {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
-        when(pgTxManager.markRefundPending(orderId, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
@@ -107,9 +117,9 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenOwnerMismatch() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
-
-        when(pgTxManager.markRefundPending(orderId, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.PAYMENT_OWNER_MISMATCH));
+        PgPayment otherPayment = PgPayment.create(UUID.randomUUID(), orderId, REFUND_AMOUNT);
+        
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(otherPayment));
 
         // when & then
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
@@ -122,9 +132,9 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenNotCompleted() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
+        PgPayment pendingPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
 
-        when(pgTxManager.markRefundPending(orderId, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pendingPayment));
 
         // when & then
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
@@ -133,7 +143,7 @@ class PgCancelServiceTest {
     }
 
     @Test
-    @DisplayName("이미 환불된 결제는 기존 정보를 반환한다")
+    @DisplayName("이미 환불된 결제를 환불 요청할 경우 예외가 발생한다")
     void refundPaymentPoint_alreadyRefunded() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
@@ -141,15 +151,15 @@ class PgCancelServiceTest {
         refundedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
         refundedPayment.markRefunded(OffsetDateTime.now());
 
-        when(pgTxManager.markRefundPending(orderId, memberId)).thenReturn(refundedPayment);
-        when(tossPaymentService.cancelPayment(refundedPayment, command)).thenReturn(response);
-        doNothing().when(pgTxManager).markRefundedPayment(response, orderId, memberId);
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(refundedPayment));
 
-        // when
-        pgCancelService.refundPaymentPoint(memberId, command);
+        // when & then
+        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+                .isInstanceOf(CustomException.class)
+                .hasMessageContaining(CustomErrorCode.ALREADY_REFUNDED_PAYMENT.getMessage());
 
-        // then
-        verify(tossPaymentService).cancelPayment(refundedPayment, command);
+        verify(tossPaymentService, never()).cancelPayment(refundedPayment, command);
+        verify(pgPaymentCancelRepository, never()).save(any(PgPaymentCancel.class));
     }
 
     @Test
@@ -157,28 +167,15 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenRefundPeriodExpired() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
-
-        when(pgTxManager.markRefundPending(orderId, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED));
+        
+        PgPayment mockPayment = mock(PgPayment.class);
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(mockPayment));
+        doThrow(new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED))
+            .when(mockPayment).validateRefundable(memberId);
 
         // when & then
         assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.REFUND_NOT_ALLOWED.getMessage());
-    }
-
-    @Test
-    @DisplayName("회원 포인트가 없으면 환불할 수 없다")
-    void refundPaymentPoint_fail_whenMemberPointNotFound() {
-        // given
-        PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
-
-        when(pgTxManager.markRefundPending(orderId, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
-
-        // when & then
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(CustomErrorCode.MEMBER_NOT_FOUND.getMessage());
     }
 }

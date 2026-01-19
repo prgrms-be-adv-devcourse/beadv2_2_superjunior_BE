@@ -102,10 +102,6 @@ public class PgPayment {
         this.status = PgPaymentStatus.FAILED;
     }
 
-    public void markRefundPending() {
-        this.status = PgPaymentStatus.REFUND_PENDING;
-    }
-
     public void markRefunded(OffsetDateTime refundedAt) {
         this.status = PgPaymentStatus.REFUNDED;
         this.refundedAt = refundedAt;

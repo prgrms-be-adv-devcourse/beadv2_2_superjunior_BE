@@ -50,7 +50,6 @@ public class PgTxManager {
         PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
         pgPayment.validateRefundable(memberId);
-        pgPayment.markRefundPending();
         return pgPayment;
     }
 
