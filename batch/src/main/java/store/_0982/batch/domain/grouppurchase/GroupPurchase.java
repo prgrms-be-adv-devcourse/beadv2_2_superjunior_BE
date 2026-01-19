@@ -93,43 +93,6 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public void syncCurrentQuantity(int count){
-        this.currentQuantity = count;
-        checkAndUpdateStatusIfMaxReached();
-    }
-
-    private void checkAndUpdateStatusIfMaxReached() {
-        if (this.currentQuantity == this.maxQuantity) {
-            this.status = GroupPurchaseStatus.SUCCESS;
-        }
-    }
-
-    public void updateGroupPurchase(int mintQuantity,
-                                    int maxQuantity,
-                                    String title,
-                                    String description,
-                                    Long discountedPrice,
-                                    OffsetDateTime startDate,
-                                    OffsetDateTime endDate,
-                                    UUID productId){
-        this.minQuantity = mintQuantity;
-        this.maxQuantity = maxQuantity;
-        this.title = title;
-        this.description = description;
-        this.discountedPrice = discountedPrice;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.sellerId = productId;
-    }
-
-    public void markAsSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
-
-    public boolean isSettled() {
-        return this.settledAt != null;
-    }
-
     public void open() {
         if(this.status != GroupPurchaseStatus.SCHEDULED){
             throw new IllegalStateException("SCHEDULED 일 때만 변경 가능");
@@ -151,22 +114,6 @@ public class GroupPurchase {
         this.status = GroupPurchaseStatus.FAILED;
     }
 
-
-    public void updateStatus(GroupPurchaseStatus status){
-        this.status = status;
-    }
-
-    public void markAsReturned() {
-        if (this.returnedAt != null) {
-            throw new IllegalStateException("이미 환불 처리된 공동구매입니다.");
-        }
-        this.returnedAt = OffsetDateTime.now();
-    }
-
-    public boolean isReturned() {
-        return this.returnedAt != null;
-    }
-
     public GroupPurchaseEvent toEvent(GroupPurchaseEvent.Status groupPurchaseStatus,
                                       GroupPurchaseEvent.EventStatus kafkaStatus,
                                       Long originalPrice,
@@ -177,6 +124,7 @@ public class GroupPurchase {
                 this.title,
                 this.description,
                 this.discountedPrice,
+                this.productId,
                 groupPurchaseStatus,
                 this.endDate.toString(),
                 this.updatedAt.toString(),
