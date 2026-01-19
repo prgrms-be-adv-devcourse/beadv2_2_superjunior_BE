@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 
 class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    private static final int BALANCE = 100_000;
-    private static final int AMOUNT = 1_000;
+    private static final long BALANCE = 100_000;
+    private static final long AMOUNT = 1_000;
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
@@ -86,7 +86,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTask(() -> pointDeductService.deductPoints(memberId, command));
+        runSynchronizedTask(() -> pointDeductService.processDeductionWithBonus(memberId, command));
 
         // then
         validateDeduction();
@@ -116,7 +116,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         doNothing().when(applicationEventPublisher).publishEvent(any());
 
         // when
-        runSynchronizedTasks(commands, command -> pointDeductService.deductPoints(memberId, command));
+        runSynchronizedTasks(commands, command -> pointDeductService.processDeductionWithBonus(memberId, command));
 
         // then
         validateDeduction();

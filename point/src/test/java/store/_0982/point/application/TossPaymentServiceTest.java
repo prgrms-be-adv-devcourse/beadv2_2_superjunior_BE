@@ -135,7 +135,7 @@ class TossPaymentServiceTest {
         PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
         pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test_payment_key");
 
-        PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000);
+        PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000L);
 
         TossPaymentInfo.CancelInfo cancelInfo = new TossPaymentInfo.CancelInfo(
                 10000,
@@ -174,7 +174,7 @@ class TossPaymentServiceTest {
         UUID orderId = UUID.randomUUID();
         PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
 
-        PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000);
+        PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000L);
 
         when(tossPaymentClient.cancel(any()))
                 .thenThrow(new RuntimeException("API Error"));
