@@ -63,19 +63,6 @@ public class GroupPurchaseSearchService {
         });
     }
 
-    @ServiceLog
-    public PageResponse<GroupPurchaseSimilaritySearchInfo> searchGroupPurchaseByVector(
-            float[] vector,
-            Pageable pageable
-    ) {
-        return elasticsearchExecutor.execute(() -> {
-            NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
-            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSimilaritySearchInfo> mappedPage = toSimilarityResultPage(hits, pageable, toScoreMap(hits));
-            return PageResponse.from(mappedPage);
-        });
-    }
-
     private SearchHits<GroupPurchaseDocument> searchWithRetry(NativeQuery query) {
         int attempts = SEARCH_RETRY_DELAYS_MS.length + 1;
         for (int i = 0; i < attempts; i++) {
@@ -164,10 +151,9 @@ public class GroupPurchaseSearchService {
     }
 
     @ServiceLog
-    public List<GroupPurchaseSearchInfo> searchGroupPurchaseDocumentWithEmbedding(
+    public List<GroupPurchaseSimilaritySearchInfo> searchGroupPurchaseDocumentWithEmbedding(
             String keyword,
             String status,
-            UUID effectiveSellerId,
             String category,
             float[] vector,
             int topK
@@ -178,20 +164,34 @@ public class GroupPurchaseSearchService {
         if (topK <= 0){
             throw new CustomException((CustomErrorCode.INVALID_TOPK));
         }
-        String sellerId = effectiveSellerId != null ? effectiveSellerId.toString() : null;
 
         return elasticsearchExecutor.execute(() -> {
-            Pageable vectorPageable = PageRequest.of(0, topK);
-            NativeQuery query = groupPurchaseSearchWithEmbeddingQueryFactory.createSearchQuery(
+            int candidateSize = Math.max(topK * 20, topK);
+            Pageable candidatePageable = PageRequest.of(0, candidateSize);
+            NativeQuery candidateQuery = groupPurchaseSearchQueryFactory.createSearchQuery(
                     keyword,
                     status,
-                    sellerId,
+                    null,
                     category,
+                    candidatePageable
+            );
+            SearchHits<GroupPurchaseDocument> candidateHits = searchWithRetry(candidateQuery);
+            List<String> candidateIds = candidateHits.getSearchHits()
+                    .stream()
+                    .map(SearchHit::getId)
+                    .toList();
+            if (candidateIds.isEmpty()) {
+                return List.of();
+            }
+
+            Pageable vectorPageable = PageRequest.of(0, topK);
+            NativeQuery query = groupPurchaseSearchWithEmbeddingQueryFactory.createKnnQueryWithIds(
                     vector,
+                    candidateIds,
                     vectorPageable
             );
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, vectorPageable);
+            Page<GroupPurchaseSimilaritySearchInfo> mappedPage = toSimilarityResultPage(hits, vectorPageable, toScoreMap(hits));
             return mappedPage.getContent();
         });
     }
