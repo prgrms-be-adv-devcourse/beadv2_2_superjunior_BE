@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.point.domain.constant.PointTransactionStatus;
 import store._0982.point.domain.entity.PointTransaction;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface PointTransactionJpaRepository extends JpaRepository<PointTransa
     Optional<PointTransaction> findByOrderIdAndStatus(UUID orderId, PointTransactionStatus status);
 
     Page<PointTransaction> findByMemberId(UUID memberId, Pageable pageable);
+
+    List<PointTransaction> findAllByOrderId(UUID orderId);
 }

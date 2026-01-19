@@ -26,19 +26,19 @@ public class GroupPurchaseFailedManager {
     private final PgPaymentRepository pgPaymentRepository;
 
     @Transactional
-    public void selectRefundLogic(UUID memberId, UUID idempotencyKey, UUID orderId) {
+    public void selectRefundLogic(UUID memberId, UUID idempotencyKey, UUID orderId, String cancelReason) {
         if (paidWithPoints(orderId)) {
             PointReturnCommand command = new PointReturnCommand(
                     idempotencyKey,
                     orderId,
-                    "공동 구매 성사 실패",
+                    cancelReason,
                     null
             );
             pointReturnService.returnPoints(memberId, command);
         } else if (paidWithPg(orderId)) {
             PgCancelCommand command = new PgCancelCommand(
                     orderId,
-                    "공동 구매 성사 실패",
+                    cancelReason,
                     null
             );
             pgCancelService.refundPaymentPoint(memberId, command);

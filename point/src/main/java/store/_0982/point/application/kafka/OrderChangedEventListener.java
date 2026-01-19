@@ -26,6 +26,11 @@ public class OrderChangedEventListener {
         if (event.getStatus() != OrderChangedEvent.Status.GROUP_PURCHASE_FAIL) {
             return;
         }
-        groupPurchaseFailedManager.selectRefundLogic(event.getMemberId(), event.getEventId(), event.getId());
+        groupPurchaseFailedManager.selectRefundLogic(
+                event.getMemberId(),
+                event.getEventId(),
+                event.getId(),
+                "공동 구매 성사 실패"
+        );
     }
 }

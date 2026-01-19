@@ -39,7 +39,8 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
 
         // then
         awaitUntilAsserted(() ->
-                verify(groupPurchaseFailedManager).selectRefundLogic(memberId, event.getEventId(), orderId)
+                verify(groupPurchaseFailedManager)
+                        .selectRefundLogic(memberId, event.getEventId(), orderId, anyString())
         );
     }
 
@@ -62,8 +63,8 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
 
         // then
         awaitUntilAsserted(() ->
-                verify(groupPurchaseFailedManager, timeout(5000).times(0))
-                        .selectRefundLogic(any(), any(), any())
+                verify(groupPurchaseFailedManager, never())
+                        .selectRefundLogic(any(), any(), any(), any())
         );
     }
 }
