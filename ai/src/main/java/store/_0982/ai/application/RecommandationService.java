@@ -25,7 +25,7 @@ public class RecommandationService {
 
     public List<RecommandationInfo> getRecommandations(UUID memberId, String keyword, String category) {
         PersonalVector personalVector = personalVectorRepository.findById(memberId).orElseThrow(()->new CustomException(CustomErrorCode.BAD_REQUEST));
-        List<RecommandationSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new RecommandationSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO));
+        List<RecommandationSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new RecommandationSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO * 3));
 
         return new LinkedList<RecommandationInfo>();
     }
