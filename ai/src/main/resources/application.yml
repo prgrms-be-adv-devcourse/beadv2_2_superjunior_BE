@@ -8,6 +8,8 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO ai_schema, public
 
   flyway:
     enabled: true
@@ -22,7 +24,10 @@ spring:
       embedding:
         options:
           model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
-
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.0
 
 server:
   port: 8088
