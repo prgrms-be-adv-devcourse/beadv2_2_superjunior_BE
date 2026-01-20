@@ -1,11 +1,11 @@
 package store._0982.ai.application;
 
-import store._0982.ai.application.dto.RecommandationSearchRequest;
-import store._0982.ai.application.dto.RecommandationSearchResponse;
+import store._0982.ai.application.dto.VectorSearchRequest;
+import store._0982.ai.application.dto.VectorSearchResponse;
 
 import java.util.List;
 
 public interface SearchQueryPort {
 
-    List<RecommandationSearchResponse> getRecommandationCandidates(RecommandationSearchRequest recommandationSearchRequest);
+    List<VectorSearchResponse> getRecommandationCandidates(VectorSearchRequest vectorSearchRequest);
 }

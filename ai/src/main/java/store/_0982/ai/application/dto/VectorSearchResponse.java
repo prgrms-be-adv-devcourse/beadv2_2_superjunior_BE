@@ -4,7 +4,7 @@ import store._0982.ai.infrastructure.feign.search.dto.ProductSearchInfo;
 
 import java.time.OffsetDateTime;
 
-public record RecommandationSearchResponse(
+public record VectorSearchResponse(
         String groupPurchaseId,
         Integer minQuantity,
         Integer maxQuantity,
