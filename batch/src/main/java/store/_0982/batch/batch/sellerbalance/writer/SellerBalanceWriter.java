@@ -42,7 +42,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                 .map(GroupPurchase::getGroupPurchaseId)
                 .toList();
 
-        List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+        List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatusAndSettledAtIsNull(
                 groupPurchaseIds,
                 OrderStatus.PURCHASE_CONFIRMED
         );
