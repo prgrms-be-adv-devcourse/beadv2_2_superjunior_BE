@@ -15,14 +15,15 @@ import store._0982.common.log.ServiceLog;
 
 @RequiredArgsConstructor
 @Service
-public class KafkaEventListener {
+public class PaymentChangedKafkaListener {
 
     private final OrderRepository orderRepository;
 
     @ServiceLog
     @Transactional
     @RetryableTopic(
-            kafkaTemplate = "orderCanceledEventKafkaTemplate"
+            kafkaTemplate = "orderCanceledEventKafkaTemplate",
+            exclude = CustomException.class
     )
     @KafkaListener(
             topics = KafkaTopics.PAYMENT_CHANGED,

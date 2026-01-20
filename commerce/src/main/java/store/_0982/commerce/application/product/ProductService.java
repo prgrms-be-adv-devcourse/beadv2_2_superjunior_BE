@@ -19,6 +19,7 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -34,14 +35,22 @@ public class ProductService {
     @ServiceLog
     @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        Product product = new Product(command.name(),
+        Optional<Product> existing = productRepository
+                .findByIdempotencyKey(command.idempotencyKey());
+
+        if (existing.isPresent()) {
+            return ProductRegisterInfo.from(existing.get());
+        }
+
+        Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
-                command.originalUrl(), command.sellerId());
+                command.originalUrl(), command.idempotencyKey(),
+                command.sellerId());
 
-        Product savedProduct = productRepository.saveAndFlush(product);
+        Product savedProduct = productRepository.save(product);
 
-        //ai 모듈 kafka
+        // AI 모듈 kafka
         eventPublisher.publishEvent(new ProductCreatedEvent(product));
 
         return ProductRegisterInfo.from(savedProduct);

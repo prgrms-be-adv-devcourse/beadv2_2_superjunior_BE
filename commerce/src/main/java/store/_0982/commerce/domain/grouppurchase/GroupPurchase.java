@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
@@ -95,7 +97,8 @@ public class GroupPurchase {
         if(success){
             return increaseQuantity(quantity);
         }else{
-            return decreaseQuantity(quantity);
+            decreaseQuantity(quantity);
+            return true;
         }
     }
 
@@ -121,16 +124,11 @@ public class GroupPurchase {
         return true;
     }
 
-    public boolean decreaseQuantity(int quantity){
+    public void decreaseQuantity(int quantity){
         if(this.currentQuantity - quantity < 0){
-            throw new IllegalStateException("currentQuantity 음수 불가능");
+            throw new CustomException(CustomErrorCode.DECREASE_QUANTITY_FAILED);
         }
         this.currentQuantity -= quantity;
-        return true;
-    }
-
-    public void updateQuantity(int quantity) {
-        this.currentQuantity += quantity;
     }
 
     public boolean isInReversedPeriod() {

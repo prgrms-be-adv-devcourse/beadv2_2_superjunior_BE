@@ -55,6 +55,7 @@ management:
 
 client:
   member: http://member-service:8083
+  point: http://point-service:8086
 
 kafka:
   bootstrap-servers: ${spring.kafka.bootstrap-servers}

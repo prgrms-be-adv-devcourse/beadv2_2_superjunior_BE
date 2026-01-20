@@ -14,8 +14,8 @@ import store._0982.commerce.infrastructure.client.payment.dto.PointReturnRequest
 import java.util.UUID;
 
 @FeignClient(
-        name = "point",
-        url = "${gateway.host}"
+        name = "point-service",
+        url = "${client.point}"
 )
 public interface PaymentClient {
     /**

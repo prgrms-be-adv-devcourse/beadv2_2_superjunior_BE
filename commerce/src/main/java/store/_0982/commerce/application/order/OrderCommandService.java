@@ -4,19 +4,27 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.CartService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
+import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.dto.OrderCartRegisterCommand;
 import store._0982.commerce.application.order.dto.OrderRegisterCommand;
 import store._0982.commerce.application.order.dto.OrderRegisterInfo;
+import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
+import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.order.Order;
+import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
@@ -26,6 +34,8 @@ import store._0982.common.log.ServiceLog;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static store._0982.commerce.domain.order.OrderCancellationPolicy.calculate;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +48,7 @@ public class OrderCommandService {
 
     private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
+    private final SellerBalanceService sellerBalanceService;
 
     private final MemberClient memberClient;
 
@@ -81,13 +92,6 @@ public class OrderCommandService {
 
     }
 
-    /**
-     * 장바구니 주문 생성
-     *
-     * @param memberId 고객
-     * @param command  주문 command
-     * @return OrderRegisterInfo List
-     */
     @Transactional
     @ServiceLog
     public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
@@ -169,4 +173,83 @@ public class OrderCommandService {
                 .collect(Collectors.toList());
     }
 
+    @Retryable(
+            retryFor = OptimisticLockingFailureException.class,
+            maxAttempts = 10,
+            backoff = @Backoff(
+                    delay = 50,
+                    maxDelay = 500,
+                    random = true
+            )
+    )
+    @ServiceLog
+    @Transactional
+    public void cancelOrder(OrderCancelCommand command) {
+        Order order = orderRepository.findById(command.orderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (!command.memberId().equals(order.getMemberId())) {
+            throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
+        }
+
+        GroupPurchase groupPurchase = groupPurchaseService
+                .findByGroupPurchase(order.getGroupPurchaseId());
+
+        if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
+            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReversedPeriod()) {
+            processCancellationWithin48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+
+        if (groupPurchase.isInReturnedPeriod()) {
+            processReturnAfter48Hours(order, groupPurchase.getSellerId(), command.reason());
+            return;
+        }
+        throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+    }
+
+    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
+        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
+        order.requestCancel();
+
+        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processCancellationWithin48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReversed();
+
+        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void processReturnAfter48Hours(Order order, UUID sellerId, String reason) {
+        order.requestReturned();
+
+        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
+
+        // 판매자에게 수수료 지급
+        if (refundAmount.cancellationFee() > 0) {
+            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
+        }
+
+        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+    }
+
+    private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
+        eventPublisher.publishEvent(
+                new OrderCancelProcessedEvent(order, reason, refundAmount)
+        );
+    }
 }
