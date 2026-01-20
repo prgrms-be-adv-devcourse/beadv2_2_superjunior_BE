@@ -1,4 +1,4 @@
-package store._0982.batch.infrastructure.settlement;
+package store._0982.batch.infrastructure.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,6 +28,11 @@ public class SellerBalanceRepositoryAdapter implements SellerBalanceRepository {
     @Override
     public void save(SellerBalance sellerBalance) {
         sellerBalanceJpaRepository.save(sellerBalance);
+    }
+
+    @Override
+    public void saveAll(List<SellerBalance> sellerBalances) {
+        sellerBalanceJpaRepository.saveAll(sellerBalances);
     }
 
 }
