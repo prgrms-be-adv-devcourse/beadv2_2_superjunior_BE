@@ -19,7 +19,7 @@ public class WebhookLogRepositoryAdapter implements WebhookLogRepository {
     }
 
     @Override
-    public Optional<WebhookLog> findByWebhookId(String webhookId) {
-        return webhookLogJpaRepository.findByWebhookId(webhookId);
+    public Optional<WebhookLog> findByWebhookIdWithLock(String webhookId) {
+        return webhookLogJpaRepository.readByWebhookId(webhookId);
     }
 }

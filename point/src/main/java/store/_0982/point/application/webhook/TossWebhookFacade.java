@@ -3,13 +3,15 @@ package store._0982.point.application.webhook;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import store._0982.common.exception.CustomException;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.entity.WebhookLog;
-import store._0982.point.exception.CustomErrorCode;
+import store._0982.point.exception.NegligibleWebhookErrorType;
+import store._0982.point.exception.NegligibleWebhookException;
 import store._0982.point.presentation.dto.TossWebhookRequest;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,34 +20,26 @@ public class TossWebhookFacade {
     private final TossWebhookService tossWebhookService;
     private final WebhookLogService webhookLogService;
 
+    @Transactional
     public void handleTossWebhook(int retryCount, String webhookId, OffsetDateTime transmissionTime,
                                   TossWebhookRequest request) throws JsonProcessingException {
         String eventType = request.eventType();
         if (!eventType.equals(WebhookEvents.TOSS_PAYMENT_STATUS_CHANGED)) {
-            throw new CustomException(CustomErrorCode.INVALID_WEBHOOK);
+            throw new NegligibleWebhookException(NegligibleWebhookErrorType.INVALID_EVENT_TYPE);
         }
 
-        WebhookLog webhookLog = webhookLogService.findByWebhookId(webhookId)
-                .orElseGet(() -> {
-                    try {
-                        return webhookLogService.createWebhookLog(webhookId, transmissionTime, request, retryCount);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException("웹훅 로그 생성 실패", e);
-                    }
-                });
-
-        if (webhookLog.isAlreadyProcessed()) {
-            return;
+        Optional<WebhookLog> optionalWebhookLog = webhookLogService
+                .getUnfinishedWebhook(webhookId, transmissionTime, request, retryCount);
+        if (optionalWebhookLog.isEmpty()) {
+            return;    // 이미 완료된 요청에 대해서는 예외를 반환할 필요가 없어 보임
         }
 
-        webhookLogService.updateRetryCount(webhookId, retryCount);
-
+        WebhookLog webhookLog = optionalWebhookLog.get();
         try {
-            webhookLogService.markProcessing(webhookId);
             tossWebhookService.processWebhookPayment(request.data());
-            webhookLogService.markSuccess(webhookId);
+            webhookLog.markSuccess();
         } catch (Exception e) {
-            webhookLogService.markFailed(webhookId, e.getMessage());
+            webhookLog.markFailed(e.getMessage());
             throw e;
         }
     }

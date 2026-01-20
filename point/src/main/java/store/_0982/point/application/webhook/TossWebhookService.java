@@ -11,20 +11,19 @@ import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.pg.PgCancelService;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
-import store._0982.point.application.pg.PgTxManager;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
+import store._0982.point.exception.NegligibleWebhookErrorType;
+import store._0982.point.exception.NegligibleWebhookException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class TossWebhookService {
 
     private final ObjectMapper objectMapper;
-    private final PgTxManager pgTxManager;
     private final PgConfirmService pgConfirmService;
     private final PgCancelService pgCancelService;
     private final PgFailService pgFailService;
@@ -32,12 +31,9 @@ public class TossWebhookService {
 
     @Transactional
     public void processWebhookPayment(TossPaymentInfo paymentData) throws JsonProcessingException {
-        Optional<PgPayment> optionalPgPayment = pgPaymentRepository.findByPaymentKey(paymentData.paymentKey());
-        if (optionalPgPayment.isEmpty()) {
-            throw new IllegalStateException("PgPayment를 찾을 수 없음: paymentKey=" + paymentData.paymentKey());
-        }
+        PgPayment pgPayment = pgPaymentRepository.findByOrderId(paymentData.orderId())
+                .orElseThrow(() -> new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_NOT_FOUND));
 
-        PgPayment pgPayment = optionalPgPayment.get();
         switch (paymentData.status()) {
             case ABORTED, EXPIRED -> handleFailed(pgPayment, paymentData);
             case CANCELED -> handleCanceled(pgPayment, paymentData);
@@ -45,6 +41,7 @@ public class TossWebhookService {
             case DONE -> handleCompleted(pgPayment, paymentData);
             case IN_PROGRESS -> handleInProgress(pgPayment, paymentData);
             case READY, WAITING_FOR_DEPOSIT -> {
+                // 무시
             }
         }
     }
@@ -103,8 +100,11 @@ public class TossWebhookService {
             case COMPLETED, REFUNDED, PARTIALLY_REFUNDED, FAILED -> {
                 // 무시
             }
-            case PENDING ->
-                    pgTxManager.markConfirmedPayment(tossPaymentInfo, pgPayment.getPaymentKey(), pgPayment.getMemberId());
+            case PENDING -> pgPayment.markConfirmed(
+                    tossPaymentInfo.paymentMethod(),
+                    tossPaymentInfo.approvedAt(),
+                    tossPaymentInfo.paymentKey()
+            );
         }
     }
 
@@ -117,7 +117,7 @@ public class TossWebhookService {
                 PgConfirmCommand command = new PgConfirmCommand(
                         pgPayment.getOrderId(),
                         pgPayment.getAmount(),
-                        pgPayment.getPaymentKey()
+                        tossPaymentInfo.paymentKey()
                 );
                 pgConfirmService.confirmPayment(command, pgPayment.getMemberId());
             }

@@ -72,10 +72,6 @@ public class WebhookLog {
                 .build();
     }
 
-    public void markProcessing() {
-        this.status = WebhookStatus.PROCESSING;
-    }
-
     public void markSuccess() {
         this.status = WebhookStatus.SUCCESS;
     }
@@ -85,16 +81,21 @@ public class WebhookLog {
         this.errorMessage = errorMessage;
     }
 
-    public void updateRetryCount(int retryCount) {
-        this.retryCount = Math.max(this.retryCount, retryCount);
+    // TODO: 상태 변경은 IF 문보다 먼저 진행하는 게 나을까?
+    public void update(int retryCount, OffsetDateTime sentAt, String payload) {
+        if (this.retryCount >= retryCount) {
+            return;
+        }
+
+        this.retryCount = retryCount;
+        this.sentAt = sentAt;
+        this.payload = payload;
+        this.status = WebhookStatus.PENDING;
+        this.errorMessage = null;
     }
 
     public boolean isAlreadyProcessed() {
-        return status == WebhookStatus.SUCCESS || status == WebhookStatus.PROCESSING;
-    }
-
-    public boolean canProcess() {
-        return status == WebhookStatus.PENDING;
+        return status == WebhookStatus.SUCCESS;
     }
 
     @PrePersist

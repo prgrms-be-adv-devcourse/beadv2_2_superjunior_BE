@@ -8,5 +8,5 @@ public interface WebhookLogRepository {
 
     WebhookLog save(WebhookLog webhookLog);
 
-    Optional<WebhookLog> findByWebhookId(String webhookId);
+    Optional<WebhookLog> findByWebhookIdWithLock(String webhookId);
 }
