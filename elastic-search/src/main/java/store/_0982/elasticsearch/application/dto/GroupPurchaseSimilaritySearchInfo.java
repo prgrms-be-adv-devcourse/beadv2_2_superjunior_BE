@@ -20,7 +20,6 @@ public record GroupPurchaseSimilaritySearchInfo(
         OffsetDateTime updatedAt,
         Integer currentQuantity,
         Long discountRate,
-        Double score,
         ProductSearchInfo productSearchInfo,
         ProductVectorInfo productVectorInfo
 ) {
@@ -39,7 +38,6 @@ public record GroupPurchaseSimilaritySearchInfo(
                 toOffsetDateTime(row.updatedAt()),
                 row.currentQuantity(),
                 calculateDiscountRate(row.price(), row.discountedPrice()),
-                score,
                 new ProductSearchInfo(
                         row.productId().toString(),
                         row.category(),
@@ -50,8 +48,10 @@ public record GroupPurchaseSimilaritySearchInfo(
                 new ProductVectorInfo(
                         row.productId().toString(),
                         row.productName(),
+                        row.category(),
                         row.productDescription(),
                         row.price(),
+                        score,
                         row.productVector()
                 )
         );
