@@ -1,12 +1,12 @@
 package store._0982.elasticsearch.application.dto;
 
-import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
-public record GroupPurchaseSearchInfo(
+public record GroupPurchaseSimilaritySearchInfo(
         String groupPurchaseId,
         Integer minQuantity,
         Integer maxQuantity,
@@ -20,10 +20,11 @@ public record GroupPurchaseSearchInfo(
         OffsetDateTime updatedAt,
         Integer currentQuantity,
         Long discountRate,
-        ProductSearchInfo productSearchInfo
+        ProductSearchInfo productSearchInfo,
+        ProductVectorInfo productVectorInfo
 ) {
-    public static GroupPurchaseSearchInfo from(GroupPurchaseSearchRow row) {
-        return new GroupPurchaseSearchInfo(
+    public static GroupPurchaseSimilaritySearchInfo from(GroupPurchaseSimilaritySearchRow row, Double score) {
+        return new GroupPurchaseSimilaritySearchInfo(
                 row.groupPurchaseId().toString(),
                 row.minQuantity(),
                 row.maxQuantity(),
@@ -43,6 +44,15 @@ public record GroupPurchaseSearchInfo(
                         row.price(),
                         row.originalUrl(),
                         row.sellerId().toString()
+                ),
+                new ProductVectorInfo(
+                        row.productId().toString(),
+                        row.productName(),
+                        row.category(),
+                        row.productDescription(),
+                        row.price(),
+                        score,
+                        row.productVector()
                 )
         );
     }
