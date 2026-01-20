@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
+import store._0982.batch.application.settlement.event.SettlementDeferredEvent;
 import store._0982.batch.application.settlement.event.SettlementFailedEvent;
 import store._0982.batch.infrastructure.kafka.publisher.SettlementEventPublisher;
 
@@ -22,5 +23,10 @@ public class SettlementEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleFailed(SettlementFailedEvent event) {
         settlementEventPublisher.publishSettlementFailedEvent(event.settlement());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleFailed(SettlementDeferredEvent event) {
+        settlementEventPublisher.publishSettlementDeferredEvent(event.settlement());
     }
 }
