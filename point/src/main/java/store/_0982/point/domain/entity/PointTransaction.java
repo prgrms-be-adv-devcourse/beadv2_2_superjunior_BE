@@ -68,6 +68,17 @@ public class PointTransaction {
                 .build();
     }
 
+    // 보너스 적립의 경우에는 orderId가 있을 수도 있고, 없을 수도 있음
+    public static PointTransaction bonusEarned(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount) {
+        return PointTransaction.builder()
+                .memberId(memberId)
+                .orderId(orderId)
+                .idempotencyKey(idempotencyKey)
+                .status(PointTransactionStatus.BONUS_EARNED)
+                .pointAmount(amount)
+                .build();
+    }
+
     public static PointTransaction used(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount) {
         return PointTransaction.builder()
                 .memberId(memberId)

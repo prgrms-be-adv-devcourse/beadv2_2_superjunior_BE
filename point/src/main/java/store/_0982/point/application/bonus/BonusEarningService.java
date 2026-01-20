@@ -76,8 +76,8 @@ public class BonusEarningService {
 
     private void earnBonus(UUID memberId, BonusEarnCommand command,
                            PointBalance balance, BonusPolicy policy, Long bonusAmount) {
-        PointTransaction earningTx = PointTransaction.charged(
-                memberId, command.idempotencyKey(), PointAmount.bonus(bonusAmount));
+        PointTransaction earningTx = PointTransaction.bonusEarned(
+                memberId, command.orderId(), command.idempotencyKey(), PointAmount.bonus(bonusAmount));
 
         BonusEarning bonusEarning = BonusEarning.fromOrder(
                 memberId,
