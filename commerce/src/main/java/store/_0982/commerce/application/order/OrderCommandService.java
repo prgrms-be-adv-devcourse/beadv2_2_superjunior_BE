@@ -178,7 +178,6 @@ public class OrderCommandService {
             maxAttempts = 10,
             backoff = @Backoff(
                     delay = 50,
-                    multiplier = 2,
                     maxDelay = 500,
                     random = true
             )
