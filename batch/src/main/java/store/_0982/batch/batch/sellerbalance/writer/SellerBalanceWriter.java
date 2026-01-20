@@ -71,7 +71,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
             } catch (CustomException e) {
                 log.error("[ERROR] [SELLER_BALANCE] {} failed", sellerId, e);
             }
-            sellerBalanceRepository.saveAll(sellerBalances);
         }
+        sellerBalanceRepository.saveAll(sellerBalances);
     }
 }
