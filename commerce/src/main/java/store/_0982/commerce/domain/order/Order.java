@@ -165,6 +165,10 @@ public class Order {
         this.status = OrderStatus.ORDER_FAILED;
     }
 
+    public boolean isExpired() {
+        return OffsetDateTime.now().isAfter(this.expiredAt);
+    }
+
     public void requestCancel() {
         if (this.status != OrderStatus.PAYMENT_COMPLETED)
             throw new CustomException(CustomErrorCode.CANNOT_CANCEL_ORDER_INVALID_STATUS);
