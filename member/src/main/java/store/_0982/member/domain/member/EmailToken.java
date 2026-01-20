@@ -45,6 +45,7 @@ public class EmailToken {
         emailToken.token = UUID.randomUUID().toString();
         emailToken.isVerified = false;
         emailToken.createdAt = OffsetDateTime.now();
+        emailToken.updatedAt = emailToken.createdAt;
         emailToken.expiredAt = emailToken.createdAt.plusMinutes(VALID_MINUTES);
         return emailToken;
     }
