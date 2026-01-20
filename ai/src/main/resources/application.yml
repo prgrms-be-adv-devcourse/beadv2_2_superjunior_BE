@@ -18,6 +18,15 @@ spring:
       - ai_schema
     create-schemas: true
 
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
