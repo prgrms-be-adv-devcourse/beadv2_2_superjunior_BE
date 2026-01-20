@@ -42,6 +42,10 @@ public class PgConfirmService {
         }
     }
 
+    public void markConfirmedPayment(UUID memberId, UUID orderId, TossPaymentInfo tossPaymentInfo) {
+        pgTxManager.markConfirmedPayment(tossPaymentInfo, orderId, memberId);
+    }
+
     // 1차 방어선: 결제 성공 처리에 실패했을 때 토스 API에 취소 요청 (2차는 배치)
     private void rollbackPayment(PgConfirmCommand command, PgPayment pgPayment, UUID memberId) {
         String cancelReason = "System Error";

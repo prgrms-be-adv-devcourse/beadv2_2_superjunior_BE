@@ -88,7 +88,7 @@ class PgCancelServiceTest {
 
     @Test
     @DisplayName("포인트 환불을 성공적으로 처리한다")
-    void refundPaymentPoint_success() {
+    void refundPayment_success() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
@@ -97,7 +97,7 @@ class PgCancelServiceTest {
         when(paymentRules.getRefundDays()).thenReturn(REFUND_DAYS);
 
         // when
-        pgCancelService.refundPaymentPoint(memberId, command);
+        pgCancelService.refundPayment(memberId, command);
 
         // then
         verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
@@ -107,21 +107,21 @@ class PgCancelServiceTest {
 
     @Test
     @DisplayName("존재하지 않는 주문으로 환불 시 예외가 발생한다")
-    void refundPaymentPoint_fail_whenOrderNotFound() {
+    void refundPayment_fail_whenOrderNotFound() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
     }
 
     @Test
     @DisplayName("다른 회원의 주문을 환불하려고 하면 예외가 발생한다")
-    void refundPaymentPoint_fail_whenOwnerMismatch() {
+    void refundPayment_fail_whenOwnerMismatch() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
         // 다른 memberId로 생성
@@ -132,14 +132,14 @@ class PgCancelServiceTest {
 
         // when & then
         // 실제 validateOwner() 로직이 수행되어 에러가 발생함
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_OWNER_MISMATCH.getMessage());
     }
 
     @Test
     @DisplayName("완료되지 않은 결제는 환불할 수 없다")
-    void refundPaymentPoint_fail_whenNotCompleted() {
+    void refundPayment_fail_whenNotCompleted() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
         // markConfirmed를 호출하지 않아 PENDING 상태인 결제
@@ -149,14 +149,14 @@ class PgCancelServiceTest {
 
         // when & then
         // 실제 status 체크 로직이 수행됨
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.NOT_COMPLETED_PAYMENT.getMessage());
     }
 
     @Test
     @DisplayName("이미 환불된 결제를 환불 요청할 경우 예외가 발생한다")
-    void refundPaymentPoint_alreadyRefunded() {
+    void refundPayment_alreadyRefunded() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
         PgPayment refundedPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
@@ -166,7 +166,7 @@ class PgCancelServiceTest {
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(refundedPayment));
 
         // when & then
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ALREADY_REFUNDED_PAYMENT.getMessage());
 
@@ -189,7 +189,7 @@ class PgCancelServiceTest {
 
         // when & then
         // Mocking(doThrow) 없이 실제 validateRefundTerms() 로직이 수행되어 날짜 차이를 계산함
-        assertThatThrownBy(() -> pgCancelService.refundPaymentPoint(memberId, command))
+        assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.REFUND_NOT_ALLOWED.getMessage());
     }

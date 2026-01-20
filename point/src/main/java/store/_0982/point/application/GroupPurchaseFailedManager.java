@@ -41,7 +41,7 @@ public class GroupPurchaseFailedManager {
                     cancelReason,
                     null
             );
-            pgCancelService.refundPaymentPoint(memberId, command);
+            pgCancelService.refundPayment(memberId, command);
         } else {
             throw new CustomException(CustomErrorCode.NO_PAYMENT_HISTORY);
         }

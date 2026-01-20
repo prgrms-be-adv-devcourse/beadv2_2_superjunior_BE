@@ -25,9 +25,6 @@ public class PgPaymentCancel {
     @Column(name = "cancel_amount", nullable = false)
     private long cancelAmount;
 
-    @Column(nullable = false)
-    private long remainingAmount;
-
     @Column(name = "cancel_reason")
     private String cancelReason;
 

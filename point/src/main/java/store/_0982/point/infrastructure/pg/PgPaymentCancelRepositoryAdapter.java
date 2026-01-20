@@ -15,4 +15,9 @@ public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelReposito
     public PgPaymentCancel save(PgPaymentCancel pgPaymentCancel) {
         return pgPaymentCancelJpaRepository.save(pgPaymentCancel);
     }
+
+    @Override
+    public boolean existsByTransactionKey(String transactionKey) {
+        return pgPaymentCancelJpaRepository.existsByTransactionKey(transactionKey);
+    }
 }

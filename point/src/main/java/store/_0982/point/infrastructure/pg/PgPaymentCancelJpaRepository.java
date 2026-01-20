@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface PgPaymentCancelJpaRepository extends JpaRepository<PgPaymentCancel, UUID> {
 
     List<PgPaymentCancel> findAllByPgPayment(PgPayment pgPayment);
+
+    boolean existsByTransactionKey(String transactionKey);
 }

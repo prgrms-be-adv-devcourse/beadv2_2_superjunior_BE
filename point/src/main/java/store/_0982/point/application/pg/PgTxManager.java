@@ -30,11 +30,6 @@ public class PgTxManager {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final PaymentRules paymentRules;
 
-    public PgPayment findPayment(UUID orderId) {
-        return pgPaymentRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-    }
-
     public PgPayment findCompletablePayment(UUID orderId, UUID memberId) {
         PgPayment pgPayment = findPayment(orderId);
         pgPayment.validateCompletable(memberId);
@@ -71,16 +66,27 @@ public class PgTxManager {
     @RetryableTransactional
     public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
         PgPayment pgPayment = findRefundablePayment(orderId, memberId);
-        TossPaymentInfo.CancelInfo cancelInfo = tossPaymentInfo.cancels().get(0);
-        pgPayment.markRefunded(cancelInfo.canceledAt());
+        for (TossPaymentInfo.CancelInfo cancelInfo : tossPaymentInfo.cancels()) {
+            if (!isRefundAlreadyProcessed(cancelInfo.transactionKey())) {
+                PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(
+                        pgPayment,
+                        cancelInfo.cancelReason(),
+                        cancelInfo.cancelAmount(),
+                        cancelInfo.canceledAt(),
+                        cancelInfo.transactionKey()
+                );
+                pgPaymentCancelRepository.save(pgPaymentCancel);
+                pgPayment.applyRefund(cancelInfo.cancelAmount(), cancelInfo.canceledAt());
+            }
+        }
+    }
 
-        PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(
-                pgPayment,
-                cancelInfo.cancelReason(),
-                cancelInfo.cancelAmount(),
-                cancelInfo.canceledAt(),
-                cancelInfo.transactionKey()
-        );
-        pgPaymentCancelRepository.save(pgPaymentCancel);
+    private boolean isRefundAlreadyProcessed(String transactionKey) {
+        return pgPaymentCancelRepository.existsByTransactionKey(transactionKey);
+    }
+
+    private PgPayment findPayment(UUID orderId) {
+        return pgPaymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
     }
 }

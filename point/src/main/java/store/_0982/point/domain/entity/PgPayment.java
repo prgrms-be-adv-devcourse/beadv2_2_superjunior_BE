@@ -48,8 +48,7 @@ public class PgPayment {
     @Column(nullable = false)
     private long amount;
 
-    @Column(nullable = false)
-    private long refundedAmount;
+    private Long refundedAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -57,8 +56,6 @@ public class PgPayment {
 
     @Column(length = 2048)
     private String receiptUrl;
-
-    private String webhookSecret;       // 웹훅 검증용 secret
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -85,7 +82,7 @@ public class PgPayment {
                 .memberId(memberId)
                 .orderId(orderId)
                 .amount(amount)
-                .requestedAt(OffsetDateTime.now())
+                .requestedAt(OffsetDateTime.now())  // TODO: 요청 시각도 따로 정보를 받아야 할 것 같다
                 .status(PgPaymentStatus.PENDING)
                 .build();
     }
@@ -105,6 +102,25 @@ public class PgPayment {
     public void markRefunded(OffsetDateTime refundedAt) {
         this.status = PgPaymentStatus.REFUNDED;
         this.refundedAt = refundedAt;
+        this.refundedAmount = amount;
+    }
+
+    public void applyRefund(long newRefundAmount, OffsetDateTime refundedAt) {
+        long currentRefunded = (refundedAmount == null) ? 0L : refundedAmount;
+        long totalRefunded = currentRefunded + newRefundAmount;
+
+        if (totalRefunded > amount) {
+            throw new CustomException(CustomErrorCode.INVALID_REFUND_AMOUNT);
+        }
+
+        if (totalRefunded == amount) {
+            markRefunded(refundedAt);
+            return;
+        }
+
+        this.status = PgPaymentStatus.PARTIALLY_REFUNDED;
+        this.refundedAt = refundedAt;
+        this.refundedAmount = totalRefunded;
     }
 
     public void validateCompletable(UUID memberId) {
@@ -126,7 +142,7 @@ public class PgPayment {
         if (this.status == PgPaymentStatus.REFUNDED) {
             throw new CustomException(CustomErrorCode.ALREADY_REFUNDED_PAYMENT);
         }
-        if (this.status != PgPaymentStatus.COMPLETED) {
+        if (this.status != PgPaymentStatus.COMPLETED && this.status != PgPaymentStatus.PARTIALLY_REFUNDED) {
             throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
         }
         validateRefundTerms(rules);

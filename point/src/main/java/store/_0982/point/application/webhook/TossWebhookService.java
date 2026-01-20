@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.pg.PgCancelService;
@@ -16,8 +15,6 @@ import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.NegligibleWebhookErrorType;
 import store._0982.point.exception.NegligibleWebhookException;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,16 +27,16 @@ public class TossWebhookService {
     private final PgPaymentRepository pgPaymentRepository;
 
     @Transactional
-    public void processWebhookPayment(TossPaymentInfo paymentData) throws JsonProcessingException {
-        PgPayment pgPayment = pgPaymentRepository.findByOrderId(paymentData.orderId())
+    public void processWebhookPayment(TossPaymentInfo tossPaymentInfo) throws JsonProcessingException {
+        PgPayment pgPayment = pgPaymentRepository.findByOrderId(tossPaymentInfo.orderId())
                 .orElseThrow(() -> new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_NOT_FOUND));
 
-        switch (paymentData.status()) {
-            case ABORTED, EXPIRED -> handleFailed(pgPayment, paymentData);
-            case CANCELED -> handleCanceled(pgPayment, paymentData);
-            case PARTIAL_CANCELED -> handlePartiallyCanceled(pgPayment, paymentData);
-            case DONE -> handleCompleted(pgPayment, paymentData);
-            case IN_PROGRESS -> handleInProgress(pgPayment, paymentData);
+        switch (tossPaymentInfo.status()) {
+            case ABORTED, EXPIRED -> handleFailed(pgPayment, tossPaymentInfo);
+            case CANCELED -> handleCanceled(pgPayment, tossPaymentInfo);
+            case PARTIAL_CANCELED -> handlePartiallyCanceled(pgPayment, tossPaymentInfo);
+            case DONE -> handleCompleted(pgPayment, tossPaymentInfo);
+            case IN_PROGRESS -> handleInProgress(pgPayment, tossPaymentInfo);
             case READY, WAITING_FOR_DEPOSIT -> {
                 // 무시
             }
@@ -62,37 +59,34 @@ public class TossWebhookService {
                 );
                 pgFailService.handlePaymentFailure(command, pgPayment.getMemberId());
             }
-            case COMPLETED -> {
-                // TODO: 이런 케이스가 존재할까? 그런데 중요한 사항이니 고려해보긴 해야 할 것 같다
-            }
+            // TODO: 이런 케이스가 존재할까? 그런데 중요한 사항이니 고려해보긴 해야 할 것 같다
+            case COMPLETED -> throw new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_STATUS_MISMATCH);
         }
     }
 
     private void handleCanceled(PgPayment pgPayment, TossPaymentInfo tossPaymentInfo) {
+        // TODO: 환불이 여러 번 일어났을 때 (cancels의 요소가 여러 개)를 생각하면 수정이 필요하다
         switch (pgPayment.getStatus()) {
             case FAILED, REFUNDED -> {
                 // 무시
             }
-            case PENDING, PARTIALLY_REFUNDED -> {
-                // 토스에서 전액 취소로 정보가 왔음 -> 따로 환불 로직은 필요 없음
-                List<TossPaymentInfo.CancelInfo> cancels = tossPaymentInfo.cancels();
-                pgPayment.markRefunded(cancels.get(cancels.size() - 1).canceledAt());
-            }
-            case COMPLETED -> {
-                List<TossPaymentInfo.CancelInfo> cancels = tossPaymentInfo.cancels();
-                TossPaymentInfo.CancelInfo cancelInfo = cancels.get(cancels.size() - 1);
-                PgCancelCommand command = new PgCancelCommand(
-                        pgPayment.getOrderId(),
-                        cancelInfo.cancelReason(),
-                        cancelInfo.cancelAmount()
-                );
-                pgCancelService.refundPaymentPoint(pgPayment.getMemberId(), command);
-            }
+            // 토스에서 전액 취소로 정보가 왔음 -> 따로 환불 로직은 필요 없음
+            case PENDING -> pgPayment.markRefunded(tossPaymentInfo.cancels().get(0).canceledAt());
+
+            case COMPLETED, PARTIALLY_REFUNDED -> pgCancelService
+                    .markRefundedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
         }
     }
 
     private void handlePartiallyCanceled(PgPayment pgPayment, TossPaymentInfo tossPaymentInfo) {
+        switch (pgPayment.getStatus()) {
+            // 전체 환불도 아니고 부분 환불? -> 생각보다 상태 충돌로 간주될 부분이 많아 보인다
+            case PENDING, FAILED, REFUNDED ->
+                    throw new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_STATUS_MISMATCH);
 
+            case COMPLETED, PARTIALLY_REFUNDED -> pgCancelService
+                    .markRefundedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
+        }
     }
 
     private void handleCompleted(PgPayment pgPayment, TossPaymentInfo tossPaymentInfo) {
@@ -100,11 +94,8 @@ public class TossWebhookService {
             case COMPLETED, REFUNDED, PARTIALLY_REFUNDED, FAILED -> {
                 // 무시
             }
-            case PENDING -> pgPayment.markConfirmed(
-                    tossPaymentInfo.paymentMethod(),
-                    tossPaymentInfo.approvedAt(),
-                    tossPaymentInfo.paymentKey()
-            );
+            case PENDING -> pgConfirmService
+                    .markConfirmedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
         }
     }
 

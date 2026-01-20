@@ -96,7 +96,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTask(() -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTask(() -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();
@@ -116,7 +116,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTasks(commands, command -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTasks(commands, command -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();
