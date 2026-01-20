@@ -3,8 +3,8 @@ package store._0982.ai.infrastructure.feign.search;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import store._0982.ai.application.dto.RecommandationSearchRequest;
-import store._0982.ai.application.dto.RecommandationSearchResponse;
+import store._0982.ai.application.dto.VectorSearchRequest;
+import store._0982.ai.application.dto.VectorSearchResponse;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import java.util.List;
 )
 public interface SearchFeignClient {
     @GetMapping("/internal/searches/purchase/search")
-    List<RecommandationSearchResponse> getRecommandationCandidates(
-            @RequestBody RecommandationSearchRequest recommandationSearchRequest
+    List<VectorSearchResponse> getRecommandationCandidates(
+            @RequestBody VectorSearchRequest vectorSearchRequest
     );
 }
