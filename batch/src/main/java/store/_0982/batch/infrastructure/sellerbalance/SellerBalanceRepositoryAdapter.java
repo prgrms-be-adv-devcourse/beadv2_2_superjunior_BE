@@ -30,4 +30,9 @@ public class SellerBalanceRepositoryAdapter implements SellerBalanceRepository {
         sellerBalanceJpaRepository.save(sellerBalance);
     }
 
+    @Override
+    public void saveAll(List<SellerBalance> sellerBalances) {
+        sellerBalanceJpaRepository.saveAll(sellerBalances);
+    }
+
 }
