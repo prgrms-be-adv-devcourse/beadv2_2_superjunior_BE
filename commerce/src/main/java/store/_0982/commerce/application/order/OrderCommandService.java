@@ -4,10 +4,12 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.CartService;
-import store._0982.commerce.application.grouppurchase.GroupPurchaseDecreaseService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
@@ -48,7 +50,6 @@ public class OrderCommandService {
     private final CartService cartService;
     private final ProductService productService;
     private final GroupPurchaseService groupPurchaseService;
-    private final GroupPurchaseDecreaseService groupPurchaseDecreaseService;
     private final ParticipateService participateService;
     private final SellerBalanceService sellerBalanceService;
 
@@ -181,6 +182,16 @@ public class OrderCommandService {
                 .collect(Collectors.toList());
     }
 
+    @Retryable(
+            retryFor = OptimisticLockingFailureException.class,
+            maxAttempts = 10,
+            backoff = @Backoff(
+                    delay = 50,
+                    multiplier = 2,
+                    maxDelay = 500,
+                    random = true
+            )
+    )
     @ServiceLog
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
@@ -212,7 +223,7 @@ public class OrderCommandService {
     }
 
     private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
-        groupPurchaseDecreaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
         order.requestCancel();
 
