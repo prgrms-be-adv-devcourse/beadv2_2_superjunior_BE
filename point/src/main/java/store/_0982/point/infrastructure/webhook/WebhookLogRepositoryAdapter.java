@@ -6,7 +6,6 @@ import store._0982.point.domain.entity.WebhookLog;
 import store._0982.point.domain.repository.WebhookLogRepository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class WebhookLogRepositoryAdapter implements WebhookLogRepository {
     }
 
     @Override
-    public Optional<WebhookLog> findById(UUID id) {
-        return webhookLogJpaRepository.findById(id);
+    public Optional<WebhookLog> findByWebhookId(String webhookId) {
+        return webhookLogJpaRepository.findByWebhookId(webhookId);
     }
 }

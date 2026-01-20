@@ -22,8 +22,8 @@ public class WebhookLog {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "url", nullable = false, length = 2048)
-    private String url;
+    @Column(name = "webhook_id", nullable = false, unique = true, updatable = false)
+    private String webhookId;
 
     @Column(name = "event_type", nullable = false, length = 50)
     private String eventType;
@@ -39,11 +39,16 @@ public class WebhookLog {
     @ColumnDefault("0")
     private int retryCount;
 
-    @Column(name = "response_code")
-    private Integer responseCode;
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 
-    @Column(name = "response_body", columnDefinition = "TEXT")
-    private String responseBody;
+    // 웹훅 이벤트가 생성된 시각 (PG 서버에서 보내줌)
+    @Column(name = "occurred_at", nullable = false, updatable = false)
+    private OffsetDateTime occurredAt;
+
+    // 웹훅 이벤트가 발송된 시각 (재시도마다 값이 바뀜)
+    @Column(name = "sent_at")
+    private OffsetDateTime sentAt;
 
     @CreationTimestamp
     @ColumnDefault("now()")
@@ -54,28 +59,42 @@ public class WebhookLog {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public static WebhookLog create(String url, String eventType, String payload) {
+    public static WebhookLog create(String webhookId, String eventType, String payload,
+                                    OffsetDateTime occurredAt, OffsetDateTime sentAt, int retryCount) {
         return WebhookLog.builder()
-                .id(UUID.randomUUID())
-                .url(url)
+                .webhookId(webhookId)
                 .eventType(eventType)
                 .payload(payload)
                 .status(WebhookStatus.PENDING)
-                .retryCount(0)
+                .retryCount(retryCount)
+                .occurredAt(occurredAt)
+                .sentAt(sentAt)
                 .build();
     }
 
-    public void markSuccess(int responseCode, String responseBody) {
-        this.status = WebhookStatus.SUCCESS;
-        this.responseCode = responseCode;
-        this.responseBody = responseBody;
+    public void markProcessing() {
+        this.status = WebhookStatus.PROCESSING;
     }
 
-    public void markFailed(int responseCode, String responseBody) {
-        this.responseCode = responseCode;
-        this.responseBody = responseBody;
-        this.retryCount++;
+    public void markSuccess() {
+        this.status = WebhookStatus.SUCCESS;
+    }
+
+    public void markFailed(String errorMessage) {
         this.status = WebhookStatus.FAILED;
+        this.errorMessage = errorMessage;
+    }
+
+    public void updateRetryCount(int retryCount) {
+        this.retryCount = Math.max(this.retryCount, retryCount);
+    }
+
+    public boolean isAlreadyProcessed() {
+        return status == WebhookStatus.SUCCESS || status == WebhookStatus.PROCESSING;
+    }
+
+    public boolean canProcess() {
+        return status == WebhookStatus.PENDING;
     }
 
     @PrePersist

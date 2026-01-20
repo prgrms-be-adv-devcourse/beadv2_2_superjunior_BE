@@ -33,7 +33,8 @@ public record TossPaymentInfo(
         OffsetDateTime requestedAt,
         OffsetDateTime approvedAt,
 
-        List<CancelInfo> cancels
+        List<CancelInfo> cancels,
+        FailureInfo failure
 ) {
 
     public PaymentMethod paymentMethod() {
@@ -144,6 +145,12 @@ public record TossPaymentInfo(
             String cancelReason,
             OffsetDateTime canceledAt,
             String transactionKey
+    ) {
+    }
+
+    public record FailureInfo(
+        String code,
+        String message
     ) {
     }
 }
