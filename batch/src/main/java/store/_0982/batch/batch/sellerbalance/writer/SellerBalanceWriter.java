@@ -39,7 +39,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
 
         List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
                 groupPurchaseIds,
-                OrderStatus.GROUP_PURCHASE_SUCCESS
+                OrderStatus.PURCHASE_CONFIRMED
         );
 
         Map<UUID, Long> sellerAmounts = orders.stream()
@@ -52,11 +52,15 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
             UUID sellerId = entry.getKey();
             Long amount = entry.getValue();
 
-            SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
+            try {
+                SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
-            sellerBalance.increaseBalance(amount);
-            sellerBalanceRepository.save(sellerBalance);
+                sellerBalance.increaseBalance(amount);
+                sellerBalanceRepository.save(sellerBalance);
+            } catch (CustomException e) {
+                log.error("[ERROR] [SELLER_BALANCE] {} failed", sellerId, e);
+            }
         }
     }
 }
