@@ -12,4 +12,5 @@ public interface SellerBalanceRepository {
 
     void save(SellerBalance sellerBalance);
 
+    void saveAll(List<SellerBalance> sellerBalances);
 }

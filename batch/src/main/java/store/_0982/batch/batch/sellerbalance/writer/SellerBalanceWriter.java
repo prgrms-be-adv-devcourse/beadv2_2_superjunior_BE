@@ -16,6 +16,7 @@ import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -52,6 +53,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                         Collectors.summingLong(Order::getTotalAmount)
                 ));
 
+        List<SellerBalance> sellerBalances = new ArrayList<>();
         for (Map.Entry<UUID, Long> entry : sellerAmounts.entrySet()) {
             UUID sellerId = entry.getKey();
             Long amount = entry.getValue();
@@ -61,7 +63,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                         .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
                 sellerBalance.increaseBalance(amount);
-                sellerBalanceRepository.save(sellerBalance);
+                sellerBalances.add(sellerBalance);
 
                 eventPublisher.publishEvent(
                         new SellerBalanceCompleted(sellerBalance, amount)
@@ -69,6 +71,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
             } catch (CustomException e) {
                 log.error("[ERROR] [SELLER_BALANCE] {} failed", sellerId, e);
             }
+            sellerBalanceRepository.saveAll(sellerBalances);
         }
     }
 }
