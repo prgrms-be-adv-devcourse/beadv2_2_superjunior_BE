@@ -233,4 +233,12 @@ public class GroupPurchaseService {
         return groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
     }
+
+    @Transactional
+    public void decreaseQuantity(UUID groupPurchaseId, int quantity) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+        groupPurchase.decreaseQuantity(quantity);
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
+    }
 }
