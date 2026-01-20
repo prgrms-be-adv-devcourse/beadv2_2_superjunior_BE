@@ -17,26 +17,26 @@ public class SettlementEventPublisher {
 
     public void publishSettlementCompletedEvent(Settlement settlement) {
         SettlementDoneEvent event = settlement.toCompletedEvent();
-        send(KafkaTopics.SETTLEMENT_DONE, settlement.getSettlementId().toString(), event);
+        send(settlement.getSettlementId().toString(), event);
     }
 
     public void publishSettlementFailedEvent(Settlement settlement) {
         SettlementDoneEvent event = settlement.toFailedEvent();
-        send(KafkaTopics.SETTLEMENT_DONE, settlement.getSettlementId().toString(), event);
+        send(settlement.getSettlementId().toString(), event);
     }
 
     public void publishSettlementDeferredEvent(Settlement settlement) {
         SettlementDoneEvent event = settlement.toDeferredEvent();
-        send(KafkaTopics.SETTLEMENT_DONE, settlement.getSettlementId().toString(), event);
+        send(settlement.getSettlementId().toString(), event);
     }
 
-    private void send(String topic, String key, SettlementDoneEvent event) {
-        settlementKafkaTemplate.send(topic, key, event)
+    private void send(String key, SettlementDoneEvent event) {
+        settlementKafkaTemplate.send(KafkaTopics.SETTLEMENT_DONE, key, event)
                 .whenComplete((result, throwable) -> {
                     if (throwable == null) {
-                        log.info("[KAFKA] [{}] successfully sent to partition {}", topic, result.getRecordMetadata().partition());
+                        log.info("[KAFKA] [{}] successfully sent to partition {}", KafkaTopics.SETTLEMENT_DONE, result.getRecordMetadata().partition());
                     } else {
-                        log.error("[ERROR] [KAFKA] [{}] failed to send after infrastructure retries", topic, throwable);
+                        log.error("[ERROR] [KAFKA] [{}] failed to send after infrastructure retries", KafkaTopics.SETTLEMENT_DONE, throwable);
                     }
                 });
     }
