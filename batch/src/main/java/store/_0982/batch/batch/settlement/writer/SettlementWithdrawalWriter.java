@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import store._0982.batch.application.sellerbalance.SellerBalanceService;
 import store._0982.batch.application.settlement.BankTransferService;
 import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
-import store._0982.batch.application.settlement.event.SettlementFailedEvent;
 import store._0982.batch.domain.settlement.*;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.client.member.MemberClient;
@@ -67,8 +66,6 @@ public class SettlementWithdrawalWriter implements ItemWriter<Settlement> {
                         0,
                         settlement.getSettlementId()
                 ));
-
-                eventPublisher.publishEvent(new SettlementFailedEvent(settlement, e.getMessage()));
             }
         }
 
