@@ -56,6 +56,7 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Address> addresses = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.PENDING;
 
