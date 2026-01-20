@@ -9,7 +9,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-@Profile("local")
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class GroupPurchaseReindexLocalRunner implements ApplicationRunner {
