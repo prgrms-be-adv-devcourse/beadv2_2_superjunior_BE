@@ -113,6 +113,10 @@ public class Settlement {
         return toEvent(SettlementDoneEvent.Status.FAILED);
     }
 
+    public SettlementDoneEvent toDeferredEvent() {
+        return toEvent(SettlementDoneEvent.Status.DEFERRED);
+    }
+
     private SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
         return new SettlementDoneEvent(
                 this.settlementId,

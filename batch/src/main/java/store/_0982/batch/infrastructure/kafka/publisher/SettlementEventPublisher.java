@@ -25,6 +25,11 @@ public class SettlementEventPublisher {
         send(KafkaTopics.SETTLEMENT_DONE, settlement.getSettlementId().toString(), event);
     }
 
+    public void publishSettlementDeferredEvent(Settlement settlement) {
+        SettlementDoneEvent event = settlement.toDeferredEvent();
+        send(KafkaTopics.SETTLEMENT_DONE, settlement.getSettlementId().toString(), event);
+    }
+
     private void send(String topic, String key, SettlementDoneEvent event) {
         settlementKafkaTemplate.send(topic, key, event)
                 .whenComplete((result, throwable) -> {

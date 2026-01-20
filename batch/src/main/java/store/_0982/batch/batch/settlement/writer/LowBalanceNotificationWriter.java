@@ -5,7 +5,7 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.settlement.event.SettlementCompletedEvent;
+import store._0982.batch.application.settlement.event.SettlementDeferredEvent;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
 
@@ -27,7 +27,7 @@ public class LowBalanceNotificationWriter implements ItemWriter<Settlement> {
         for (Settlement settlement : settlements) {
             settlement.markAsDeferred();
             eventPublisher.publishEvent(
-                    new SettlementCompletedEvent(settlement)
+                    new SettlementDeferredEvent(settlement)
             );
         }
         settlementRepository.saveAll(settlements);
