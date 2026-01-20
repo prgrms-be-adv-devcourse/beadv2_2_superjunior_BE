@@ -30,41 +30,40 @@ public class PgTxManager {
     private final ApplicationEventPublisher applicationEventPublisher;
     private final PaymentRules paymentRules;
 
-    public PgPayment findPayment(String paymentKey) {
-        return pgPaymentRepository.findByPaymentKey(paymentKey)
+    public PgPayment findPayment(UUID orderId) {
+        return pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
     }
 
-    public PgPayment findCompletablePayment(String paymentKey, UUID memberId) {
-        PgPayment pgPayment = findPayment(paymentKey);
+    public PgPayment findCompletablePayment(UUID orderId, UUID memberId) {
+        PgPayment pgPayment = findPayment(orderId);
         pgPayment.validateCompletable(memberId);
         return pgPayment;
     }
 
-    public PgPayment findFailablePayment(String paymentKey, UUID memberId) {
-        PgPayment pgPayment = findPayment(paymentKey);
+    public PgPayment findFailablePayment(UUID orderId, UUID memberId) {
+        PgPayment pgPayment = findPayment(orderId);
         pgPayment.validateFailable(memberId);
         return pgPayment;
     }
 
     public PgPayment findRefundablePayment(UUID orderId, UUID memberId) {
-        PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+        PgPayment pgPayment = findPayment(orderId);
         pgPayment.validateRefundable(memberId, paymentRules);
         return pgPayment;
     }
 
     @RetryableTransactional
-    public void markConfirmedPayment(TossPaymentInfo tossPaymentInfo, String paymentKey, UUID memberId) {
-        PgPayment pgPayment = findCompletablePayment(paymentKey, memberId);
+    public void markConfirmedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
+        PgPayment pgPayment = findCompletablePayment(orderId, memberId);
         pgPayment.markConfirmed(tossPaymentInfo.paymentMethod(), tossPaymentInfo.approvedAt(), tossPaymentInfo.paymentKey());
         applicationEventPublisher.publishEvent(PaymentConfirmedTxEvent.from(pgPayment));
     }
 
     @RetryableTransactional
-    public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID memberId) {
-        PgPayment pgPayment = findFailablePayment(paymentKey, memberId);
-        pgPayment.markFailed();
+    public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID orderId, UUID memberId) {
+        PgPayment pgPayment = findFailablePayment(orderId, memberId);
+        pgPayment.markFailed(paymentKey);
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment, errorMessage);
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }

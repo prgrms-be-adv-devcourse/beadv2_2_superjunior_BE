@@ -97,7 +97,8 @@ public class PgPayment {
         this.approvedAt = approvedAt;
     }
 
-    public void markFailed() {
+    public void markFailed(String paymentKey) {
+        this.paymentKey = paymentKey;
         this.status = PgPaymentStatus.FAILED;
     }
 

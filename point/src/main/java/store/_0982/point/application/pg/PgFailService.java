@@ -25,14 +25,14 @@ public class PgFailService {
     @ServiceLog
     @RetryableTransactional
     public void handlePaymentFailure(PgFailCommand command, UUID memberId) {
-        PgPayment pgPayment = findFailablePayment(command.paymentKey(), memberId);
-        pgPayment.markFailed();
+        PgPayment pgPayment = findFailablePayment(command.orderId(), memberId);
+        pgPayment.markFailed(command.paymentKey());
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.pgError(pgPayment, command);
         pgPaymentFailureRepository.save(pgPaymentFailure);
     }
 
-    private PgPayment findFailablePayment(String paymentKey, UUID memberId) {
-        PgPayment pgPayment = pgPaymentRepository.findByPaymentKey(paymentKey)
+    private PgPayment findFailablePayment(UUID orderId, UUID memberId) {
+        PgPayment pgPayment = pgPaymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
 
         pgPayment.validateFailable(memberId);
