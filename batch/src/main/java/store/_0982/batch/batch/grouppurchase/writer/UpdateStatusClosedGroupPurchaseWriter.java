@@ -24,7 +24,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UpdateStatusClosedGroupPurchaseWriter implements ItemWriter<GroupPurchaseResult> {
     private final GroupPurchaseRepository groupPurchaseRepository;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends GroupPurchaseResult> chunk) throws Exception {
@@ -37,24 +36,8 @@ public class UpdateStatusClosedGroupPurchaseWriter implements ItemWriter<GroupPu
             else groupPurchase.markFailed();
 
             toUpdate.add(groupPurchase);
-            processedIds.add(groupPurchase.getGroupPurchaseId());
         }
         groupPurchaseRepository.saveAll(toUpdate);
 
-        for(GroupPurchase groupPurchase : toUpdate){
-            eventPublisher.publishEvent(new GroupPurchaseUpdatedEvent(groupPurchase.getGroupPurchaseId()));
-        }
-
-        // StepExecutionContext에 Id 저장
-        StepExecution stepExecution = Objects.requireNonNull(StepSynchronizationManager.getContext()).getStepExecution();
-        ExecutionContext executionContext = stepExecution.getExecutionContext();
-        @SuppressWarnings("unchecked")
-        List<UUID> allProcessedIds = (List<UUID>) executionContext.get("processedGroupPurchaseIds");
-
-        if(allProcessedIds == null){
-            allProcessedIds = new ArrayList<>();
-        }
-
-        executionContext.put("processedGroupPurchaseIds", allProcessedIds);
     }
 }
