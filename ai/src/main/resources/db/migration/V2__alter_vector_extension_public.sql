@@ -1,0 +1,1 @@
+ALTER EXTENSION vector SET SCHEMA public;
