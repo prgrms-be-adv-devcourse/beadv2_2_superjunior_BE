@@ -105,7 +105,15 @@ public class Settlement {
         this.bankCode = bankCode;
     }
 
-    public SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
+    public SettlementDoneEvent toCompletedEvent() {
+        return toEvent(SettlementDoneEvent.Status.COMPLETED);
+    }
+
+    public SettlementDoneEvent toFailedEvent() {
+        return toEvent(SettlementDoneEvent.Status.FAILED);
+    }
+
+    private SettlementDoneEvent toEvent(SettlementDoneEvent.Status status) {
         return new SettlementDoneEvent(
                 this.settlementId,
                 this.sellerId,
