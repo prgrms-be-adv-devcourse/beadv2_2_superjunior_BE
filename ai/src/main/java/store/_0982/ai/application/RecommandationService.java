@@ -2,10 +2,7 @@ package store._0982.ai.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import store._0982.ai.application.dto.LlmCommand;
-import store._0982.ai.application.dto.RecommandationInfo;
-import store._0982.ai.application.dto.RecommandationSearchRequest;
-import store._0982.ai.application.dto.RecommandationSearchResponse;
+import store._0982.ai.application.dto.*;
 import store._0982.ai.domain.PersonalVector;
 import store._0982.ai.domain.PersonalVectorRepository;
 import store._0982.ai.exception.CustomErrorCode;
@@ -19,20 +16,35 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecommandationService {
 
-    private static final int NUM_OF_RECO = 8;
+    private static final int NUM_OF_RECO = 4;
 
     private final SearchQueryPort searchQueryPort;
     private final PersonalVectorRepository personalVectorRepository;
     private final PromptService promptService ;
 
-    public List<RecommandationInfo> getRecommandations(UUID memberId, String keyword, String category) {
+    public RecommandInfo getRecommandations(UUID memberId, String keyword, String category) {
         PersonalVector personalVector = personalVectorRepository.findById(memberId).orElseThrow(()->new CustomException(CustomErrorCode.BAD_REQUEST));
-        List<RecommandationSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new RecommandationSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO * 3));
+        List<VectorSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new VectorSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO * 2));
+        List<GroupPurchase> groupPurchases = candidates.stream().map(GroupPurchase::from).toList();
 
-        promptService.askLlm(candidates.stream().map(LlmCommand::from).toList());
+        LlmResponse llmResponse = promptService.askToChatModel(keyword, category, groupPurchases.stream().map(SimpleGroupPurchaseInfo::from).toList(), NUM_OF_RECO);
 
+        List<GroupPurchase> recommendedGpList = convertLlmResponseToGp(llmResponse, groupPurchases);
 
-        return new LinkedList<RecommandationInfo>();
+        return new RecommandInfo(recommendedGpList, llmResponse.reason());
     }
 
+    private List<GroupPurchase> convertLlmResponseToGp(LlmResponse llmResponse, List<GroupPurchase> groupPurchaseList) {
+
+        List<GroupPurchase> resultInfos = new LinkedList<>();
+        for(LlmResponse.GroupPurchase gp : llmResponse.groupPurchases()) {
+            for(GroupPurchase groupPurchase : groupPurchaseList) {
+                if(groupPurchase.groupPurchaseId().equals(gp.groupPurchaseId())){
+                    resultInfos.add(groupPurchase);
+                }
+
+            }
+        }
+        return resultInfos;
+    }
 }
