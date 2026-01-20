@@ -21,6 +21,7 @@ public class VectorRefreshScheduler {
     public void scheduleVectorRefresh() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
+                .addString("memberId", "<uuid>")
                 .toJobParameters();
         jobLauncher.run(vectorRefreshJob, jobParameters);
     }
