@@ -17,6 +17,9 @@ import store._0982.point.domain.repository.PgPaymentFailureRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -66,8 +69,15 @@ public class PgTxManager {
     @RetryableTransactional
     public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
         PgPayment pgPayment = findRefundablePayment(orderId, memberId);
+
+        List<String> incomingKeys = tossPaymentInfo.cancels().stream()
+                .map(TossPaymentInfo.CancelInfo::transactionKey)
+                .toList();
+        Set<String> existingKeys = pgPaymentCancelRepository.findExistingTransactionKeys(incomingKeys);
+
+        List<PgPaymentCancel> newCancels = new ArrayList<>();
         for (TossPaymentInfo.CancelInfo cancelInfo : tossPaymentInfo.cancels()) {
-            if (!isRefundAlreadyProcessed(cancelInfo.transactionKey())) {
+            if (!existingKeys.contains(cancelInfo.transactionKey())) {
                 PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(
                         pgPayment,
                         cancelInfo.cancelReason(),
@@ -75,14 +85,14 @@ public class PgTxManager {
                         cancelInfo.canceledAt(),
                         cancelInfo.transactionKey()
                 );
-                pgPaymentCancelRepository.save(pgPaymentCancel);
+                newCancels.add(pgPaymentCancel);
                 pgPayment.applyRefund(cancelInfo.cancelAmount(), cancelInfo.canceledAt());
             }
         }
-    }
 
-    private boolean isRefundAlreadyProcessed(String transactionKey) {
-        return pgPaymentCancelRepository.existsByTransactionKey(transactionKey);
+        if (!newCancels.isEmpty()) {
+            pgPaymentCancelRepository.saveAll(newCancels);
+        }
     }
 
     private PgPayment findPayment(UUID orderId) {

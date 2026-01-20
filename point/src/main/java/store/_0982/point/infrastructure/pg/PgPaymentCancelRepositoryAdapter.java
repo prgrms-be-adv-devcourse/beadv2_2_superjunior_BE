@@ -5,6 +5,10 @@ import org.springframework.stereotype.Repository;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Repository
 @RequiredArgsConstructor
 public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelRepository {
@@ -17,7 +21,12 @@ public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelReposito
     }
 
     @Override
-    public boolean existsByTransactionKey(String transactionKey) {
-        return pgPaymentCancelJpaRepository.existsByTransactionKey(transactionKey);
+    public Set<String> findExistingTransactionKeys(List<String> transactionKeys) {
+        return new HashSet<>(pgPaymentCancelJpaRepository.findAllTransactionKeysByTransactionKeyIn(transactionKeys));
+    }
+
+    @Override
+    public void saveAll(Iterable<PgPaymentCancel> pgPaymentCancels) {
+        pgPaymentCancelJpaRepository.saveAll(pgPaymentCancels);
     }
 }

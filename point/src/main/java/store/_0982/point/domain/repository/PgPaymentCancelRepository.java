@@ -2,8 +2,13 @@ package store._0982.point.domain.repository;
 
 import store._0982.point.domain.entity.PgPaymentCancel;
 
+import java.util.List;
+import java.util.Set;
+
 public interface PgPaymentCancelRepository {
     PgPaymentCancel save(PgPaymentCancel pgPaymentCancel);
 
-    boolean existsByTransactionKey(String transactionKey);
+    Set<String> findExistingTransactionKeys(List<String> transactionKeys);
+
+    void saveAll(Iterable<PgPaymentCancel> pgPaymentCancels);
 }

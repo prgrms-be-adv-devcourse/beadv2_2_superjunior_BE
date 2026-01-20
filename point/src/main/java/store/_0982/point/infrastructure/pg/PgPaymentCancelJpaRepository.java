@@ -1,6 +1,7 @@
 package store._0982.point.infrastructure.pg;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 
@@ -11,5 +12,6 @@ public interface PgPaymentCancelJpaRepository extends JpaRepository<PgPaymentCan
 
     List<PgPaymentCancel> findAllByPgPayment(PgPayment pgPayment);
 
-    boolean existsByTransactionKey(String transactionKey);
+    @Query("SELECT pc.transactionKey FROM PgPaymentCancel pc WHERE pc.transactionKey IN :transactionKeys")
+    List<String> findAllTransactionKeysByTransactionKeyIn(List<String> transactionKeys);
 }
