@@ -77,6 +77,9 @@ public class Order {
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
+    @Column(name = "settled_at")
+    private OffsetDateTime settledAt;
+
     private Order(
             int quantity,
             Long price,
