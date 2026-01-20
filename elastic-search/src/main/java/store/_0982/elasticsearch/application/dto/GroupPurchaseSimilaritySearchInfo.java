@@ -1,6 +1,6 @@
 package store._0982.elasticsearch.application.dto;
 
-import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -21,9 +21,10 @@ public record GroupPurchaseSimilaritySearchInfo(
         Integer currentQuantity,
         Long discountRate,
         Double score,
-        ProductSearchInfo productSearchInfo
+        ProductSearchInfo productSearchInfo,
+        ProductVectorInfo productVectorInfo
 ) {
-    public static GroupPurchaseSimilaritySearchInfo from(GroupPurchaseSearchRow row, Double score) {
+    public static GroupPurchaseSimilaritySearchInfo from(GroupPurchaseSimilaritySearchRow row, Double score) {
         return new GroupPurchaseSimilaritySearchInfo(
                 row.groupPurchaseId().toString(),
                 row.minQuantity(),
@@ -45,6 +46,13 @@ public record GroupPurchaseSimilaritySearchInfo(
                         row.price(),
                         row.originalUrl(),
                         row.sellerId().toString()
+                ),
+                new ProductVectorInfo(
+                        row.productId().toString(),
+                        row.productName(),
+                        row.productDescription(),
+                        row.price(),
+                        row.productVector()
                 )
         );
     }

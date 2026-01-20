@@ -16,6 +16,7 @@ import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchIn
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
@@ -125,13 +126,13 @@ public class GroupPurchaseSearchService {
                 .map(hit -> UUID.fromString(hit.getId()))
                 .toList();
 
-        List<GroupPurchaseSearchRow> rows = groupPurchaseSearchRepository.findAllByIds(ids);
-        Map<UUID, GroupPurchaseSearchRow> rowMap = rows.stream()
-                .collect(Collectors.toMap(GroupPurchaseSearchRow::groupPurchaseId, Function.identity()));
+        List<GroupPurchaseSimilaritySearchRow> rows = groupPurchaseSearchRepository.findAllSimilarityByIds(ids);
+        Map<UUID, GroupPurchaseSimilaritySearchRow> rowMap = rows.stream()
+                .collect(Collectors.toMap(GroupPurchaseSimilaritySearchRow::groupPurchaseId, Function.identity()));
 
         List<GroupPurchaseSimilaritySearchInfo> ordered = new ArrayList<>(ids.size());
         for (UUID id : ids) {
-            GroupPurchaseSearchRow row = rowMap.get(id);
+            GroupPurchaseSimilaritySearchRow row = rowMap.get(id);
             if (row != null) {
                 Double score = scores.get(id);
                 ordered.add(GroupPurchaseSimilaritySearchInfo.from(row, score));
