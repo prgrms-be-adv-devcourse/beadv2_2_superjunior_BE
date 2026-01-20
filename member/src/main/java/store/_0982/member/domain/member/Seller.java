@@ -44,7 +44,7 @@ public class Seller {
     private String businessRegistrationNumber;
 
     @Column(name = "status")
-    private Seller.Status staus = Status.PENDING;
+    private Seller.Status status = Status.PENDING;
 
     public static Seller create(Member member, String bankCode, String accountNumber, String accountHolder, String businessRegistrationNumber) {
         Seller seller = new Seller();
@@ -66,7 +66,7 @@ public class Seller {
     }
 
     public void confirm() {
-        this.staus = Status.ACTIVE;
+        this.status = Status.ACTIVE;
     }
 
 
