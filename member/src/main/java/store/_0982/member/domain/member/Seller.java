@@ -43,6 +43,7 @@ public class Seller {
     @Column(name = "business_registration_number", length = 15, nullable = false, unique = true)
     private String businessRegistrationNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Seller.Status status = Status.PENDING;
 
