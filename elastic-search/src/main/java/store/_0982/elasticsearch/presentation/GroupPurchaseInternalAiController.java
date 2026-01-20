@@ -17,14 +17,14 @@ import store._0982.elasticsearch.presentation.dto.GroupPurchaseInternalSearchReq
 
 import java.util.List;
 
-@Tag(name = "Group Purchase to Ai", description = "Group purchase internal AI API.")
+@Tag(name = "search internal 컨트롤러", description = "공동구매 관련 내부 컨트롤러")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/internal/searches/purchase")
 public class GroupPurchaseInternalAiController {
     private final GroupPurchaseSearchService searchService;
 
-    @Operation(summary = "Group purchase vector search")
+    @Operation(summary = "공동구매 유사도 검색")
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @PostMapping("/search")
@@ -33,7 +33,7 @@ public class GroupPurchaseInternalAiController {
     ) {
         List<GroupPurchaseSimilaritySearchInfo> result = searchService.searchGroupPurchaseDocumentWithEmbedding(
                 request.keyword(),
-                "",
+                "",//open으로 수정 해야함
                 request.category(),
                 request.vector(),
                 request.topK()
