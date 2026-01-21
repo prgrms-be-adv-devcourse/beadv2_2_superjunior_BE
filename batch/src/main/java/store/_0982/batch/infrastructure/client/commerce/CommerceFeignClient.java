@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import store._0982.batch.domain.ai.CartVector;
 import store._0982.batch.domain.ai.OrderVector;
+import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 
 import java.util.List;
@@ -17,8 +18,8 @@ import java.util.UUID;
 public interface CommerceFeignClient {
 
     @GetMapping(value = "/api/orders/consumer")
-    ResponseDto<List<OrderVector>> getOrdersConsumer(@RequestHeader("X-Member-Id") UUID memberId);
+    ResponseDto<List<OrderVector>> getOrdersConsumer(@RequestHeader(HeaderName.ID) UUID memberId);
 
     @GetMapping(value = "/api/carts")
-    ResponseDto<List<CartVector>> getCarts(@RequestHeader("X-Member-Id") UUID memberId);
+    ResponseDto<List<CartVector>> getCarts(@RequestHeader(HeaderName.ID) UUID memberId);
 }
