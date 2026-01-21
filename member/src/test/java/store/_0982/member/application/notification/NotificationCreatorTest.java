@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import store._0982.common.kafka.dto.*;
 import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.*;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
 
 import java.util.UUID;
 

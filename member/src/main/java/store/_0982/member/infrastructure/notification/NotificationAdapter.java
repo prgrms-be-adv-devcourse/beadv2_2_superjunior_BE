@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationStatus;
 
 import java.util.List;
 import java.util.Optional;

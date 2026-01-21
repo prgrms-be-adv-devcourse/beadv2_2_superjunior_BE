@@ -10,9 +10,9 @@ import store._0982.common.log.ServiceLog;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;
-import store._0982.member.domain.notification.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationType;
+import store._0982.member.domain.notification.constant.NotificationType;
 import store._0982.member.exception.CustomKafkaException;
 
 @Service

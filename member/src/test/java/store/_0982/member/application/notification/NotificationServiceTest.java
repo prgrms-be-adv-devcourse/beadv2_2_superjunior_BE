@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.common.exception.CustomException;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.util.Optional;

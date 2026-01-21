@@ -15,8 +15,8 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.member.application.notification.NotificationService;
 import store._0982.member.application.notification.dto.NotificationInfo;
-import store._0982.member.domain.notification.NotificationStatus;
-import store._0982.member.domain.notification.NotificationType;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
 
 import java.time.OffsetDateTime;
 import java.util.List;

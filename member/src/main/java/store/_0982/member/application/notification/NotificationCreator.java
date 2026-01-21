@@ -3,9 +3,9 @@ package store._0982.member.application.notification;
 import store._0982.common.kafka.dto.*;
 import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;
-import store._0982.member.domain.notification.NotificationChannel;
-import store._0982.member.domain.notification.NotificationStatus;
-import store._0982.member.domain.notification.ReferenceType;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.ReferenceType;
 
 public final class NotificationCreator {
     public static Notification create(OrderChangedEvent event, NotificationContent content, NotificationChannel channel) {

@@ -10,6 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
 import store._0982.member.domain.notification.*;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
 
 import java.util.List;
 import java.util.Optional;

@@ -2,6 +2,7 @@ package store._0982.member.domain.notification;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.member.domain.notification.constant.NotificationStatus;
 
 import java.util.List;
 import java.util.Optional;

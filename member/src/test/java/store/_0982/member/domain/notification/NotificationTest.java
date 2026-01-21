@@ -3,6 +3,10 @@ package store._0982.member.domain.notification;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.common.exception.CustomException;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.util.UUID;

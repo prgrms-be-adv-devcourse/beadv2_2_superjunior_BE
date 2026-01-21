@@ -10,8 +10,8 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.SettlementDoneEvent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationStatus;
-import store._0982.member.domain.notification.NotificationType;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
 
 import java.util.List;
 import java.util.UUID;

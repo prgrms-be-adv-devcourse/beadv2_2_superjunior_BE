@@ -10,7 +10,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.member.application.notification.dto.NotificationInfo;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.util.UUID;
