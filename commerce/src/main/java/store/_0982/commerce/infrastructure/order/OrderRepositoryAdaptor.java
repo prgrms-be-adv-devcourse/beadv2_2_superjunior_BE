@@ -77,6 +77,11 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
+    public Optional<Order> findByIdempotenceKey(String idempotenceKey) {
+        return orderJpaRepository.findByIdempotencyKey(idempotenceKey);
+    }
+
+    @Override
     public List<Order> findAllByMemberId(UUID memberId) {
         return orderJpaRepository.findAllByMemberId(memberId);
     }

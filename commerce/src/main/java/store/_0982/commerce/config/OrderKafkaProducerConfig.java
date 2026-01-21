@@ -9,6 +9,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
+import store._0982.common.kafka.dto.OrderChangedEvent;
+import store._0982.common.kafka.dto.OrderCreatedEvent;
 
 @Configuration
 public class OrderKafkaProducerConfig {
@@ -17,14 +19,40 @@ public class OrderKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
+    public ProducerFactory<String, OrderCreatedEvent> orderCreatedEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean
+    public ProducerFactory<String, OrderChangedEvent> orderChangedEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean
     public ProducerFactory<String, OrderCanceledEvent> orderCanceledEventProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderCreatedEvent> orderCreatedEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(orderCreatedEventProducerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, OrderChangedEvent> orderChangedEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(orderChangedEventProducerFactory());
     }
 
     @Bean
     public KafkaTemplate<String, OrderCanceledEvent> orderCanceledEventKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(orderCanceledEventProducerFactory());
     }
+
+    @Bean
+    public NewTopic orderCreateTopic() { return KafkaCommonConfigs.createTopic(KafkaTopics.ORDER_CREATED); }
+
+    @Bean
+    public NewTopic orderChangeTopic() { return KafkaCommonConfigs.createTopic(KafkaTopics.ORDER_CHANGED); }
 
     @Bean
     public NewTopic orderCancelTopic() {

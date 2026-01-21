@@ -24,5 +24,7 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     boolean existsByIdempotencyKey(String idempotenceKey);
 
+    Optional<Order> findByIdempotencyKey(String idempotenceKey);
+
     List<Order> findAllByMemberId(UUID memberId);
 }
