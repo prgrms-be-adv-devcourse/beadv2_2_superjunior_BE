@@ -11,7 +11,9 @@ import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.entity.PgPaymentFailure;
+import store._0982.point.domain.event.PaymentCanceledTxEvent;
 import store._0982.point.domain.event.PaymentConfirmedTxEvent;
+import store._0982.point.domain.event.PaymentFailedTxEvent;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentFailureRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
@@ -64,6 +66,7 @@ public class PgTxManager {
         pgPayment.markFailed(paymentKey);
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment, errorMessage);
         pgPaymentFailureRepository.save(pgPaymentFailure);
+        applicationEventPublisher.publishEvent(PaymentFailedTxEvent.from(pgPayment));
     }
 
     @RetryableTransactional
@@ -93,6 +96,7 @@ public class PgTxManager {
         if (!newCancels.isEmpty()) {
             pgPaymentCancelRepository.saveAll(newCancels);
         }
+        applicationEventPublisher.publishEvent(PaymentCanceledTxEvent.from(pgPayment));
     }
 
     private PgPayment findPayment(UUID orderId) {

@@ -4,65 +4,46 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.OrderChangedEvent;
-import store._0982.common.kafka.dto.OrderConfirmedEvent;
-import store._0982.common.kafka.dto.PointChangedEvent;
+import store._0982.common.kafka.dto.*;
 import store._0982.point.common.KafkaGroupIds;
 
 @Configuration
 public class KafkaConfig {
+
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootStrapServer;
 
     @Bean
-    public ProducerFactory<String, PointChangedEvent> producerFactory() {
+    @Primary
+    public ProducerFactory<String, BaseEvent> baseEventProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootStrapServer);
     }
 
     @Bean
-    public KafkaTemplate<String, PointChangedEvent> kafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(producerFactory());
+    @Primary
+    public KafkaTemplate<String, BaseEvent> kafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(baseEventProducerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, OrderCanceledEvent> orderCanceledEventConsumerFactory() {
+    public ConsumerFactory<String, BaseEvent> baseEventConsumerFactory() {
         return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.PAYMENT_SERVICE);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderCanceledEvent> orderCanceledEventListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderCanceledEventConsumerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> baseEventListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(baseEventConsumerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, OrderConfirmedEvent> orderConfirmedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.PAYMENT_SERVICE);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderConfirmedEvent> orderConfirmedEventListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderConfirmedEventConsumerFactory());
-    }
-
-    @Bean
-    public ConsumerFactory<String, OrderChangedEvent> orderChangedEventConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.PAYMENT_SERVICE);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderChangedEvent> orderChangedEventListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderChangedEventConsumerFactory());
-    }
-
-    @Bean
-    public NewTopic pointRechargedTopic() {
+    public NewTopic paymentChangedTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.PAYMENT_CHANGED);
     }
 
