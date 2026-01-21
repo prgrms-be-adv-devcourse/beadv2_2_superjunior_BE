@@ -1,0 +1,18 @@
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
+spring:
+  batch:
+    job:
+      name: ${SPRING_BATCH_JOB_NAME}
+      enabled: true  # k8s
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URIS}
+    connection-timeout: 1s
+    socket-timeout: 3s
+
+client:
+  member: ${CLIENT_MEMBER}
+  commerce: ${CLIENT_COMMERCE}

@@ -27,13 +27,7 @@ public class SettlementKafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic monthlySettlementCompletedTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.MONTHLY_SETTLEMENT_COMPLETED);
+    public NewTopic settlementDoneTopic() {
+        return KafkaCommonConfigs.createTopic(KafkaTopics.SETTLEMENT_DONE);
     }
-
-    @Bean
-    public NewTopic monthlySettlementFailedTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.MONTHLY_SETTLEMENT_FAILED);
-    }
-
 }

@@ -4,19 +4,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.*;
 import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
+import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
 import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
+import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
-import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
+import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchWithEmbeddingQueryFactory;
+import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +39,7 @@ public class GroupPurchaseSearchService {
     private final ElasticsearchOperations operations;
     private final GroupPurchaseSearchQueryFactory groupPurchaseSearchQueryFactory;
     private final GroupPurchaseSimilarityQueryFactory groupPurchaseSimilarityQueryFactory;
+    private final GroupPurchaseSearchWithEmbeddingQueryFactory groupPurchaseSearchWithEmbeddingQueryFactory;
     private final ElasticsearchExceptionTranslator exceptionTranslator;
     private final ElasticsearchExecutor elasticsearchExecutor;
     private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
@@ -52,20 +59,7 @@ public class GroupPurchaseSearchService {
             NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, null);
-            return PageResponse.from(mappedPage);
-        });
-    }
-
-    @ServiceLog
-    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseByVector(
-            float[] vector,
-            Pageable pageable
-    ) {
-        return elasticsearchExecutor.execute(() -> {
-            NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
-            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
-            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable, toScoreMap(hits));
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
             return PageResponse.from(mappedPage);
         });
     }
@@ -92,8 +86,7 @@ public class GroupPurchaseSearchService {
 
     private Page<GroupPurchaseSearchInfo> toSearchResultPage(
             SearchHits<GroupPurchaseDocument> hits,
-            Pageable pageable,
-            Map<UUID, Double> scores
+            Pageable pageable
     ) {
         if (hits.getSearchHits().isEmpty()) {
             return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
@@ -112,8 +105,37 @@ public class GroupPurchaseSearchService {
         for (UUID id : ids) {
             GroupPurchaseSearchRow row = rowMap.get(id);
             if (row != null) {
-                Double score = scores != null ? scores.get(id) : null;
-                ordered.add(GroupPurchaseSearchInfo.from(row, score));
+                ordered.add(GroupPurchaseSearchInfo.from(row));
+            }
+        }
+
+        return new PageImpl<>(ordered, pageable, hits.getTotalHits());
+    }
+
+    private Page<GroupPurchaseSimilaritySearchInfo> toSimilarityResultPage(
+            SearchHits<GroupPurchaseDocument> hits,
+            Pageable pageable,
+            Map<UUID, Double> scores
+    ) {
+        if (hits.getSearchHits().isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
+        }
+
+        List<UUID> ids = hits.getSearchHits()
+                .stream()
+                .map(hit -> UUID.fromString(hit.getId()))
+                .toList();
+
+        List<GroupPurchaseSimilaritySearchRow> rows = groupPurchaseSearchRepository.findAllSimilarityByIds(ids);
+        Map<UUID, GroupPurchaseSimilaritySearchRow> rowMap = rows.stream()
+                .collect(Collectors.toMap(GroupPurchaseSimilaritySearchRow::groupPurchaseId, Function.identity()));
+
+        List<GroupPurchaseSimilaritySearchInfo> ordered = new ArrayList<>(ids.size());
+        for (UUID id : ids) {
+            GroupPurchaseSimilaritySearchRow row = rowMap.get(id);
+            if (row != null) {
+                Double score = scores.get(id);
+                ordered.add(GroupPurchaseSimilaritySearchInfo.from(row, score));
             }
         }
 
@@ -127,5 +149,64 @@ public class GroupPurchaseSearchService {
                         hit -> (double) hit.getScore(),
                         (left, right) -> left
                 ));
+    }
+
+    @ServiceLog
+    public List<GroupPurchaseSimilaritySearchInfo> searchGroupPurchaseDocumentWithEmbedding(
+            String keyword,
+            String status,
+            String category,
+            float[] vector,
+            int topK
+    ) {
+        if (vector == null || vector.length == 0) {
+            throw new CustomException(CustomErrorCode.VECTOR_IS_NULL);
+        }
+        if (topK <= 0){
+            throw new CustomException((CustomErrorCode.INVALID_TOPK));
+        }
+
+        return elasticsearchExecutor.execute(() -> {
+            int candidateSize = Math.max(topK * 20, topK);
+            Pageable candidatePageable = PageRequest.of(0, candidateSize);
+            NativeQuery candidateQuery = groupPurchaseSearchQueryFactory.createSearchQuery(
+                    keyword,
+                    status,
+                    null,
+                    category,
+                    candidatePageable
+            );
+            SearchHits<GroupPurchaseDocument> candidateHits = searchWithRetry(candidateQuery);
+            List<String> candidateIds = candidateHits.getSearchHits()
+                    .stream()
+                    .map(SearchHit::getId)
+                    .toList();
+            if (candidateIds.isEmpty()) {
+                return List.of();
+            }
+
+            Pageable vectorPageable = PageRequest.of(0, topK);
+            NativeQuery query = groupPurchaseSearchWithEmbeddingQueryFactory.createKnnQueryWithIds(
+                    vector,
+                    candidateIds,
+                    vectorPageable
+            );
+            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
+            Page<GroupPurchaseSimilaritySearchInfo> mappedPage = toSimilarityResultPage(hits, vectorPageable, toScoreMap(hits));
+            return mappedPage.getContent();
+        });
+    }
+
+    @ServiceLog
+    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocumentByVector(
+            float[] vector,
+            Pageable pageable
+    ) {
+        return elasticsearchExecutor.execute(() -> {
+            NativeQuery query = groupPurchaseSimilarityQueryFactory.createSimilarityQuery(vector, pageable);
+            SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
+            Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
+            return PageResponse.from(mappedPage);
+        });
     }
 }

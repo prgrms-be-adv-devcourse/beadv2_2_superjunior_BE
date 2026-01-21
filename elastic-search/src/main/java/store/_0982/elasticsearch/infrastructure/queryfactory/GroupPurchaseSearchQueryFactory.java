@@ -3,6 +3,7 @@ package store._0982.elasticsearch.infrastructure.queryfactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,7 +21,7 @@ public class GroupPurchaseSearchQueryFactory {
 
         // keyword 없음 → 전체 문서 + status 필터만
         if (noKeyword) {
-            return NativeQuery.builder()
+            return new NativeQueryBuilder()
                     .withQuery(q -> q.bool(b -> {
 
                         // 전체 문서
@@ -65,7 +66,7 @@ public class GroupPurchaseSearchQueryFactory {
         }
 
         // keyword 있음 → phrase + prefix + fuzzy + match
-        return NativeQuery.builder()
+        return new NativeQueryBuilder()
                 .withQuery(q -> q.bool(b -> {
 
                     // 1. 정확 문구 검색 (title 우선)

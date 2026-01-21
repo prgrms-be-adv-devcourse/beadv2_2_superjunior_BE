@@ -6,7 +6,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
 import store._0982.common.log.ServiceLog;
@@ -16,7 +15,7 @@ import store._0982.common.log.ServiceLog;
 @Slf4j
 public class ProductEventListener {
 
-    private final AiService aiService;
+    private final EmbeddingService embeddingService;
     private final ProductEmbeddingCompleteProducer completeProducer;
 
     @RetryableTopic
@@ -24,7 +23,7 @@ public class ProductEventListener {
     @KafkaListener(topics = KafkaTopics.PRODUCT_UPSERTED, groupId = "ai-service-group", containerFactory = "productEmbeddingEventKafkaListenerFactory")
     public void vectorize(ProductUpsertedEvent event) {
         // 벡터화
-        ProductEmbeddingCompletedEvent completeEvent = aiService.vectorize(event);
+        ProductEmbeddingCompletedEvent completeEvent = embeddingService.vectorize(event);
         // 재전송
         completeProducer.returnVector(completeEvent);
         log.info("재전송 완료");

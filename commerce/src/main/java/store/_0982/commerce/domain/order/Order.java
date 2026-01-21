@@ -61,10 +61,22 @@ public class Order {
     private PaymentMethod paymentMethod;
 
     @Column(name = "expired_at")
-    private OffsetDateTime expiredAt;
+    private OffsetDateTime expiredAt; // 주문 만료 시간
 
     @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
+    private OffsetDateTime paidAt; // 결제 완료 시간
+
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt; // 환불 완료 시간
+
+    @Column(name = "cancel_requested_at")
+    private OffsetDateTime cancelRequestedAt; // 취소 요청 시간
+
+    @Column(name = "cancelled_at")
+    private OffsetDateTime cancelledAt; // 취소 완료 시간
+
+    @Column(name = "settled_at")
+    private OffsetDateTime settledAt; // 정산 완료 시간
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
@@ -76,9 +88,6 @@ public class Order {
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
-
-    @Column(name = "returned_at")
-    private OffsetDateTime returnedAt;
 
     private Order(
             int quantity,
@@ -130,73 +139,54 @@ public class Order {
         );
     }
 
-    // 상태 변경
-    public void updateStatus(OrderStatus newStatus) {
-        this.status = newStatus;
-    }
 
     // 결제 완료
     public void completePayment(PaymentMethod paymentMethod) {
-        validateStatus(OrderStatus.PAYMENT_COMPLETED);
+        // 이미 결제 완료된 건인지 확인
+        if(this.status == OrderStatus.PAYMENT_COMPLETED){
+            return;
+        }
+
+        if(this.status != OrderStatus.PENDING){
+            throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_COMPLETED_ORDER_INVALID_STATUS);
+        }
         this.status = OrderStatus.PAYMENT_COMPLETED;
         this.paymentMethod = paymentMethod;
         this.paidAt = OffsetDateTime.now();
     }
 
-    // 주문 실패 처리
-    public void markFailed() {
-        validateStatus(OrderStatus.ORDER_FAILED);
-        this.status = OrderStatus.ORDER_FAILED;
-    }
-
     // 주문 취소 처리
-    public void cancel() {
-        validateStatus(OrderStatus.CANCELLED);
-        this.status = OrderStatus.CANCELLED;
+    public void markFailed() {
+        // 이미 결제 실패된 건인지 확인
+        if(this.status == OrderStatus.PAYMENT_FAILED){
+            return;
+        }
+
+        if(this.status != OrderStatus.PENDING){
+            throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
+        }
+        this.status = OrderStatus.ORDER_FAILED;
     }
 
     public void requestCancel() {
         if (this.status != OrderStatus.PAYMENT_COMPLETED)
             throw new CustomException(CustomErrorCode.CANNOT_CANCEL_ORDER_INVALID_STATUS);
         this.status = OrderStatus.CANCEL_REQUESTED;
+        this.cancelRequestedAt = OffsetDateTime.now();
     }
 
     public void requestReversed() {
         if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
             throw new CustomException(CustomErrorCode.CANNOT_REVERSE_ORDER_INVALID_STATUS);
-        this.status = OrderStatus.REVERSED_REQUESTED;
+        this.status = OrderStatus.REVERSE_REQUESTED;
+        this.cancelRequestedAt = OffsetDateTime.now();
     }
 
     public void requestReturned() {
         if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
             throw new CustomException(CustomErrorCode.CANNOT_RETURN_ORDER_INVALID_STATUS);
-        this.status = OrderStatus.REVERSED_REQUESTED;
-    }
-
-    private void validateStatus(OrderStatus newStatus) {
-        switch (this.status) {
-            case PENDING:
-                if (newStatus != OrderStatus.PAYMENT_COMPLETED
-                        && newStatus != OrderStatus.CANCELLED
-                        && newStatus != OrderStatus.ORDER_FAILED) {
-                    throw new IllegalStateException("PENDING으로 변경 불가능");
-                }
-                break;
-            case PAYMENT_COMPLETED:
-                if (newStatus != OrderStatus.CANCELLED
-                        && newStatus != OrderStatus.REFUNDED
-                        && newStatus != OrderStatus.REVERSED) {
-                    throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
-                }
-                break;
-            case ORDER_FAILED:
-            case CANCELLED:
-            case REFUNDED:
-                throw new IllegalStateException("상태 변경 불가능");
-
-            default:
-                break;
-        }
+        this.status = OrderStatus.REVERSE_REQUESTED;
+        this.cancelRequestedAt = OffsetDateTime.now();
     }
 
     // 환불 완료
@@ -226,5 +216,6 @@ public class Order {
         this.status = OrderStatus.valueOf(
                 status.name()
         );
+        this.cancelledAt = OffsetDateTime.now();
     }
 }

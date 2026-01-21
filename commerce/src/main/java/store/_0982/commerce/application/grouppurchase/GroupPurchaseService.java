@@ -192,31 +192,6 @@ public class GroupPurchaseService {
         );
     }
 
-    public List<GroupPurchaseInternalInfo> getUnsettledGroupPurchases() {
-        OffsetDateTime twoWeeksAgo = OffsetDateTime.now().minusWeeks(2);
-
-        List<GroupPurchase> unsettledGroupPurchases = groupPurchaseRepository
-                .findByStatusAndSettledAtIsNull(GroupPurchaseStatus.SUCCESS);
-
-        return unsettledGroupPurchases.stream()
-                .filter(gp -> gp.getEndDate().isBefore(twoWeeksAgo))
-                .map(GroupPurchaseInternalInfo::from)
-                .toList();
-    }
-
-    @Transactional
-    public void markAsSettled(UUID groupPurchaseId) {
-        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-
-        if (groupPurchase.isSettled()) {
-            return;
-        }
-
-        groupPurchase.markAsSettled();
-        groupPurchaseRepository.save(groupPurchase);
-    }
-
     public GroupPurchase getAvailableForOrder(UUID groupPurchaseId){
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
@@ -254,14 +229,16 @@ public class GroupPurchaseService {
         }
     }
 
-    public void cancelOrder(UUID groupPurchaseId, int quantity) {
-        GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
-        findGroupPurchase.updateQuantity(quantity);
-    }
-
     public GroupPurchase findByGroupPurchase(UUID groupPurchaseId) {
         return groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+    }
+
+    @Transactional
+    public void decreaseQuantity(UUID groupPurchaseId, int quantity) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+        groupPurchase.decreaseQuantity(quantity);
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
     }
 }
