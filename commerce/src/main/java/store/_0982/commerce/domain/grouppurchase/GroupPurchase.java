@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
@@ -18,6 +20,10 @@ import java.util.UUID;
 public class GroupPurchase {
     @Id
     private UUID groupPurchaseId;
+
+    @Version
+    @Column(name = "version")
+    private Long version;
 
     @Column(name = "min_quantity", nullable = false)
     private int minQuantity;
@@ -53,6 +59,15 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt;
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
+
+    @Column(name = "settled_at")
+    private OffsetDateTime settledAt; // 정산 완료 시간
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -60,12 +75,6 @@ public class GroupPurchase {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
-
-    @Column(name = "settled_at")
-    private OffsetDateTime settledAt;
-
-    @Column(name = "returned_at")
-    private OffsetDateTime returnedAt;
     
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
@@ -90,15 +99,57 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public void syncCurrentQuantity(int count){
-        this.currentQuantity = count;
-        checkAndUpdateStatusIfMaxReached();
+
+    public boolean applyParticipationResult(boolean success, int quantity){
+        if(success){
+            return increaseQuantity(quantity);
+        }else{
+            decreaseQuantity(quantity);
+            return true;
+        }
+    }
+
+    private boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
     }
 
     private void checkAndUpdateStatusIfMaxReached() {
         if (this.currentQuantity == this.maxQuantity) {
             this.status = GroupPurchaseStatus.SUCCESS;
         }
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (!canParticipate(quantity)) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    public void decreaseQuantity(int quantity){
+        if(this.currentQuantity - quantity < 0){
+            throw new CustomException(CustomErrorCode.DECREASE_QUANTITY_FAILED);
+        }
+        this.currentQuantity -= quantity;
+    }
+
+    public boolean isInReversedPeriod() {
+        if (this.succeededAt == null) {
+            return false;
+        }
+        return OffsetDateTime.now().isBefore(this.succeededAt.plusDays(2));
+    }
+
+    public boolean isInReturnedPeriod() {
+        if (this.succeededAt == null)
+            return false;
+        return OffsetDateTime.now().isAfter(this.succeededAt.plusDays(2))
+                && OffsetDateTime.now().isBefore(this.succeededAt.plusWeeks(2));
     }
 
     public void updateGroupPurchase(int mintQuantity,
@@ -117,14 +168,6 @@ public class GroupPurchase {
         this.startDate = startDate;
         this.endDate = endDate;
         this.sellerId = productId;
-    }
-
-    public void markAsSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
-
-    public boolean isSettled() {
-        return this.settledAt != null;
     }
   
     public void updateStatus(GroupPurchaseStatus status){
@@ -152,6 +195,7 @@ public class GroupPurchase {
                 this.title,
                 this.description,
                 this.discountedPrice,
+                this.productId,
                 groupPurchaseStatus,
                 this.endDate.toString(),
                 this.updatedAt.toString(),

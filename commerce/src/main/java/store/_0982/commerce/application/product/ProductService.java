@@ -2,11 +2,13 @@ package store._0982.commerce.application.product;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.product.dto.*;
+import store._0982.commerce.application.product.event.ProductCreatedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
@@ -17,6 +19,7 @@ import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -27,16 +30,28 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        Product product = new Product(command.name(),
+        Optional<Product> existing = productRepository
+                .findByIdempotencyKey(command.idempotencyKey());
+
+        if (existing.isPresent()) {
+            return ProductRegisterInfo.from(existing.get());
+        }
+
+        Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
-                command.originalUrl(), command.sellerId());
+                command.originalUrl(), command.idempotencyKey(),
+                command.sellerId());
 
-        Product savedProduct = productRepository.saveAndFlush(product);
+        Product savedProduct = productRepository.save(product);
+
+        // AI 모듈 kafka
+        eventPublisher.publishEvent(new ProductCreatedEvent(product));
 
         return ProductRegisterInfo.from(savedProduct);
     }

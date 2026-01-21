@@ -53,10 +53,6 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -65,12 +61,12 @@ public class GroupPurchase {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    @Column(name = "settled_at")
-    private OffsetDateTime settledAt;
-
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
-    
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
+
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
                          String title,
@@ -94,71 +90,25 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-    public int getRemainingQuantity() {
-        return this.maxQuantity - this.currentQuantity;
-    }
-
-    public boolean increaseQuantity(int quantity) {
-        if (!canParticipate(quantity)) {
-            return false;
+    public void open() {
+        if(this.status != GroupPurchaseStatus.SCHEDULED){
+            throw new IllegalStateException("SCHEDULED 일 때만 변경 가능");
         }
-
-        this.currentQuantity += quantity;
-        checkAndUpdateStatusIfMaxReached();
-
-        return true;
+        this.status = GroupPurchaseStatus.OPEN;
     }
 
-    private boolean canParticipate(int quantity) {
-        return status == GroupPurchaseStatus.OPEN
-                && (this.currentQuantity + quantity <= this.maxQuantity);
-    }
-
-    private void checkAndUpdateStatusIfMaxReached() {
-        if (this.currentQuantity == this.maxQuantity) {
-            this.status = GroupPurchaseStatus.SUCCESS;
+    public void markSuccess(){
+        if(this.status != GroupPurchaseStatus.OPEN){
+            throw new IllegalStateException("OPEN 일 때만 변경 가능");
         }
+        this.status = GroupPurchaseStatus.SUCCESS;
     }
 
-    public void updateGroupPurchase(int mintQuantity,
-                                    int maxQuantity,
-                                    String title,
-                                    String description,
-                                    Long discountedPrice,
-                                    OffsetDateTime startDate,
-                                    OffsetDateTime endDate,
-                                    UUID productId){
-        this.minQuantity = mintQuantity;
-        this.maxQuantity = maxQuantity;
-        this.title = title;
-        this.description = description;
-        this.discountedPrice = discountedPrice;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.sellerId = productId;
-    }
-
-    public void markAsSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
-
-    public boolean isSettled() {
-        return this.settledAt != null;
-    }
-  
-    public void updateStatus(GroupPurchaseStatus status){
-        this.status = status;
-    }
-
-    public void markAsReturned() {
-        if (this.returnedAt != null) {
-            throw new IllegalStateException("이미 환불 처리된 공동구매입니다.");
+    public void markFailed(){
+        if(this.status != GroupPurchaseStatus.OPEN){
+            throw new IllegalStateException("OPEN 일 때만 변경 가능");
         }
-        this.returnedAt = OffsetDateTime.now();
-    }
-
-    public boolean isReturned() {
-        return this.returnedAt != null;
+        this.status = GroupPurchaseStatus.FAILED;
     }
 
     public GroupPurchaseEvent toEvent(GroupPurchaseEvent.Status groupPurchaseStatus,
@@ -171,6 +121,7 @@ public class GroupPurchase {
                 this.title,
                 this.description,
                 this.discountedPrice,
+                this.productId,
                 groupPurchaseStatus,
                 this.endDate.toString(),
                 this.updatedAt.toString(),

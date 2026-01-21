@@ -1,12 +1,16 @@
-#file: noinspection HttpUrlsUsage, SpringBootApplicationYaml, SpellCheckingInspection
+#file: noinspection SpellCheckingInspection
 spring:
   application:
     name: batch
+
   main:
     web-application-type: none
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  flyway:
+    enabled: true
+    create-schemas: true
+    default-schema: settlement_schema
+    schemas: settlement_schema
 
   datasource:
     url: ${BATCH_SPRING_DATASOURCE_URL}
@@ -14,7 +18,7 @@ spring:
     username: ${BATCH_SPRING_DATASOURCE_USERNAME}
     password: ${BATCH_SPRING_DATASOURCE_PASSWORD}
     hikari:
-      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema
+      connection-init-sql: SET search_path TO batch_schema, order_schema, product_schema, settlement_schema
 
   jackson:
     time-zone: Asia/Seoul
@@ -33,9 +37,6 @@ spring:
   batch:
     jdbc:
       initialize-schema: never
-    job:
-    #  enabled: true  # k8s
-      enabled: false  # 로컬
 
 management:
   endpoints:
@@ -43,17 +44,19 @@ management:
       exposure:
         include: health,info,metrics,prometheus
 
-  tracing:
-    sampling:
-      probability: 1.0
-    propagation:
-      type: w3c  # 또는 b3
-
-client:
-  member: ${CLIENT_MEMBER:http://localhost:8083}
+  otlp:
+    metrics:
+      export:
+        enabled: false
 
 kafka:
-  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  bootstrap-servers: ${spring.kafka.bootstrap-servers}
+
+reindex:
+  group-purchase:
+    alias: group-purchase
+    batch-size: 500
+    switch-alias: true
 
 logging:
   level:

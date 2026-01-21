@@ -1,0 +1,16 @@
+#file: noinspection HttpUrlsUsage, SpellCheckingInspection
+spring:
+  batch:
+    job:
+      enabled: false  # 로컬
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 1s
+    socket-timeout: 3s
+
+client:
+  member: http://localhost:8083

@@ -33,10 +33,10 @@ public class EmailToken {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    private final static int VALID_MINUTES = 3;
+    private static final int VALID_MINUTES = 3;
 
     public static EmailToken create(String email) {
         EmailToken emailToken = new EmailToken();
@@ -45,6 +45,7 @@ public class EmailToken {
         emailToken.token = UUID.randomUUID().toString();
         emailToken.isVerified = false;
         emailToken.createdAt = OffsetDateTime.now();
+        emailToken.updatedAt = emailToken.createdAt;
         emailToken.expiredAt = emailToken.createdAt.plusMinutes(VALID_MINUTES);
         return emailToken;
     }
