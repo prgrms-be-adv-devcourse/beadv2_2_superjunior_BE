@@ -81,7 +81,7 @@ class PgConfirmServiceTest {
                 .approvedAt(OffsetDateTime.now())
                 .build();
 
-        when(pgPaymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(pgPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, amount);
         when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
         doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedTxEvent.class));
@@ -90,7 +90,7 @@ class PgConfirmServiceTest {
         pgConfirmService.confirmPayment(command, memberId);
 
         // then
-        verify(pgPaymentRepository, times(2)).findByPaymentKey(paymentKey);
+        verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(orderQueryService).validateOrderPayable(memberId, orderId, amount);
         verify(tossPaymentService).confirmPayment(any(), any());
 
@@ -106,7 +106,7 @@ class PgConfirmServiceTest {
         // given
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-        when(pgPaymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.empty());
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
@@ -124,7 +124,7 @@ class PgConfirmServiceTest {
         PgPayment completedPayment = PgPayment.create(memberId, orderId, 10000);
         completedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), paymentKey);
 
-        when(pgPaymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(completedPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(completedPayment));
 
         // when & then
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))

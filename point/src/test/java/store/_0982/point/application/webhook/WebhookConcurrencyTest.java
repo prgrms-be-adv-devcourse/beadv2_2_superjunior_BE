@@ -9,8 +9,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.client.dto.TossPaymentInfo;
-import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.common.WebhookEvents;
+import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.WebhookStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.WebhookLog;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 class WebhookConcurrencyTest extends BaseConcurrencyTest {
@@ -212,7 +211,7 @@ class WebhookConcurrencyTest extends BaseConcurrencyTest {
         });
 
         // then
-        WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+        WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
         assertThat(webhookLog).isNotNull();
         assertThat(webhookLog.getStatus()).isIn(WebhookStatus.SUCCESS, WebhookStatus.FAILED);
     }

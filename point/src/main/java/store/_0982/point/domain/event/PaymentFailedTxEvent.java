@@ -8,7 +8,7 @@ public record PaymentFailedTxEvent(
         PgPayment pgPayment,
         OffsetDateTime occurredAt
 ) {
-    public static PaymentConfirmedTxEvent from(PgPayment pgPayment) {
-        return new PaymentConfirmedTxEvent(pgPayment, OffsetDateTime.now());
+    public static PaymentFailedTxEvent from(PgPayment pgPayment) {
+        return new PaymentFailedTxEvent(pgPayment, OffsetDateTime.now());
     }
 }

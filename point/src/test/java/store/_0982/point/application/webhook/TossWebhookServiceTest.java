@@ -17,7 +17,6 @@ import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
-import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.NegligibleWebhookErrorType;
@@ -123,7 +122,7 @@ class TossWebhookServiceTest {
 
         @Test
         @DisplayName("COMPLETED 상태의 결제를 FAILED로 변경하려 하면 예외가 발생한다")
-        void handleFailed_completed_throws_exception() throws JsonProcessingException {
+        void handleFailed_completed_throws_exception() {
             // given
             TossPaymentInfo tossPaymentInfo = createFailedPaymentInfo();
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), paymentKey);
@@ -320,7 +319,7 @@ class TossWebhookServiceTest {
 
         @Test
         @DisplayName("PENDING 상태의 결제를 부분 취소하려 하면 예외가 발생한다")
-        void handlePartiallyCanceled_pending_throws_exception() throws JsonProcessingException {
+        void handlePartiallyCanceled_pending_throws_exception() {
             // given
             TossPaymentInfo tossPaymentInfo = createPartiallyCanceledPaymentInfo();
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
@@ -335,7 +334,7 @@ class TossWebhookServiceTest {
 
         @Test
         @DisplayName("FAILED 상태의 결제를 부분 취소하려 하면 예외가 발생한다")
-        void handlePartiallyCanceled_failed_throws_exception() throws JsonProcessingException {
+        void handlePartiallyCanceled_failed_throws_exception() {
             // given
             TossPaymentInfo tossPaymentInfo = createPartiallyCanceledPaymentInfo();
             pgPayment.markFailed(paymentKey);
@@ -351,7 +350,7 @@ class TossWebhookServiceTest {
 
         @Test
         @DisplayName("REFUNDED 상태의 결제를 부분 취소하려 하면 예외가 발생한다")
-        void handlePartiallyCanceled_refunded_throws_exception() throws JsonProcessingException {
+        void handlePartiallyCanceled_refunded_throws_exception() {
             // given
             TossPaymentInfo tossPaymentInfo = createPartiallyCanceledPaymentInfo();
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), paymentKey);
@@ -576,7 +575,7 @@ class TossWebhookServiceTest {
 
     @Test
     @DisplayName("존재하지 않는 orderId로 웹훅이 오면 NegligibleWebhookException을 발생시킨다")
-    void processWebhookPayment_payment_not_found() throws JsonProcessingException {
+    void processWebhookPayment_payment_not_found() {
         // given
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)

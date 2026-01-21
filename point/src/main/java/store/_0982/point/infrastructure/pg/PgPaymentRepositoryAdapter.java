@@ -28,11 +28,6 @@ public class PgPaymentRepositoryAdapter implements PgPaymentRepository {
     }
 
     @Override
-    public Optional<PgPayment> findByPaymentKey(String paymentKey) {
-        return pgPaymentJpaRepository.findByPaymentKey(paymentKey);
-    }
-
-    @Override
     public PgPayment save(PgPayment pgPayment) {
         return pgPaymentJpaRepository.save(pgPayment);
     }

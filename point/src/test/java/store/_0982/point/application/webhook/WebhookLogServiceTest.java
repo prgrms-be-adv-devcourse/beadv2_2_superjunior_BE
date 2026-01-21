@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.WebhookEvents;
-import store._0982.point.domain.constant.WebhookStatus;
 import store._0982.point.domain.entity.WebhookLog;
 import store._0982.point.domain.repository.WebhookLogRepository;
 import store._0982.point.presentation.dto.TossWebhookRequest;
@@ -23,7 +22,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +41,7 @@ class WebhookLogServiceTest {
     private TossWebhookRequest request;
 
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() {
         webhookId = UUID.randomUUID().toString();
         transmissionTime = OffsetDateTime.now();
 
@@ -62,8 +60,6 @@ class WebhookLogServiceTest {
                 LocalDateTime.now(),
                 paymentInfo
         );
-
-        when(objectMapper.writeValueAsString(any())).thenReturn("{\"eventType\":\"PAYMENT_STATUS_CHANGED\"}");
     }
 
     @Test
@@ -72,6 +68,7 @@ class WebhookLogServiceTest {
         // given
         when(webhookLogRepository.findByWebhookIdWithLock(webhookId)).thenReturn(Optional.empty());
         when(webhookLogRepository.save(any(WebhookLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(objectMapper.writeValueAsString(any())).thenReturn("{\"eventType\":\"PAYMENT_STATUS_CHANGED\"}");
 
         // when
         Optional<WebhookLog> result = webhookLogService.getUnfinishedWebhook(webhookId, transmissionTime, request, 1);
@@ -80,7 +77,7 @@ class WebhookLogServiceTest {
         assertThat(result).isPresent();
         verify(webhookLogRepository).findByWebhookIdWithLock(webhookId);
         verify(webhookLogRepository).save(any(WebhookLog.class));
-        verify(objectMapper, times(2)).writeValueAsString(any());
+        verify(objectMapper, times(1)).writeValueAsString(any());
     }
 
     @Test
@@ -102,8 +99,10 @@ class WebhookLogServiceTest {
         Optional<WebhookLog> result = webhookLogService.getUnfinishedWebhook(webhookId, transmissionTime, request, 2);
 
         // then
-        assertThat(result).isPresent();
-        assertThat(result.get()).isEqualTo(existingLog);
+        assertThat(result)
+                .isPresent()
+                .contains(existingLog);
+
         verify(webhookLogRepository).findByWebhookIdWithLock(webhookId);
         verify(webhookLogRepository, never()).save(any(WebhookLog.class));
         verify(objectMapper).writeValueAsString(any());
@@ -148,6 +147,7 @@ class WebhookLogServiceTest {
         );
 
         when(webhookLogRepository.findByWebhookIdWithLock(webhookId)).thenReturn(Optional.of(existingLog));
+        when(objectMapper.writeValueAsString(any())).thenReturn("{\"eventType\":\"PAYMENT_STATUS_CHANGED\"}");
 
         // when
         webhookLogService.getUnfinishedWebhook(webhookId, transmissionTime, request, 3);
@@ -163,6 +163,7 @@ class WebhookLogServiceTest {
         // given
         when(webhookLogRepository.findByWebhookIdWithLock(webhookId)).thenReturn(Optional.empty());
         when(webhookLogRepository.save(any(WebhookLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(objectMapper.writeValueAsString(any())).thenReturn("{\"eventType\":\"PAYMENT_STATUS_CHANGED\"}");
 
         // when
         webhookLogService.getUnfinishedWebhook(webhookId, transmissionTime, request, 1);

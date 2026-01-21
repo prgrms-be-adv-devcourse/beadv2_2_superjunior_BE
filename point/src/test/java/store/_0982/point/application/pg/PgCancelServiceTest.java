@@ -107,7 +107,7 @@ class PgCancelServiceTest {
         // then
         verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(tossPaymentService).cancelPayment(pgPayment, command);
-        verify(pgPaymentCancelRepository).save(any(PgPaymentCancel.class));
+        verify(pgPaymentCancelRepository).saveAll(any());
         verify(applicationEventPublisher).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
