@@ -30,7 +30,7 @@ public final class NotificationCreator {
                 .message(content.message())
                 .referenceType(ReferenceType.POINT)
                 .status(NotificationStatus.SENT)
-                .referenceId(event.getId())
+                .referenceId(event.getOrderId())
                 .build();
     }
 
