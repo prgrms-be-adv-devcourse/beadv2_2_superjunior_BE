@@ -30,5 +30,7 @@ public interface OrderRepository {
 
     boolean existsByIdempotencyKey(String idempotenceKey);
 
+    Optional<Order> findByIdempotenceKey(String idempotenceKey);
+
     List<Order> findAllByMemberId(UUID memberId);
 }
