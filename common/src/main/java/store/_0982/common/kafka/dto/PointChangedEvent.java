@@ -12,19 +12,18 @@ import java.util.UUID;
 @AllArgsConstructor
 @SuppressWarnings("unused")
 public class PointChangedEvent extends BaseEvent {
-    private UUID id;
+
+    private UUID orderId;
     private UUID memberId;
     private long amount;
     private Status status;
-    private String paymentMethod;
 
-    public PointChangedEvent(Clock clock, UUID id, UUID memberId, long amount, Status status, String paymentMethod) {
+    public PointChangedEvent(Clock clock, UUID orderId, UUID memberId, long amount, Status status) {
         super(clock);
-        this.id = id;
+        this.orderId = orderId;
         this.memberId = memberId;
         this.amount = amount;
         this.status = status;
-        this.paymentMethod = paymentMethod;
     }
 
     public enum Status {
