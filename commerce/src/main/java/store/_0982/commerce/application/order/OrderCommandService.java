@@ -261,4 +261,10 @@ public class OrderCommandService {
                 new OrderCancelProcessedEvent(order, reason, refundAmount)
         );
     }
+
+    @ServiceLog
+    @Transactional
+    public void processGroupPurchaseFailure(UUID groupPurchaseId){
+        orderRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
 }

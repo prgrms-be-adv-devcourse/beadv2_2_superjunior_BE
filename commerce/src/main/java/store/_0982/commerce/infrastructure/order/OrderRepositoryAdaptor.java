@@ -85,4 +85,11 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public List<Order> findAllByMemberId(UUID memberId) {
         return orderJpaRepository.findAllByMemberId(memberId);
     }
+
+    @Override
+    public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
+
+
 }

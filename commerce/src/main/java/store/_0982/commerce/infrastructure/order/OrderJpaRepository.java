@@ -3,6 +3,9 @@ package store._0982.commerce.infrastructure.order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderStatus;
 
@@ -27,4 +30,13 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByIdempotencyKey(String idempotenceKey);
 
     List<Order> findAllByMemberId(UUID memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Order o
+        SET o.status = 'GROUP_PURCHASE_FAIL'
+        WHERE o.groupPurchaseId = :groupPurchaseId
+        AND o.status = 'PAYMENT_COMPLETED'
+    """)
+    void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
 }
