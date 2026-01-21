@@ -204,8 +204,10 @@ public class OrderCommandService {
         GroupPurchase groupPurchase = groupPurchaseService
                 .findByGroupPurchase(order.getGroupPurchaseId());
 
+        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
         if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
-            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
+            processCancellationBeforeSuccess(order, command.reason());
             return;
         }
 
@@ -221,9 +223,7 @@ public class OrderCommandService {
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
     }
 
-    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
-        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-
+    private void processCancellationBeforeSuccess(Order order, String reason) {
         order.requestCancel();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
