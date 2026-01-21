@@ -114,9 +114,6 @@ public class OrderService {
         List<UUID> groupPurchaseIds = orders.stream()
                 .map(Order::getGroupPurchaseId)
                 .toList();
-        if (groupPurchaseIds.isEmpty()) {
-            return List.of();
-        }
         List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
         List<UUID> productIds = groupPurchases.stream()
                 .map(GroupPurchase::getProductId)
