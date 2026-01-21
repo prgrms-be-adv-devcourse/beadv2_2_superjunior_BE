@@ -27,7 +27,7 @@ public class VectorRefreshStepConfig {
     @Bean
     public Step vectorRefreshStep() {
         return new StepBuilder("vectorRefreshStep", jobRepository)
-                .<MemberVectorsInput, PersonalVector>chunk(1, transactionManager) // process and write each item individually
+                .<MemberVectorsInput, PersonalVector>chunk(10, transactionManager) // process and write each item individually
                 .reader(personalVectorInfoReader)
                 .processor(personalVectorProcessor)
                 .writer(personalVectorWriter)
