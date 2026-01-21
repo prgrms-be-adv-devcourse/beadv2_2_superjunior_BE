@@ -41,8 +41,7 @@ public class PointEventPublisher {
                 history.getOrderId(),
                 history.getMemberId(),
                 history.getTotalAmount(),
-                status,
-                null
+                status
         );
     }
 
