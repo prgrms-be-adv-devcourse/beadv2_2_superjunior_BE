@@ -13,10 +13,9 @@ import store._0982.common.kafka.dto.GroupPurchaseFailedEvent;
 public class GroupPurchaseFailedKafkaEventPublisher {
 
     private final KafkaTemplate<String, GroupPurchaseFailedEvent> groupPurchaseFailedEventKafkaTemplate;
-    private final GroupPurchaseFailedEventMapper groupPurchaseFailedEventMapper;
 
     public void publish(GroupPurchaseFailedProcessedEvent event){
-        GroupPurchaseFailedEvent kafkaEvent = groupPurchaseFailedEventMapper.toMessage(
+        GroupPurchaseFailedEvent kafkaEvent = GroupPurchaseFailedEventMapper.toMessage(
                 event.groupPurchase(),
                 event.reason()
         );
