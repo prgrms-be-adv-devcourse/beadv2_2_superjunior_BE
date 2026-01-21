@@ -15,3 +15,4 @@ spring:
 
 client:
   member: ${CLIENT_MEMBER}
+  commerce: ${CLIENT_COMMERCE}
