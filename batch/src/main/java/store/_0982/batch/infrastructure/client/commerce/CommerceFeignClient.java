@@ -13,7 +13,6 @@ import java.util.UUID;
 @FeignClient(
         name = "commerce-service",
         url = "${client.commerce:http://localhost:8087}",
-        configuration = FeignConfig.class
 )
 public interface CommerceFeignClient {
 
