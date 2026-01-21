@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface NotificationRepository {
+
     Optional<Notification> findById(UUID uuid);
 
     List<Notification> findByMemberIdAndStatus(UUID memberId, NotificationStatus status);

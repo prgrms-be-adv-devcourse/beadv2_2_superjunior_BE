@@ -21,6 +21,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "notification", schema = "notification_schema")
 public class Notification {
+
     @Id
     @Column(name = "notification_id", nullable = false)
     private UUID id;
