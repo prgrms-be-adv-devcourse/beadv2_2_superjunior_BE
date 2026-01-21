@@ -8,7 +8,7 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
@@ -26,16 +26,18 @@ public class UpdateStatusClosedGroupPurchaseReader {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<GroupPurchase> updateStatusClosedGroupPurchase(
+    public JpaPagingItemReader<GroupPurchaseWithProduct> updateStatusClosedGroupPurchase(
             @Value("#{jobParameters['now']}") String now
     ) {
         OffsetDateTime parsedNow = OffsetDateTime.parse(now);
-        return new JpaPagingItemReaderBuilder<GroupPurchase>()
+        return new JpaPagingItemReaderBuilder<GroupPurchaseWithProduct>()
                 .name("updateStatusClosedGroupPurchaseReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(
-                        "SELECT g FROM GroupPurchase g " +
-                        "WHERE g.status = :status " +
+                        "SELECT new store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct(g,p) " +
+                        "FROM GroupPurchase g, Product p " +
+                        "WHERE p.productId = g.productId " +
+                        "AND g.status = :status " +
                         "AND g.endDate <= :now"
                 )
                 .parameterValues(Map.of(
