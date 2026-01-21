@@ -69,6 +69,7 @@ public class Member {
         member.phoneNumber = phoneNumber;
         member.saltKey = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         member.createdAt = OffsetDateTime.now();
+        member.updatedAt = member.createdAt;
         return member;
     }
 
