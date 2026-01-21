@@ -4,6 +4,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -168,7 +169,8 @@ public class MemberService {
         return new RoleInfo(memberId, role);
     }
 
-    public List<UUID> getMemberIds(Pageable pageable) {
+    public List<UUID> getMemberIds(int currentPage, int pageSize) {
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
         return memberRepository.findIds(pageable).getContent();
     }
 }

@@ -49,7 +49,7 @@ public class InternalController {
     @Operation
     @GetMapping("/member-ids")
     @ControllerLog
-    public ResponseDto<List<UUID>> getMemberIds(Pageable pageable) {
-        return new ResponseDto<>(HttpStatus.OK, memberService.getMemberIds(pageable), "회원 ID 목록");
+    public ResponseDto<List<UUID>> getMemberIds(@RequestParam int currentPage, @RequestParam int pageSize) {
+        return new ResponseDto<>(HttpStatus.OK, memberService.getMemberIds(currentPage, pageSize), "회원 ID 목록");
     }
 }
