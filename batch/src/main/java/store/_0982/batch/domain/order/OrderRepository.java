@@ -2,6 +2,7 @@ package store._0982.batch.domain.order;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.batch.batch.sellerbalance.writer.GroupPurchaseAmountRow;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +32,6 @@ public interface OrderRepository {
     List<Order> findByGroupPurchaseIdInAndStatus(List<UUID> groupPurchaseIds, OrderStatus status);
 
     boolean existsByIdempotencyKey(String idempotenceKey);
+
+    List<GroupPurchaseAmountRow> sumTotalAmountByGroupPurchaseIdsAndStatus(List<UUID> groupPurchaseIds, OrderStatus orderStatus);
 }

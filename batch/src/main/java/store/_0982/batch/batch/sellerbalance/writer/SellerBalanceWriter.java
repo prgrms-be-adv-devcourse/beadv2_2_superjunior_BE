@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import store._0982.batch.application.sellerbalance.event.SellerBalanceCompleted;
 import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.batch.domain.order.Order;
 import store._0982.batch.domain.order.OrderRepository;
 import store._0982.batch.domain.order.OrderStatus;
 import store._0982.batch.domain.sellerbalance.*;
@@ -41,31 +40,31 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                 .map(gp -> (GroupPurchase) gp)
                 .toList();
 
+        if (groupPurchases.isEmpty()) {
+            return;
+        }
+
         List<UUID> groupPurchaseIds = groupPurchases.stream()
                 .map(GroupPurchase::getGroupPurchaseId)
+                .distinct()
                 .toList();
-
-        List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatus(
-                groupPurchaseIds,
-                OrderStatus.PURCHASE_CONFIRMED
-        );
-
-        Map<UUID, Long> groupPurchaseAmount = orders.stream()
-                .collect(Collectors.groupingBy(
-                        Order::getGroupPurchaseId,
-                        Collectors.summingLong(Order::getTotalAmount)
-                ));
 
         Map<UUID, GroupPurchase> gpMap = groupPurchases.stream()
                 .collect(Collectors.toMap(GroupPurchase::getGroupPurchaseId, gp -> gp));
 
+        List<GroupPurchaseAmountRow> amountRows =
+                orderRepository.sumTotalAmountByGroupPurchaseIdsAndStatus(
+                        groupPurchaseIds,
+                        OrderStatus.PURCHASE_CONFIRMED
+                );
+
         List<SellerBalance> sellerBalances = new ArrayList<>();
         List<SellerBalanceHistory> sellerBalanceHistories = new ArrayList<>();
-        List<GroupPurchase> groupPurchases1 = new ArrayList<>();
+        List<UUID> uuids = new ArrayList<>();
 
-        for (Map.Entry<UUID, Long> entry : groupPurchaseAmount.entrySet()) {
-            UUID groupPurchaseId = entry.getKey();
-            Long amount = entry.getValue();
+        for (GroupPurchaseAmountRow row : amountRows) {
+            UUID groupPurchaseId = row.groupPurchaseId();
+            Long amount = row.totalAmount() == null ? 0L : row.totalAmount();
 
             try {
                 GroupPurchase findGroupPurchase = gpMap.get(groupPurchaseId);
@@ -87,8 +86,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                         )
                 );
 
-                findGroupPurchase.markAsSettled();
-                groupPurchases1.add(findGroupPurchase);
+                uuids.add(groupPurchaseId);
 
                 eventPublisher.publishEvent(
                         new SellerBalanceCompleted(sellerBalance, amount)
@@ -100,6 +98,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
 
         sellerBalanceRepository.saveAll(sellerBalances);
         sellerBalanceHistoryRepository.saveAll(sellerBalanceHistories);
-        groupPurchaseRepository.saveAll(groupPurchases1);
+
+        if (!uuids.isEmpty()) groupPurchaseRepository.markAsSettled(uuids);
     }
 }

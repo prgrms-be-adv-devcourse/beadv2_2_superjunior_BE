@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import store._0982.batch.batch.sellerbalance.writer.GroupPurchaseAmountRow;
 import store._0982.batch.domain.order.Order;
 import store._0982.batch.domain.order.OrderRepository;
 import store._0982.batch.domain.order.OrderStatus;
@@ -82,5 +83,10 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public boolean existsByIdempotencyKey(String idempotenceKey) {
         return orderJpaRepository.existsByIdempotencyKey(idempotenceKey);
+    }
+
+    @Override
+    public List<GroupPurchaseAmountRow> sumTotalAmountByGroupPurchaseIdsAndStatus(List<UUID> groupPurchaseIds, OrderStatus orderStatus) {
+        return orderJpaRepository.sumTotalAmountByGroupPurchaseIdsAndStatus(groupPurchaseIds, orderStatus);
     }
 }

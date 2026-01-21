@@ -119,10 +119,6 @@ public class GroupPurchase {
         this.status = GroupPurchaseStatus.FAILED;
     }
 
-    public void markAsSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
-
     public GroupPurchaseEvent toEvent(GroupPurchaseEvent.Status groupPurchaseStatus,
                                       GroupPurchaseEvent.EventStatus kafkaStatus,
                                       Long originalPrice,
