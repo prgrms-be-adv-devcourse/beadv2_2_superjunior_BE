@@ -38,11 +38,11 @@ public class NotificationSetting {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public static NotificationSetting create(UUID memberId, NotificationChannel channel) {
+    public static NotificationSetting create(UUID memberId, NotificationChannel channel, boolean isEnabled) {
         return NotificationSetting.builder()
                 .memberId(memberId)
                 .channel(channel)
-                .isEnabled(true)
+                .isEnabled(isEnabled)
                 .build();
     }
 

@@ -14,6 +14,7 @@ import store._0982.member.application.notification.dto.NotificationSettingInfo;
 import store._0982.member.application.notification.dto.NotificationSettingUpdateCommand;
 import store._0982.member.presentation.notification.dto.NotificationSettingUpdateRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,26 +25,29 @@ public class NotificationSettingController {
 
     private final NotificationSettingService notificationSettingService;
 
-    @Operation(summary = "알림 수신 여부 변경")
+    @Operation(summary = "알림 수신 여부 변경 (일괄)")
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @PutMapping
-    public ResponseDto<Void> updateNotificationSetting(
+    public ResponseDto<Void> updateNotificationSettings(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestBody @Valid NotificationSettingUpdateRequest request
+            @RequestBody @Valid List<NotificationSettingUpdateRequest> requests
     ) {
-        notificationSettingService.updateSetting(memberId, NotificationSettingUpdateCommand.from(request));
+        List<NotificationSettingUpdateCommand> commands = requests.stream()
+                .map(NotificationSettingUpdateCommand::from)
+                .toList();
+        notificationSettingService.updateSettings(memberId, commands);
         return new ResponseDto<>(HttpStatus.OK, null, "알림 설정이 변경되었습니다.");
     }
 
-    @Operation(summary = "알림 수신 여부 조회")
+    @Operation(summary = "알림 수신 여부 전체 조회")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public ResponseDto<NotificationSettingInfo> getNotificationSetting(
-            @RequestHeader(HeaderName.ID) UUID memberId,
-            @ModelAttribute @Valid NotificationSettingUpdateRequest request
+    public ResponseDto<List<NotificationSettingInfo>> getNotificationSettings(
+            @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        NotificationSettingInfo response = notificationSettingService.getSetting(memberId, request);
-        return new ResponseDto<>(HttpStatus.OK, response, "알림 설정을 조회했습니다.");
+        List<NotificationSettingInfo> response = notificationSettingService.getAllSettings(memberId);
+        return new ResponseDto<>(HttpStatus.OK, response, "전체 알림 설정을 조회했습니다.");
     }
 }
+

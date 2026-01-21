@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import store._0982.member.domain.notification.NotificationSetting;
 import store._0982.member.domain.notification.NotificationSettingRepository;
-import store._0982.member.domain.notification.constant.NotificationChannel;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -16,8 +15,8 @@ public class NotificationSettingAdapter implements NotificationSettingRepository
     private final NotificationSettingJpaRepository notificationSettingJpaRepository;
 
     @Override
-    public Optional<NotificationSetting> findByMemberIdAndChannel(UUID memberId, NotificationChannel channel) {
-        return notificationSettingJpaRepository.findByMemberIdAndChannel(memberId, channel);
+    public List<NotificationSetting> findAllByMemberId(UUID memberId) {
+        return notificationSettingJpaRepository.findAllByMemberId(memberId);
     }
 
     @Override
