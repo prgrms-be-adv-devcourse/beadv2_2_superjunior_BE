@@ -102,6 +102,7 @@ public class GroupPurchase {
             throw new IllegalStateException("OPEN 일 때만 변경 가능");
         }
         this.status = GroupPurchaseStatus.SUCCESS;
+        this.succeededAt = OffsetDateTime.now();
     }
 
     public void markFailed(){
