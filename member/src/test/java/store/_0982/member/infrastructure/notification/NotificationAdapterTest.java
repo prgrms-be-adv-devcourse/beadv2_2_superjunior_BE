@@ -86,7 +86,7 @@ class NotificationAdapterTest {
         notificationJpaRepository.save(notification2);
 
         // when
-        Page<Notification> result = notificationAdapter.findByMemberId(memberId, pageable);
+        Page<Notification> result = notificationAdapter.findByMemberIdAndChannel(memberId, pageable);
 
         // then
         assertThat(result.getContent()).hasSize(2);
@@ -106,7 +106,7 @@ class NotificationAdapterTest {
         notificationJpaRepository.save(notification);
 
         // when
-        Page<Notification> result = notificationAdapter.findByMemberIdAndStatus(memberId, status, pageable);
+        Page<Notification> result = notificationAdapter.findByMemberIdAndStatusAndChannel(memberId, status, pageable);
 
         // then
         assertThat(result.getContent()).hasSize(1);
