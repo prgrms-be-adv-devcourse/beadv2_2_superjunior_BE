@@ -6,8 +6,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Profiles;
 
-import javax.swing.*;
-
 /**
  * Batch Application for Kubernetes CronJob execution.
  * <p>
