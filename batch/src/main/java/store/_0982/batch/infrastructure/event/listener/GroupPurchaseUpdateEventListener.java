@@ -13,7 +13,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class GroupPurchaseOpenEventListener {
+public class GroupPurchaseUpdateEventListener {
 
     private final GroupPurchaseUpdatedKafkaEventPublisher groupPurchaseUpdatedKafkaEventPublisher;
 
