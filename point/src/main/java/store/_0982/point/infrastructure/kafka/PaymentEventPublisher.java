@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.BaseEvent;
 import store._0982.common.kafka.dto.PaymentChangedEvent;
 import store._0982.point.domain.entity.PgPayment;
 
@@ -13,7 +14,7 @@ import store._0982.point.domain.entity.PgPayment;
 @RequiredArgsConstructor
 public class PaymentEventPublisher {
 
-    private final KafkaTemplate<String, PaymentChangedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, BaseEvent> kafkaTemplate;
 
     public void publishPaymentConfirmedEvent(PgPayment pgPayment) {
         PaymentChangedEvent event = createPointChangedEvent(pgPayment, PaymentChangedEvent.Status.COMPLETED);

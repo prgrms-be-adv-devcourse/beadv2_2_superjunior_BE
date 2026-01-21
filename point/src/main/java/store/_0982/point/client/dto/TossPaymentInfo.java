@@ -148,6 +148,8 @@ public record TossPaymentInfo(
     ) {
     }
 
+    @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record FailureInfo(
         String code,
         String message

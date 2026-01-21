@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.BaseEvent;
 import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.point.domain.entity.PointTransaction;
 
@@ -13,7 +14,7 @@ import store._0982.point.domain.entity.PointTransaction;
 @RequiredArgsConstructor
 public class PointEventPublisher {
 
-    private final KafkaTemplate<String, PointChangedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, BaseEvent> kafkaTemplate;
 
     public void publishPointChargedEvent(PointTransaction history) {
         PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.CHARGED);

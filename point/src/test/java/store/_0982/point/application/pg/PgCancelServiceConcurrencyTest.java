@@ -25,7 +25,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import store._0982.point.domain.event.PaymentCanceledTxEvent;
 
 class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
@@ -100,6 +101,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
+        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
     @Test
@@ -120,6 +122,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
+        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
     private void validateOwner() {

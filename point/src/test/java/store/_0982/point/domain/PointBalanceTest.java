@@ -89,8 +89,8 @@ class PointBalanceTest {
     }
 
     @Test
-    @DisplayName("포인트를 환불한다")
-    void deduct() {
+    @DisplayName("포인트를 이체한다")
+    void transfer() {
         // given
         UUID memberId = UUID.randomUUID();
         PointBalance pointBalance = new PointBalance(memberId);
@@ -104,8 +104,8 @@ class PointBalanceTest {
     }
 
     @Test
-    @DisplayName("포인트 환불 시 잔액이 부족하면 예외가 발생한다")
-    void deduct_fail_whenInsufficientBalance() {
+    @DisplayName("포인트 이체 시 잔액이 부족하면 예외가 발생한다")
+    void transfer_fail_whenInsufficientBalance() {
         // given
         UUID memberId = UUID.randomUUID();
         PointBalance pointBalance = new PointBalance(memberId);

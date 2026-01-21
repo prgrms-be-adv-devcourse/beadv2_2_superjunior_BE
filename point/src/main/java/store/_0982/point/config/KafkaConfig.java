@@ -11,7 +11,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.*;
+import store._0982.common.kafka.dto.BaseEvent;
+import store._0982.common.kafka.dto.PaymentChangedEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.point.common.KafkaGroupIds;
 
 @Configuration
@@ -31,6 +33,27 @@ public class KafkaConfig {
     public KafkaTemplate<String, BaseEvent> kafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(baseEventProducerFactory());
     }
+
+    @Bean
+    public ProducerFactory<String, PointChangedEvent> pointChangedEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootStrapServer);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PointChangedEvent> pointChangedEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(pointChangedEventProducerFactory());
+    }
+
+    @Bean
+    ProducerFactory<String, PaymentChangedEvent> paymentChangedEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootStrapServer);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PaymentChangedEvent> paymentChangedEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(paymentChangedEventProducerFactory());
+    }
+
 
     @Bean
     public ConsumerFactory<String, BaseEvent> baseEventConsumerFactory() {

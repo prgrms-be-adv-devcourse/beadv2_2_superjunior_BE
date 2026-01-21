@@ -48,7 +48,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
         TossPaymentInfo response = FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.class);
 
         // when & then
-        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, paymentKey, memberId))
+        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, orderId, memberId))
                 .isInstanceOf(QueryTimeoutException.class);
 
         // verify

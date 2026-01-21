@@ -64,7 +64,7 @@ class PgPaymentTest {
         PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
 
         // when
-        pgPayment.markFailed();
+        pgPayment.markFailed("failed_payment_key");
 
         // then
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);

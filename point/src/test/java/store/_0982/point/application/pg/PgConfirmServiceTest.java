@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,6 +15,7 @@ import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.event.PaymentConfirmedTxEvent;
 import store._0982.point.domain.repository.PgPaymentRepository;
@@ -23,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -90,7 +93,11 @@ class PgConfirmServiceTest {
         verify(pgPaymentRepository, times(2)).findByPaymentKey(paymentKey);
         verify(orderQueryService).validateOrderPayable(memberId, orderId, amount);
         verify(tossPaymentService).confirmPayment(any(), any());
-        verify(applicationEventPublisher).publishEvent(any(PaymentConfirmedTxEvent.class));
+
+        ArgumentCaptor<PaymentConfirmedTxEvent> captor = ArgumentCaptor.forClass(PaymentConfirmedTxEvent.class);
+        verify(applicationEventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().pgPayment().getStatus()).isEqualTo(PgPaymentStatus.COMPLETED);
+        assertThat(captor.getValue().pgPayment().getOrderId()).isEqualTo(orderId);
     }
 
     @Test
@@ -105,6 +112,8 @@ class PgConfirmServiceTest {
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -121,5 +130,7 @@ class PgConfirmServiceTest {
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 }
