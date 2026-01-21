@@ -1,4 +1,4 @@
-package store._0982.member.application.notification;
+package store._0982.member.application.notification.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderChangedEvent;
 import store._0982.common.log.ServiceLog;
+import store._0982.member.application.notification.NotificationCreator;
 import store._0982.member.common.notification.KafkaGroupIds;
 import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;

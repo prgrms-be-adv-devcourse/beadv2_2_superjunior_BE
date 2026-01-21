@@ -10,4 +10,6 @@ public interface NotificationSettingRepository {
     Optional<NotificationSetting> findByMemberIdAndChannel(UUID memberId, NotificationChannel channel);
 
     void save(NotificationSetting notificationSetting);
+
+    void saveAll(Iterable<NotificationSetting> notificationSettings);
 }

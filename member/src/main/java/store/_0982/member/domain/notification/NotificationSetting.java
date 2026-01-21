@@ -10,9 +10,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "notification_setting", schema = "notification_schema",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"member_id", "channel"})
@@ -38,17 +38,16 @@ public class NotificationSetting {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public static NotificationSetting create(UUID memberId, NotificationChannel channel, boolean isEnabled) {
+    public static NotificationSetting create(UUID memberId, NotificationChannel channel) {
         return NotificationSetting.builder()
                 .memberId(memberId)
                 .channel(channel)
-                .isEnabled(isEnabled)
+                .isEnabled(true)
                 .build();
     }
 
     public void update(boolean isEnabled) {
         this.isEnabled = isEnabled;
-        this.updatedAt = OffsetDateTime.now();
     }
 
     @PrePersist

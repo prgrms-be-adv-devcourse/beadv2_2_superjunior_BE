@@ -24,4 +24,9 @@ public class NotificationSettingAdapter implements NotificationSettingRepository
     public void save(NotificationSetting notificationSetting) {
         notificationSettingJpaRepository.save(notificationSetting);
     }
+
+    @Override
+    public void saveAll(Iterable<NotificationSetting> notificationSettings) {
+        notificationSettingJpaRepository.saveAll(notificationSettings);
+    }
 }

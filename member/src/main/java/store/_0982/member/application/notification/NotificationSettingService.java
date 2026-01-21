@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.member.application.notification.dto.NotificationSettingInfo;
 import store._0982.member.application.notification.dto.NotificationSettingUpdateCommand;
+import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.presentation.notification.dto.NotificationSettingUpdateRequest;
 import store._0982.member.domain.notification.NotificationSetting;
 import store._0982.member.domain.notification.NotificationSettingRepository;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -28,11 +31,19 @@ public class NotificationSettingService {
                 () -> notificationSettingRepository.save(
                         NotificationSetting.create(
                                 memberId,
-                                command.channel(),
-                                command.isEnabled()
+                                command.channel()
                         )
                 )
         );
+    }
+
+    @Transactional
+    public void initializeSettings(UUID memberId) {
+        List<NotificationSetting> settings = Arrays
+                .stream(NotificationChannel.values())
+                .map(channel -> NotificationSetting.create(memberId, channel))
+                .toList();
+        notificationSettingRepository.saveAll(settings);
     }
 
     public NotificationSettingInfo getSetting(UUID memberId, NotificationSettingUpdateRequest request) {
