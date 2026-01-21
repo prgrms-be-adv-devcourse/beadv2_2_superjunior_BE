@@ -205,7 +205,6 @@ public class OrderCommandService {
                 .findByGroupPurchase(order.getGroupPurchaseId());
 
         groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-        order.markAsCancelRequested();
 
         if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
             processCancellationBeforeSuccess(order, command.reason());
