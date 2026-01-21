@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.member.domain.notification.NotificationSetting;
 import store._0982.member.domain.notification.NotificationSettingRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class NotificationSettingAdapter implements NotificationSettingRepository
     }
 
     @Override
-    public void saveAll(Iterable<NotificationSetting> notificationSettings) {
+    public void saveAll(Collection<NotificationSetting> notificationSettings) {
         notificationSettingJpaRepository.saveAll(notificationSettings);
     }
 }

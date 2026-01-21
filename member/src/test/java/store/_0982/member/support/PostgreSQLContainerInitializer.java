@@ -8,7 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.Map;
 
-@SuppressWarnings({"resource", "SpellCheckingInspection"})
+@SuppressWarnings("resource")
 public class PostgreSQLContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private static final PostgreSQLContainer<?> POSTGRESQL =

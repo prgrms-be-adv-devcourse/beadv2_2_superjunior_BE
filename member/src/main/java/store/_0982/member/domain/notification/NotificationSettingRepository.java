@@ -1,5 +1,6 @@
 package store._0982.member.domain.notification;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -9,5 +10,5 @@ public interface NotificationSettingRepository {
 
     void save(NotificationSetting notificationSetting);
 
-    void saveAll(Iterable<NotificationSetting> notificationSettings);
+    void saveAll(Collection<NotificationSetting> notificationSettings);
 }
