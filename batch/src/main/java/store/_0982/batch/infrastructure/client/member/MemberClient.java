@@ -47,6 +47,6 @@ public interface MemberClient {
     }
 
     @GetMapping("/internal/members/member-ids")
-    ResponseDto<List<UUID>> getMemberIds(@RequestParam Pageable pageable);
+    ResponseDto<List<UUID>> getMemberIds(@RequestParam int currentPage, @RequestParam int pageSize);
 
 }

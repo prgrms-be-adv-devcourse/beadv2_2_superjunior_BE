@@ -47,11 +47,11 @@ public class PersonalVectorInfoReader implements ItemReader<PersonalVectorInfoRe
     }
 
     private List<UUID> fetchMemberIds() {
-        List<UUID> ids = new ArrayList<>(PAGE_SIZE);
+        List<UUID> ids = new ArrayList<>(PAGE_SIZE * 10);
         int page = 0;
 
         while (true) {
-            ResponseDto<List<UUID>> response = memberClient.getMemberIds(PageRequest.of(page, PAGE_SIZE));
+            ResponseDto<List<UUID>> response = memberClient.getMemberIds(page, PAGE_SIZE);
             List<UUID> batch = unwrap(response);
             if (batch.isEmpty()) {
                 break;
@@ -63,7 +63,7 @@ public class PersonalVectorInfoReader implements ItemReader<PersonalVectorInfoRe
             }
             page++;
         }
-
+        //todo: id 내 중복 제거 필요
         return ids;
     }
 
