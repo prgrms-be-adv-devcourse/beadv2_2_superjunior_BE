@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
@@ -43,5 +44,12 @@ public class InternalController {
     @ControllerLog
     public ResponseDto<ProfileInfo> getProfile(@RequestHeader(value = HeaderName.ID) UUID memberId) {
         return new ResponseDto<>(HttpStatus.OK, memberService.getProfile(memberId), "프로필 정보");
+    }
+
+    @Operation
+    @GetMapping("/member-ids")
+    @ControllerLog
+    public ResponseDto<List<UUID>> getMemberIds(Pageable pageable) {
+        return new ResponseDto<>(HttpStatus.OK, memberService.getMemberIds(pageable), "회원 ID 목록");
     }
 }

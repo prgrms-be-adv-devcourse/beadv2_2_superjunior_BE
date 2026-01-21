@@ -17,6 +17,7 @@ import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.domain.member.*;
 import store._0982.member.exception.CustomErrorCode;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -165,5 +166,9 @@ public class MemberService {
                 memberRoleCache.save(member.getMemberId(), member.getRole());
         }
         return new RoleInfo(memberId, role);
+    }
+
+    public List<UUID> getMemberIds(Pageable pageable) {
+        return memberRepository.findIds(pageable).getContent();
     }
 }
