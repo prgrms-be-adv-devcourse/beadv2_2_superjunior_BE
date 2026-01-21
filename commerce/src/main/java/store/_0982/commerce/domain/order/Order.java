@@ -75,9 +75,6 @@ public class Order {
     @Column(name = "cancelled_at")
     private OffsetDateTime cancelledAt; // 취소 완료 시간
 
-    @Column(name = "settled_at")
-    private OffsetDateTime settledAt; // 정산 완료 시간
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
