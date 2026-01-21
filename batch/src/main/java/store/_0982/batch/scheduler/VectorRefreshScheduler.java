@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@Profile("local")
+@Profile("dev")
 @RequiredArgsConstructor
 @Component
 public class VectorRefreshScheduler {
@@ -17,11 +17,10 @@ public class VectorRefreshScheduler {
     private final JobLauncher jobLauncher;
     private final Job vectorRefreshJob;
 
-    @Scheduled(cron = "3 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "* * * * * *", zone = "Asia/Seoul")
     public void scheduleVectorRefresh() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
-                .addString("memberId", "<uuid>")
                 .toJobParameters();
         jobLauncher.run(vectorRefreshJob, jobParameters);
     }
