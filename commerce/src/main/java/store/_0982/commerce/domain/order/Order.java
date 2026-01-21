@@ -9,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -190,6 +189,12 @@ public class Order {
         this.cancelRequestedAt = OffsetDateTime.now();
     }
 
+    public void completePendingRequests() {
+        if (this.status == OrderStatus.CANCEL_REQUESTED) this.status = OrderStatus.CANCELLED;
+        if (this.status == OrderStatus.REVERSE_REQUESTED) this.status = OrderStatus.REVERSED;
+        if (this.status == OrderStatus.REFUND_REQUESTED) this.status = OrderStatus.REFUNDED;
+    }
+
     // 환불 완료
     public void markReturned() {
         if (this.returnedAt != null) {
@@ -211,12 +216,5 @@ public class Order {
                 method,
                 amount
         );
-    }
-
-    public void changeStatus(PaymentChangedEvent.Status status) {
-        this.status = OrderStatus.valueOf(
-                status.name()
-        );
-        this.cancelledAt = OffsetDateTime.now();
     }
 }
