@@ -72,9 +72,9 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByGroupPurchaseIdInAndStatusAndSettledAtIsNull(
+    public List<Order> findByGroupPurchaseIdInAndStatus(
             List<UUID> groupPurchaseIds, OrderStatus status) {
-        return orderJpaRepository.findByGroupPurchaseIdInAndStatusAndSettledAtIsNull(
+        return orderJpaRepository.findByGroupPurchaseIdInAndStatus(
                 groupPurchaseIds, status
         );
     }

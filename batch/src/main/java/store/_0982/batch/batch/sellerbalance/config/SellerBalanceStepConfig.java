@@ -51,7 +51,8 @@ public class SellerBalanceStepConfig {
                         SELECT gp
                         FROM GroupPurchase gp
                         WHERE gp.status = 'SUCCESS'
-                        AND gp.endDate = :twoWeeksAgo
+                        AND gp.endDate <= :twoWeeksAgo
+                        AND gp.settledAt IS NULL
                         """)
                 .parameterValues(Map.of(
                         "twoWeeksAgo", SellerBalancePolicy.getTwoWeeksAgo()
