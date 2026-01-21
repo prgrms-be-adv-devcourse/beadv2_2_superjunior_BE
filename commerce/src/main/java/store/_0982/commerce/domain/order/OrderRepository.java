@@ -33,4 +33,6 @@ public interface OrderRepository {
     Optional<Order> findByIdempotenceKey(String idempotenceKey);
 
     List<Order> findAllByMemberId(UUID memberId);
+
+    List<Order> findAllByStatusIn(List<OrderStatus> statuses);
 }

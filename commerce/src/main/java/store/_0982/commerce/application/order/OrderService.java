@@ -92,4 +92,8 @@ public class OrderService {
     public List<Order> getAllOrderByMemberId(UUID memberId) {
         return orderQueryService.getAllOrderByMemberId(memberId);
     }
+
+    public void retryCancelOrder() {
+        orderCommandService.retryCancelOrder();
+    }
 }
