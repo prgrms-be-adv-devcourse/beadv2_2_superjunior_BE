@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +32,8 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findAllByMemberId(UUID memberId);
 
+    List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
+  
     @Modifying(clearAutomatically = true)
     @Query("""
         UPDATE Order o

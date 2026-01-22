@@ -4,6 +4,7 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.domain.member.*;
 import store._0982.member.exception.CustomErrorCode;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -165,5 +167,10 @@ public class MemberService {
                 memberRoleCache.save(member.getMemberId(), member.getRole());
         }
         return new RoleInfo(memberId, role);
+    }
+
+    public List<UUID> getMemberIds(int currentPage, int pageSize) {
+        Pageable pageable = PageRequest.of(currentPage, pageSize);
+        return memberRepository.findIds(pageable).getContent();
     }
 }
