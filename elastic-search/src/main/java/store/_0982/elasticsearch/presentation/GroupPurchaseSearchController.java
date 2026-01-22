@@ -53,7 +53,7 @@ public class GroupPurchaseSearchController {
     @Operation(summary = "공동구매 문서 검색", description = "키워드(제목, 설명) + 상태 + 카테고리 + sellerId 기준으로 본인의 공동구매를 검색합니다.")
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
-    @GetMapping("/search/mine")
+    @GetMapping("/mine")
     public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchMyGroupPurchase(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
