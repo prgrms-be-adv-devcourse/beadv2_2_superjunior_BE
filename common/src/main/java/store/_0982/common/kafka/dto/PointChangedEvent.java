@@ -27,8 +27,9 @@ public class PointChangedEvent extends BaseEvent {
     }
 
     public enum Status {
-        DEDUCTED,
-        RETURNED,
-        CHARGED
+        USED,       // 사용
+        REFUNDED,   // 환불(반환)
+        CHARGED,    // 충전
+        WITHDRAWN   // 출금
     }
 }
