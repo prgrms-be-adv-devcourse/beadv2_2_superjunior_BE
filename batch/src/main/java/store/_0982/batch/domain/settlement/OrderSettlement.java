@@ -2,6 +2,7 @@ package store._0982.batch.domain.settlement;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import store._0982.batch.domain.order.OrderStatus;
@@ -9,6 +10,7 @@ import store._0982.batch.domain.order.OrderStatus;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "order_settlement", schema = "settlement_schema")
@@ -43,4 +45,8 @@ public class OrderSettlement {
 
     @Column(name = "settled_id")
     private OffsetDateTime settledAt;
+
+    public void markSettled() {
+        this.settledAt = OffsetDateTime.now();
+    }
 }
