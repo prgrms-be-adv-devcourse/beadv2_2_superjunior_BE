@@ -15,8 +15,12 @@ import java.util.UUID;
 @Entity
 @Table(name = "\"product\"", schema = "product_schema")
 public class Product {
+
     @Id
     private UUID productId;
+
+    @Column(name = "idempotency_key", unique = true, nullable = false)
+    private String idempotencyKey;
 
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -40,7 +44,7 @@ public class Product {
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
 
