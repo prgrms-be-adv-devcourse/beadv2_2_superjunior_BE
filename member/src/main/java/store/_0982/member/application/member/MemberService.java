@@ -109,6 +109,12 @@ public class MemberService {
         if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
     }
 
+    public String getEmailAddress(UUID memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::getEmail)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
+    }
+
     @ServiceLog
     @Transactional
     public void sendVerificationEmail(String email) {
