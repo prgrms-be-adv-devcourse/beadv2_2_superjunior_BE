@@ -8,6 +8,7 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.notification.dto.NotificationInfo;
+import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.constant.NotificationChannel;
@@ -38,6 +39,12 @@ public class NotificationService {
     public void readAll(UUID memberId) {
         notificationRepository.findByMemberIdAndStatus(memberId, NotificationStatus.SENT)
                 .forEach(Notification::read);
+    }
+
+    @Transactional
+    public void saveNotification(NotificationContent content, NotificationChannel channel, UUID memberId) {
+        Notification notification = Notification.from(content, channel, memberId);
+        notificationRepository.save(notification);
     }
 
     public PageResponse<NotificationInfo> getNotifications(UUID memberId, Pageable pageable) {
