@@ -50,7 +50,7 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
         for (UUID sellerId : sellerIds) {
             try {
                 SellerBalance sellerBalance = Optional.ofNullable(sellerBalanceMap.get(sellerId))
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_BALANCE_NOT_FOUND));
                 Long amount = amountBySeller.getOrDefault(sellerId, 0L);
                 sellerBalance.increaseBalance(amount);
             } catch (CustomException e) {
