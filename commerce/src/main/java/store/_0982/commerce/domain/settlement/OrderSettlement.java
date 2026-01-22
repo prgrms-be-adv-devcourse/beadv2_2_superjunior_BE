@@ -43,4 +43,28 @@ public class OrderSettlement {
 
     @Column(name = "settled_id")
     private OffsetDateTime settledAt;
+
+    public OrderSettlement createOrderSettlement(
+            UUID orderId,
+            UUID sellerId,
+            UUID groupPurchaseId,
+            Long totalAmount,
+            OrderStatus orderStatus
+    ) {
+        return new OrderSettlement(orderId, sellerId, groupPurchaseId, totalAmount, orderStatus);
+    }
+
+    private OrderSettlement(
+            UUID orderId,
+            UUID sellerId,
+            UUID groupPurchaseId,
+            Long totalAmount,
+            OrderStatus orderStatus) {
+        this.orderSettlementId = UUID.randomUUID();
+        this.orderId = orderId;
+        this.sellerId = sellerId;
+        this.groupPurchaseId = groupPurchaseId;
+        this.totalAmount = totalAmount;
+        this.orderStatus = orderStatus;
+    }
 }
