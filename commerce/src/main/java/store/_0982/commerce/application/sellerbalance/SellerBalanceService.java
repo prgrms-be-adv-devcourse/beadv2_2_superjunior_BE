@@ -43,16 +43,4 @@ public class SellerBalanceService {
         Page<SellerBalanceHistoryInfo> sellerBalanceHistoryInfoStream = list.map(SellerBalanceHistoryInfo::from);
         return PageResponse.from(sellerBalanceHistoryInfoStream);
     }
-
-    @Transactional
-    public void addFee(UUID memberId, Long fee) {
-        SellerBalance findSellerBalance = sellerBalanceRepository.findByMemberId(memberId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
-        findSellerBalance.increaseBalance(fee);
-
-        // TODO: 상태 값 세분화 예정
-        SellerBalanceHistory sellerBalanceHistory =
-                new SellerBalanceHistory(memberId, null, null, fee, SellerBalanceHistoryStatus.CREDIT);
-        sellerBalanceHistoryRepository.save(sellerBalanceHistory);
-    }
 }

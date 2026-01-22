@@ -234,12 +234,6 @@ public class OrderCommandService {
         order.requestReversed();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
-
-        // 판매자에게 수수료 지급
-        if (refundAmount.cancellationFee() > 0) {
-            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
-        }
-
         publishCancellationEvent(order, reason, refundAmount.refundAmount());
     }
 
@@ -247,12 +241,6 @@ public class OrderCommandService {
         order.requestReturned();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
-
-        // 판매자에게 수수료 지급
-        if (refundAmount.cancellationFee() > 0) {
-            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
-        }
-
         publishCancellationEvent(order, reason, refundAmount.refundAmount());
     }
 
