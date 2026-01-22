@@ -39,4 +39,13 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
         AND o.status = 'PAYMENT_COMPLETED'
     """)
     void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Order o
+        SET o.status = 'GROUP_PURCHASE_SUCCESS'
+        WHERE o.groupPurchaseId = :groupPurchaseId
+        AND o.status = 'PAYMENT_COMPLETED'
+    """)
+    void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.domain.order.Order;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -100,5 +101,13 @@ public class OrderService {
      */
     public void processGroupPurchaseFailure(UUID groupPurchaseId){
         orderCommandService.processGroupPurchaseFailure(groupPurchaseId);
+    }
+
+    /**
+     * 공동 구매 상태에 따라 주문 상태 변경 처리
+     * @param event 이벤트
+     */
+    public void handleUpdatedGroupPurchase(GroupPurchaseEvent event){
+        orderCommandService.handleUpdatedGroupPurchase(event);
     }
 }

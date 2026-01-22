@@ -36,4 +36,6 @@ public interface OrderRepository {
     List<Order> findAllByMemberId(UUID memberId);
 
     void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
 }
