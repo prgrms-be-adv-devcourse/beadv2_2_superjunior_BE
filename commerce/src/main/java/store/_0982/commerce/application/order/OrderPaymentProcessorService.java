@@ -9,6 +9,7 @@ import store._0982.commerce.domain.order.PaymentMethod;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.PaymentChangedEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +35,21 @@ public class OrderPaymentProcessorService {
 
             }
         }
+    }
+
+    @Transactional
+    public void processPointStatusUpdate(PointChangedEvent event){
+        Order order = orderRepository.findById(event.getOrderId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        switch(event.getStatus()){
+            case USED -> {
+                order.completePayment(PaymentMethod.POINT);
+            }
+            case REFUNDED -> {
+
+            }
+        }
+
     }
 }
