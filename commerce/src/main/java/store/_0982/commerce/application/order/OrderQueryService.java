@@ -72,12 +72,6 @@ public class OrderQueryService {
         return orderRepository.findAllByMemberId(memberId);
     }
 
-    /**
-     * internal orderVector 조회
-     *
-     * @param memberId
-     * @return List<OrderVectorInfo>
-     */
     public List<OrderVectorInfo> getOrderVector(UUID memberId) {
         List<Order> orders = orderRepository.findAllByMemberId(memberId);
         List<UUID> groupPurchaseIds = orders.stream()

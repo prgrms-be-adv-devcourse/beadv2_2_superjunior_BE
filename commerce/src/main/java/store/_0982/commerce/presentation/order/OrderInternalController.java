@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.commerce.application.order.OrderQueryService;
+import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.common.HeaderName;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @RequestMapping("/internal/orders")
 public class OrderInternalController {
 
-    private final OrderQueryService orderService;
+    private final OrderService orderService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
