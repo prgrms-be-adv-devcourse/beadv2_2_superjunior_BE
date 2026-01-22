@@ -37,7 +37,7 @@ public class EmailDispatchService {
                     content.message()
             );
 
-            notificationService.saveNotification(content, NotificationChannel.EMAIL, memberId);
+            notificationService.saveNotification(notifiable, NotificationChannel.EMAIL);
         }
     }
 }

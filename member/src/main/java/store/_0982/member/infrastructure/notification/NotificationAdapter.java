@@ -9,6 +9,7 @@ import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,5 +42,10 @@ public class NotificationAdapter implements NotificationRepository {
     @Override
     public void save(Notification notification) {
         notificationJpaRepository.save(notification);
+    }
+
+    @Override
+    public void saveAll(Collection<Notification> notifications) {
+        notificationJpaRepository.saveAll(notifications);
     }
 }

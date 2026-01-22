@@ -8,13 +8,13 @@ import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.notification.dto.NotificationInfo;
-import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
 import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.exception.CustomErrorCode;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,9 +42,18 @@ public class NotificationService {
     }
 
     @Transactional
-    public void saveNotification(NotificationContent content, NotificationChannel channel, UUID memberId) {
-        Notification notification = Notification.from(content, channel, memberId);
+    public void saveNotification(Notifiable notifiable, NotificationChannel channel) {
+        Notification notification = Notification.from(notifiable.content(), channel, notifiable.memberId());
         notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void saveBulkNotifications(List<Notifiable> notifiables, NotificationChannel channel) {
+        List<Notification> notifications = notifiables.stream()
+                .map(notifiable -> Notification.from(notifiable.content(), channel, notifiable.memberId()))
+                .toList();
+
+        notificationRepository.saveAll(notifications);
     }
 
     public PageResponse<NotificationInfo> getNotifications(UUID memberId, Pageable pageable) {

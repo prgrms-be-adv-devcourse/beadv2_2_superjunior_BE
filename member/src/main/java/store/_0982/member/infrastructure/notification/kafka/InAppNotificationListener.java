@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.*;
 import store._0982.member.application.notification.dispatch.InAppDispatchService;
+import store._0982.member.application.notification.dto.kafka.group_purchase.GroupPurchaseFailedCommand;
+import store._0982.member.application.notification.dto.kafka.group_purchase.GroupPurchaseSuccessCommand;
 import store._0982.member.application.notification.dto.kafka.order.OrderCanceledCommand;
 import store._0982.member.application.notification.dto.kafka.order.OrderCompletedCommand;
 import store._0982.member.application.notification.dto.kafka.order.OrderConfirmedCommand;
@@ -20,12 +22,17 @@ import store._0982.member.common.notification.CustomRetryableTopic;
 import store._0982.member.common.notification.InAppKafkaListener;
 import store._0982.member.exception.NegligibleKafkaErrorType;
 import store._0982.member.exception.NegligibleKafkaException;
+import store._0982.member.infrastructure.commerce.CommerceClient;
+
+import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class InAppNotificationListener {
 
     private final InAppDispatchService inAppDispatchService;
+    private final CommerceClient commerceClient;
 
     @CustomRetryableTopic
     @InAppKafkaListener(KafkaTopics.ORDER_CREATED)
@@ -79,6 +86,35 @@ public class InAppNotificationListener {
             case COMPLETED -> inAppDispatchService.notifyToInApp(SettlementCompletedCommand.from(event));
             case FAILED -> inAppDispatchService.notifyToInApp(SettlementFailedCommand.from(event));
             case DEFERRED -> inAppDispatchService.notifyToInApp(SettlementDeferredCommand.from(event));
+            default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
+        }
+    }
+
+    @CustomRetryableTopic
+    @InAppKafkaListener(KafkaTopics.GROUP_PURCHASE_CHANGED)
+    public void handleGroupPurchaseChangedEvent(GroupPurchaseEvent event) {
+        List<UUID> participantIds = commerceClient.getGroupPurchaseParticipants(event.getId());
+
+        switch (event.getGroupPurchaseStatus()) {
+            case SUCCESS -> inAppDispatchService.notifyToInApp(
+                    GroupPurchaseSuccessCommand.of(
+                            event.getId(),
+                            event.getSellerId(),
+                            event.getTitle(),
+                            participantIds
+                    )
+            );
+            case FAILED -> inAppDispatchService.notifyToInApp(
+                    GroupPurchaseFailedCommand.of(
+                            event.getId(),
+                            event.getSellerId(),
+                            event.getTitle(),
+                            participantIds
+                    )
+            );
+            case OPEN, SCHEDULED -> {
+                // 무시
+            }
             default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
         }
     }
