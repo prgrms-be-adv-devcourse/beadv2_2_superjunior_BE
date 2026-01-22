@@ -8,14 +8,14 @@ import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCreatedEvent;
 import store._0982.member.application.notification.dto.OrderCompletedCommand;
-import store._0982.member.application.notification.inapp.OrderInAppNotificationService;
+import store._0982.member.application.notification.NotificationDispatchService;
 import store._0982.member.common.notification.KafkaGroupIds;
 
 @Component
 @RequiredArgsConstructor
 public class OrderEventListener {
 
-    private final OrderInAppNotificationService orderInAppNotificationService;
+    private final NotificationDispatchService notificationDispatchService;
 
     @RetryableTopic(exclude = CustomException.class)
     @KafkaListener(
@@ -24,11 +24,6 @@ public class OrderEventListener {
             containerFactory = "inAppListenerContainerFactory"
     )
     public void handleOrderCreatedEvent(OrderCreatedEvent event) {
-        OrderCompletedCommand command = new OrderCompletedCommand(
-                event.getId(),
-                event.getMemberId(),
-                event.getProductName()
-        );
-        orderInAppNotificationService.notifyOrderCompleted(command);
+        notificationDispatchService.notifyToInApp(OrderCompletedCommand.from(event));
     }
 }

@@ -71,7 +71,7 @@ public class NotificationSettingService {
                 .toList();
     }
 
-    public boolean isNotificationEnabled(UUID memberId, NotificationChannel channel) {
+    public boolean isEnabled(UUID memberId, NotificationChannel channel) {
         if (channel.isDefaultChannel()) {
             return true;
         }
