@@ -190,6 +190,13 @@ public class Order {
         this.cancelRequestedAt = OffsetDateTime.now();
     }
 
+    public void changeStatus() {
+        if (this.status == OrderStatus.CANCEL_REQUESTED) this.status = OrderStatus.CANCELLED;
+        if (this.status == OrderStatus.REVERSE_REQUESTED) this.status = OrderStatus.REVERSED;
+        if (this.status == OrderStatus.REFUND_REQUESTED) this.status = OrderStatus.REFUNDED;
+        this.cancelledAt = OffsetDateTime.now();
+    }
+
     // 환불 완료
     public void markReturned() {
         if (this.returnedAt != null) {
@@ -211,12 +218,5 @@ public class Order {
                 method,
                 amount
         );
-    }
-
-    public void changeStatus(PaymentChangedEvent.Status status) {
-        this.status = OrderStatus.valueOf(
-                status.name()
-        );
-        this.cancelledAt = OffsetDateTime.now();
     }
 }

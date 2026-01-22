@@ -93,6 +93,9 @@ public class OrderService {
         return orderQueryService.getAllOrderByMemberId(memberId);
     }
 
+    public void retryCancelOrder() {
+        orderCommandService.retryCancelOrder();
+
     /**
      * internal orderVector 조회
      *
