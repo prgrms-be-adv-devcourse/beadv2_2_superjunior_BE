@@ -71,6 +71,13 @@ public class NotificationSettingService {
                 .toList();
     }
 
+    public boolean isNotificationEnabled(UUID memberId, NotificationChannel channel) {
+        if (channel.isDefaultChannel()) {
+            return true;
+        }
+        return getNotificationSettings(memberId).get(channel).isEnabled();
+    }
+
     private @NonNull Map<NotificationChannel, NotificationSetting> getNotificationSettings(UUID memberId) {
         return notificationSettingRepository.findAllByMemberId(memberId)
                 .stream()

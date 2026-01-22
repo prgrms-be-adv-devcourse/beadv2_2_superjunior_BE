@@ -71,11 +71,11 @@ public class Notification {
     @Column(name = "reference_id", nullable = false)
     private UUID referenceId;
 
-    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId, UUID referenceId) {
+    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId) {
         return Notification.builder()
                 .memberId(memberId)
                 .channel(channel)
-                .referenceId(referenceId)
+                .referenceId(content.referenceId())
                 .type(content.type())
                 .title(content.title())
                 .message(content.message())
