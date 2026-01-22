@@ -73,6 +73,26 @@ spring:
               filters:
                 - RewritePath=/v3/api-docs/ai, /v3/api-docs
 
+            - id: webhook
+              uri: ${POINT_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/webhooks/**
+              filters:
+                - WebhookWhitelist=cidrs[
+                    13.124.18.147,
+                    13.124.108.35,
+                    3.36.173.151,
+                    3.38.81.32,
+                    115.92.221.121,
+                    115.92.221.122,
+                    115.92.221.123,
+                    115.92.221.125,
+                    115.92.221.126,
+                    115.92.221.127
+                  ]
+
+
+
 springdoc:
   swagger-ui:
     # Gateway Swagger UI에서 선택할 수 있는 문서 목록

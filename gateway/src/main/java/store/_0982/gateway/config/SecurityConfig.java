@@ -35,12 +35,14 @@ public class SecurityConfig {
                 // 인가
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
-//                                "/actuator/**",
-//                                "/swagger-ui.html",
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**",
-//                                "/webjars/**",
-//                                "/**/v3/api-docs"
+                                "/auth/**",
+                                "/webhooks/**",
+                                "/actuator/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**",
+                                "/**/v3/api-docs"
                         ).permitAll()
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)
