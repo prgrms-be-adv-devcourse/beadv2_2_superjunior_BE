@@ -14,13 +14,13 @@ public class GroupPurchaseUpdateEventMapper {
                 groupPurchase.getDescription(),
                 groupPurchase.getDiscountedPrice(),
                 groupPurchase.getProductId(),
-                GroupPurchaseEvent.Status.valueOf(groupPurchase.getStatus().toString()),
+                GroupPurchaseEvent.Status.valueOf(groupPurchase.getStatus().name()),
                 groupPurchase.getEndDate().toString(),
                 groupPurchase.getUpdatedAt().toString(),
                 groupPurchase.getCurrentQuantity(),
                 GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE,
                 product.getPrice(),
-                GroupPurchaseEvent.ProductCategory.valueOf(product.getCategory().toString())
+                GroupPurchaseEvent.ProductCategory.valueOf(product.getCategory().name())
         );
     }
 }
