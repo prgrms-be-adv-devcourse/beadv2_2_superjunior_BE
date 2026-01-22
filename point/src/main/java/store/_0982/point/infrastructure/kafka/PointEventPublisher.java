@@ -22,18 +22,18 @@ public class PointEventPublisher {
     }
 
     public void publishPointDeductedEvent(PointTransaction history) {
-        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.USED);
         send(history.getMemberId().toString(), event);
     }
 
     public void publishPointReturnedEvent(PointTransaction history) {
-        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.RETURNED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.REFUNDED);
         send(history.getMemberId().toString(), event);
     }
 
     // TODO: Kafka 이벤트 객체에 '출금됨' 상태를 추가할까?
     public void publishPointTransferredEvent(PointTransaction history) {
-        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.DEDUCTED);
+        PointChangedEvent event = createPointChangedEvent(history, PointChangedEvent.Status.WITHDRAWN);
         send(history.getMemberId().toString(), event);
     }
 

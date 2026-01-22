@@ -17,12 +17,12 @@ public class PaymentEventPublisher {
     private final KafkaTemplate<String, BaseEvent> kafkaTemplate;
 
     public void publishPaymentConfirmedEvent(PgPayment pgPayment) {
-        PaymentChangedEvent event = createPointChangedEvent(pgPayment, PaymentChangedEvent.Status.COMPLETED);
+        PaymentChangedEvent event = createPointChangedEvent(pgPayment, PaymentChangedEvent.Status.PAYMENT_COMPLETED);
         send(pgPayment.getMemberId().toString(), event);
     }
 
     public void publishPaymentFailedEvent(PgPayment pgPayment) {
-        PaymentChangedEvent event = createPointChangedEvent(pgPayment, PaymentChangedEvent.Status.FAILED);
+        PaymentChangedEvent event = createPointChangedEvent(pgPayment, PaymentChangedEvent.Status.PAYMENT_FAILED);
         send(pgPayment.getMemberId().toString(), event);
     }
 
