@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCancelCommand;
@@ -15,6 +16,7 @@ import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
+import store._0982.point.domain.event.PaymentCanceledTxEvent;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
@@ -46,6 +48,9 @@ class PgCancelServiceTest {
 
     @Mock
     private PaymentRules paymentRules;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private PgTxManager pgTxManager;
@@ -102,7 +107,8 @@ class PgCancelServiceTest {
         // then
         verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(tossPaymentService).cancelPayment(pgPayment, command);
-        verify(pgPaymentCancelRepository).save(any(PgPaymentCancel.class));
+        verify(pgPaymentCancelRepository).saveAll(any());
+        verify(applicationEventPublisher).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
     @Test
@@ -117,6 +123,8 @@ class PgCancelServiceTest {
         assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -135,6 +143,8 @@ class PgCancelServiceTest {
         assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_OWNER_MISMATCH.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -152,6 +162,8 @@ class PgCancelServiceTest {
         assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.NOT_COMPLETED_PAYMENT.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -172,6 +184,7 @@ class PgCancelServiceTest {
 
         verify(tossPaymentService, never()).cancelPayment(refundedPayment, command);
         verify(pgPaymentCancelRepository, never()).save(any(PgPaymentCancel.class));
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -192,5 +205,7 @@ class PgCancelServiceTest {
         assertThatThrownBy(() -> pgCancelService.refundPayment(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.REFUND_NOT_ALLOWED.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 }

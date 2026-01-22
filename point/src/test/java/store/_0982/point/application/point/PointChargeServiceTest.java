@@ -73,7 +73,7 @@ class PointChargeServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(10000);
-            assertThat(pointBalance.getPointAmount().getPaidPoint()).isEqualTo(10000);
+            assertThat(pointBalance.getPaidBalance()).isEqualTo(10000);
             verify(pointBalanceRepository).findByMemberId(memberId);
             verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
             verify(applicationEventPublisher).publishEvent(any(PointChargedTxEvent.class));

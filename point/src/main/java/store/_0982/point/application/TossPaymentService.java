@@ -53,6 +53,11 @@ public class TossPaymentService {
         return executeWithExceptionHandling(() -> tossPaymentClient.cancel(request));
     }
 
+    @ServiceLog
+    public TossPaymentInfo getPaymentByKey(String paymentKey) {
+        return executeWithExceptionHandling(() -> tossPaymentClient.getPaymentByKey(paymentKey));
+    }
+
     /**
      * 토스 API 호출 시 발생하는 예외를 통합 처리합니다.
      *

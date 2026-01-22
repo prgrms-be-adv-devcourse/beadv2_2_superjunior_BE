@@ -20,7 +20,7 @@ public class OrderChangedEventListener {
     @KafkaListener(
             topics = KafkaTopics.ORDER_CHANGED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,
-            containerFactory = "orderChangedEventListenerContainerFactory"
+            containerFactory = "baseEventListenerContainerFactory"
     )
     public void handleOrderChangedEvent(OrderChangedEvent event) {
         if (event.getStatus() != OrderChangedEvent.Status.GROUP_PURCHASE_FAIL) {

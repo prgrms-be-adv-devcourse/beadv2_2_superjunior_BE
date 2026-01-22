@@ -25,7 +25,7 @@ public class OrderCanceledEventListener {
     @KafkaListener(
             topics = KafkaTopics.ORDER_CANCELED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,
-            containerFactory = "orderCanceledEventListenerContainerFactory"
+            containerFactory = "baseEventListenerContainerFactory"
     )
     public void handleOrderCanceledEvent(OrderCanceledEvent event) {
         // TODO: 나중에 병목 현상을 막기 위해 포인트 반환 토픽과 PG 환불 토픽을 분리하자

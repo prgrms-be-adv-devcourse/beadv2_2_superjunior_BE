@@ -36,22 +36,21 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
     @DisplayName("DB 마킹 중 일시적 예외 발생 시 최대 3번까지 재시도한다")
     void retryTest() {
         // given
-        String paymentKey = "test-key";
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
 
         PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
 
-        when(pgPaymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(pgPayment));
-        when(pgPaymentRepository.findByPaymentKey(paymentKey)).thenThrow(new QueryTimeoutException("DB Timeout"));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenThrow(new QueryTimeoutException("DB Timeout"));
 
         TossPaymentInfo response = FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.class);
 
         // when & then
-        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, paymentKey, memberId))
+        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, orderId, memberId))
                 .isInstanceOf(QueryTimeoutException.class);
 
         // verify
-        verify(pgPaymentRepository, times(3)).findByPaymentKey(paymentKey);
+        verify(pgPaymentRepository, times(3)).findByOrderId(orderId);
     }
 }

@@ -13,8 +13,6 @@ public interface PgPaymentRepository {
 
     Optional<PgPayment> findByOrderId(UUID orderId);
 
-    Optional<PgPayment> findByPaymentKey(String paymentKey);
-
     Optional<PgPayment> findById(UUID id);
 
     PgPayment save(PgPayment pgPayment);

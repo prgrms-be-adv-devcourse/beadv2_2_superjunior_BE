@@ -22,7 +22,7 @@ public class OrderConfirmedEventListener {
     @KafkaListener(
             topics = KafkaTopics.ORDER_CONFIRMED,
             groupId = KafkaGroupIds.PAYMENT_SERVICE,
-            containerFactory = "orderConfirmedEventListenerContainerFactory"
+            containerFactory = "baseEventListenerContainerFactory"
     )
     public void handleOrderConfirmedEvent(OrderConfirmedEvent event) {
         BonusEarnCommand command = new BonusEarnCommand(
