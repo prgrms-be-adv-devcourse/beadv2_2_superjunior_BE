@@ -34,6 +34,7 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -259,7 +260,8 @@ public class OrderCommandService {
                 OrderStatus.REFUND_REQUESTED
         );
 
-        List<Order> pendingOrders = orderRepository.findAllByStatusIn(pendingStatuses);
+        OffsetDateTime minutesAgo = OffsetDateTime.now().minusMinutes(15);
+        List<Order> pendingOrders = orderRepository.findAllByStatusInAndCancelRequestAtBefore(pendingStatuses, minutesAgo);
         if (pendingOrders.isEmpty()) {
             return;
         }

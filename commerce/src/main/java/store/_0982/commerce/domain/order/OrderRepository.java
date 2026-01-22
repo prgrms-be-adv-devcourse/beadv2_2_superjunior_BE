@@ -3,6 +3,7 @@ package store._0982.commerce.domain.order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,5 +35,5 @@ public interface OrderRepository {
 
     List<Order> findAllByMemberId(UUID memberId);
 
-    List<Order> findAllByStatusIn(List<OrderStatus> statuses);
+    List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
 }
