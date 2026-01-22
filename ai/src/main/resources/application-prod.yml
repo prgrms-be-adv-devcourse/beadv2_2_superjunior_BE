@@ -2,3 +2,6 @@
 spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+
+client:
+  search: ${CLIENT_SEARCH_URL:http://search-service:8082}
