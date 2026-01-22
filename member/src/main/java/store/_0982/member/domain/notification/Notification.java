@@ -8,7 +8,6 @@ import store._0982.common.exception.CustomException;
 import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.domain.notification.constant.NotificationType;
-import store._0982.member.domain.notification.constant.ReferenceType;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
@@ -19,7 +18,16 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "notification", schema = "notification_schema")
+@Table(
+        name = "notification",
+        schema = "notification_schema",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_notification_deduplication",
+                        columnNames = {"reference_id", "notification_type", "member_id"}
+                )
+        }
+)
 public class Notification {
 
     @Id
@@ -42,10 +50,6 @@ public class Notification {
 
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "reference_type", nullable = false, length = 30)
-    private ReferenceType referenceType;
 
     @Column(name = "failure_message", columnDefinition = "TEXT")
     private String failureMessage;
