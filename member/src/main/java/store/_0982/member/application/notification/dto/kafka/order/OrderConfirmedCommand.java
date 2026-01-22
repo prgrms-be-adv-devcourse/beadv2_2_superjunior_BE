@@ -1,4 +1,4 @@
-package store._0982.member.application.notification.dto.kafka;
+package store._0982.member.application.notification.dto.kafka.order;
 
 import store._0982.common.kafka.dto.OrderConfirmedEvent;
 import store._0982.member.application.notification.Notifiable;

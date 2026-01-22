@@ -1,4 +1,4 @@
-package store._0982.member.application.notification.dto.kafka;
+package store._0982.member.application.notification.dto.kafka.point;
 
 import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.member.application.notification.Notifiable;
