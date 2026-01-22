@@ -285,4 +285,10 @@ public class OrderCommandService {
             default -> null;
         };
     }
+    
+    @ServiceLog
+    @Transactional
+    public void processGroupPurchaseFailure(UUID groupPurchaseId){
+        orderRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
 }

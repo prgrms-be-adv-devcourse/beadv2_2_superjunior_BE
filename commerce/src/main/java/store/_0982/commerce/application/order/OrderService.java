@@ -109,4 +109,13 @@ public class OrderService {
     public List<OrderVectorInfo> getOrderVector(UUID memberId) {
         return orderQueryService.getOrderVector(memberId);
     }
+
+    /**
+     * 공동구매 실패한 주문 상태 변경 처리
+     *
+     * @param groupPurchaseId 주문 UUID
+     */
+    public void processGroupPurchaseFailure(UUID groupPurchaseId){
+        orderCommandService.processGroupPurchaseFailure(groupPurchaseId);
+    }
 }
