@@ -93,8 +93,12 @@ public class OrderService {
         return orderQueryService.getAllOrderByMemberId(memberId);
     }
 
+    /**
+     * 주문 취소 재시도 배치
+     */
     public void retryCancelOrder() {
         orderCommandService.retryCancelOrder();
+    }
 
     /**
      * internal orderVector 조회
