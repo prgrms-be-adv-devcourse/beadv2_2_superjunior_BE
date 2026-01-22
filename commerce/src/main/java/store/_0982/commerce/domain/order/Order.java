@@ -162,7 +162,7 @@ public class Order {
         if(this.status != OrderStatus.PENDING){
             throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
         }
-        this.status = OrderStatus.ORDER_FAILED;
+        this.status = OrderStatus.PAYMENT_FAILED;
     }
 
     public boolean isExpired() {
