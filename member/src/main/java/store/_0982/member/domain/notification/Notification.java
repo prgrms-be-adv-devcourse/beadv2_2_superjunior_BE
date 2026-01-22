@@ -17,9 +17,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Builder(access = AccessLevel.PRIVATE)
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Table(
         name = "notification",
         schema = "notification_schema",

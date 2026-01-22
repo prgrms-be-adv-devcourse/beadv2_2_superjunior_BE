@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.*;
+import store._0982.member.application.member.CommerceQueryPort;
 import store._0982.member.application.notification.dispatch.InAppDispatchService;
 import store._0982.member.application.notification.dto.kafka.group_purchase.GroupPurchaseFailedCommand;
 import store._0982.member.application.notification.dto.kafka.group_purchase.GroupPurchaseSuccessCommand;
@@ -22,7 +23,6 @@ import store._0982.member.common.notification.CustomRetryableTopic;
 import store._0982.member.common.notification.InAppKafkaListener;
 import store._0982.member.exception.NegligibleKafkaErrorType;
 import store._0982.member.exception.NegligibleKafkaException;
-import store._0982.member.infrastructure.commerce.CommerceClient;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +32,7 @@ import java.util.UUID;
 public class InAppNotificationListener {
 
     private final InAppDispatchService inAppDispatchService;
-    private final CommerceClient commerceClient;
+    private final CommerceQueryPort commerceQueryPort;
 
     @CustomRetryableTopic
     @InAppKafkaListener(KafkaTopics.ORDER_CREATED)
@@ -93,7 +93,7 @@ public class InAppNotificationListener {
     @CustomRetryableTopic
     @InAppKafkaListener(KafkaTopics.GROUP_PURCHASE_CHANGED)
     public void handleGroupPurchaseChangedEvent(GroupPurchaseEvent event) {
-        List<UUID> participantIds = commerceClient.getGroupPurchaseParticipants(event.getId());
+        List<UUID> participantIds = commerceQueryPort.getGroupPurchaseParticipants(event.getId());
 
         switch (event.getGroupPurchaseStatus()) {
             case SUCCESS -> inAppDispatchService.notifyToInApp(
