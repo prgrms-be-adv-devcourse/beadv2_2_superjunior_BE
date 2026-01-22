@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.order.OrderPaymentProcessorService;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
@@ -18,7 +17,6 @@ public class PointChangedKafkaListener {
     private final OrderPaymentProcessorService orderPaymentProcessorService;
 
     @ServiceLog
-    @Transactional
     @RetryableTopic(
             kafkaTemplate = "retryKafkaTemplate",
             exclude = CustomException.class
