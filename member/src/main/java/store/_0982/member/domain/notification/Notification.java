@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
+import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.domain.notification.constant.NotificationType;
@@ -16,9 +17,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(
         name = "notification",
         schema = "notification_schema",
@@ -69,6 +70,18 @@ public class Notification {
 
     @Column(name = "reference_id", nullable = false)
     private UUID referenceId;
+
+    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId, UUID referenceId) {
+        return Notification.builder()
+                .memberId(memberId)
+                .channel(channel)
+                .referenceId(referenceId)
+                .type(content.type())
+                .title(content.title())
+                .message(content.message())
+                .status(NotificationStatus.SENT)
+                .build();
+    }
 
     public void validateMemberId(UUID memberId) {
         if (!this.memberId.equals(memberId)) {

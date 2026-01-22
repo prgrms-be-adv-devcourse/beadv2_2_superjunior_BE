@@ -8,8 +8,9 @@ import lombok.RequiredArgsConstructor;
 public enum NotificationType {
 
     // [주문]
-    ORDER_COMPLETED(ReferenceType.ORDER),
+    ORDER_COMPLETED(ReferenceType.ORDER),       // 주문 성공
     ORDER_CANCELED(ReferenceType.ORDER),
+    ORDER_CONFIRMED(ReferenceType.ORDER),       // 구매 확정
 
     // [PG]
     PG_FAILED(ReferenceType.PG),
