@@ -13,6 +13,7 @@ public final class KafkaTopics {
      * 주문 생성, 취소 외에 상태 변경을 의미합니다.
      */
     public static final String ORDER_CHANGED = "order.changed";
+    public static final String ORDER_CONFIRMED = "order.confirmed";
 
     public static final String POINT_CHANGED = "point.changed";
 
@@ -36,7 +37,13 @@ public final class KafkaTopics {
      */
     @Deprecated(forRemoval = true)
     public static final String GROUP_PURCHASE_CREATED = "group-purchase.created";
+
+    /**
+     * 공동 구매가 취소된 경우를 제외한 상태 변경에 해당합니다.
+     */
     public static final String GROUP_PURCHASE_CHANGED = "group-purchase.update";
+
+    public static final String GROUP_PURCHASE_FAILED = "group-purchase.failed";
 
     public static final String MEMBER_DELETED = "member.deleted";
     public static final String MEMBER_LOGGED_IN = "member.logged-in";
