@@ -6,7 +6,6 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.sellerbalance.event.SellerBalanceCompleted;
 import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.batch.domain.order.OrderRepository;
@@ -31,8 +30,6 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
     private final GroupPurchaseRepository groupPurchaseRepository;
 
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
-
-    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends GroupPurchase> chunk) {
@@ -87,10 +84,6 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                 );
 
                 uuids.add(groupPurchaseId);
-
-                eventPublisher.publishEvent(
-                        new SellerBalanceCompleted(sellerBalance, amount)
-                );
             } catch (CustomException e) {
                 log.error("[ERROR] [SELLER_BALANCE] {} failed", groupPurchaseId, e);
             }
