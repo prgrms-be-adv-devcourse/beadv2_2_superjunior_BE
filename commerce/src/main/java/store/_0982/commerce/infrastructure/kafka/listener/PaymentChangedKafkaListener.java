@@ -5,9 +5,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.OrderRepository;
-import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.commerce.application.order.OrderPaymentProcessorService;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.PaymentChangedEvent;
@@ -17,23 +15,20 @@ import store._0982.common.log.ServiceLog;
 @Service
 public class PaymentChangedKafkaListener {
 
-    private final OrderRepository orderRepository;
+    private final OrderPaymentProcessorService orderPaymentProcessorService;
 
     @ServiceLog
     @Transactional
     @RetryableTopic(
-            kafkaTemplate = "orderCanceledEventKafkaTemplate",
+            kafkaTemplate = "retryKafkaTemplate",
             exclude = CustomException.class
     )
     @KafkaListener(
             topics = KafkaTopics.PAYMENT_CHANGED,
+            groupId = "order-service-group",
             containerFactory = "paymentKafkaListenerFactory"
     )
     public void handlePaymentChangedEvent(PaymentChangedEvent event) {
-        Order findOrder = orderRepository.findById(event.getOrderId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-
-        if (event.getStatus() == PaymentChangedEvent.Status.REFUNDED)
-            findOrder.changeStatus();
+        orderPaymentProcessorService.processPaymentStatusUpdate(event);
     }
 }
