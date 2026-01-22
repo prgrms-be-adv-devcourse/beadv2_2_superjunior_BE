@@ -2,6 +2,7 @@ package store._0982.commerce.infrastructure.settlement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.commerce.domain.settlement.OrderSettlement;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
 
 @RequiredArgsConstructor
@@ -10,4 +11,8 @@ public class OrderSettlementRepositoryAdapter implements OrderSettlementReposito
 
     private final OrderSettlementJpaRepository orderSettlementJpaRepository;
 
+    @Override
+    public void save(OrderSettlement orderSettlement) {
+        orderSettlementJpaRepository.save(orderSettlement);
+    }
 }

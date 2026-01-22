@@ -44,7 +44,7 @@ public class OrderSettlement {
     @Column(name = "settled_id")
     private OffsetDateTime settledAt;
 
-    public OrderSettlement createOrderSettlement(
+    public static OrderSettlement createOrderSettlement(
             UUID orderId,
             UUID sellerId,
             UUID groupPurchaseId,
