@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.dto.SellerBalanceChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -62,14 +61,5 @@ public class SellerBalance {
 
     public void resetBalance() {
         this.settlementBalance = 0L;
-    }
-
-    public SellerBalanceChangedEvent toCompletedEvent(Long amount) {
-        return new SellerBalanceChangedEvent(
-                this.memberId,
-                amount,
-                this.settlementBalance,
-                SellerBalanceChangedEvent.Status.CREDIT
-        );
     }
 }
