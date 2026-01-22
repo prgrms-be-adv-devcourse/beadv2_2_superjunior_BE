@@ -8,7 +8,7 @@ import store._0982.member.infrastructure.member.feign.dto.SellerBalanceRequest;
 
 @FeignClient(
         name = "commerce-service",
-        url = "localhost:8087"
+        url = "${commerce-service.url}"
 )
 public interface CommerceFeignClient {
     @PostMapping(value = "/internal/balances")
