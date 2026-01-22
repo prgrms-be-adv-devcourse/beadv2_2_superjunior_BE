@@ -27,9 +27,8 @@ public class PaymentChangedEvent extends BaseEvent {
     }
 
     public enum Status {
-        PENDING,
-        COMPLETED,
-        FAILED,
+        PAYMENT_COMPLETED,
+        PAYMENT_FAILED,
         REFUNDED
     }
 
