@@ -96,4 +96,11 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {
         orderJpaRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
     }
+
+    @Override
+    public void bulkMarkGroupPurchaseSuccess(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseSuccess(groupPurchaseId);
+    }
+
+
 }
