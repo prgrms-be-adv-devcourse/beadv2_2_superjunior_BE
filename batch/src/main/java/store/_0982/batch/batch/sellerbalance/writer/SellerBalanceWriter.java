@@ -11,8 +11,6 @@ import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.domain.settlement.OrderSettlement;
-import store._0982.batch.exception.CustomErrorCode;
-import store._0982.common.exception.CustomException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -48,14 +46,9 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
                 .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
 
         for (UUID sellerId : sellerIds) {
-            try {
-                SellerBalance sellerBalance = Optional.ofNullable(sellerBalanceMap.get(sellerId))
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_BALANCE_NOT_FOUND));
-                Long amount = amountBySeller.getOrDefault(sellerId, 0L);
-                sellerBalance.increaseBalance(amount);
-            } catch (CustomException e) {
-                log.error("[ERROR] [sellerBalanceJob] failed - sellerId : {}", sellerId, e);
-            }
+            SellerBalance sellerBalance = sellerBalanceMap.computeIfAbsent(sellerId, SellerBalance::new);
+            Long amount = amountBySeller.getOrDefault(sellerId, 0L);
+            sellerBalance.increaseBalance(amount);
         }
 
         if (!sellerBalanceMap.isEmpty()) {
