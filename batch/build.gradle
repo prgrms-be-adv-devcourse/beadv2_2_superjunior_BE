@@ -9,7 +9,7 @@ dependencies {
 
     //DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.postgresql:postgresql'
 
     //Batch
     implementation 'org.springframework.boot:spring-boot-starter-batch'
@@ -18,11 +18,17 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
     // Feign
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    //ND4J 벡터 계산 라이브러리
+    implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7'
 }
 
 bootJar {

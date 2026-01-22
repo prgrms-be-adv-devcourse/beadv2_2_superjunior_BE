@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 
-@Profile("local")
+@Profile("dev")
 @RequiredArgsConstructor
 @Component
 public class GroupPurchaseScheduler {

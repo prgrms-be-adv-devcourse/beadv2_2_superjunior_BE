@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import store._0982.batch.application.sellerbalance.event.SellerBalanceCompleted;
 import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.order.Order;
 import store._0982.batch.domain.order.OrderRepository;
@@ -14,6 +16,7 @@ import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,6 +30,8 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
     private final OrderRepository orderRepository;
     private final SellerBalanceRepository sellerBalanceRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     @Override
     public void write(Chunk<? extends GroupPurchase> chunk) {
         List<GroupPurchase> groupPurchases = chunk.getItems().stream()
@@ -39,7 +44,7 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
 
         List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
                 groupPurchaseIds,
-                OrderStatus.GROUP_PURCHASE_SUCCESS
+                OrderStatus.PURCHASE_CONFIRMED
         );
 
         Map<UUID, Long> sellerAmounts = orders.stream()
@@ -48,15 +53,25 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                         Collectors.summingLong(Order::getTotalAmount)
                 ));
 
+        List<SellerBalance> sellerBalances = new ArrayList<>();
         for (Map.Entry<UUID, Long> entry : sellerAmounts.entrySet()) {
             UUID sellerId = entry.getKey();
             Long amount = entry.getValue();
 
-            SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
+            try {
+                SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
-            sellerBalance.increaseBalance(amount);
-            sellerBalanceRepository.save(sellerBalance);
+                sellerBalance.increaseBalance(amount);
+                sellerBalances.add(sellerBalance);
+
+                eventPublisher.publishEvent(
+                        new SellerBalanceCompleted(sellerBalance, amount)
+                );
+            } catch (CustomException e) {
+                log.error("[ERROR] [SELLER_BALANCE] {} failed", sellerId, e);
+            }
         }
+        sellerBalanceRepository.saveAll(sellerBalances);
     }
 }

@@ -1,0 +1,43 @@
+dependencies {
+    implementation project(':common')
+
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+
+    // OpenFeign client for search inter-service calls
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    //DB
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+}
+
+repositories {
+    maven { url 'https://repo.spring.io/milestone' }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0-M5"
+    }
+}
+
+bootJar {
+    enabled = true
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:17-jre'
+    }
+    container {
+        ports = ['8088']
+    }
+}

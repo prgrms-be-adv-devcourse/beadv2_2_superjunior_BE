@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -58,12 +57,6 @@ public class Order {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
-    @Column(name = "expired_at")
-    private OffsetDateTime expiredAt;
-
-    @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
-
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -71,6 +64,12 @@ public class Order {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
+
+    @Column(name = "expired_at")
+    private OffsetDateTime expiredAt;
+
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt;
 
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
@@ -128,87 +127,6 @@ public class Order {
         );
     }
 
-    // 상태 변경
-    public void updateStatus(OrderStatus newStatus){
-        this.status = newStatus;
-    }
-
-    // 결제 완료
-    public void completePayment(PaymentMethod paymentMethod){
-        validateStatus(OrderStatus.PAYMENT_COMPLETED);
-        this.status = OrderStatus.PAYMENT_COMPLETED;
-        this.paymentMethod = paymentMethod;
-        this.paidAt = OffsetDateTime.now();
-    }
-
-    public void markGroupPurchaseSuccess(){
-        if(this.status != OrderStatus.PAYMENT_COMPLETED){
-            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
-        }
-        this.status = OrderStatus.GROUP_PURCHASE_SUCCESS;
-    }
-
-    public void markGroupPurchaseFail(){
-        if(this.status != OrderStatus.PAYMENT_COMPLETED){
-            throw new IllegalStateException("GROUP_PURCHASE_SUCCESS 로 상태 변경 불가능");
-        }
-        this.status = OrderStatus.GROUP_PURCHASE_FAIL;
-    }
-
-
-    // 주문 실패 처리
-    public void markFailed(){
-        validateStatus(OrderStatus.ORDER_FAILED);
-        this.status = OrderStatus.ORDER_FAILED;
-    }
-
-    // 주문 취소 처리
-    public void cancel() {
-        validateStatus(OrderStatus.CANCELLED);
-        this.status = OrderStatus.CANCELLED;
-    }
-
-
-    private void validateStatus(OrderStatus newStatus){
-        switch(this.status){
-            case PENDING:
-                if(newStatus != OrderStatus.PAYMENT_COMPLETED
-                && newStatus != OrderStatus.CANCELLED
-                && newStatus != OrderStatus.ORDER_FAILED){
-                    throw new IllegalStateException("PENDING으로 변경 불가능");
-                }
-                break;
-            case PAYMENT_COMPLETED:
-                if(newStatus != OrderStatus.CANCELLED
-                && newStatus != OrderStatus.RETURNED
-                && newStatus != OrderStatus.REVERSED){
-                    throw new IllegalStateException("PAYMENT_COMPLETED로 변경 불가능");
-                }
-                break;
-            case ORDER_FAILED:
-            case CANCELLED:
-            case RETURNED:
-                throw new IllegalStateException("상태 변경 불가능");
-
-            default:
-                break;
-        }
-    }
-
-    // 환불 완료
-    public void markReturned(){
-        if(this.returnedAt != null){
-            throw new IllegalStateException("이미 환불된 건입니다.");
-        }
-        this.returnedAt = OffsetDateTime.now();
-    }
-
-    // 환불 여부
-    public boolean isReturned(){
-        return this.returnedAt != null;
-    }
-
-
     public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
         return new OrderCanceledEvent(
                 this.memberId,
@@ -218,13 +136,6 @@ public class Order {
                 amount
         );
     }
-
-    public void changeStatus(PaymentChangedEvent.Status status) {
-        this.status = OrderStatus.valueOf(
-                status.name()
-        );
-    }
-
 
     // 총 주문 금액 계산
     public Long getTotalAmount() {

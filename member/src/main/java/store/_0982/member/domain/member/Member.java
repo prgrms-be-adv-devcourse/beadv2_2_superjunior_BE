@@ -44,10 +44,10 @@ public class Member {
     @Column(name = "image_url", length = 2048)
     private String imageUrl;
 
-    @Column(name = "created_at", nullable = false, updatable = false, insertable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
     @Column(name = "deleted_at")
@@ -55,6 +55,10 @@ public class Member {
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
     private List<Address> addresses = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status = Status.PENDING;
 
     public static Member create(String email, String name, String password, String phoneNumber) {
         Member member = new Member();
@@ -65,6 +69,7 @@ public class Member {
         member.phoneNumber = phoneNumber;
         member.saltKey = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         member.createdAt = OffsetDateTime.now();
+        member.updatedAt = member.createdAt;
         return member;
     }
 
@@ -97,5 +102,18 @@ public class Member {
     public void registerSeller() {
         this.role = Role.SELLER;
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void unregisterSeller() {
+        this.role = Role.CONSUMER;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    public void confirm() {
+        this.status = Status.ACTIVE;
+    }
+
+    public enum Status{
+        PENDING, ACTIVE
     }
 }

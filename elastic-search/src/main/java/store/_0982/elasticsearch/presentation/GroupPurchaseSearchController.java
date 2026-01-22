@@ -35,18 +35,19 @@ public class GroupPurchaseSearchController {
     public ResponseDto<PageResponse<GroupPurchaseSearchInfo>> searchGroupPurchase(
             @RequestParam(defaultValue = "") String keyword,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) UUID sellerId,  //판매자 id로 검색
-            @RequestHeader(required = false, value = HeaderName.ID) UUID memberId,  //본인 id로 검색
+            @RequestParam(required = false) UUID sellerId,
+            @RequestHeader(required = false, value = HeaderName.ID) UUID memberId,
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
-        UUID effectiveSellerId;
-        if(sellerId!=null){
-            effectiveSellerId = sellerId;
-        }else {
-            effectiveSellerId = memberId;
-        }
-        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(keyword, status, effectiveSellerId, category, pageable);
+        UUID effectiveSellerId = sellerId != null ? sellerId : memberId;
+        PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(
+                keyword,
+                status,
+                effectiveSellerId,
+                category,
+                pageable
+        );
 
         return new ResponseDto<>(HttpStatus.OK, result, "문서 검색 완료.");
     }

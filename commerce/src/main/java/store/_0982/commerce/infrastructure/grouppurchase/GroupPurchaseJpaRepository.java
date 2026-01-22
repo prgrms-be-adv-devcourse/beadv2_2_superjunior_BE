@@ -17,8 +17,6 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
 
     Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
 
-    List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
-
     @Modifying
     @Query("UPDATE GroupPurchase g SET g.status = 'OPEN' " +
             "WHERE g.status = 'SCHEDULED' " +

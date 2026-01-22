@@ -16,6 +16,8 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO product_schema, order_schema, public
 
   jackson:
     time-zone: Asia/Seoul
@@ -30,6 +32,12 @@ spring:
         jdbc:
           time_zone: Asia/Seoul
     open-in-view: false
+
+  ai:
+    openai:
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
 
 server:
   port: 8087
@@ -47,11 +55,7 @@ management:
 
 client:
   member: http://member-service:8083
+  point: http://point-service:8086
 
 kafka:
   bootstrap-servers: ${spring.kafka.bootstrap-servers}
-
-# 공동구매 주문 시간 설정
-group-purchase:
-  payment:
-    timeout-minutes: 10

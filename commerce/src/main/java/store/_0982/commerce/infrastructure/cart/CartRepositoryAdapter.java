@@ -37,6 +37,11 @@ public class CartRepositoryAdapter implements CartRepository {
     }
 
     @Override
+    public List<Cart> findAllByMemberId(UUID memberId) {
+        return cartJpaRepository.findAllByMemberId(memberId);
+    }
+
+    @Override
     public Optional<Cart> findById(UUID cartId) {
         return cartJpaRepository.findById(cartId);
     }

@@ -20,8 +20,6 @@ public interface GroupPurchaseRepository {
     void delete(GroupPurchase groupPurchase);
 
     GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
-  
-    List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
 
     List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
 

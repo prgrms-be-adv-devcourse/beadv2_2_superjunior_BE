@@ -1,0 +1,45 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  application:
+    name: ai
+
+  datasource:
+    url: ${PRODUCT_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${PRODUCT_DATABASE_USERNAME}
+    password: ${PRODUCT_DATABASE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO ai_schema, public
+
+  flyway:
+    enabled: true
+    default-schema: ai_schema
+    schemas:
+      - ai_schema
+    create-schemas: true
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.0
+
+server:
+  port: 8088
+
+client:
+  search: ${CLIENT_SEARCH_URL:http://search-service:8082}

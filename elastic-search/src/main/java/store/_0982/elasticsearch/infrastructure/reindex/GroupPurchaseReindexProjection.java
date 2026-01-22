@@ -12,7 +12,9 @@ public interface GroupPurchaseReindexProjection {
     long getDiscountedPrice();
     Integer getCurrentQuantity();
     Instant getUpdatedAt();
+    UUID getProductId();
     String getCategory();
     Long getPrice();
     UUID getSellerId();
+    Object getProductVector();
 }
