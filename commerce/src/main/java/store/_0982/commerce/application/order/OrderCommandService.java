@@ -32,6 +32,7 @@ import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
@@ -284,5 +285,21 @@ public class OrderCommandService {
             case REFUND_REQUESTED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
             default -> null;
         };
+    }
+    
+    @ServiceLog
+    @Transactional
+    public void processGroupPurchaseFailure(UUID groupPurchaseId){
+        orderRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
+
+    @ServiceLog
+    @Transactional
+    public void handleUpdatedGroupPurchase(GroupPurchaseEvent event){
+        switch(event.getGroupPurchaseStatus()){
+            case SUCCESS -> {
+                orderRepository.bulkMarkGroupPurchaseSuccess(event.getId());
+            }
+        }
     }
 }

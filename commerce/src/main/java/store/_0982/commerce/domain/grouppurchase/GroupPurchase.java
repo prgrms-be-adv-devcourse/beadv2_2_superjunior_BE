@@ -99,16 +99,6 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-
-    public boolean applyParticipationResult(boolean success, int quantity){
-        if(success){
-            return increaseQuantity(quantity);
-        }else{
-            decreaseQuantity(quantity);
-            return true;
-        }
-    }
-
     private boolean canParticipate(int quantity) {
         return status == GroupPurchaseStatus.OPEN
                 && (this.currentQuantity + quantity <= this.maxQuantity);

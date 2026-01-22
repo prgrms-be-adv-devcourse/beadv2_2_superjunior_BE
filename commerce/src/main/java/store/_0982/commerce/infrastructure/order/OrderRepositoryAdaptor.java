@@ -91,4 +91,16 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
         return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
     }
+
+    @Override
+    public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
+
+    @Override
+    public void bulkMarkGroupPurchaseSuccess(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseSuccess(groupPurchaseId);
+    }
+
+
 }
