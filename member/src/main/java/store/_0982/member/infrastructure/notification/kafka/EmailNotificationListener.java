@@ -3,10 +3,7 @@ package store._0982.member.infrastructure.notification.kafka;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.OrderConfirmedEvent;
-import store._0982.common.kafka.dto.OrderCreatedEvent;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
+import store._0982.common.kafka.dto.*;
 import store._0982.member.application.notification.dispatch.EmailDispatchService;
 import store._0982.member.application.notification.dto.*;
 import store._0982.member.common.notification.CustomRetryableTopic;
@@ -47,6 +44,20 @@ public class EmailNotificationListener {
             }
             case PAYMENT_FAILED -> emailDispatchService.notifyToEmail(PaymentFailedCommand.from(event));
             case REFUNDED -> emailDispatchService.notifyToEmail(PaymentRefundedCommand.from(event));
+            default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
+        }
+    }
+
+    @CustomRetryableTopic
+    @EmailKafkaListener(KafkaTopics.POINT_CHANGED)
+    public void handlePointChangedEvent(PointChangedEvent event) {
+        switch (event.getStatus()) {
+            case USED -> {
+                // 주문 완료 알림이 이를 대신함
+            }
+            case REFUNDED -> emailDispatchService.notifyToEmail(PointRefundedCommand.from(event));
+            case CHARGED -> emailDispatchService.notifyToEmail(PointChargedCommand.from(event));
+            case WITHDRAWN -> emailDispatchService.notifyToEmail(PointWithdrawnCommand.from(event));
             default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
         }
     }
