@@ -42,15 +42,23 @@ public class PointBalance {
         this.pointAmount = this.pointAmount.addBonus(bonus);
     }
 
+    public void addAmount(PointAmount amount) {
+        charge(amount.getPaidPoint());
+        earnBonus(amount.getBonusPoint());
+    }
+
     public PointAmount use(long amount) {
         this.pointAmount = this.pointAmount.use(amount);
         lastUsedAt = OffsetDateTime.now();
         return pointAmount;
     }
 
-    public PointAmount transfer(long amount) {
+    public void transfer(long amount) {
         pointAmount = pointAmount.transfer(amount);
-        return pointAmount;
+    }
+
+    public PointAmount calculateDeduction(long amount) {
+        return pointAmount.calculateDeduction(amount);
     }
 
     public void validateDeductible(long amount) {

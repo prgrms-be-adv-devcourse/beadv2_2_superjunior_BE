@@ -13,11 +13,8 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.point.application.dto.point.PointTransactionInfo;
-import store._0982.point.application.point.PointReadService;
+import store._0982.point.application.point.*;
 import store._0982.point.application.dto.point.PointBalanceInfo;
-import store._0982.point.application.point.PointChargeService;
-import store._0982.point.application.point.PointDeductService;
-import store._0982.point.application.point.PointTransferService;
 import store._0982.point.presentation.dto.PointChargeRequest;
 import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointTransferRequest;
@@ -29,10 +26,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PointPaymentController {
 
-    private final PointReadService pointReadService;
+    private final PointPaymentService pointPaymentService;
     private final PointChargeService pointChargeService;
-    private final PointDeductService pointDeductService;
     private final PointTransferService pointTransferService;
+    private final PointDeductFacade pointDeductFacade;
 
     @Operation(summary = "포인트 충전", description = "포인트를 수동적으로 충전한다.")
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,7 +38,7 @@ public class PointPaymentController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody @Valid PointChargeRequest request
     ) {
-        PointBalanceInfo pointBalanceInfo = pointChargeService.chargePoints(request.toCommand(), memberId);
+        PointBalanceInfo pointBalanceInfo = pointChargeService.chargePoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, pointBalanceInfo, "포인트 충전 성공");
     }
 
@@ -49,7 +46,7 @@ public class PointPaymentController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public ResponseDto<PointBalanceInfo> getPoints(@RequestHeader(HeaderName.ID) UUID memberId) {
-        PointBalanceInfo info = pointReadService.getPoints(memberId);
+        PointBalanceInfo info = pointPaymentService.getPoints(memberId);
         return new ResponseDto<>(HttpStatus.OK, info, "포인트 조회 성공");
     }
 
@@ -61,7 +58,7 @@ public class PointPaymentController {
             @Valid @RequestBody PointDeductRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        PointBalanceInfo info = pointDeductService.deductPoints(memberId, request.toCommand());
+        PointBalanceInfo info = pointDeductFacade.deductPoints(memberId, request.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, info, "포인트 결제 완료");
     }
 
@@ -72,7 +69,7 @@ public class PointPaymentController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<PointTransactionInfo> response = pointReadService.getTransactions(memberId, pageable);
+        Page<PointTransactionInfo> response = pointPaymentService.getTransactions(memberId, pageable);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 이력 조회 성공");
     }
 

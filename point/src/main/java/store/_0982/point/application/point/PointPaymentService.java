@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointTransactionInfo;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class PointReadService {
+public class PointPaymentService {
 
     private final PointBalanceRepository pointBalanceRepository;
     private final PointTransactionRepository pointTransactionRepository;
@@ -34,5 +35,11 @@ public class PointReadService {
     public Page<PointTransactionInfo> getTransactions(UUID memberId, Pageable pageable) {
         return pointTransactionRepository.findByMemberId(memberId, pageable)
                 .map(PointTransactionInfo::from);
+    }
+
+    @RetryableTransactional
+    public PointBalanceInfo initializeBalance(UUID memberId) {
+        PointBalance balance = pointBalanceRepository.save(new PointBalance(memberId));
+        return PointBalanceInfo.from(balance);
     }
 }

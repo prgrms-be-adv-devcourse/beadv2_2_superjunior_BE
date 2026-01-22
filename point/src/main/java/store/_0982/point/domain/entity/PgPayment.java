@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
+import store._0982.point.domain.PaymentRules;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.vo.PaymentMethodDetail;
@@ -21,8 +22,6 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "pg_payment", schema = "payment_schema")
 public class PgPayment {
-
-    private static final int REFUND_PERIOD_DAYS = 14;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -49,8 +48,7 @@ public class PgPayment {
     @Column(nullable = false)
     private long amount;
 
-    @Column(nullable = false)
-    private long refundedAmount;
+    private Long refundedAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -58,8 +56,6 @@ public class PgPayment {
 
     @Column(length = 2048)
     private String receiptUrl;
-
-    private String webhookSecret;       // 웹훅 검증용 secret
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -86,7 +82,7 @@ public class PgPayment {
                 .memberId(memberId)
                 .orderId(orderId)
                 .amount(amount)
-                .requestedAt(OffsetDateTime.now())
+                .requestedAt(OffsetDateTime.now())  // TODO: 요청 시각도 따로 정보를 받아야 할 것 같다
                 .status(PgPaymentStatus.PENDING)
                 .build();
     }
@@ -98,17 +94,33 @@ public class PgPayment {
         this.approvedAt = approvedAt;
     }
 
-    public void markFailed() {
+    public void markFailed(String paymentKey) {
+        this.paymentKey = paymentKey;
         this.status = PgPaymentStatus.FAILED;
-    }
-
-    public void markRefundPending() {
-        this.status = PgPaymentStatus.REFUND_PENDING;
     }
 
     public void markRefunded(OffsetDateTime refundedAt) {
         this.status = PgPaymentStatus.REFUNDED;
         this.refundedAt = refundedAt;
+        this.refundedAmount = amount;
+    }
+
+    public void applyRefund(long newRefundAmount, OffsetDateTime refundedAt) {
+        long currentRefunded = (refundedAmount == null) ? 0L : refundedAmount;
+        long totalRefunded = currentRefunded + newRefundAmount;
+
+        if (totalRefunded > amount) {
+            throw new CustomException(CustomErrorCode.INVALID_REFUND_AMOUNT);
+        }
+
+        if (totalRefunded == amount) {
+            markRefunded(refundedAt);
+            return;
+        }
+
+        this.status = PgPaymentStatus.PARTIALLY_REFUNDED;
+        this.refundedAt = refundedAt;
+        this.refundedAmount = totalRefunded;
     }
 
     public void validateCompletable(UUID memberId) {
@@ -125,15 +137,15 @@ public class PgPayment {
         }
     }
 
-    public void validateRefundable(UUID memberId) {
+    public void validateRefundable(UUID memberId, PaymentRules rules) {
         validateOwner(memberId);
         if (this.status == PgPaymentStatus.REFUNDED) {
             throw new CustomException(CustomErrorCode.ALREADY_REFUNDED_PAYMENT);
         }
-        if (this.status != PgPaymentStatus.COMPLETED) {
+        if (this.status != PgPaymentStatus.COMPLETED && this.status != PgPaymentStatus.PARTIALLY_REFUNDED) {
             throw new CustomException(CustomErrorCode.NOT_COMPLETED_PAYMENT);
         }
-        validateRefundTerms();
+        validateRefundTerms(rules);
     }
 
     public void validateOwner(UUID memberId) {
@@ -142,13 +154,13 @@ public class PgPayment {
         }
     }
 
-    private void validateRefundTerms() {
+    private void validateRefundTerms(PaymentRules rules) {
         if (approvedAt == null) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
 
-        // 결제일이 14일 이내일 경우 환불 가능
-        if (Duration.between(approvedAt, OffsetDateTime.now()).toDays() > REFUND_PERIOD_DAYS) {
+        // 결제일이 설정된 환불 기간 이내일 경우 환불 가능
+        if (Duration.between(approvedAt, OffsetDateTime.now()).toDays() > rules.getRefundDays()) {
             throw new CustomException(CustomErrorCode.REFUND_NOT_ALLOWED);
         }
     }

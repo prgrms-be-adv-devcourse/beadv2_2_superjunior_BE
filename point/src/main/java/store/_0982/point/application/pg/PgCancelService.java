@@ -18,10 +18,14 @@ public class PgCancelService {
     private final PgTxManager pgTxManager;
 
     @ServiceLog
-    public void refundPaymentPoint(UUID memberId, PgCancelCommand command) {
+    public void refundPayment(UUID memberId, PgCancelCommand command) {
         UUID orderId = command.orderId();
-        PgPayment pgPayment = pgTxManager.markRefundPending(orderId, memberId);
+        PgPayment pgPayment = pgTxManager.findRefundablePayment(orderId, memberId);
         TossPaymentInfo response = tossPaymentService.cancelPayment(pgPayment, command);
         pgTxManager.markRefundedPayment(response, orderId, memberId);
+    }
+
+    public void markRefundedPayment(UUID memberId, UUID orderId, TossPaymentInfo tossPaymentInfo) {
+        pgTxManager.markRefundedPayment(tossPaymentInfo, orderId, memberId);
     }
 }

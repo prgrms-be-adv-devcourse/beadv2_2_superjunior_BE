@@ -41,3 +41,28 @@ springdoc:
 
 client:
   commerce: http://localhost:8087
+
+payment:
+  rules:
+    refund-days: 14
+
+resilience4j:
+  retry:
+    instances:
+      pg-api:
+        max-attempts: 3
+        wait-duration:
+          seconds: 1
+        enable-exponential-backoff: true
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.HttpServerErrorException
+
+  ratelimiter:
+    instances:
+      pg-confirm:
+        limit-for-period: 30
+        limit-refresh-period:
+          seconds: 10
+        timeout-duration:
+          seconds: 0

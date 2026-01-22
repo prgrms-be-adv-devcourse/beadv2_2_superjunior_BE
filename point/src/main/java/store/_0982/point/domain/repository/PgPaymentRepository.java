@@ -2,6 +2,7 @@ package store._0982.point.domain.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 
 import java.util.Optional;
@@ -19,4 +20,6 @@ public interface PgPaymentRepository {
     PgPayment save(PgPayment pgPayment);
 
     PgPayment saveAndFlush(PgPayment pgPayment);
+
+    boolean existsByOrderIdAndStatus(UUID orderId, PgPaymentStatus status);
 }

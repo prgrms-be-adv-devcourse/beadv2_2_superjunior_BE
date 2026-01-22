@@ -3,6 +3,7 @@ package store._0982.point.infrastructure.pg;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.repository.PgPaymentRepository;
 import org.springframework.data.domain.Pageable;
@@ -44,5 +45,10 @@ public class PgPaymentRepositoryAdapter implements PgPaymentRepository {
     @Override
     public Optional<PgPayment> findById(UUID id) {
         return pgPaymentJpaRepository.findById(id);
+    }
+
+    @Override
+    public boolean existsByOrderIdAndStatus(UUID orderId, PgPaymentStatus status) {
+        return pgPaymentJpaRepository.existsByOrderIdAndStatus(orderId, status);
     }
 }

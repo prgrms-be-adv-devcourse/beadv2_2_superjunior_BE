@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    private static final int PAYMENT_AMOUNT = 10_000;
+    private static final long PAYMENT_AMOUNT = 10_000;
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
@@ -96,7 +96,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTask(() -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTask(() -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();
@@ -116,7 +116,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTasks(commands, command -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTasks(commands, command -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();

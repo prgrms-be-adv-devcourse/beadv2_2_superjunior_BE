@@ -1,4 +1,4 @@
-package store._0982.point.application;
+package store._0982.point.application.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -38,7 +38,7 @@ public class OrderCanceledEventListener {
             case PG -> {
                 PgCancelCommand command = new PgCancelCommand(
                         event.getOrderId(), event.getCancelReason(), event.getAmount());
-                pgCancelService.refundPaymentPoint(event.getMemberId(), command);
+                pgCancelService.refundPayment(event.getMemberId(), command);
             }
             default -> throw new IllegalStateException("Unexpected payment method: " + event.getMethod());
         }

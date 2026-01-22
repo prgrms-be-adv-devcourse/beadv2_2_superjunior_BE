@@ -33,7 +33,7 @@ public class TxEventListener {
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePointTransferred(PointTransferredEvent event) {
+    public void handlePointTransferred(PointTransferredTxEvent event) {
         pointEventPublisher.publishPointTransferredEvent(event.transaction());
     }
 }

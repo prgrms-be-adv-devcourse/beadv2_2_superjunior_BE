@@ -12,6 +12,7 @@ import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.common.kafka.dto.OrderChangedEvent;
+import store._0982.common.kafka.dto.OrderConfirmedEvent;
 import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.point.common.KafkaGroupIds;
 
@@ -38,6 +39,16 @@ public class KafkaConfig {
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderCanceledEvent> orderCanceledEventListenerContainerFactory() {
         return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderCanceledEventConsumerFactory());
+    }
+
+    @Bean
+    public ConsumerFactory<String, OrderConfirmedEvent> orderConfirmedEventConsumerFactory() {
+        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServer, KafkaGroupIds.PAYMENT_SERVICE);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderConfirmedEvent> orderConfirmedEventListenerContainerFactory() {
+        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(orderConfirmedEventConsumerFactory());
     }
 
     @Bean
