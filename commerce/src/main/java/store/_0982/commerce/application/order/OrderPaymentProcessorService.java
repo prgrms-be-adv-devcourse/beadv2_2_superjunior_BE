@@ -32,7 +32,7 @@ public class OrderPaymentProcessorService {
                 //order.markFailed();
             }
             case REFUNDED -> {
-
+                order.changeStatus();
             }
         }
     }
