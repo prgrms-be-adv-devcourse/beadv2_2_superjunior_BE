@@ -50,4 +50,3 @@ public class NotificationSettingController {
         return new ResponseDto<>(HttpStatus.OK, response, "전체 알림 설정을 조회했습니다.");
     }
 }
-
