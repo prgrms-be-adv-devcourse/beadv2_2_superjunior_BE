@@ -1,11 +1,13 @@
 package store._0982.member.application.notification;
 
-import store._0982.common.kafka.dto.*;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.OrderChangedEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
+import store._0982.common.kafka.dto.SettlementDoneEvent;
 import store._0982.member.common.notification.NotificationContent;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
-import store._0982.member.domain.notification.constant.ReferenceType;
 
 public final class NotificationCreator {
     public static Notification create(OrderChangedEvent event, NotificationContent content, NotificationChannel channel) {
@@ -15,7 +17,6 @@ public final class NotificationCreator {
                 .channel(channel)
                 .title(content.title())
                 .message(content.message())
-                .referenceType(ReferenceType.ORDER)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getId())
                 .build();
@@ -28,7 +29,6 @@ public final class NotificationCreator {
                 .channel(channel)
                 .title(content.title())
                 .message(content.message())
-                .referenceType(ReferenceType.POINT)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getOrderId())
                 .build();
@@ -41,7 +41,6 @@ public final class NotificationCreator {
                 .channel(channel)
                 .title(content.title())
                 .message(content.message())
-                .referenceType(ReferenceType.SETTLEMENT)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getId())
                 .build();
@@ -54,7 +53,6 @@ public final class NotificationCreator {
                 .channel(channel)
                 .title(content.title())
                 .message(content.message())
-                .referenceType(ReferenceType.GROUP_PURCHASE)
                 .status(NotificationStatus.SENT)
                 .referenceId(event.getId())
                 .build();
