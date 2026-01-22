@@ -14,3 +14,4 @@ spring:
 
 client:
   member: http://localhost:8083
+  commerce: http://localhost:8087

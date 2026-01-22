@@ -9,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -189,7 +188,7 @@ public class Order {
         this.status = OrderStatus.REVERSE_REQUESTED;
         this.cancelRequestedAt = OffsetDateTime.now();
     }
-
+  
     public void changeStatus() {
         if (this.status == OrderStatus.CANCEL_REQUESTED) this.status = OrderStatus.CANCELLED;
         if (this.status == OrderStatus.REVERSE_REQUESTED) this.status = OrderStatus.REVERSED;
