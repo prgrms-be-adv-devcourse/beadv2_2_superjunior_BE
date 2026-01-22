@@ -6,19 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.product.ProductVector;
-import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 import store._0982.common.dto.PageResponse;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 
-import static java.util.stream.Collectors.toMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,9 +19,6 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
-    private final GroupPurchaseRepository groupPurchaseRepository;
-    private final ProductVectorJpaRepository productVectorRepository;
-
     /**
      * 주문 생성
      *
@@ -110,34 +100,6 @@ public class OrderService {
      * @return List<OrderVectorInfo>
      */
     public List<OrderVectorInfo> getOrderVector(UUID memberId) {
-        List<Order> orders = orderQueryService.getAllOrderByMemberId(memberId);
-        List<UUID> groupPurchaseIds = orders.stream()
-                .map(Order::getGroupPurchaseId)
-                .toList();
-        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
-        List<UUID> productIds = groupPurchases.stream()
-                .map(GroupPurchase::getProductId)
-                .toList();
-        List<ProductVector> productVectors = productVectorRepository.findByProductIdIn(productIds);
-        Map<UUID, UUID> groupPurchaseToProduct = groupPurchases.stream()
-                .collect(toMap(GroupPurchase::getGroupPurchaseId, GroupPurchase::getProductId));
-        Map<UUID, ProductVector> productIdToVector = productVectors.stream()
-                .collect(toMap(ProductVector::getProductId, Function.identity()));
-        return orders.stream()
-                .map(order -> {
-                    UUID productId = groupPurchaseToProduct.get(order.getGroupPurchaseId());
-                    ProductVector vector = productIdToVector.get(productId);
-                    float[] productVector = vector == null ? null : vector.getVector();
-                    return new OrderVectorInfo(
-                            order.getOrderId(),
-                            order.getMemberId(),
-                            productId,
-                            order.getQuantity(),
-                            order.getCreatedAt(),
-                            order.getStatus(),
-                            productVector
-                    );
-                })
-                .toList();
+        return orderQueryService.getOrderVector(memberId);
     }
 }
