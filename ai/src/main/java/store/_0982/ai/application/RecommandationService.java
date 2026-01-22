@@ -40,9 +40,9 @@ public class RecommandationService {
         for(LlmResponse.GroupPurchase gp : llmResponse.groupPurchases()) {
             for(GroupPurchase groupPurchase : groupPurchaseList) {
                 if(groupPurchase.groupPurchaseId().equals(gp.groupPurchaseId())){
+                    //todo 수정필요
                     resultInfos.add(groupPurchase);
                 }
-
             }
         }
         return resultInfos;
