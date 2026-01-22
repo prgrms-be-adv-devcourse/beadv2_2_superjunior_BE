@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,4 +28,6 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByIdempotencyKey(String idempotenceKey);
 
     List<Order> findAllByMemberId(UUID memberId);
+
+    List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
 }

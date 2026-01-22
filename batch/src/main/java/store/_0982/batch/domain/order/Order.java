@@ -23,7 +23,7 @@ public class Order {
     private int quantity;
 
     @Column(name = "price", nullable = false)
-    private Long  price;
+    private Long price;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -57,6 +57,21 @@ public class Order {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
+    @Column(name = "expired_at")
+    private OffsetDateTime expiredAt; // 주문 만료 시간
+
+    @Column(name = "paid_at")
+    private OffsetDateTime paidAt; // 결제 완료 시간
+
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt; // 환불 완료 시간
+
+    @Column(name = "cancel_requested_at")
+    private OffsetDateTime cancelRequestedAt; // 취소 요청 시간
+
+    @Column(name = "cancelled_at")
+    private OffsetDateTime cancelledAt; // 취소 완료 시간
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -65,17 +80,8 @@ public class Order {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    @Column(name = "expired_at")
-    private OffsetDateTime expiredAt;
-
-    @Column(name = "paid_at")
-    private OffsetDateTime paidAt;
-
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
-
-    @Column(name = "returned_at")
-    private OffsetDateTime returnedAt;
 
     private Order(
             int quantity,

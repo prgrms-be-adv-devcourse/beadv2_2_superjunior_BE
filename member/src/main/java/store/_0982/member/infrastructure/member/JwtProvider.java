@@ -31,6 +31,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(member.getMemberId().toString())
                 .setIssuer("member-service")
+                .claim("role", member.getRole())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)

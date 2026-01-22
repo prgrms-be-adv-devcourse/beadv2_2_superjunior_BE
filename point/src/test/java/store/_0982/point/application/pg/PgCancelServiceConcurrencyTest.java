@@ -25,11 +25,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import store._0982.point.domain.event.PaymentCanceledTxEvent;
 
 class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    private static final int PAYMENT_AMOUNT = 10_000;
+    private static final long PAYMENT_AMOUNT = 10_000;
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
@@ -96,10 +97,11 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTask(() -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTask(() -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();
+        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
     @Test
@@ -116,10 +118,11 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTasks(commands, command -> pgCancelService.refundPaymentPoint(memberId, command));
+        runSynchronizedTasks(commands, command -> pgCancelService.refundPayment(memberId, command));
 
         // then
         validateOwner();
+        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
     private void validateOwner() {

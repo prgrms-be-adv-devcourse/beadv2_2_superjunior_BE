@@ -5,7 +5,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@EmbeddedKafka
+@EmbeddedKafka(kraft = true)
 @ContextConfiguration(initializers = {PostgreSQLContainerInitializer.class})
 public abstract class BaseIntegrationTest {
 }

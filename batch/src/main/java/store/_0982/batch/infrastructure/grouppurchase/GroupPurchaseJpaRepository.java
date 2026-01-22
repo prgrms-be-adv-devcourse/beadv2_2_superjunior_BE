@@ -30,4 +30,16 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
 
     boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+            """
+            update GroupPurchase gp
+            set gp.settledAt = :now
+            where gp.groupPurchaseId in :uuids
+            """
+    )
+    void markAsSettled(
+            @Param("uuids") List<UUID> uuids,
+            @Param("now") OffsetDateTime now);
 }

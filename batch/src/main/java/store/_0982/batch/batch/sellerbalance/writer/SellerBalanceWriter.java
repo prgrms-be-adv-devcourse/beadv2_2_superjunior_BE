@@ -6,13 +6,11 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.sellerbalance.event.SellerBalanceCompleted;
 import store._0982.batch.domain.grouppurchase.GroupPurchase;
-import store._0982.batch.domain.order.Order;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.batch.domain.order.OrderRepository;
 import store._0982.batch.domain.order.OrderStatus;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
-import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
@@ -29,8 +27,9 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
 
     private final OrderRepository orderRepository;
     private final SellerBalanceRepository sellerBalanceRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
 
-    private final ApplicationEventPublisher eventPublisher;
+    private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
 
     @Override
     public void write(Chunk<? extends GroupPurchase> chunk) {
@@ -38,40 +37,61 @@ public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
                 .map(gp -> (GroupPurchase) gp)
                 .toList();
 
+        if (groupPurchases.isEmpty()) {
+            return;
+        }
+
         List<UUID> groupPurchaseIds = groupPurchases.stream()
                 .map(GroupPurchase::getGroupPurchaseId)
+                .distinct()
                 .toList();
 
-        List<Order> orders = orderRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
-                groupPurchaseIds,
-                OrderStatus.PURCHASE_CONFIRMED
-        );
+        Map<UUID, GroupPurchase> gpMap = groupPurchases.stream()
+                .collect(Collectors.toMap(GroupPurchase::getGroupPurchaseId, gp -> gp));
 
-        Map<UUID, Long> sellerAmounts = orders.stream()
-                .collect(Collectors.groupingBy(
-                        Order::getSellerId,
-                        Collectors.summingLong(Order::getTotalAmount)
-                ));
+        List<GroupPurchaseAmountRow> amountRows =
+                orderRepository.sumTotalAmountByGroupPurchaseIdsAndStatus(
+                        groupPurchaseIds,
+                        OrderStatus.PURCHASE_CONFIRMED
+                );
 
         List<SellerBalance> sellerBalances = new ArrayList<>();
-        for (Map.Entry<UUID, Long> entry : sellerAmounts.entrySet()) {
-            UUID sellerId = entry.getKey();
-            Long amount = entry.getValue();
+        List<SellerBalanceHistory> sellerBalanceHistories = new ArrayList<>();
+        List<UUID> uuids = new ArrayList<>();
+
+        for (GroupPurchaseAmountRow row : amountRows) {
+            UUID groupPurchaseId = row.groupPurchaseId();
+            Long amount = row.totalAmount() == null ? 0L : row.totalAmount();
 
             try {
+                GroupPurchase findGroupPurchase = gpMap.get(groupPurchaseId);
+                UUID sellerId = findGroupPurchase.getSellerId();
+
                 SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
                         .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
                 sellerBalance.increaseBalance(amount);
                 sellerBalances.add(sellerBalance);
 
-                eventPublisher.publishEvent(
-                        new SellerBalanceCompleted(sellerBalance, amount)
+                sellerBalanceHistories.add(
+                        new SellerBalanceHistory(
+                                sellerId,
+                                null,
+                                groupPurchaseId,
+                                amount,
+                                SellerBalanceHistoryStatus.CREDIT
+                        )
                 );
+
+                uuids.add(groupPurchaseId);
             } catch (CustomException e) {
-                log.error("[ERROR] [SELLER_BALANCE] {} failed", sellerId, e);
+                log.error("[ERROR] [SELLER_BALANCE] {} failed", groupPurchaseId, e);
             }
         }
+
         sellerBalanceRepository.saveAll(sellerBalances);
+        sellerBalanceHistoryRepository.saveAll(sellerBalanceHistories);
+
+        if (!uuids.isEmpty()) groupPurchaseRepository.markAsSettled(uuids);
     }
 }
