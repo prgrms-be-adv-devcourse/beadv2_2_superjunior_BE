@@ -9,6 +9,7 @@ import store._0982.commerce.domain.order.OrderRepository;
 
 import store._0982.commerce.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -84,5 +85,10 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public List<Order> findAllByMemberId(UUID memberId) {
         return orderJpaRepository.findAllByMemberId(memberId);
+    }
+
+    @Override
+    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
+        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
     }
 }

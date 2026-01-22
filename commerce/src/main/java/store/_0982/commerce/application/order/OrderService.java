@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.commerce.domain.order.Order;
 import store._0982.common.dto.PageResponse;
 
@@ -18,7 +19,6 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
-
     /**
      * 주문 생성
      *
@@ -91,5 +91,22 @@ public class OrderService {
      */
     public List<Order> getAllOrderByMemberId(UUID memberId) {
         return orderQueryService.getAllOrderByMemberId(memberId);
+    }
+
+    /**
+     * 주문 취소 재시도 배치
+     */
+    public void retryCancelOrder() {
+        orderCommandService.retryCancelOrder();
+    }
+
+    /**
+     * internal orderVector 조회
+     *
+     * @param memberId
+     * @return List<OrderVectorInfo>
+     */
+    public List<OrderVectorInfo> getOrderVector(UUID memberId) {
+        return orderQueryService.getOrderVector(memberId);
     }
 }

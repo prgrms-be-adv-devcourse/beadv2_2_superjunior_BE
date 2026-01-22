@@ -33,8 +33,7 @@ public class PaymentChangedKafkaListener {
         Order findOrder = orderRepository.findById(event.getOrderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
-        if (event.getStatus() == PaymentChangedEvent.Status.REFUNDED) {
-            findOrder.completePendingRequests();
-        }
+        if (event.getStatus() == PaymentChangedEvent.Status.REFUNDED)
+            findOrder.changeStatus();
     }
 }

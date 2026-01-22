@@ -188,11 +188,12 @@ public class Order {
         this.status = OrderStatus.REVERSE_REQUESTED;
         this.cancelRequestedAt = OffsetDateTime.now();
     }
-
-    public void completePendingRequests() {
+  
+    public void changeStatus() {
         if (this.status == OrderStatus.CANCEL_REQUESTED) this.status = OrderStatus.CANCELLED;
         if (this.status == OrderStatus.REVERSE_REQUESTED) this.status = OrderStatus.REVERSED;
         if (this.status == OrderStatus.REFUND_REQUESTED) this.status = OrderStatus.REFUNDED;
+        this.cancelledAt = OffsetDateTime.now();
     }
 
     // 환불 완료
