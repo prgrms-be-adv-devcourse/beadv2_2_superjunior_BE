@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.*;
 import store._0982.member.application.notification.dispatch.EmailDispatchService;
-import store._0982.member.application.notification.dto.*;
+import store._0982.member.application.notification.dto.kafka.*;
 import store._0982.member.common.notification.CustomRetryableTopic;
 import store._0982.member.common.notification.EmailKafkaListener;
 import store._0982.member.exception.NegligibleKafkaErrorType;
@@ -58,6 +58,17 @@ public class EmailNotificationListener {
             case REFUNDED -> emailDispatchService.notifyToEmail(PointRefundedCommand.from(event));
             case CHARGED -> emailDispatchService.notifyToEmail(PointChargedCommand.from(event));
             case WITHDRAWN -> emailDispatchService.notifyToEmail(PointWithdrawnCommand.from(event));
+            default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
+        }
+    }
+
+    @CustomRetryableTopic
+    @EmailKafkaListener(KafkaTopics.SETTLEMENT_DONE)
+    public void handleSettlementDoneEvent(SettlementDoneEvent event) {
+        switch (event.getStatus()) {
+            case COMPLETED -> emailDispatchService.notifyToEmail(SettlementCompletedCommand.from(event));
+            case FAILED -> emailDispatchService.notifyToEmail(SettlementFailedCommand.from(event));
+            case DEFERRED -> emailDispatchService.notifyToEmail(SettlementDeferredCommand.from(event));
             default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
         }
     }

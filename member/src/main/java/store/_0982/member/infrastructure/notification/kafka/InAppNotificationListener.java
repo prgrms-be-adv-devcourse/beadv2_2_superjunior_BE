@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.*;
 import store._0982.member.application.notification.dispatch.InAppDispatchService;
-import store._0982.member.application.notification.dto.*;
+import store._0982.member.application.notification.dto.kafka.*;
 import store._0982.member.common.notification.CustomRetryableTopic;
 import store._0982.member.common.notification.InAppKafkaListener;
 import store._0982.member.exception.NegligibleKafkaErrorType;
@@ -58,6 +58,17 @@ public class InAppNotificationListener {
             case REFUNDED -> inAppDispatchService.notifyToInApp(PointRefundedCommand.from(event));
             case CHARGED -> inAppDispatchService.notifyToInApp(PointChargedCommand.from(event));
             case WITHDRAWN -> inAppDispatchService.notifyToInApp(PointWithdrawnCommand.from(event));
+            default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
+        }
+    }
+
+    @CustomRetryableTopic
+    @InAppKafkaListener(KafkaTopics.SETTLEMENT_DONE)
+    public void handleSettlementDoneEvent(SettlementDoneEvent event) {
+        switch (event.getStatus()) {
+            case COMPLETED -> inAppDispatchService.notifyToInApp(SettlementCompletedCommand.from(event));
+            case FAILED -> inAppDispatchService.notifyToInApp(SettlementFailedCommand.from(event));
+            case DEFERRED -> inAppDispatchService.notifyToInApp(SettlementDeferredCommand.from(event));
             default -> throw new NegligibleKafkaException(NegligibleKafkaErrorType.KAFKA_INVALID_EVENT);
         }
     }
