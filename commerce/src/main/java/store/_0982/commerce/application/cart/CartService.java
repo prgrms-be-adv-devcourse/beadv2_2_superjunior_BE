@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.dto.CartAddCommand;
 import store._0982.commerce.application.cart.dto.CartDeleteCommand;
@@ -60,6 +61,10 @@ public class CartService {
         return new PageResponse<>(cartPage.getContent(), cartPage.getTotalPages(), cartPage.getTotalElements(), cartPage.isFirst(), cartPage.isLast(), cartPage.getSize(), cartPage.getNumberOfElements());
     }
 
+    public List<Cart> getCarts(UUID memberId){
+        return cartRepository.findAllByMemberId(memberId);
+    }
+
     @Transactional
     public void flushCart(UUID memberId) {
         cartRepository.flushCart(memberId);
@@ -77,7 +82,7 @@ public class CartService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteCartById(List<Cart> carts){
         List<UUID> deleteIds = carts.stream()
                 .map(Cart::getCartId)

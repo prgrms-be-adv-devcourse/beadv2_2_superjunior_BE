@@ -39,7 +39,7 @@ public class SettlementEventListener {
 
     private NotificationContent createMonthlyContent(SettlementDoneEvent event) {
         return switch (event.getStatus()) {
-            case SUCCESS -> new NotificationContent(
+            case COMPLETED -> new NotificationContent(
                     NotificationType.MONTHLY_SETTLEMENT_COMPLETED,
                     "월간 정산 완료",
                     String.format("월간 정산이 완료되어 %s원이 정상적으로 송금되었습니다.",

@@ -8,7 +8,6 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import store._0982.batch.batch.grouppurchase.listener.GroupPurchaseJobListener;
-import store._0982.batch.batch.settlement.config.TimestampIncrementer;
 
 /**
  * 공동구매 상태 변경 Job 설정
@@ -22,16 +21,14 @@ public class GroupPurchaseJobConfig {
 
     private final Step openGroupPurchaseStep;
     private final Step updateStatusClosedGroupPurchaseStep;
-    private final Step updateStatusOrderStep;
 
     @Bean
     public Job groupPurchaseJob(){
         return new JobBuilder("groupPurchaseJob",jobRepository )
-                .incrementer(new TimestampIncrementer())
+                .incrementer(new GroupPurchaseJobIncrementer())
                 .listener(jobListener)
                 .start(openGroupPurchaseStep)
                 .next(updateStatusClosedGroupPurchaseStep)
-                .next(updateStatusOrderStep)
                 .build();
     }
 
