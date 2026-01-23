@@ -25,7 +25,7 @@ public class SellerBalanceHistory {
     @Column(name = "settlement_id")
     private UUID settlementId;
 
-    @Column(name = "order_settlement_id")
+    @Column(name = "order_settlement_id", unique = true)
     private UUID orderSettlementId;
 
     @Column(name = "amount", nullable = false)
@@ -36,7 +36,7 @@ public class SellerBalanceHistory {
     private SellerBalanceHistoryStatus status;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     public SellerBalanceHistory(
