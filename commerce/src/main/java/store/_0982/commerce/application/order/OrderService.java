@@ -127,4 +127,14 @@ public class OrderService {
     public void handleUpdatedGroupPurchase(GroupPurchaseEvent event){
         orderCommandService.handleUpdatedGroupPurchase(event);
     }
+
+    /**
+     * 구매 확정
+     *
+     * @param memberId 유저 id
+     * @param orderId 주문 id
+     */
+    public void confirmPurchase(UUID memberId, UUID orderId) {
+        orderCommandService.confirmPurchase(memberId, orderId);
+    }
 }

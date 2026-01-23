@@ -108,4 +108,14 @@ public class OrderController {
         orderService.cancelOrder(orderCancelRequest.toCommand(memberId, orderId));
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
     }
+
+    @PatchMapping("/{orderId}/purchase-confirmed")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> confirmPurchase(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ){
+        orderService.confirmPurchase(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
+    }
 }
