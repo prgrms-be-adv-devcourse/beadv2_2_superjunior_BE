@@ -5,11 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.batch.application.sellerbalance.SellerBalanceService;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
-import store._0982.batch.domain.sellerbalance.SellerBalanceHistory;
-import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
-import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.batch.domain.sellerbalance.*;
 import store._0982.batch.domain.settlement.OrderSettlement;
 import store._0982.batch.domain.settlement.OrderSettlementRepository;
 
@@ -25,13 +21,10 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
     private final OrderSettlementRepository orderSettlementRepository;
-    private final SellerBalanceService sellerBalanceService;
 
     @Override
     public void write(Chunk<? extends OrderSettlement> chunk) {
-        List<OrderSettlement> orderSettlements = chunk.getItems().stream()
-                .map(OrderSettlement.class::cast)
-                .toList();
+        List<OrderSettlement> orderSettlements = new ArrayList<>(chunk.getItems());
 
         if (orderSettlements.isEmpty()) {
             return;
@@ -47,6 +40,7 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
 
         List<SellerBalanceHistory> histories = new ArrayList<>(orderSettlements.size());
         List<UUID> settlementIds = new ArrayList<>(orderSettlements.size());
+        List<SellerBalance> changedBalances = new ArrayList<>();
 
         for (Map.Entry<UUID, List<OrderSettlement>> entry : settlementsBySeller.entrySet()) {
             UUID sellerId = entry.getKey();
@@ -63,14 +57,21 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             long totalAmount = 0L;
             for (OrderSettlement orderSettlement : settlements) {
                 totalAmount += orderSettlement.getTotalAmount();
-                histories.add(sellerBalanceService.createSellerBalanceHistory(orderSettlement));
+                histories.add(new SellerBalanceHistory(
+                        orderSettlement.getSellerId(),
+                        null,
+                        orderSettlement.getOrderSettlementId(),
+                        orderSettlement.getTotalAmount(),
+                        SellerBalanceHistoryStatus.CREDIT
+                ));
                 settlementIds.add(orderSettlement.getOrderSettlementId());
             }
             sellerBalance.increaseBalance(totalAmount);
+            changedBalances.add(sellerBalance);
         }
 
-        if (!sellerBalanceMap.isEmpty()) {
-            sellerBalanceRepository.saveAll(new ArrayList<>(sellerBalanceMap.values()));
+        if (!changedBalances.isEmpty()) {
+            sellerBalanceRepository.saveAll(changedBalances);
         }
 
         if (!histories.isEmpty()) {
