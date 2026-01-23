@@ -24,9 +24,6 @@ import store._0982.member.common.notification.InAppKafkaListener;
 import store._0982.member.exception.NegligibleKafkaErrorType;
 import store._0982.member.exception.NegligibleKafkaException;
 
-import java.util.List;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class InAppNotificationListener {
@@ -93,15 +90,13 @@ public class InAppNotificationListener {
     @CustomRetryableTopic
     @InAppKafkaListener(KafkaTopics.GROUP_PURCHASE_CHANGED)
     public void handleGroupPurchaseChangedEvent(GroupPurchaseEvent event) {
-        List<UUID> participantIds = commerceQueryPort.getGroupPurchaseParticipants(event.getId());
-
         switch (event.getGroupPurchaseStatus()) {
             case SUCCESS -> inAppDispatchService.notifyToInApp(
                     GroupPurchaseSuccessCommand.of(
                             event.getId(),
                             event.getSellerId(),
                             event.getTitle(),
-                            participantIds
+                            commerceQueryPort.getGroupPurchaseParticipants(event.getId())
                     )
             );
             case FAILED -> inAppDispatchService.notifyToInApp(
@@ -109,7 +104,7 @@ public class InAppNotificationListener {
                             event.getId(),
                             event.getSellerId(),
                             event.getTitle(),
-                            participantIds
+                            commerceQueryPort.getGroupPurchaseParticipants(event.getId())
                     )
             );
             case OPEN, SCHEDULED -> {
