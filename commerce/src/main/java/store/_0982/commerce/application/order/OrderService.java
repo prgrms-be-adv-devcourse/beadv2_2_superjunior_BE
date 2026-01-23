@@ -137,4 +137,13 @@ public class OrderService {
     public void confirmPurchase(UUID memberId, UUID orderId) {
         orderCommandService.confirmPurchase(memberId, orderId);
     }
+
+    /**
+     * 공동구매 참여자
+     * @param groupPurchaseId 공동구매 id
+     * @return 참여자 uuid
+     */
+    public List<UUID> getGroupPurchaseParticipants(UUID groupPurchaseId) {
+        return orderQueryService.getGroupPurchaseParticipants(groupPurchaseId);
+    }
 }

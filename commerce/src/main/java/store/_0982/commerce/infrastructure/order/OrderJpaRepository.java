@@ -24,8 +24,6 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
 
-    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
-
     boolean existsByIdempotencyKey(String idempotenceKey);
 
     Optional<Order> findByIdempotencyKey(String idempotenceKey);
@@ -51,4 +49,14 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
         AND o.status = 'PAYMENT_COMPLETED'
     """)
     void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+
+    @Query("""
+        SELECT o.memberId
+        FROM Order o
+        WHERE o.groupPurchaseId = :groupPurchaseId
+            AND o.status IN :statuses
+            AND o.deletedAt IS NULL
+    """)
+    List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, @Param("statuses") List<OrderStatus> statuses);
 }
