@@ -10,12 +10,14 @@ import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.batch.batch.sellerbalance.listener.SellerBalanceStepListener;
 import store._0982.batch.batch.sellerbalance.listener.SellerBalanceWriterListener;
 import store._0982.batch.batch.sellerbalance.policy.SellerBalancePolicy;
 import store._0982.batch.batch.sellerbalance.writer.SellerBalanceWriter;
 import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.common.exception.CustomException;
 
 @RequiredArgsConstructor
 @Configuration
@@ -38,6 +40,11 @@ public class SellerBalanceStepConfig {
                 .writer(sellerBalanceWriter)
                 .listener(sellerBalanceWriterListener)
                 .listener(sellerBalanceStepListener)
+                // 재시도 정책
+                .faultTolerant()
+                .retry(TransientDataAccessException.class)
+                .retryLimit(3)
+                .noRetry(CustomException.class)
                 .build();
     }
 
