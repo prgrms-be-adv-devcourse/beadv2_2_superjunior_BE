@@ -7,7 +7,7 @@ public record CartVectorInfo(
         UUID cartId,
         UUID memberId,
         UUID productId,
-        String productDescription,
+        String description,
         int quantity,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,

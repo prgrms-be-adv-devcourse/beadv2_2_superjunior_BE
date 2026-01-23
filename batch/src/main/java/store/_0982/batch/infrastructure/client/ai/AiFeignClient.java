@@ -7,9 +7,9 @@ import store._0982.batch.infrastructure.client.ai.dto.InterestSummaryRequest;
 
 @FeignClient(
         name = "ai-service",
-        url = "${client.ai}"
+        url = "${client.ai:http://localhost:8088}"
 )
 public interface AiFeignClient {
-    @PostMapping(value = "/internal/orders/consumer")
+    @PostMapping(value = "/internal/ai/interest-summary")
     String summarizeInterest(@RequestBody InterestSummaryRequest request);
 }

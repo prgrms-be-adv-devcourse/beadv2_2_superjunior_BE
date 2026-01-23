@@ -13,7 +13,7 @@ public class AiInternalController {
 
     private final PromptService promptService;
 
-    @PostMapping("/internal/ai/interestSummary")
+    @PostMapping("/internal/ai/interest-summary")
     public String summarizeInterest(@RequestBody InterestSummaryRequest request){
         return promptService.summarizeInterest(request.descriptions());
     }

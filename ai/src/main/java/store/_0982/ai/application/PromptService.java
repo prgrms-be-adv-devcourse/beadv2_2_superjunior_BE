@@ -104,7 +104,7 @@ public class PromptService {
                     
                     규칙:
                     - 400자 이내의 영어로 답변 
-                    - 답변 형식: //{"summarize": "I have a strong interest in products related to companion animals."//}
+                    - 답변 형식: \\{"summarize": "I have a strong interest in products related to companion animals."\\}
                 """
 
         );
