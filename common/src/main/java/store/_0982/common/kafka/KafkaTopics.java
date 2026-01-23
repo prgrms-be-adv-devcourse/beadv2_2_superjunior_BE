@@ -27,12 +27,6 @@ public final class KafkaTopics {
     public static final String PRODUCT_EMBEDDING_COMPLETED = "product.embedding.completed";
 
     /**
-     * @deprecated {@link KafkaTopics#GROUP_PURCHASE_CHANGED}에서 같이 관리합니다.
-     */
-    @Deprecated(forRemoval = true)
-    public static final String GROUP_PURCHASE_STATUS_CHANGED = "group-purchase.changed";
-
-    /**
      * @deprecated {@link KafkaTopics#GROUP_PURCHASE_CHANGED}에서 같이 이용해 주세요.
      */
     @Deprecated(forRemoval = true)
@@ -47,20 +41,6 @@ public final class KafkaTopics {
 
     public static final String MEMBER_DELETED = "member.deleted";
     public static final String MEMBER_LOGGED_IN = "member.logged-in";
-
-    @Deprecated(forRemoval = true)
-    public static final String DAILY_SETTLEMENT_COMPLETED = "settlement.daily.completed";
-
-    @Deprecated(forRemoval = true)
-    public static final String DAILY_SETTLEMENT_FAILED = "settlement.daily.failed";
-
-    @Deprecated(forRemoval = true)
-    public static final String MONTHLY_SETTLEMENT_COMPLETED = "settlement.monthly.completed";
-
-    @Deprecated(forRemoval = true)
-    public static final String MONTHLY_SETTLEMENT_FAILED = "settlement.monthly.failed";
-
-    public static final String SELLER_BALANCE_CHANGED = "seller-balance.changed";
 
     public static final String SETTLEMENT_DONE = "settlement.done";
 }
