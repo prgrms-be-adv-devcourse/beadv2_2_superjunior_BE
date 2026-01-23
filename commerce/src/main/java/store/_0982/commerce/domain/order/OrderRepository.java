@@ -28,8 +28,6 @@ public interface OrderRepository {
 
     List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
 
-    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
-
     boolean existsByIdempotencyKey(String idempotenceKey);
 
     Optional<Order> findByIdempotenceKey(String idempotenceKey);
@@ -41,5 +39,7 @@ public interface OrderRepository {
     void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
 
     void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, List<OrderStatus> orderStatuses);
 }
 

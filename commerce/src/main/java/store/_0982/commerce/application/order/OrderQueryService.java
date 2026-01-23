@@ -14,6 +14,7 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
@@ -102,5 +103,9 @@ public class OrderQueryService {
                     );
                 })
                 .toList();
+    }
+
+    public List<UUID> getGroupPurchaseParticipants(UUID groupPurchaseId) {
+        return orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.participantStatuses());
     }
 }
