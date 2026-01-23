@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "seller_balance_history", schema = "order_schema")
+@Table(name = "seller_balance_history", schema = "settlement_schema")
 public class SellerBalanceHistory {
 
     @Id
