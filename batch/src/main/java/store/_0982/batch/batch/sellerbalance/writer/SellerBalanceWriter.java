@@ -39,7 +39,7 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
         Map<UUID, List<OrderSettlement>> settlementsBySeller = orderSettlements.stream()
                 .collect(Collectors.groupingBy(OrderSettlement::getSellerId));
 
-        List<UUID> sellerIds = new ArrayList<>();
+        List<UUID> sellerIds = new ArrayList<>(settlementsBySeller.keySet());
         Map<UUID, SellerBalance> sellerBalanceMap = sellerBalanceRepository.findAllByMemberIdIn(sellerIds)
                 .stream()
                 .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
