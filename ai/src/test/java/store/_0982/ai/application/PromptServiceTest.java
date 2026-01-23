@@ -77,7 +77,8 @@ class PromptServiceTest {
 
         LlmResponse result = promptService.askToChatModel(
                 "키워드", "카테고리",
-                List.of(new SimpleGroupPurchaseInfo("00000000-0000-0000-0000-000000000000", "t", "d", "p", "c")),
+                List.of(new SimpleGroupPurchaseInfo(UUID.fromString("00000000-0000-0000-0000-000000000000"), "t", "d", "p", "c")),
+                "interest",
                 3
         );
 
