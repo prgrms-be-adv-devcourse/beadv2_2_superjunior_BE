@@ -39,7 +39,35 @@ public class SellerBalanceHistory {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    public SellerBalanceHistory(
+    public static SellerBalanceHistory createCreditHistory(
+            UUID sellerId,
+            UUID orderSettlementId,
+            Long amount
+    ) {
+        return new SellerBalanceHistory(
+                sellerId,
+                null,
+                orderSettlementId,
+                amount,
+                SellerBalanceHistoryStatus.CREDIT
+        );
+    }
+
+    public static SellerBalanceHistory createDebitHistory(
+            UUID sellerId,
+            UUID settlementId,
+            Long amount
+    ) {
+        return new SellerBalanceHistory(
+                sellerId,
+                settlementId,
+                null,
+                amount,
+                SellerBalanceHistoryStatus.DEBIT
+        );
+    }
+
+    private SellerBalanceHistory(
             UUID memberId,
             UUID settlementId,
             UUID orderSettlementId,

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.batch.domain.sellerbalance.*;
-import store._0982.batch.domain.settlement.OrderSettlement;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
@@ -16,17 +15,6 @@ public class SellerBalanceService {
 
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
-
-    @Transactional
-    public SellerBalanceHistory createSellerBalanceHistory(OrderSettlement orderSettlement) {
-        return new SellerBalanceHistory(
-                orderSettlement.getSellerId(),
-                null,
-                orderSettlement.getOrderSettlementId(),
-                orderSettlement.getTotalAmount(),
-                SellerBalanceHistoryStatus.CREDIT
-        );
-    }
 
     @Transactional
     public void clearBalance(Settlement settlement) {
@@ -41,12 +29,10 @@ public class SellerBalanceService {
     }
 
     private void saveSellerBalanceHistory(Settlement settlement, long transferAmount) {
-        SellerBalanceHistory history = new SellerBalanceHistory(
+        SellerBalanceHistory history = SellerBalanceHistory.createDebitHistory(
                 settlement.getSellerId(),
                 settlement.getSettlementId(),
-                null,
-                transferAmount,
-                SellerBalanceHistoryStatus.DEBIT
+                transferAmount
         );
         sellerBalanceHistoryRepository.save(history);
     }
