@@ -13,5 +13,8 @@ spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
+frontend:
+  url: ${FRONTEND_URL}
+
 member-service:
   url: ${MEMBER_SERVICE_URL}
