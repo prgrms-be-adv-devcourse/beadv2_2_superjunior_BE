@@ -25,8 +25,8 @@ public class SellerBalanceHistory {
     @Column(name = "settlement_id")
     private UUID settlementId;
 
-    @Column(name = "group_purchase_id")
-    private UUID groupPurchaseId;
+    @Column(name = "order_settlement_id")
+    private UUID orderSettlementId;
 
     @Column(name = "amount", nullable = false)
     private Long amount;
@@ -42,14 +42,14 @@ public class SellerBalanceHistory {
     public SellerBalanceHistory(
             UUID memberId,
             UUID settlementId,
-            UUID groupPurchaseId,
+            UUID orderSettlementId,
             Long amount,
             SellerBalanceHistoryStatus status
     ) {
         this.historyId = UUID.randomUUID();
         this.memberId = memberId;
         this.settlementId = settlementId;
-        this.groupPurchaseId = groupPurchaseId;
+        this.orderSettlementId = orderSettlementId;
         this.amount = amount;
         this.status = status;
     }
