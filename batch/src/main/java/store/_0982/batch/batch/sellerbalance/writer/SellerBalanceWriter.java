@@ -36,44 +36,46 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             return;
         }
 
-        Map<UUID, Long> amountBySeller = orderSettlements.stream()
-                .collect(Collectors.groupingBy(
-                        OrderSettlement::getSellerId,
-                        Collectors.summingLong(OrderSettlement::getTotalAmount)
-                ));
+        Map<UUID, List<OrderSettlement>> settlementsBySeller = orderSettlements.stream()
+                .collect(Collectors.groupingBy(OrderSettlement::getSellerId));
 
-        List<UUID> sellerIds = new ArrayList<>(amountBySeller.keySet());
+        List<UUID> sellerIds = new ArrayList<>();
         Map<UUID, SellerBalance> sellerBalanceMap = sellerBalanceRepository.findAllByMemberIdIn(sellerIds)
                 .stream()
                 .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
 
-        for (UUID sellerId : sellerIds) {
+        List<SellerBalanceHistory> histories = new ArrayList<>(orderSettlements.size());
+        List<UUID> settlementIds = new ArrayList<>(orderSettlements.size());
+
+        for (Map.Entry<UUID, List<OrderSettlement>> entry : settlementsBySeller.entrySet()) {
+            UUID sellerId = entry.getKey();
+            List<OrderSettlement> settlements = entry.getValue();
+
             SellerBalance sellerBalance = sellerBalanceMap.computeIfAbsent(sellerId, SellerBalance::new);
-            Long amount = amountBySeller.getOrDefault(sellerId, 0L);
-            sellerBalance.increaseBalance(amount);
+
+            long totalAmount = 0L;
+            for (OrderSettlement settlement : settlements) {
+                totalAmount += settlement.getTotalAmount();
+                histories.add(new SellerBalanceHistory(
+                        settlement.getSellerId(),
+                        settlement.getSettlementId(),
+                        settlement.getGroupPurchaseId(),
+                        settlement.getTotalAmount(),
+                        SellerBalanceHistoryStatus.CREDIT
+                ));
+                settlementIds.add(settlement.getOrderSettlementId());
+            }
+            sellerBalance.increaseBalance(totalAmount);
         }
 
         if (!sellerBalanceMap.isEmpty()) {
             sellerBalanceRepository.saveAll(new ArrayList<>(sellerBalanceMap.values()));
         }
 
-        List<SellerBalanceHistory> histories = orderSettlements.stream()
-                .map(orderSettlement -> new SellerBalanceHistory(
-                        orderSettlement.getSellerId(),
-                        orderSettlement.getSettlementId(),
-                        orderSettlement.getGroupPurchaseId(),
-                        orderSettlement.getTotalAmount(),
-                        SellerBalanceHistoryStatus.CREDIT
-                ))
-                .toList();
-
         if (!histories.isEmpty()) {
             sellerBalanceHistoryRepository.saveAll(histories);
         }
 
-        List<UUID> settlementIds = orderSettlements.stream()
-                .map(OrderSettlement::getOrderSettlementId)
-                .toList();
         orderSettlementRepository.markSettled(settlementIds);
     }
 }
