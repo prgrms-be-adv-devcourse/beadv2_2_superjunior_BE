@@ -44,23 +44,23 @@ public class PromptService {
                         - 키워드와 카테고리 적합도가 높은 순으로 최대 {n}개 추천
                         - 동일 상품 중복 제거
                         - 아래 형태의 JSON 배열로만 응답 
-                            {
+                            \\{
                                "groupPurchases": [
-                                    {
+                                    \\{
                                         "groupPurchaseId": "3f9c2e0a-1b7d-4e45-8c8a-2f9a0f2b9c41",
                                         "rank": 1
-                                    },
-                                    {
+                                    \\},
+                                    \\{
                                         "groupPurchaseId": "a7b1d6c9-5c42-4f3a-9e64-8d0b1e6a73f2",
                                         "rank": 2
-                                    },
-                                    {
+                                    \\},
+                                    \\{
                                         "groupPurchaseId": "e4c8a9f1-2d6e-4a7b-bf31-9c0d8a1e5b24",
                                         "rank": 3
-                                    }
+                                    \\}
                                ],
                                "reason": "추천 이유"
-                            }
+                            \\}
                         - groupPurchaseIds는 추천순으로 정렬
                         """
         );

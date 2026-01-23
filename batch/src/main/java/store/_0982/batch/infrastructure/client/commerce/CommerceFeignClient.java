@@ -17,9 +17,9 @@ import java.util.UUID;
 )
 public interface CommerceFeignClient {
 
-    @GetMapping(value = "/api/orders/consumer")
+    @GetMapping(value = "/internal/orders/consumer")
     ResponseDto<List<OrderVector>> getOrdersConsumer(@RequestHeader(HeaderName.ID) UUID memberId);
 
-    @GetMapping(value = "/api/carts")
+    @GetMapping(value = "/internal/carts")
     ResponseDto<List<CartVector>> getCarts(@RequestHeader(HeaderName.ID) UUID memberId);
 }
