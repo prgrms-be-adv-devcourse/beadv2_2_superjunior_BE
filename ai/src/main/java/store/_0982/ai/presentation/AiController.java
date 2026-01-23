@@ -7,6 +7,7 @@ import store._0982.ai.application.RecommandationService;
 import store._0982.ai.application.dto.RecommandInfo;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
+import store._0982.common.log.ControllerLog;
 
 import java.util.UUID;
 
@@ -18,6 +19,7 @@ public class AiController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/recommandations")
+    @ControllerLog
     public ResponseDto<RecommandInfo> getRecommandations(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
