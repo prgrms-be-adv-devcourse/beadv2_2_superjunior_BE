@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @FeignClient(
         name = "point-service",
-        url = "http://localhost:8086"
+        url = "${point-service.url}"
 )
 public interface PointFeignClient{ 
     @PostMapping("/internal/points")

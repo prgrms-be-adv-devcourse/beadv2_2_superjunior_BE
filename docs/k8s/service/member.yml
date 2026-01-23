@@ -32,6 +32,10 @@ spec:
               value: "redis-service"
             - name: REDIS_PORT
               value: "6379"
+            - name: COMMERCE_SERVICE_URL
+              value: http://commerce-service:8087
+            - name: POINT_SERVICE_URL
+              value: http://point-service:8086
           resources:
             requests:
               cpu: "200m"

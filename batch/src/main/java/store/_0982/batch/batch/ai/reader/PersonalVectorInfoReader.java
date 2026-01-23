@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import store._0982.batch.domain.ai.CartVector;
 import store._0982.batch.domain.ai.OrderVector;
