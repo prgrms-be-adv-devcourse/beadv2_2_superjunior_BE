@@ -11,6 +11,7 @@ import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.batch.domain.settlement.OrderSettlementRepository;
 
 import java.util.*;
 import java.util.function.Function;
@@ -23,6 +24,7 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
 
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
+    private final OrderSettlementRepository orderSettlementRepository;
 
     @Override
     public void write(Chunk<? extends OrderSettlement> chunk) {
@@ -69,6 +71,9 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             sellerBalanceHistoryRepository.saveAll(histories);
         }
 
-        orderSettlements.forEach(OrderSettlement::markSettled);
+        List<UUID> settlementIds = orderSettlements.stream()
+                .map(OrderSettlement::getOrderSettlementId)
+                .toList();
+        orderSettlementRepository.markSettled(settlementIds);
     }
 }

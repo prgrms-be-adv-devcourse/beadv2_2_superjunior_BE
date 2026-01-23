@@ -17,7 +17,7 @@ public class SellerBalanceScheduler {
     private final JobLauncher jobLauncher;
     private final Job sellerBalanceJob;
 
-//    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void scheduleSellerBalance() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())
