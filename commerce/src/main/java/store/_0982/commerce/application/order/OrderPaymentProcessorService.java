@@ -39,7 +39,7 @@ public class OrderPaymentProcessorService {
                         order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
                         order.getStatus() == OrderStatus.REFUND_REQUESTED) {
                     order.changeStatus();
-                    orderSettlementService.saveOrder(order);
+                    orderSettlementService.saveCanceledOrderSettlement(order);
                 }
             }
         }
@@ -59,7 +59,7 @@ public class OrderPaymentProcessorService {
                         order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
                         order.getStatus() == OrderStatus.REFUND_REQUESTED) {
                     order.changeStatus();
-                    orderSettlementService.saveOrder(order);
+                    orderSettlementService.saveCanceledOrderSettlement(order);
                 }
             }
         }
