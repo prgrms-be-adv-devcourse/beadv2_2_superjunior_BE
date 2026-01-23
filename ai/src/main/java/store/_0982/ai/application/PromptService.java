@@ -90,4 +90,35 @@ public class PromptService {
         String content = response.getResult().getOutput().getContent();
         return objectMapper.readValue(content, LlmResponse.class);
     }
+
+
+    public String summarizeInterest(List<String> descriptions){
+        Prompt prompt = generateInterestSummaryPrompt(descriptions);
+        return chatModel.call(prompt).getResult().getOutput().getContent();
+    }
+    private Prompt generateInterestSummaryPrompt(List<String> descriptions) {
+        PromptTemplate systemTemplate = new SystemPromptTemplate(
+
+                """
+                    너는 사용자가 구매한 상품들의 설명들을 받고, 그를 기반으로 사용자의 관심을 요약해주는 기계야.
+                    
+                    규칙:
+                    - 400자 이내의 영어로 답변 
+                    - 답변 형식: //{"summarize": "I have a strong interest in products related to companion animals."//}
+                """
+
+        );
+        PromptTemplate userTemplate = new PromptTemplate(
+                """
+                        사용자가 구매한 상품들의 설명 목록: {descriptions}
+                        내 관심을 요약해줘.
+                """
+        );
+        userTemplate.add("descriptions", descriptions.toString());
+
+        return new Prompt(List.of(
+                systemTemplate.createMessage(),
+                userTemplate.createMessage()
+        ));
+    }
 }

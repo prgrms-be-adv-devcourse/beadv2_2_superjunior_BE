@@ -19,4 +19,5 @@ public abstract class ProductVector {
     private UUID productId;
     @JsonProperty("productVector")
     private float[] vector;
+    private String description;
 }
