@@ -1,21 +1,20 @@
 package store._0982.batch.domain.ai;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Getter
-public class CartVector extends ProductVector{
+@Setter
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CartVector extends ProductVector {
     private UUID cartId;
-    int quantity;
-    OffsetDateTime createdAt;
-    OffsetDateTime updatedAt;
-
-    public CartVector(UUID memberId, UUID productId, float[] vector, int quantity, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-        super(memberId, productId, vector);
-        this.cartId = UUID.randomUUID();
-        this.quantity = quantity;
-        this.createdAt = createdAt;
-    }
+    private int quantity;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 }
