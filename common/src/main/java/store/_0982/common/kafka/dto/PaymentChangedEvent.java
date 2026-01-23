@@ -15,12 +15,23 @@ public class PaymentChangedEvent extends BaseEvent {
 
     private UUID memberId;
     private UUID orderId;
+    private long amount;
+    private UUID paymentId;
     private Status status;
 
-    public PaymentChangedEvent(Clock clock, UUID memberId, UUID orderId, Status status) {
+    @Deprecated(forRemoval = true)
+    public PaymentChangedEvent(UUID memberId, UUID orderId, Status status) {
+        this.memberId = memberId;
+        this.orderId = orderId;
+        this.status = status;
+    }
+
+    public PaymentChangedEvent(Clock clock, UUID memberId, UUID orderId, long amount, UUID paymentId, Status status) {
         super(clock);
         this.memberId = memberId;
         this.orderId = orderId;
+        this.amount = amount;
+        this.paymentId = paymentId;
         this.status = status;
     }
 
