@@ -9,6 +9,7 @@ public record OrderVectorInfo(
         UUID orderId,
         UUID memberId,
         UUID productId,
+        String productDescription,
         int quantity,
         OffsetDateTime createdAt,
         OrderStatus orderStatus,
