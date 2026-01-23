@@ -17,7 +17,7 @@ public class VectorRefreshScheduler {
     private final JobLauncher jobLauncher;
     private final Job vectorRefreshJob;
 
-    @Scheduled(cron = "* * * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "* * * * * *", zone = "Asia/Seoul")
     public void scheduleVectorRefresh() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())

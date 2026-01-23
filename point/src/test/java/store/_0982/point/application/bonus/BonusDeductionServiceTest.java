@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import store._0982.common.exception.CustomException;
+import store._0982.point.application.dto.bonus.BonusDeductCommand;
 import store._0982.point.domain.constant.BonusEarningStatus;
 import store._0982.point.domain.constant.BonusEarningType;
 import store._0982.point.domain.entity.BonusDeduction;
@@ -57,7 +58,8 @@ class BonusDeductionServiceTest extends BaseIntegrationTest {
 
         // when
         long deductAmount = 1500L;
-        bonusDeductionService.deductBonus(memberId, transactionId, deductAmount);
+        BonusDeductCommand command = new BonusDeductCommand(transactionId, deductAmount);
+        bonusDeductionService.deductBonus(memberId, command);
 
         // then
         List<BonusEarning> earnings = bonusEarningRepository.findAll();
@@ -84,7 +86,8 @@ class BonusDeductionServiceTest extends BaseIntegrationTest {
         createBonus(OffsetDateTime.now().plusDays(5));
 
         // when & then
-        assertThatThrownBy(() -> bonusDeductionService.deductBonus(memberId, transactionId, 2000L))
+        BonusDeductCommand command = new BonusDeductCommand(transactionId, 2000L);
+        assertThatThrownBy(() -> bonusDeductionService.deductBonus(memberId, command))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
     }

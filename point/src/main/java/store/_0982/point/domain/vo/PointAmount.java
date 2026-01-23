@@ -83,11 +83,11 @@ public class PointAmount {
             throw new CustomException(CustomErrorCode.LACK_OF_POINT);
         }
 
-        if (this.bonusPoint >= amount) {
+        if (bonusPoint >= amount) {
             return new PointAmount(0, amount);
         } else {
-            long remainingDeduct = amount - this.bonusPoint;
-            return new PointAmount(remainingDeduct, this.bonusPoint);
+            long remainingDeduct = amount - bonusPoint;
+            return new PointAmount(remainingDeduct, bonusPoint);
         }
     }
 }

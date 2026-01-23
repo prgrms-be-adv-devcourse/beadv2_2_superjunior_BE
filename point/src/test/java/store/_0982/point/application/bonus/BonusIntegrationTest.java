@@ -4,7 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import store._0982.point.application.point.PointTxManager;
+import store._0982.point.application.dto.point.PointChargeCommand;
+import store._0982.point.application.dto.point.PointDeductCommand;
+import store._0982.point.application.dto.point.PointReturnCommand;
+import store._0982.point.application.point.PointChargeService;
+import store._0982.point.application.point.PointDeductService;
+import store._0982.point.application.point.PointReturnService;
 import store._0982.point.domain.constant.BonusEarningStatus;
 import store._0982.point.domain.constant.BonusEarningType;
 import store._0982.point.domain.entity.BonusDeduction;
@@ -25,7 +30,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class BonusIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
-    private PointTxManager pointTxManager;
+    private PointChargeService pointChargeService;
+
+    @Autowired
+    private PointDeductService pointDeductService;
+
+    @Autowired
+    private PointReturnService pointReturnService;
 
     @Autowired
     private PointBalanceJpaRepository pointBalanceRepository;
@@ -57,7 +68,7 @@ class BonusIntegrationTest extends BaseIntegrationTest {
     @DisplayName("통합 시나리오: 충전 -> 보너스 적립 -> 사용(차감) -> 환불")
     void full_scenario() {
         // 1. 10,000 포인트 충전
-        pointTxManager.chargePoints(memberId, UUID.randomUUID(), 10000L);
+        pointChargeService.chargePoints(memberId, new PointChargeCommand(10000L, UUID.randomUUID()));
 
         // 2. 보너스 1,000 포인트 적립 (유효기간 5일)
         BonusEarning bonus = BonusEarning.earned(
@@ -77,7 +88,7 @@ class BonusIntegrationTest extends BaseIntegrationTest {
         // 3. 5,000 포인트 사용 (결제)
         // 예상: 보너스 1,000 차감 + 충전포인트 4,000 차감
         UUID orderId = UUID.randomUUID();
-        pointTxManager.deductPoints(memberId, orderId, UUID.randomUUID(), 5000L);
+        pointDeductService.processDeductionWithBonus(memberId, new PointDeductCommand(UUID.randomUUID(), orderId, 5000L));
 
         // 검증: 포인트 잔액
         PointBalance afterDeduct = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
@@ -95,7 +106,8 @@ class BonusIntegrationTest extends BaseIntegrationTest {
         assertThat(usedBonus.getRemainingAmount()).isZero();
 
         // 4. 결제 취소 (환불)
-        pointTxManager.returnPoints(memberId, orderId, UUID.randomUUID(), 5000L, "단순 변심");
+        pointReturnService.returnPoints(
+                memberId, new PointReturnCommand(UUID.randomUUID(), orderId, "단순 변심", 5000L));
 
         // 검증: 포인트 잔액 복구
         PointBalance afterRefund = pointBalanceRepository.findByMemberId(memberId).orElseThrow();

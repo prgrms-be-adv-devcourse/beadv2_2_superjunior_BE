@@ -12,7 +12,10 @@ import store._0982.point.domain.repository.BonusEarningRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,13 +29,29 @@ public class BonusRefundService {
     @RetryableTransactional
     public void refundBonus(UUID transactionId) {
         List<BonusDeduction> deductions = bonusDeductionRepository.findByTransactionId(transactionId);
+        List<BonusEarning> earnings = fetchBonusEarnings(deductions);
+
+        Map<UUID, BonusEarning> earningMap = earnings.stream()
+                .collect(Collectors.toMap(BonusEarning::getId, Function.identity()));
 
         for (BonusDeduction deduction : deductions) {
-            BonusEarning earning = bonusEarningRepository.findById(deduction.getBonusEarningId())
-                    .orElseThrow(() -> new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
-
+            BonusEarning earning = earningMap.get(deduction.getBonusEarningId());
             earning.refund(deduction.getAmount());
-            bonusEarningRepository.save(earning);
         }
+
+        bonusEarningRepository.saveAll(earnings);
+    }
+
+    private List<BonusEarning> fetchBonusEarnings(List<BonusDeduction> deductions) {
+        List<UUID> earningIds = deductions.stream()
+                .map(BonusDeduction::getBonusEarningId)
+                .toList();
+
+        List<BonusEarning> earnings = bonusEarningRepository.findAllById(earningIds);
+
+        if (deductions.size() != earnings.size()) {
+            throw new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND);
+        }
+        return earnings;
     }
 }

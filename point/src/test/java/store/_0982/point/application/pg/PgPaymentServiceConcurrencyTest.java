@@ -9,6 +9,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCreateCommand;
 import store._0982.point.domain.entity.PgPayment;
+import store._0982.point.infrastructure.pg.PgPaymentCancelJpaRepository;
 import store._0982.point.infrastructure.pg.PgPaymentJpaRepository;
 import store._0982.point.support.BaseConcurrencyTest;
 
@@ -23,7 +24,10 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
     private PgPaymentService pgPaymentService;
 
     @Autowired
-    private PgPaymentJpaRepository paymentPointRepository;
+    private PgPaymentJpaRepository pgPaymentRepository;
+
+    @Autowired
+    private PgPaymentCancelJpaRepository pgPaymentCancelRepository;
 
     @MockitoBean
     private TossPaymentService tossPaymentService;
@@ -33,7 +37,8 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @BeforeEach
     void setUp() {
-        paymentPointRepository.deleteAll();
+        pgPaymentCancelRepository.deleteAll();
+        pgPaymentRepository.deleteAll();
     }
 
     @Test
@@ -48,7 +53,7 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         runSynchronizedTask(() -> pgPaymentService.createPayment(command, memberId));
 
         // then
-        List<PgPayment> pgPayments = paymentPointRepository.findAll();
+        List<PgPayment> pgPayments = pgPaymentRepository.findAll();
         assertThat(pgPayments).singleElement()
                 .extracting(PgPayment::getOrderId, PgPayment::getMemberId, PgPayment::getAmount)
                 .containsExactly(orderId, memberId, 1000L);

@@ -7,12 +7,10 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
-import store._0982.gateway.domain.MemberCache;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
-import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
-import store._0982.gateway.infrastructure.member.MemberServiceClient;
+import store._0982.gateway.security.AccessTokenAuthenticationWebFilter;
 import store._0982.gateway.security.RouteAuthorizationManager;
 
 @Configuration
@@ -21,13 +19,15 @@ import store._0982.gateway.security.RouteAuthorizationManager;
 public class SecurityConfig {
 
     private final RouteAuthorizationManager routeAuthorizationManager;
-    private final GatewayJwtProvider gatewayJwtProvider;
-    private final MemberCache memberCache;
-    private final MemberServiceClient memberServiceClient;
-    private final AuthenticationWebFilter authenticationWebFilter;
+    private final AccessTokenAuthenticationWebFilter authenticationWebFilter;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        authenticationWebFilter.setRequiresAuthenticationMatcher(
+                ServerWebExchangeMatchers.pathMatchers(
+                        "/api/**"
+                )
+        );
 
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable).httpBasic(ServerHttpSecurity.HttpBasicSpec::disable).formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 // 인증 필터
@@ -35,6 +35,8 @@ public class SecurityConfig {
                 // 인가
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
+                                "/auth/**",
+                                "/webhooks/**",
                                 "/actuator/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",

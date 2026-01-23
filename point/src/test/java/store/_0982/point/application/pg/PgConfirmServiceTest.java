@@ -4,23 +4,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.OrderQueryService;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.domain.constant.PaymentMethod;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
+import store._0982.point.domain.event.PaymentConfirmedTxEvent;
+import store._0982.point.domain.repository.PgPaymentRepository;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,12 +37,17 @@ class PgConfirmServiceTest {
     private TossPaymentService tossPaymentService;
 
     @Mock
-    private PgTxManager pgTxManager;
-
-    @Mock
     private OrderQueryService orderQueryService;
 
+    @Mock
+    private PgPaymentRepository pgPaymentRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @InjectMocks
+    private PgTxManager pgTxManager;
+
     private PgConfirmService pgConfirmService;
 
     private UUID memberId;
@@ -44,6 +56,8 @@ class PgConfirmServiceTest {
 
     @BeforeEach
     void setUp() {
+        pgConfirmService = new PgConfirmService(tossPaymentService, pgTxManager, orderQueryService);
+
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         paymentKey = "test_payment_key";
@@ -67,22 +81,23 @@ class PgConfirmServiceTest {
                 .approvedAt(OffsetDateTime.now())
                 .build();
 
-        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
-                .thenReturn(pgPayment);
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, amount);
-        when(tossPaymentService.confirmPayment(any(), any()))
-                .thenReturn(tossResponse);
-        doNothing().when(pgTxManager)
-                .markConfirmedPayment(any(), eq(paymentKey), eq(memberId));
+        when(tossPaymentService.confirmPayment(any(), any())).thenReturn(tossResponse);
+        doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedTxEvent.class));
 
         // when
         pgConfirmService.confirmPayment(command, memberId);
 
         // then
-        verify(pgTxManager).markConfirmedPayment(
-                any(TossPaymentInfo.class), eq(paymentKey), eq(memberId)
-        );
+        verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(orderQueryService).validateOrderPayable(memberId, orderId, amount);
+        verify(tossPaymentService).confirmPayment(any(), any());
+
+        ArgumentCaptor<PaymentConfirmedTxEvent> captor = ArgumentCaptor.forClass(PaymentConfirmedTxEvent.class);
+        verify(applicationEventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().pgPayment().getStatus()).isEqualTo(PgPaymentStatus.COMPLETED);
+        assertThat(captor.getValue().pgPayment().getOrderId()).isEqualTo(orderId);
     }
 
     @Test
@@ -91,13 +106,14 @@ class PgConfirmServiceTest {
         // given
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
 
-        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.PAYMENT_NOT_FOUND));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -105,13 +121,16 @@ class PgConfirmServiceTest {
     void confirmPayment_fail_whenAlreadyCompleted() {
         // given
         PgConfirmCommand command = new PgConfirmCommand(orderId, 10000, paymentKey);
+        PgPayment completedPayment = PgPayment.create(memberId, orderId, 10000);
+        completedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), paymentKey);
 
-        when(pgTxManager.findCompletablePayment(paymentKey, memberId))
-                .thenThrow(new CustomException(CustomErrorCode.ALREADY_COMPLETED_PAYMENT));
+        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(completedPayment));
 
         // when & then
         assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
+
+        verify(applicationEventPublisher, never()).publishEvent(any());
     }
 }

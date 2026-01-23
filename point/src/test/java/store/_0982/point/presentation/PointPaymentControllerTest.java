@@ -10,10 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
 import store._0982.point.application.dto.point.PointBalanceInfo;
-import store._0982.point.application.point.PointChargeService;
-import store._0982.point.application.point.PointDeductService;
-import store._0982.point.application.point.PointReadService;
-import store._0982.point.application.point.PointTransferService;
+import store._0982.point.application.point.*;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -30,13 +27,13 @@ class PointPaymentControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PointReadService pointReadService;
+    private PointPaymentService pointPaymentService;
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointReadService pointReadService() {
-            return mock(PointReadService.class);
+        public PointPaymentService pointPaymentService() {
+            return mock(PointPaymentService.class);
         }
 
         @Bean
@@ -45,8 +42,8 @@ class PointPaymentControllerTest {
         }
 
         @Bean
-        public PointDeductService pointDeductService() {
-            return mock(PointDeductService.class);
+        public PointDeductFacade pointDeductFacade() {
+            return mock(PointDeductFacade.class);
         }
 
         @Bean
@@ -62,7 +59,7 @@ class PointPaymentControllerTest {
         UUID memberId = UUID.randomUUID();
         PointBalanceInfo info = new PointBalanceInfo(memberId, 15000, 0, OffsetDateTime.now());
 
-        when(pointReadService.getPoints(memberId)).thenReturn(info);
+        when(pointPaymentService.getPoints(memberId)).thenReturn(info);
 
         // when & then
         mockMvc.perform(get("/api/points")
@@ -75,6 +72,6 @@ class PointPaymentControllerTest {
                 .andExpect(jsonPath("$.data.paidPoint").value(15000))
                 .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
-        verify(pointReadService).getPoints(memberId);
+        verify(pointPaymentService).getPoints(memberId);
     }
 }

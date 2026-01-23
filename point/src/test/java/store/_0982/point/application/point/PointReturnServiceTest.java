@@ -7,13 +7,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.point.PointReturnCommand;
+import store._0982.point.domain.constant.PointTransactionStatus;
+import store._0982.point.domain.entity.PointBalance;
+import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.event.PointReturnedTxEvent;
+import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
+import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,7 +32,13 @@ class PointReturnServiceTest {
     private static final String CANCEL_REASON = "테스트 환불";
 
     @Mock
-    private PointTxManager pointTxManager;
+    private PointBalanceRepository pointBalanceRepository;
+
+    @Mock
+    private PointTransactionRepository pointTransactionRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private PointReturnService pointReturnService;
@@ -42,25 +58,38 @@ class PointReturnServiceTest {
     @DisplayName("포인트를 반환한다")
     void returnPoints_success() {
         // given
-        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
-
-        doNothing().when(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 3000, CANCEL_REASON);
+        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000L);
+        PointBalance pointBalance = new PointBalance(memberId);
+        
+        PointTransaction usedTx = PointTransaction.used(memberId, orderId, UUID.randomUUID(), PointAmount.of(3000L, 0));
+        
+        when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+        when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+        when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                .thenReturn(Optional.of(usedTx));
+        when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+        doNothing().when(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
 
         // when
         pointReturnService.returnPoints(memberId, command);
 
         // then
-        verify(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 3000, CANCEL_REASON);
+        verify(pointTransactionRepository).existsByIdempotencyKey(idempotencyKey);
+        verify(pointBalanceRepository).findByMemberId(memberId);
+        verify(pointTransactionRepository).findByOrderIdAndStatus(orderId, PointTransactionStatus.USED);
+        verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
+        verify(applicationEventPublisher).publishEvent(any(PointReturnedTxEvent.class));
     }
 
     @Test
     @DisplayName("존재하지 않는 회원의 포인트 반환 시 예외가 발생한다")
     void returnPoints_fail_whenMemberNotFound() {
         // given
-        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
+        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000L);
 
-        doThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND))
-                .when(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 3000, CANCEL_REASON);
+        when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+        when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))
@@ -72,10 +101,13 @@ class PointReturnServiceTest {
     @DisplayName("사용 내역이 없는 주문에 대한 반환 시 예외가 발생한다")
     void returnPoints_fail_whenNoUsageHistory() {
         // given
-        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
+        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000L);
+        PointBalance pointBalance = new PointBalance(memberId);
 
-        doThrow(new CustomException(CustomErrorCode.ORDER_NOT_FOUND))
-                .when(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 3000, CANCEL_REASON);
+        when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+        when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+        when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                .thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))
@@ -87,10 +119,14 @@ class PointReturnServiceTest {
     @DisplayName("반환 금액이 사용 금액보다 큰 경우 예외가 발생한다")
     void returnPoints_fail_whenExcessiveAmount() {
         // given
-        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 5000);
+        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 5000L);
+        PointBalance pointBalance = new PointBalance(memberId);
+        PointTransaction usedTx = PointTransaction.used(memberId, orderId, UUID.randomUUID(), PointAmount.of(3000L, 0));
 
-        doThrow(new CustomException(CustomErrorCode.INVALID_REFUND_AMOUNT))
-                .when(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 5000, CANCEL_REASON);
+        when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
+        when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+        when(pointTransactionRepository.findByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
+                .thenReturn(Optional.of(usedTx));
 
         // when & then
         assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))
@@ -102,10 +138,9 @@ class PointReturnServiceTest {
     @DisplayName("중복 반환 요청 시 예외가 발생한다")
     void returnPoints_fail_whenDuplicateRequest() {
         // given
-        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000);
+        PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000L);
 
-        doThrow(new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST))
-                .when(pointTxManager).returnPoints(memberId, orderId, idempotencyKey, 3000, CANCEL_REASON);
+        when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(true);
 
         // when & then
         assertThatThrownBy(() -> pointReturnService.returnPoints(memberId, command))

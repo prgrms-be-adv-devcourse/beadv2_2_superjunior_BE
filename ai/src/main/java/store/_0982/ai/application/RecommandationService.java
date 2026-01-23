@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RecommandationService {
 
-    private static final int NUM_OF_RECO = 4;
+    private static final int NUM_OF_RECO = 3;
 
     private final SearchQueryPort searchQueryPort;
     private final PersonalVectorRepository personalVectorRepository;

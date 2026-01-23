@@ -64,23 +64,10 @@ class PgPaymentTest {
         PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
 
         // when
-        pgPayment.markFailed();
+        pgPayment.markFailed("failed_payment_key");
 
         // then
         assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);
-    }
-
-    @Test
-    @DisplayName("결제를 환불 대기 처리한다")
-    void markRefundPending() {
-        // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
-
-        // when
-        pgPayment.markRefundPending();
-
-        // then
-        assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUND_PENDING);
     }
 
     @Test

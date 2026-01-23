@@ -34,6 +34,7 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -204,8 +205,10 @@ public class OrderCommandService {
         GroupPurchase groupPurchase = groupPurchaseService
                 .findByGroupPurchase(order.getGroupPurchaseId());
 
+        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
         if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
-            processCancellationBeforeSuccess(order, groupPurchase, command.reason());
+            processCancellationBeforeSuccess(order, command.reason());
             return;
         }
 
@@ -221,9 +224,7 @@ public class OrderCommandService {
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
     }
 
-    private void processCancellationBeforeSuccess(Order order, GroupPurchase groupPurchase, String reason) {
-        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-
+    private void processCancellationBeforeSuccess(Order order, String reason) {
         order.requestCancel();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
@@ -234,12 +235,6 @@ public class OrderCommandService {
         order.requestReversed();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
-
-        // 판매자에게 수수료 지급
-        if (refundAmount.cancellationFee() > 0) {
-            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
-        }
-
         publishCancellationEvent(order, reason, refundAmount.refundAmount());
     }
 
@@ -247,12 +242,6 @@ public class OrderCommandService {
         order.requestReturned();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
-
-        // 판매자에게 수수료 지급
-        if (refundAmount.cancellationFee() > 0) {
-            sellerBalanceService.addFee(sellerId, refundAmount.cancellationFee());
-        }
-
         publishCancellationEvent(order, reason, refundAmount.refundAmount());
     }
 
@@ -260,5 +249,40 @@ public class OrderCommandService {
         eventPublisher.publishEvent(
                 new OrderCancelProcessedEvent(order, reason, refundAmount)
         );
+    }
+
+    @ServiceLog
+    @Transactional
+    public void retryCancelOrder() {
+        List<OrderStatus> pendingStatuses = List.of(
+                OrderStatus.CANCEL_REQUESTED,
+                OrderStatus.REVERSE_REQUESTED,
+                OrderStatus.REFUND_REQUESTED
+        );
+
+        OffsetDateTime minutesAgo = OffsetDateTime.now().minusMinutes(15);
+        List<Order> pendingOrders = orderRepository.findAllByStatusInAndCancelRequestAtBefore(pendingStatuses, minutesAgo);
+        if (pendingOrders.isEmpty()) {
+            return;
+        }
+
+        for (Order order : pendingOrders) {
+            OrderCancellationPolicy.CancellationType cancellationType = mapCancellationType(order.getStatus());
+            if (cancellationType == null) {
+                continue;
+            }
+
+            OrderCancellationPolicy.RefundAmount calculated = calculate(order, cancellationType);
+            publishCancellationEvent(order, "retry-cancel", calculated.refundAmount());
+        }
+    }
+
+    private OrderCancellationPolicy.CancellationType mapCancellationType(OrderStatus status) {
+        return switch (status) {
+            case CANCEL_REQUESTED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
+            case REVERSE_REQUESTED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
+            case REFUND_REQUESTED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
+            default -> null;
+        };
     }
 }
