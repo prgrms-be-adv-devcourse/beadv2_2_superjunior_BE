@@ -14,6 +14,8 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.commerce.domain.product.Product;
+import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
@@ -34,6 +36,7 @@ public class OrderQueryService {
 
     private final OrderRepository orderRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ProductRepository productRepository;
     private final ProductVectorJpaRepository productVectorRepository;
 
 
@@ -86,6 +89,9 @@ public class OrderQueryService {
                 .collect(toMap(GroupPurchase::getGroupPurchaseId, GroupPurchase::getProductId));
         Map<UUID, ProductVector> productIdToVector = productVectors.stream()
                 .collect(toMap(ProductVector::getProductId, Function.identity()));
+        List<Product> products = productRepository.findByProductIdIn(productIds);
+        Map<UUID, String> productIdToDescription = products.stream()
+                .collect(toMap(Product::getProductId, Product::getDescription));
         return orders.stream()
                 .map(order -> {
                     UUID productId = groupPurchaseToProduct.get(order.getGroupPurchaseId());
@@ -95,6 +101,7 @@ public class OrderQueryService {
                             order.getOrderId(),
                             order.getMemberId(),
                             productId,
+                            productIdToDescription.get(productId),
                             order.getQuantity(),
                             order.getCreatedAt(),
                             order.getStatus(),
