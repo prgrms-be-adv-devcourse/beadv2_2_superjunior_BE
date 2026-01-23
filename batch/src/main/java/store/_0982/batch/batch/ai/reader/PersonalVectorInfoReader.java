@@ -41,7 +41,6 @@ public class PersonalVectorInfoReader implements ItemReader<PersonalVectorInfoRe
             UUID memberId = memberIterator.next();
             List<CartVector> cartVectors = unwrap(commerceClient.getCarts(memberId));
             List<OrderVector> orderVectors = unwrap(commerceClient.getOrdersConsumer(memberId));
-            log.info("카트 벡터 {}",cartVectors.get(0).getVector());
             if (!cartVectors.isEmpty() || !orderVectors.isEmpty()) {
                 return new MemberVectorsInput(memberId, cartVectors, orderVectors);
             }
