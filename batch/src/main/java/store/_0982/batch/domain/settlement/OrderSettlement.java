@@ -43,10 +43,6 @@ public class OrderSettlement {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "settled_id")
+    @Column(name = "settled_at")
     private OffsetDateTime settledAt;
-
-    public void markSettled() {
-        this.settledAt = OffsetDateTime.now();
-    }
 }
