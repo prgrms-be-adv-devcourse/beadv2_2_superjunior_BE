@@ -9,24 +9,24 @@ import java.util.UUID;
 
 public record PaymentRefundedCommand(
         UUID memberId,
-        UUID orderId
+        UUID paymentId,
+        long amount
 ) implements Notifiable {
 
     public static PaymentRefundedCommand from(PaymentChangedEvent event) {
         if (event.getStatus() != PaymentChangedEvent.Status.REFUNDED) {
             throw new IllegalStateException();
         }
-        return new PaymentRefundedCommand(event.getMemberId(), event.getOrderId());
+        return new PaymentRefundedCommand(event.getMemberId(), event.getPaymentId(), event.getAmount());
     }
 
-    // TODO: 정보가 부족해서 더 받아 와야 한다
     @Override
     public NotificationContent content() {
         return new NotificationContent(
                 NotificationType.PG_REFUNDED,
                 "PG 결제 환불",
-                "PG 결제가 환불되었습니다.",
-                orderId     // PaymentId로 변경 필요
+                String.format("%,d원이 정상적으로 환불되었습니다.", amount),
+                paymentId
         );
     }
 }

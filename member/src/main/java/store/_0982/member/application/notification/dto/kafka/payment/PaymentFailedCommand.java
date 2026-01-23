@@ -9,24 +9,24 @@ import java.util.UUID;
 
 public record PaymentFailedCommand(
         UUID memberId,
-        UUID orderId
+        UUID paymentId,
+        long amount
 ) implements Notifiable {
 
     public static PaymentFailedCommand from(PaymentChangedEvent event) {
         if (event.getStatus() != PaymentChangedEvent.Status.PAYMENT_FAILED) {
             throw new IllegalStateException();
         }
-        return new PaymentFailedCommand(event.getMemberId(), event.getOrderId());
+        return new PaymentFailedCommand(event.getMemberId(), event.getPaymentId(), event.getAmount());
     }
 
-    // TODO: 정보가 부족해서 더 받아 와야 한다
     @Override
     public NotificationContent content() {
         return new NotificationContent(
                 NotificationType.PG_FAILED,
-                "PG 결제 실패",
-                "PG 결제에 실패했습니다.",
-                orderId     // PaymentId로 수정 필요
+                "결제 실패",
+                String.format("%,d원 결제에 실패했습니다.", amount),
+                paymentId
         );
     }
 }

@@ -10,6 +10,7 @@ import java.util.UUID;
 public record PointWithdrawnCommand(
         UUID orderId,
         UUID memberId,
+        UUID transactionId,
         long amount
 ) implements Notifiable {
 
@@ -17,17 +18,16 @@ public record PointWithdrawnCommand(
         if (event.getStatus() != PointChangedEvent.Status.WITHDRAWN) {
             throw new IllegalStateException();
         }
-        return new PointWithdrawnCommand(event.getOrderId(), event.getMemberId(), event.getAmount());
+        return new PointWithdrawnCommand(event.getOrderId(), event.getMemberId(), event.getTransactionId(), event.getAmount());
     }
 
-    // TODO: 정보가 부족해서 더 받아 와야 한다
     @Override
     public NotificationContent content() {
         return new NotificationContent(
                 NotificationType.POINT_WITHDRAWN,
                 "포인트 출금 완료",
                 String.format("포인트 %,d원이 정상적으로 출금되었습니다.", amount),
-                memberId        // TransactionId로 변경 필요
+                transactionId
         );
     }
 }
