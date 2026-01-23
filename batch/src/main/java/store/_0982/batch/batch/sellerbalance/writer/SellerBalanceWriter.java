@@ -52,7 +52,13 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             UUID sellerId = entry.getKey();
             List<OrderSettlement> settlements = entry.getValue();
 
-            SellerBalance sellerBalance = sellerBalanceMap.computeIfAbsent(sellerId, SellerBalance::new);
+            SellerBalance sellerBalance = sellerBalanceMap.get(sellerId);
+            if (sellerBalance == null) {
+                // TODO : 모니터링 필요
+                log.warn("[WARN] [sellerBalanceJob] seller balance not found. create new balance. sellerId={}", sellerId);
+                sellerBalance = new SellerBalance(sellerId);
+                sellerBalanceMap.put(sellerId, sellerBalance);
+            }
 
             long totalAmount = 0L;
             for (OrderSettlement orderSettlement : settlements) {

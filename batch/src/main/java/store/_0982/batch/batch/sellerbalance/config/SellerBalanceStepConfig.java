@@ -11,6 +11,8 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.sellerbalance.listener.SellerBalanceStepListener;
+import store._0982.batch.batch.sellerbalance.listener.SellerBalanceWriterListener;
 import store._0982.batch.batch.sellerbalance.policy.SellerBalancePolicy;
 import store._0982.batch.batch.sellerbalance.writer.SellerBalanceWriter;
 import store._0982.batch.domain.settlement.OrderSettlement;
@@ -24,6 +26,8 @@ public class SellerBalanceStepConfig {
     private final EntityManagerFactory entityManagerFactory;
 
     private final SellerBalanceWriter sellerBalanceWriter;
+    private final SellerBalanceWriterListener sellerBalanceWriterListener;
+    private final SellerBalanceStepListener sellerBalanceStepListener;
 
     @Bean
     public Step sellerBalanceStep(
@@ -32,6 +36,8 @@ public class SellerBalanceStepConfig {
                 .<OrderSettlement, OrderSettlement>chunk(SellerBalancePolicy.CHUNK_UNIT, transactionManager)
                 .reader(sellerBalanceReader)
                 .writer(sellerBalanceWriter)
+                .listener(sellerBalanceWriterListener)
+                .listener(sellerBalanceStepListener)
                 .build();
     }
 
@@ -46,6 +52,7 @@ public class SellerBalanceStepConfig {
                         SELECT os
                         FROM OrderSettlement os
                         WHERE os.settledAt IS NULL
+                        ORDER BY os.orderSettlementId
                         """)
                 .build();
     }
