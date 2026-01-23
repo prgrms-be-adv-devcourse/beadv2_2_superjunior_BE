@@ -185,7 +185,7 @@ public class Order {
     public void requestReturned() {
         if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
             throw new CustomException(CustomErrorCode.CANNOT_RETURN_ORDER_INVALID_STATUS);
-        this.status = OrderStatus.REVERSE_REQUESTED;
+        this.status = OrderStatus.REFUND_REQUESTED;
         this.cancelRequestedAt = OffsetDateTime.now();
     }
   
