@@ -11,7 +11,7 @@ import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.stereotype.Service;
 import store._0982.ai.application.dto.SimpleGroupPurchaseInfo;
 import store._0982.ai.application.dto.LlmResponse;
-import store._0982.ai.application.dto.SummerizeResponse;
+import store._0982.ai.application.dto.SummarizeResponse;
 import store._0982.common.log.ServiceLog;
 
 import java.util.List;
@@ -98,7 +98,7 @@ public class PromptService {
     public String summarizeInterest(List<String> descriptions){
         Prompt prompt = generateInterestSummaryPrompt(descriptions);
         try {
-            return parseResponse(chatModel.call(prompt), SummerizeResponse.class).interestSummary();
+            return parseResponse(chatModel.call(prompt), SummarizeResponse.class).interestSummary();
         }catch (JsonProcessingException e){
             return "";
         }
