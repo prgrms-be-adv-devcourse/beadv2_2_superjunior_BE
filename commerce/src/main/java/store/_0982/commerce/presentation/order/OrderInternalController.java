@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.commerce.application.order.OrderQueryService;
 import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
@@ -34,5 +33,11 @@ public class OrderInternalController {
     @ResponseStatus(HttpStatus.OK)
     List<OrderVectorInfo> getOrdersConsumer(@RequestHeader(HeaderName.ID) UUID memberId){
         return orderService.getOrderVector(memberId);
+    }
+
+    @GetMapping("/{groupPurchaseId}/participants")
+    @ResponseStatus(HttpStatus.OK)
+    List<UUID> getGroupPurchaseParticipants(@PathVariable UUID groupPurchaseId){
+        return orderService.getGroupPurchaseParticipants(groupPurchaseId);
     }
 }

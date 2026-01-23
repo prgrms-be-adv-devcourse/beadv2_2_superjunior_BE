@@ -315,4 +315,16 @@ public class OrderCommandService {
         order.changeStatus();
         orderSettlementService.saveOrder(order);
     }
+
+    @Transactional
+    public void confirmPurchase(UUID memberId, UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getMemberId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
+        }
+
+        order.confirmPurchase();
+    }
 }

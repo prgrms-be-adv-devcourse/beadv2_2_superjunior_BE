@@ -209,6 +209,13 @@ public class Order {
         return this.returnedAt != null;
     }
 
+    public void confirmPurchase(){
+        if(this.status != OrderStatus.GROUP_PURCHASE_SUCCESS){
+            throw new CustomException(CustomErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
+        }
+        this.status = OrderStatus.PURCHASE_CONFIRMED;
+    }
+
     public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
         return new OrderCanceledEvent(
                 this.memberId,
