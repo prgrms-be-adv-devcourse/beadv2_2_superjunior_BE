@@ -132,4 +132,9 @@ public class ProductService {
         }
     }
 
+    public String findByProductName(UUID productId) {
+        Product findProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        return findProduct.getName();
+    }
 }
