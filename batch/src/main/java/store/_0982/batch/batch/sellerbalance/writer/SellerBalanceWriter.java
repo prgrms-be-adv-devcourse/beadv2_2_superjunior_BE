@@ -77,6 +77,8 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             sellerBalanceHistoryRepository.saveAll(histories);
         }
 
-        orderSettlementRepository.markSettled(settlementIds);
+        if (!settlementIds.isEmpty()) {
+            orderSettlementRepository.markSettled(settlementIds);
+        }
     }
 }
