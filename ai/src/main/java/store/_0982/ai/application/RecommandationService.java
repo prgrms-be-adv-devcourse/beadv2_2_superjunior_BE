@@ -27,7 +27,7 @@ public class RecommandationService {
         List<VectorSearchResponse> candidates = searchQueryPort.getRecommandationCandidates(new VectorSearchRequest(keyword, category, personalVector.getVector(), NUM_OF_RECO * 2));
         List<GroupPurchase> groupPurchases = candidates.stream().map(GroupPurchase::from).toList();
 
-        LlmResponse llmResponse = promptService.askToChatModel(keyword, category, groupPurchases.stream().map(SimpleGroupPurchaseInfo::from).toList(), NUM_OF_RECO);
+        LlmResponse llmResponse = promptService.askToChatModel(keyword, category, groupPurchases.stream().map(SimpleGroupPurchaseInfo::from).toList(), personalVector.getInterestSummary(), NUM_OF_RECO);
 
         List<GroupPurchase> recommendedGpList = convertLlmResponseToGp(llmResponse, groupPurchases);
 
@@ -42,7 +42,6 @@ public class RecommandationService {
                 if(groupPurchase.groupPurchaseId().equals(gp.groupPurchaseId())){
                     resultInfos.add(groupPurchase);
                 }
-
             }
         }
         return resultInfos;

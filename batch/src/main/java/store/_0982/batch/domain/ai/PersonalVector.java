@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,26 +15,37 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "ai_schema", name = "personal_vector")
-@NoArgsConstructor
+@Table(name = "personal_vector", schema = "ai_schema")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 public class PersonalVector {
+
     @Id
-    @Column(name = "member_id")
+    @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
     @Column(name = "vector", nullable = false, columnDefinition = "vector(1536)")
     @JdbcTypeCode(SqlTypes.VECTOR)
     private float[] vector;
 
-    @Column(name = "updated_at")
     @UpdateTimestamp
-    private OffsetDateTime updateAt;
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
-    private PersonalVector(UUID memberId, float[] vector) {
+    @Column(name = "interest_summary")
+    private String interestSummary;
+
+    public PersonalVector(UUID memberId, float[] vector, String interestSummary) {
         this.memberId = memberId;
         this.vector = vector;
+        this.interestSummary = interestSummary;
     }
-    public static PersonalVector create(UUID memberId, float[] vector) {
-        return new PersonalVector(memberId, vector);
+
+    public static  PersonalVector create(UUID memberId, float[] vector, String interestSummary) {
+        return new PersonalVector(memberId, vector, interestSummary);
+    }
+
+    public void updateVector(float[] vector) {
+        this.vector = vector;
     }
 }
