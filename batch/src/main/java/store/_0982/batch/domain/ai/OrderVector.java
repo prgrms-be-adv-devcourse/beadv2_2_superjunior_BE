@@ -22,9 +22,10 @@ public class OrderVector extends ProductVector {
             OrderStatus status,
             int quantity,
             OffsetDateTime createdAt,
-            OffsetDateTime updatedAt
+            OffsetDateTime updatedAt,
+            String description
     ) {
-        super(memberId, productId, vector);
+        super(memberId, productId, vector, description);
         this.orderId = orderId;
         this.status = status;
         this.quantity = quantity;
