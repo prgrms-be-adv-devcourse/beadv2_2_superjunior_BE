@@ -76,6 +76,7 @@ VALUES
 ('GET', '^/api/purchases/seller/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST,CONSUMER,SELLER'),
 -- Searches
 ('GET', '^/api/searches/purchase/search$', 'GUEST, CONSUMER, SELLER'),
+('GET', '^/api/searches/purchase/mine$', 'SELLER'),
 
 -- 20260122
 -- AI
