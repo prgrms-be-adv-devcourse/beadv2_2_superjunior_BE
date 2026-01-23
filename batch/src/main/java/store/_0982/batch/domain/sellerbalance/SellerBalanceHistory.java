@@ -53,5 +53,4 @@ public class SellerBalanceHistory {
         this.amount = amount;
         this.status = status;
     }
-
 }
