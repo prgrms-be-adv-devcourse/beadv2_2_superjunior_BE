@@ -9,8 +9,6 @@ import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.domain.settlement.OrderSettlement;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
 
-import java.util.UUID;
-
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -19,8 +17,14 @@ public class OrderSettlementService {
     private final OrderSettlementRepository orderSettlementRepository;
 
     @Transactional
-    public void createOrderSettlement(UUID orderId, UUID sellerId, UUID groupPurchaseId, long totalAmount, OrderStatus status) {
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(orderId, sellerId, groupPurchaseId, totalAmount, status);
+    public void saveConfirmedOrderSettlement(Order order) {
+        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
+                order.getOrderId(),
+                order.getSellerId(),
+                order.getGroupPurchaseId(),
+                order.getPrice() * order.getQuantity(),
+                order.getStatus());
+
         orderSettlementRepository.save(orderSettlement);
     }
 

@@ -20,6 +20,7 @@ import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
+import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.order.Order;
@@ -56,6 +57,7 @@ public class OrderCommandService {
     private final MemberClient memberClient;
 
     private final ApplicationEventPublisher eventPublisher;
+    private final OrderSettlementService orderSettlementService;
 
 
     @ServiceLog
@@ -317,5 +319,6 @@ public class OrderCommandService {
         }
 
         order.confirmPurchase();
+        orderSettlementService.saveConfirmedOrderSettlement(order);
     }
 }
