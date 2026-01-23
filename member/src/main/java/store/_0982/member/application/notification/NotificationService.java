@@ -14,6 +14,7 @@ import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.constant.NotificationStatus;
 import store._0982.member.exception.CustomErrorCode;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -38,6 +39,21 @@ public class NotificationService {
     public void readAll(UUID memberId) {
         notificationRepository.findByMemberIdAndStatus(memberId, NotificationStatus.SENT)
                 .forEach(Notification::read);
+    }
+
+    @Transactional
+    public void saveNotification(Notifiable notifiable, NotificationChannel channel) {
+        Notification notification = Notification.from(notifiable.content(), channel, notifiable.memberId());
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void saveBulkNotifications(List<Notifiable> notifiables, NotificationChannel channel) {
+        List<Notification> notifications = notifiables.stream()
+                .map(notifiable -> Notification.from(notifiable.content(), channel, notifiable.memberId()))
+                .toList();
+
+        notificationRepository.saveAll(notifications);
     }
 
     public PageResponse<NotificationInfo> getNotifications(UUID memberId, Pageable pageable) {

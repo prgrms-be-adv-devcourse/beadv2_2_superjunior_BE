@@ -50,6 +50,7 @@ public class NotificationSettingService {
      */
     @Transactional
     public void initializeSettings(UUID memberId) {
+        // TODO: 약관 동의 항목을 만들어서 채널 별로 알림 수신 여부를 따로 받아야 할 것 같음
         List<NotificationSetting> settings = Arrays.stream(NotificationChannel.values())
                 .map(channel -> NotificationSetting.create(memberId, channel, true))
                 .toList();
@@ -69,6 +70,13 @@ public class NotificationSettingService {
                     return NotificationSettingInfo.of(channel, true);
                 })
                 .toList();
+    }
+
+    public boolean isEnabled(UUID memberId, NotificationChannel channel) {
+        if (channel.isDefaultChannel()) {
+            return true;
+        }
+        return getNotificationSettings(memberId).get(channel).isEnabled();
     }
 
     private @NonNull Map<NotificationChannel, NotificationSetting> getNotificationSettings(UUID memberId) {

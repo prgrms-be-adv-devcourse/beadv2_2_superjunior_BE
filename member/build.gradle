@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
 
     testImplementation 'com.navercorp.fixturemonkey:fixture-monkey-starter:1.1.15'
+    testImplementation 'org.awaitility:awaitility:4.2.2'
 
     jib {
         from {
