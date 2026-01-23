@@ -127,4 +127,13 @@ public class OrderService {
     public void handleUpdatedGroupPurchase(GroupPurchaseEvent event){
         orderCommandService.handleUpdatedGroupPurchase(event);
     }
+
+    /**
+     *  취소 요청 상태의 주문을 최종 상태(취소/회수/환불)로 변경 처리
+     *
+     * @param order
+     */
+    public void completeCancellation(Order order) {
+        orderCommandService.completeCancellation(order);
+    }
 }
