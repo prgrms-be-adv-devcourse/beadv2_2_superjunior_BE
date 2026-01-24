@@ -16,13 +16,23 @@ public class PointChangedEvent extends BaseEvent {
     private UUID orderId;
     private UUID memberId;
     private long amount;
+    private UUID transactionId;
     private Status status;
 
-    public PointChangedEvent(Clock clock, UUID orderId, UUID memberId, long amount, Status status) {
+    @Deprecated(forRemoval = true)
+    public PointChangedEvent(UUID orderId, UUID memberId, long amount, Status status) {
+        this.orderId = orderId;
+        this.memberId = memberId;
+        this.amount = amount;
+        this.status = status;
+    }
+
+    public PointChangedEvent(Clock clock, UUID orderId, UUID memberId, long amount, UUID transactionId, Status status) {
         super(clock);
         this.orderId = orderId;
         this.memberId = memberId;
         this.amount = amount;
+        this.transactionId = transactionId;
         this.status = status;
     }
 
