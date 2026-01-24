@@ -100,7 +100,7 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
                 .cancels(List.of(cancelInfo))
                 .build();
 
-        when(tossPaymentService.cancelPayment(any(PgPayment.class), any())).thenReturn(tossPaymentInfo);
+        when(tossPaymentService.cancelPayment(any(), any())).thenReturn(tossPaymentInfo);
 
         // when
         kafkaTemplate.send(KafkaTopics.ORDER_CANCELED, event);

@@ -29,9 +29,9 @@ public class PgConfirmFacade {
     @ServiceLog
     public void confirmPayment(PgConfirmCommand command, UUID memberId) {
         UUID orderId = command.orderId();
-        PgPayment pgPayment = pgQueryService.findCompletablePayment(orderId, memberId);
-
         orderQueryService.validateOrderPayable(memberId, orderId, command.amount());
+
+        PgPayment pgPayment = pgQueryService.findCompletablePayment(orderId, memberId);
 
         TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {
@@ -48,6 +48,7 @@ public class PgConfirmFacade {
             PgCancelCommand refundCommand = new PgCancelCommand(command.orderId(), cancelReason, command.amount());
             tossPaymentService.cancelPayment(pgPayment, refundCommand);
         } catch (Exception e) {
+            // TODO: PG 사에 취소 요청 실패 -> 배치로 처리 필요
             log.error("[Service] Failed to rollback payment", e);
             throw new CustomException(CustomErrorCode.PAYMENT_PROCESS_FAILED_REFUNDED);
         }
@@ -55,6 +56,7 @@ public class PgConfirmFacade {
         try {
             pgFailService.markFailedPaymentBySystem(cancelReason, command.paymentKey(), command.orderId(), memberId);
         } catch (Exception e) {
+            // TODO: PG 사로부터 환불 요청은 성공했는데 상태 변경 실패 -> 배치로 상태 변경?
             log.error("[Error] Failed to mark payment failed", e);
             throw new CustomException(CustomErrorCode.INTERNAL_SERVER_ERROR);
         }

@@ -14,7 +14,5 @@ public interface PgPaymentJpaRepository extends JpaRepository<PgPayment, UUID> {
 
     Optional<PgPayment> findByOrderId(UUID orderId);
 
-    Optional<PgPayment> findByPaymentKey(String paymentKey);
-
     boolean existsByOrderIdAndStatus(UUID orderId, PgPaymentStatus status);
 }

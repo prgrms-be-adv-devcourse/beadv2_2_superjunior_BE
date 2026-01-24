@@ -197,7 +197,8 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
                     paymentInfo
             );
 
-            doThrow(RuntimeException.class)
+            String errorMessage = "결제 조회 실패";
+            doThrow(new RuntimeException(errorMessage))
                     .when(tossWebhookService)
                     .processWebhookPayment(any(TossPaymentInfo.class));
 
@@ -208,7 +209,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
 
             WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.FAILED);
-            assertThat(webhookLog.getErrorMessage()).contains("결제 조회 실패");
+            assertThat(webhookLog.getErrorMessage()).contains(errorMessage);
         }
 
         @Test

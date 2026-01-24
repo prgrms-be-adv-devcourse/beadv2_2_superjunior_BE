@@ -16,7 +16,7 @@ public abstract class BaseIntegrationTest {
     @Autowired
     protected ApplicationEvents events;
 
-    protected void assertEventPublished(Class<?> clazz) {
+    protected void assertEventPublishedOnce(Class<?> clazz) {
         assertThat(events.stream(clazz).count()).isEqualTo(1);
     }
 }

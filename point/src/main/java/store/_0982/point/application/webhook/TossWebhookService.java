@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.pg.PgCancelService;
@@ -27,6 +28,7 @@ public class TossWebhookService {
     private final PgFailService pgFailService;
     private final PgPaymentRepository pgPaymentRepository;
 
+    @Transactional
     public void processWebhookPayment(TossPaymentInfo tossPaymentInfo) throws JsonProcessingException {
         PgPayment pgPayment = pgPaymentRepository.findByOrderId(tossPaymentInfo.orderId())
                 .orElseThrow(() -> new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_NOT_FOUND));

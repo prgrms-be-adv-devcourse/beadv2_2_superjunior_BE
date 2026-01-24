@@ -79,6 +79,11 @@ public class PgPayment {
     @Column(nullable = false)
     private boolean isPartialCancelable;
 
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long version;
+
     public static PgPayment create(UUID memberId, UUID orderId, long amount) {
         return PgPayment.builder()
                 .memberId(memberId)

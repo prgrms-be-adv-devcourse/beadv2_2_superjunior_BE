@@ -101,7 +101,7 @@ class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
-        assertEventPublished(PaymentCanceledTxEvent.class);
+        assertEventPublishedOnce(PaymentCanceledTxEvent.class);
     }
 
     @Test
@@ -122,7 +122,7 @@ class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
-        assertEventPublished(PaymentCanceledTxEvent.class);
+        assertEventPublishedOnce(PaymentCanceledTxEvent.class);
     }
 
     private void validateOwner() {
