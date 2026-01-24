@@ -39,6 +39,16 @@ public class WebhookLogService {
         return Optional.of(webhookLog);
     }
 
+    public void markCompleted(WebhookLog webhookLog) {
+        webhookLog.markSuccess();
+        webhookLogRepository.save(webhookLog);
+    }
+
+    public void markFailed(WebhookLog webhookLog, String failMessage) {
+        webhookLog.markFailed(failMessage);
+        webhookLogRepository.save(webhookLog);
+    }
+
     private WebhookLog createWebhookLog(String webhookId, OffsetDateTime transmissionTime,
                                         TossWebhookRequest request, int retryCount) throws JsonProcessingException {
         WebhookLog webhookLog = WebhookLog.create(

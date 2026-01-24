@@ -45,8 +45,11 @@ class PgConfirmServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private PgCommandManager pgCommandManager;
+
     @InjectMocks
-    private PgTxManager pgTxManager;
+    private PgReadManager pgReadManager;
 
     private PgConfirmService pgConfirmService;
 
@@ -56,7 +59,7 @@ class PgConfirmServiceTest {
 
     @BeforeEach
     void setUp() {
-        pgConfirmService = new PgConfirmService(tossPaymentService, pgTxManager, orderQueryService);
+        pgConfirmService = new PgConfirmService(tossPaymentService, pgReadManager, pgCommandManager, orderQueryService);
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();

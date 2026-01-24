@@ -15,17 +15,18 @@ import java.util.UUID;
 public class PgCancelService {
 
     private final TossPaymentService tossPaymentService;
-    private final PgTxManager pgTxManager;
+    private final PgReadManager pgReadManager;
+    private final PgCommandManager pgCommandManager;
 
     @ServiceLog
     public void refundPayment(UUID memberId, PgCancelCommand command) {
         UUID orderId = command.orderId();
-        PgPayment pgPayment = pgTxManager.findRefundablePayment(orderId, memberId);
+        PgPayment pgPayment = pgReadManager.findRefundablePayment(orderId, memberId);
         TossPaymentInfo response = tossPaymentService.cancelPayment(pgPayment, command);
-        pgTxManager.markRefundedPayment(response, orderId, memberId);
+        pgCommandManager.markRefundedPayment(response, orderId, memberId);
     }
 
     public void markRefundedPayment(UUID memberId, UUID orderId, TossPaymentInfo tossPaymentInfo) {
-        pgTxManager.markRefundedPayment(tossPaymentInfo, orderId, memberId);
+        pgCommandManager.markRefundedPayment(tossPaymentInfo, orderId, memberId);
     }
 }

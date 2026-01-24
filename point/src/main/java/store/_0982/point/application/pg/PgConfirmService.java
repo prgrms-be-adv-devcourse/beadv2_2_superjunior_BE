@@ -21,20 +21,21 @@ import java.util.UUID;
 public class PgConfirmService {
 
     private final TossPaymentService tossPaymentService;
-    private final PgTxManager pgTxManager;
+    private final PgReadManager pgReadManager;
+    private final PgCommandManager pgCommandManager;
     private final OrderQueryService orderQueryService;
 
     // TODO: 결제 승인에 대한 동시성 처리 필요
     @ServiceLog
     public void confirmPayment(PgConfirmCommand command, UUID memberId) {
         UUID orderId = command.orderId();
-        PgPayment pgPayment = pgTxManager.findCompletablePayment(orderId, memberId);
+        PgPayment pgPayment = pgReadManager.findCompletablePayment(orderId, memberId);
 
         orderQueryService.validateOrderPayable(memberId, orderId, command.amount());
 
         TossPaymentInfo tossPaymentInfo = tossPaymentService.confirmPayment(pgPayment, command);
         try {
-            pgTxManager.markConfirmedPayment(tossPaymentInfo, orderId, memberId);
+            pgCommandManager.markConfirmedPayment(tossPaymentInfo, orderId, memberId);
         } catch (Exception e) {
             // 사용자가 요청한 결제인데 나중에 배치로 처리하겠다고 할 수는 없으니 배치는 이용하지 않음
             log.error("[Error] Failed to mark payment confirmed. Trying to rollback...", e);
@@ -43,7 +44,7 @@ public class PgConfirmService {
     }
 
     public void markConfirmedPayment(UUID memberId, UUID orderId, TossPaymentInfo tossPaymentInfo) {
-        pgTxManager.markConfirmedPayment(tossPaymentInfo, orderId, memberId);
+        pgCommandManager.markConfirmedPayment(tossPaymentInfo, orderId, memberId);
     }
 
     // 1차 방어선: 결제 성공 처리에 실패했을 때 토스 API에 취소 요청 (2차는 배치)
@@ -59,7 +60,7 @@ public class PgConfirmService {
         }
 
         try {
-            pgTxManager.markFailedPaymentBySystem(cancelReason, command.paymentKey(), command.orderId(), memberId);
+            pgCommandManager.markFailedPaymentBySystem(cancelReason, command.paymentKey(), command.orderId(), memberId);
         } catch (Exception e) {
             // TODO: 돈은 환불됐는데 DB에는 아직 PENDING 중으로 남아있음 -> 재시도? 배치?
             log.error("[Error] Failed to mark payment failed", e);

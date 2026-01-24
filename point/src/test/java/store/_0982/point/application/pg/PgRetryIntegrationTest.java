@@ -27,7 +27,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
             .build();
 
     @Autowired
-    private PgTxManager pgTxManager;
+    private PgCommandManager pgCommandManager;
 
     @MockitoBean
     private PgPaymentRepository pgPaymentRepository;
@@ -47,7 +47,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
         TossPaymentInfo response = FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.class);
 
         // when & then
-        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, orderId, memberId))
+        assertThatThrownBy(() -> pgCommandManager.markConfirmedPayment(response, orderId, memberId))
                 .isInstanceOf(QueryTimeoutException.class);
 
         // verify

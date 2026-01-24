@@ -101,7 +101,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
-        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
+        assertEventPublished(PaymentCanceledTxEvent.class);
     }
 
     @Test
@@ -122,7 +122,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
 
         // then
         validateOwner();
-        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
+        assertEventPublished(PaymentCanceledTxEvent.class);
     }
 
     private void validateOwner() {

@@ -53,7 +53,11 @@ class PgCancelServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
-    private PgTxManager pgTxManager;
+    private PgCommandManager pgCommandManager;
+
+    @InjectMocks
+    private PgReadManager pgReadManager;
+
     private PgCancelService pgCancelService;
 
     private UUID memberId;
@@ -64,7 +68,7 @@ class PgCancelServiceTest {
     @BeforeEach
     void setUp() {
         // 단위 테스트이므로 설정값이 자동으로 주입되지 않음. 실제 값 설정.
-        pgCancelService = new PgCancelService(tossPaymentService, pgTxManager);
+        pgCancelService = new PgCancelService(tossPaymentService, pgReadManager, pgCommandManager);
 
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
@@ -107,7 +111,7 @@ class PgCancelServiceTest {
         // then
         verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
         verify(tossPaymentService).cancelPayment(pgPayment, command);
-        verify(pgPaymentCancelRepository).saveAll(any());
+        verify(pgPaymentCancelRepository).saveAllAndFlush(any());
         verify(applicationEventPublisher).publishEvent(any(PaymentCanceledTxEvent.class));
     }
 
@@ -135,7 +139,7 @@ class PgCancelServiceTest {
         // 다른 memberId로 생성
         PgPayment otherPayment = PgPayment.create(UUID.randomUUID(), orderId, REFUND_AMOUNT);
         otherPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
-        
+
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(otherPayment));
 
         // when & then
@@ -192,7 +196,7 @@ class PgCancelServiceTest {
     void refundPaymentPoint_fail_whenRefundPeriodExpired() {
         // given
         PgCancelCommand command = new PgCancelCommand(orderId, "고객 요청", REFUND_AMOUNT);
-        
+
         // 15일 전에 승인된 실제 결제 객체 생성 (환불 기간 14일 초과)
         PgPayment expiredPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
         expiredPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now().minusDays(REFUND_DAYS + 1), PAYMENT_KEY);

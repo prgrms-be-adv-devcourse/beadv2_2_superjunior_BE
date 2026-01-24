@@ -51,7 +51,7 @@ public class TossWebhookService {
             case PENDING -> {
                 PgFailCommand command = new PgFailCommand(
                         pgPayment.getOrderId(),
-                        pgPayment.getPaymentKey(),
+                        tossPaymentInfo.paymentKey(),
                         tossPaymentInfo.failure().code(),
                         tossPaymentInfo.failure().message(),
                         pgPayment.getAmount(),

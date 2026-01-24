@@ -10,5 +10,5 @@ public interface PgPaymentCancelRepository {
 
     Set<String> findExistingTransactionKeys(List<String> transactionKeys);
 
-    void saveAll(Iterable<PgPaymentCancel> pgPaymentCancels);
+    void saveAllAndFlush(Iterable<PgPaymentCancel> pgPaymentCancels);
 }

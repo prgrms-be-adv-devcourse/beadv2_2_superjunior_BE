@@ -26,7 +26,7 @@ public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelReposito
     }
 
     @Override
-    public void saveAll(Iterable<PgPaymentCancel> pgPaymentCancels) {
-        pgPaymentCancelJpaRepository.saveAll(pgPaymentCancels);
+    public void saveAllAndFlush(Iterable<PgPaymentCancel> pgPaymentCancels) {
+        pgPaymentCancelJpaRepository.saveAllAndFlush(pgPaymentCancels);
     }
 }
