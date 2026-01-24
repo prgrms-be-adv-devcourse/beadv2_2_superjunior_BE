@@ -1,7 +1,3 @@
-DROP TABLE order_schema.seller_balance CASCADE;
-
-DROP TABLE order_schema.seller_balance_history CASCADE;
-
 CREATE TABLE settlement_schema.seller_balance
 (
     balance_id         UUID                        NOT NULL,
