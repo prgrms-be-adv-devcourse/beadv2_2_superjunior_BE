@@ -13,6 +13,7 @@ public record GroupPurchaseThumbnailInfo(
         int maxQuantity,
         String title,
         Long discountedPrice,
+        Long originalPrice,
         int currentQuantity,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
@@ -20,13 +21,14 @@ public record GroupPurchaseThumbnailInfo(
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
 ) {
-    public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase, ProductCategory category) {
+    public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase, Long originalPrice, ProductCategory category) {
         return new GroupPurchaseThumbnailInfo(
                 groupPurchase.getGroupPurchaseId(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
                 groupPurchase.getTitle(),
                 groupPurchase.getDiscountedPrice(),
+                originalPrice,
                 groupPurchase.getCurrentQuantity(),
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),

@@ -102,7 +102,7 @@ public class GroupPurchaseService {
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
             Product product = productRepository.findById(groupPurchase.getProductId())
                     .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
+            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getPrice(), product.getCategory());
         });
 
         return PageResponse.from(groupPurchaseInfoPage);
@@ -118,7 +118,7 @@ public class GroupPurchaseService {
         Page<GroupPurchaseThumbnailInfo> groupPurchaseInfoPage = groupPurchasePage.map(groupPurchase -> {
             Product product = productRepository.findById(groupPurchase.getProductId())
                     .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
-            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getCategory());
+            return GroupPurchaseThumbnailInfo.from(groupPurchase, product.getPrice(), product.getCategory());
         });
 
         return PageResponse.from(groupPurchaseInfoPage);
