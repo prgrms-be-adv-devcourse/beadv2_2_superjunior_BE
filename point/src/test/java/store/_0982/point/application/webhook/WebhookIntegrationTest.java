@@ -6,11 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.context.event.RecordApplicationEvents;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -36,8 +32,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
-@SpringBootTest
-@RecordApplicationEvents
 class WebhookIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
@@ -54,9 +48,6 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
 
     @MockitoSpyBean
     private TossWebhookService tossWebhookService;
-
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
 
     private UUID orderId;
     private String paymentKey;

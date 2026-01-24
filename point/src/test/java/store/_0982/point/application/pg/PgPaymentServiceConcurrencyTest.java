@@ -4,9 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCreateCommand;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.infrastructure.pg.PgPaymentCancelJpaRepository;
@@ -28,12 +25,6 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @Autowired
     private PgPaymentCancelJpaRepository pgPaymentCancelRepository;
-
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
-
-    @MockitoBean
-    private ApplicationEventPublisher applicationEventPublisher;
 
     @BeforeEach
     void setUp() {

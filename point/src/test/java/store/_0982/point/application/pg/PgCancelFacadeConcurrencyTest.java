@@ -7,9 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -44,12 +41,6 @@ class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
 
     @Autowired
     private PgPaymentCancelJpaRepository paymentCancelRepository;
-
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
-
-    @MockitoBean
-    private ApplicationEventPublisher applicationEventPublisher;
 
     private UUID memberId;
     private UUID orderId;

@@ -4,10 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.point.application.TossPaymentService;
+import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
@@ -53,9 +52,6 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
     @Autowired
     private PgPaymentFailureJpaRepository pgPaymentFailureRepository;
 
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
-
     private UUID memberId;
     private UUID orderId;
 
@@ -100,7 +96,8 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
                 .cancels(List.of(cancelInfo))
                 .build();
 
-        when(tossPaymentService.cancelPayment(any(), any())).thenReturn(tossPaymentInfo);
+        when(tossPaymentService.cancelPayment(any(PgPayment.class), any(PgCancelCommand.class)))
+                .thenReturn(tossPaymentInfo);
 
         // when
         kafkaTemplate.send(KafkaTopics.ORDER_CANCELED, event);

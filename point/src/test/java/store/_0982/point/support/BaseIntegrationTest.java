@@ -3,8 +3,10 @@ package store._0982.point.support;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
+import store._0982.point.application.TossPaymentService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,6 +17,9 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected ApplicationEvents events;
+
+    @MockitoBean
+    protected TossPaymentService tossPaymentService;
 
     protected void assertEventPublishedOnce(Class<?> clazz) {
         assertThat(events.stream(clazz).count()).isEqualTo(1);

@@ -1,6 +1,7 @@
 package store._0982.point.application.pg;
 
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import store._0982.point.client.dto.TossPaymentInfo;
@@ -32,6 +33,15 @@ public class PgCancelService {
                 .toList();
         Set<String> existingKeys = pgPaymentCancelRepository.findExistingTransactionKeys(incomingKeys);
 
+        List<PgPaymentCancel> newCancels = extractNewCancellationInfo(tossPaymentInfo, existingKeys, pgPayment);
+
+        if (!newCancels.isEmpty()) {
+            pgPaymentCancelRepository.saveAllAndFlush(newCancels);
+            applicationEventPublisher.publishEvent(PaymentCanceledTxEvent.from(pgPayment));
+        }
+    }
+
+    private static @NonNull List<PgPaymentCancel> extractNewCancellationInfo(TossPaymentInfo tossPaymentInfo, Set<String> existingKeys, PgPayment pgPayment) {
         List<PgPaymentCancel> newCancels = new ArrayList<>();
         for (TossPaymentInfo.CancelInfo cancelInfo : tossPaymentInfo.cancels()) {
             if (!existingKeys.contains(cancelInfo.transactionKey())) {
@@ -46,10 +56,6 @@ public class PgCancelService {
                 pgPayment.applyRefund(cancelInfo.cancelAmount(), cancelInfo.canceledAt());
             }
         }
-
-        if (!newCancels.isEmpty()) {
-            pgPaymentCancelRepository.saveAllAndFlush(newCancels);
-        }
-        applicationEventPublisher.publishEvent(PaymentCanceledTxEvent.from(pgPayment));
+        return newCancels;
     }
 }

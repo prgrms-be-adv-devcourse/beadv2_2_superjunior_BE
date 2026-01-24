@@ -6,8 +6,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -44,9 +42,6 @@ class WebhookConcurrencyTest extends BaseConcurrencyTest {
 
     @Autowired
     private WebhookLogJpaRepository webhookLogRepository;
-
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
 
     private UUID orderId;
     private String paymentKey;
