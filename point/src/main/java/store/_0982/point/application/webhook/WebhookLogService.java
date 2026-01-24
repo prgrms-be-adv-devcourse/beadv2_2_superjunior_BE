@@ -39,11 +39,13 @@ public class WebhookLogService {
         return Optional.of(webhookLog);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markCompleted(WebhookLog webhookLog) {
         webhookLog.markSuccess();
         webhookLogRepository.save(webhookLog);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markFailed(WebhookLog webhookLog, String failMessage) {
         webhookLog.markFailed(failMessage);
         webhookLogRepository.save(webhookLog);

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +27,7 @@ public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelReposito
     }
 
     @Override
-    public void saveAllAndFlush(Iterable<PgPaymentCancel> pgPaymentCancels) {
+    public void saveAllAndFlush(Collection<PgPaymentCancel> pgPaymentCancels) {
         pgPaymentCancelJpaRepository.saveAllAndFlush(pgPaymentCancels);
     }
 }

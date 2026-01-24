@@ -1,4 +1,4 @@
-package store._0982.point.application.kafka;
+package store._0982.point.infrastructure.kafka;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.OrderChangedEvent;
+import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.point.application.TossPaymentService;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -18,6 +18,7 @@ import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.infrastructure.pg.PgPaymentCancelJpaRepository;
+import store._0982.point.infrastructure.pg.PgPaymentFailureJpaRepository;
 import store._0982.point.infrastructure.pg.PgPaymentJpaRepository;
 import store._0982.point.infrastructure.point.PointBalanceJpaRepository;
 import store._0982.point.infrastructure.point.PointTransactionJpaRepository;
@@ -29,15 +30,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class OrderChangedEventListenerTest extends BaseKafkaTest {
+class OrderCanceledEventListenerTest extends BaseKafkaTest {
 
     @Autowired
     private PointBalanceJpaRepository pointBalanceRepository;
@@ -51,6 +50,9 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
     @Autowired
     private PgPaymentCancelJpaRepository pgPaymentCancelRepository;
 
+    @Autowired
+    private PgPaymentFailureJpaRepository pgPaymentFailureRepository;
+
     @MockitoBean
     private TossPaymentService tossPaymentService;
 
@@ -60,6 +62,7 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
     @BeforeEach
     void setUp() {
         pgPaymentCancelRepository.deleteAll();
+        pgPaymentFailureRepository.deleteAll();
         pgPaymentRepository.deleteAll();
         pointTransactionRepository.deleteAll();
         pointBalanceRepository.deleteAll();
@@ -69,25 +72,26 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
     }
 
     @Test
-    @DisplayName("공동구매 실패 이벤트를 수신하면 PG 결제 환불 로직이 실행된다")
-    void handleOrderChangedEvent_GroupPurchaseFail_Pg() {
+    @DisplayName("PG 결제 취소 이벤트를 수신하면 PgCancelService가 호출된다")
+    void handleOrderCanceledEvent_Pg() {
         // given
         long cancelAmount = 10000;
         PgPayment pgPayment = PgPayment.create(memberId, orderId, cancelAmount);
         pgPayment.markConfirmed(PaymentMethod.EASY_PAY, OffsetDateTime.now(), "test_payment_key");
         pgPaymentRepository.save(pgPayment);
 
-        OrderChangedEvent event = new OrderChangedEvent(
+        OrderCanceledEvent event = new OrderCanceledEvent(
                 Clock.fixed(Instant.parse("2024-01-01T10:00:00Z"), ZoneId.systemDefault()),
-                orderId,
                 memberId,
-                OrderChangedEvent.Status.GROUP_PURCHASE_FAIL,
-                "상품명"
+                orderId,
+                OrderCanceledEvent.PaymentMethod.PG,
+                cancelAmount,
+                "단순 변심"
         );
 
         TossPaymentInfo.CancelInfo cancelInfo = TossPaymentInfo.CancelInfo.builder()
                 .cancelAmount(cancelAmount)
-                .cancelReason("공동구매 실패")
+                .cancelReason("단순 변심")
                 .canceledAt(OffsetDateTime.now())
                 .transactionKey(UUID.randomUUID().toString())
                 .build();
@@ -99,7 +103,7 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
         when(tossPaymentService.cancelPayment(any(PgPayment.class), any())).thenReturn(tossPaymentInfo);
 
         // when
-        kafkaTemplate.send(KafkaTopics.ORDER_CHANGED, event);
+        kafkaTemplate.send(KafkaTopics.ORDER_CANCELED, event);
 
         // then
         awaitUntilAsserted(() -> {
@@ -111,15 +115,15 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
             List<PgPaymentCancel> cancels = pgPaymentCancelRepository.findAllByPgPayment(payment);
             assertThat(cancels).singleElement()
                     .extracting(PgPaymentCancel::getCancelAmount, PgPaymentCancel::getCancelReason)
-                    .containsExactly(cancelAmount, "공동구매 실패");
+                    .containsExactly(cancelAmount, "단순 변심");
 
             verify(tossPaymentService).cancelPayment(any(PgPayment.class), any());
         });
     }
 
     @Test
-    @DisplayName("공동구매 실패 이벤트를 수신하면 포인트 결제 환불 로직이 실행된다")
-    void handleOrderChangedEvent_GroupPurchaseFail_Point() {
+    @DisplayName("포인트 결제 취소 이벤트를 수신하면 PointReturnService가 호출된다")
+    void handleOrderCanceledEvent_Point() {
         // given
         long paidAmount = 3000;
         long bonusAmount = 2000;
@@ -135,16 +139,17 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
         );
         pointTransactionRepository.save(payment);
 
-        OrderChangedEvent event = new OrderChangedEvent(
+        OrderCanceledEvent event = new OrderCanceledEvent(
                 Clock.fixed(Instant.parse("2024-01-01T10:00:00Z"), ZoneId.systemDefault()),
-                orderId,
                 memberId,
-                OrderChangedEvent.Status.GROUP_PURCHASE_FAIL,
-                "상품명"
+                orderId,
+                OrderCanceledEvent.PaymentMethod.POINT,
+                paidAmount + bonusAmount,
+                "단순 변심"
         );
 
         // when
-        kafkaTemplate.send(KafkaTopics.ORDER_CHANGED, event);
+        kafkaTemplate.send(KafkaTopics.ORDER_CANCELED, event);
 
         // then
         awaitUntilAsserted(() -> {
@@ -172,26 +177,4 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
         });
     }
 
-    @Test
-    @DisplayName("공동구매 실패가 아닌 이벤트는 무시된다")
-    void handleOrderChangedEvent_OtherStatus() {
-        // given
-        OrderChangedEvent event = new OrderChangedEvent(
-                Clock.fixed(Instant.parse("2024-01-01T10:00:00Z"), ZoneId.systemDefault()),
-                orderId,
-                memberId,
-                OrderChangedEvent.Status.PAYMENT_COMPLETED,
-                "상품명"
-        );
-
-        // when
-        kafkaTemplate.send(KafkaTopics.ORDER_CHANGED, event);
-
-        // then: 2초 동안 DB 상태가 변하지 않아야 함
-        await().during(2, TimeUnit.SECONDS)
-                .untilAsserted(() -> {
-                    assertThat(pgPaymentRepository.count()).isZero();
-                    assertThat(pointTransactionRepository.count()).isZero();
-                });
-    }
 }
