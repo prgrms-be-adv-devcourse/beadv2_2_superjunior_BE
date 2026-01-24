@@ -13,3 +13,7 @@ commerce-service:
 
 point-service:
   url: ${POINT_SERVICE_URL}
+
+cookie:
+  same-site: None
+  secure: true

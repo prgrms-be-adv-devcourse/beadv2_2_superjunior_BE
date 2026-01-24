@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -22,6 +23,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+
+    @Value("${cookie.same-site}")
+    private String sameSite;
+    @Value("${cookie.secure}")
+    private boolean secure;
+
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
@@ -76,8 +83,8 @@ public class AuthController {
                 .httpOnly(true)
                 .path("/")  //api와 auth 전부 다 가야함 (logout 때문)
                 .maxAge(Duration.ofHours(1))   // 1시간
-                .sameSite("None")
-                .secure(true)                  // apigateway와 클라이언트 간 https 설정 후 사용
+                .sameSite(sameSite)
+                .secure(secure)                  // apigateway와 클라이언트 간 https 설정 후 사용
                 .build();
     }
 
@@ -87,8 +94,8 @@ public class AuthController {
                 .httpOnly(true)
                 .path("/auth")
                 .maxAge(Duration.ofDays(30))   // 30일
-                .sameSite("Lax")    //배포 시 None으로
-                .secure(false) //배포시 true로 활성화
+                .sameSite(sameSite)
+                .secure(secure)
                 .build();
     }
 
