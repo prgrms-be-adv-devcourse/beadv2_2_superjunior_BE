@@ -11,7 +11,7 @@ import store._0982.common.log.BatchLogMetadataFormat;
 import java.time.Duration;
 
 /**
- * 출금 정산 Job 실행 전후 처리
+ * 일간 정산 Job 실행 전후 처리
  */
 @Slf4j
 @Component

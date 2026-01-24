@@ -5,9 +5,10 @@ import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 public record GroupPurchaseSimilaritySearchInfo(
-        String groupPurchaseId,
+        UUID groupPurchaseId,
         Integer minQuantity,
         Integer maxQuantity,
         String title,
@@ -25,7 +26,7 @@ public record GroupPurchaseSimilaritySearchInfo(
 ) {
     public static GroupPurchaseSimilaritySearchInfo from(GroupPurchaseSimilaritySearchRow row, Double score) {
         return new GroupPurchaseSimilaritySearchInfo(
-                row.groupPurchaseId().toString(),
+                row.groupPurchaseId(),
                 row.minQuantity(),
                 row.maxQuantity(),
                 row.title(),

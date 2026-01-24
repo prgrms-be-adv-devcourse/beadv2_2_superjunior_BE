@@ -3,6 +3,7 @@ package store._0982.commerce.domain.product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,6 @@ public interface ProductRepository {
     Page<Product> findBySellerId(UUID sellerId, Pageable pageable);
 
     Optional<Product> findByIdempotencyKey(String idempotencyKey);
+
+    List<Product> findByProductIdIn(List<UUID> productIds);
 }

@@ -41,6 +41,8 @@ spec:
           value: "http://elasticsearch-service:9200"
         - name: CLIENT_MEMBER
           value: "http://member-service:8083"
+        - name: CLIENT_COMMERCE
+          value: "http://commerce-service:8087"
         envFrom:
           - secretRef:
               name: batch-secret

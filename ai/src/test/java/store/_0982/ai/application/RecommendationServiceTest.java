@@ -18,7 +18,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class RecommandationServiceTest {
+class RecommendationServiceTest {
 
     @Mock
     private SearchQueryPort searchQueryPort;
@@ -27,11 +27,11 @@ class RecommandationServiceTest {
     @Mock
     private PromptService promptService;
 
-    private RecommandationService recommandationService;
+    private RecommendationService recommendationService;
 
     @BeforeEach
     void setUp() {
-        recommandationService = new RecommandationService(searchQueryPort, personalVectorRepository, promptService);
+        recommendationService = new RecommendationService(searchQueryPort, personalVectorRepository, promptService);
     }
 
     @Test
@@ -58,7 +58,7 @@ class RecommandationServiceTest {
         );
 
         List<GroupPurchase> result = ReflectionTestUtils.invokeMethod(
-                recommandationService,
+                recommendationService,
                 "convertLlmResponseToGp",
                 llmResponse,
                 List.of(first, second)

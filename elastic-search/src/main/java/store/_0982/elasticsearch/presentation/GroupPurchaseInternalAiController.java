@@ -28,17 +28,15 @@ public class GroupPurchaseInternalAiController {
     @ResponseStatus(HttpStatus.OK)
     @ControllerLog
     @PostMapping("/search")
-    public ResponseDto<List<GroupPurchaseSimilaritySearchInfo>> searchGroupPurchase(
+    public List<GroupPurchaseSimilaritySearchInfo> searchGroupPurchase(
             @RequestBody GroupPurchaseInternalSearchRequest request
     ) {
-        List<GroupPurchaseSimilaritySearchInfo> result = searchService.searchGroupPurchaseDocumentWithEmbedding(
+        return searchService.searchGroupPurchaseDocumentWithEmbedding(
                 request.keyword(),
                 "",//open으로 수정 해야함
                 request.category(),
                 request.vector(),
                 request.topK()
         );
-
-        return new ResponseDto<>(HttpStatus.OK, result, "검색 완료.");
     }
 }

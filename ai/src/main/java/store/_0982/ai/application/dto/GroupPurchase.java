@@ -3,9 +3,10 @@ package store._0982.ai.application.dto;
 import store._0982.ai.infrastructure.feign.search.dto.ProductSearchInfo;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 public record GroupPurchase(
-    String groupPurchaseId,
+    UUID groupPurchaseId,
     Integer minQuantity,
     Integer maxQuantity,
     String title,

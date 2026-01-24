@@ -2,9 +2,9 @@ package store._0982.batch.batch.ai.reader;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import store._0982.batch.domain.ai.CartVector;
 import store._0982.batch.domain.ai.OrderVector;
@@ -20,6 +20,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @StepScope
+@Slf4j
 public class PersonalVectorInfoReader implements ItemReader<PersonalVectorInfoReader.MemberVectorsInput> {
 
     private static final int PAGE_SIZE = 1_000;
@@ -36,14 +37,15 @@ public class PersonalVectorInfoReader implements ItemReader<PersonalVectorInfoRe
 
     @Override
     public MemberVectorsInput read() {
-        if (!memberIterator.hasNext()) {
-            return null;
+        while (memberIterator.hasNext()) {
+            UUID memberId = memberIterator.next();
+            List<CartVector> cartVectors = unwrap(commerceClient.getCarts(memberId));
+            List<OrderVector> orderVectors = unwrap(commerceClient.getOrdersConsumer(memberId));
+            if (!cartVectors.isEmpty() || !orderVectors.isEmpty()) {
+                return new MemberVectorsInput(memberId, cartVectors, orderVectors);
+            }
         }
-
-        UUID memberId = memberIterator.next();
-        List<CartVector> cartVectors = unwrap(commerceClient.getCarts(memberId));
-        List<OrderVector> orderVectors = unwrap(commerceClient.getOrdersConsumer(memberId));
-        return new MemberVectorsInput(memberId, cartVectors, orderVectors);
+        return null;
     }
 
     private List<UUID> fetchMemberIds() {

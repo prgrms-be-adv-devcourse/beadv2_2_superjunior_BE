@@ -13,5 +13,8 @@ spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
+frontend:
+  url: https://0982.vercel.app
+
 member-service:
   url: ${MEMBER_SERVICE_URL}
