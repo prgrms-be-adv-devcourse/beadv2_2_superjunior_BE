@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -130,16 +129,6 @@ public class Order {
                 sellerId,
                 groupPurchaseId,
                 idempotencyKey
-        );
-    }
-
-    public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
-        return new OrderCanceledEvent(
-                this.memberId,
-                this.orderId,
-                cancelReason,
-                method,
-                amount
         );
     }
 
