@@ -26,6 +26,8 @@ spec:
               value: "kafka-service:9092"
             - name: OPENAI_EMBEDDING_MODEL
               value: text-embedding-3-small
+            - name: CLIENT_SEARCH
+              value: http://search-service:8082
           envFrom:
             - secretRef:
                 name: ai-secret
