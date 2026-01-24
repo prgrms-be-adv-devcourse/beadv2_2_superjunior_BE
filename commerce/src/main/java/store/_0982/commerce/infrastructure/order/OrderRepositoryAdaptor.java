@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
-
 import store._0982.commerce.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
@@ -97,6 +96,11 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, List<OrderStatus> orderStatuses) {
         return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, orderStatuses);
+    }
+
+    @Override
+    public Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable) {
+        return orderJpaRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
     }
 
 
