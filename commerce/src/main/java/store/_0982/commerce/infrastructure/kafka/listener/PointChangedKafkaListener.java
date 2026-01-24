@@ -7,12 +7,12 @@ import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.OrderPaymentProcessorService;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
+import store._0982.common.kafka.dto.PointChangedEvent;
 import store._0982.common.log.ServiceLog;
 
 @RequiredArgsConstructor
 @Service
-public class PaymentChangedKafkaListener {
+public class PointChangedKafkaListener {
 
     private final OrderPaymentProcessorService orderPaymentProcessorService;
 
@@ -22,11 +22,12 @@ public class PaymentChangedKafkaListener {
             exclude = CustomException.class
     )
     @KafkaListener(
-            topics = KafkaTopics.PAYMENT_CHANGED,
+            topics = KafkaTopics.POINT_CHANGED,
             groupId = "order-service-group",
             containerFactory = "paymentKafkaListenerFactory"
     )
-    public void handlePaymentChangedEvent(PaymentChangedEvent event) {
-        orderPaymentProcessorService.processPaymentStatusUpdate(event);
+    public void handlePointChangedEvent(PointChangedEvent event) {
+        orderPaymentProcessorService.processPointStatusUpdate(event);
     }
+
 }
