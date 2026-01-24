@@ -146,4 +146,15 @@ public class OrderService {
     public List<UUID> getGroupPurchaseParticipants(UUID groupPurchaseId) {
         return orderQueryService.getGroupPurchaseParticipants(groupPurchaseId);
     }
+
+    /**
+     * 주문 취소 목록 조회
+     *
+     * @param memberId
+     * @param pageable
+     * @return
+     */
+    public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
+        return orderQueryService.getCanceledOrders(memberId, pageable);
+    }
 }

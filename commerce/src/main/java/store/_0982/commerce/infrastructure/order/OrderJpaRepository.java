@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderStatus;
 
@@ -59,4 +60,13 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
             AND o.deletedAt IS NULL
     """)
     List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, @Param("statuses") List<OrderStatus> statuses);
+
+    @Query("""
+        SELECT o
+        FROM Order o
+        WHERE o.status IN :statuses
+            AND o.memberId = :memberId
+            AND o.deletedAt IS NULL
+    """)
+    Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable);
 }
