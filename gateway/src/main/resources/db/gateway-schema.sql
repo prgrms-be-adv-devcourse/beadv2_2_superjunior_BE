@@ -5,11 +5,11 @@ CREATE SCHEMA gateway_schema;
 SET search_path TO gateway_schema;
 
 CREATE TABLE gateway_route (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    http_method varchar(10),
-    endpoint varchar(255),
-    roles varchar(100),
-    CONSTRAINT gateway_route_un UNIQUE (http_method, endpoint)
+                               id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                               http_method varchar(10),
+                               endpoint varchar(255),
+                               roles varchar(100),
+                               CONSTRAINT gateway_route_un UNIQUE (http_method, endpoint)
 );
 
 INSERT INTO gateway_route (http_method, endpoint, roles)
@@ -42,6 +42,7 @@ VALUES
 ('PUT', '^/api/members/seller$', 'SELLER'),
 ('POST', '^/api/members/seller$', 'CONSUMER'),
 ('GET', '^/api/members/seller/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST,CONSUMER,SELLER'),
+('GET', '^/api/members/role$', 'GUEST,CONSUMER,SELLER'),
 -- Notifications
 ('GET', '^/api/notifications$', 'CONSUMER,SELLER'),
 ('PATCH', '^/api/notifications/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/read$', 'CONSUMER,SELLER'),
@@ -53,14 +54,20 @@ VALUES
 ('POST', '^/api/orders/cart$', 'CONSUMER,SELLER'),
 ('GET', '^/api/orders/consumer$', 'CONSUMER,SELLER'),
 ('GET', '^/api/orders/seller$', 'SELLER'),
+('GET', '/api/orders/cancel$', 'CONSUMER, SELLER'),
+('POST', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
 -- Payments
 ('GET', '^/api/payments$', 'CONSUMER,SELLER'),
 ('GET', '^/api/payments/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
-('GET', '^/api/payments/confirm$', 'CONSUMER,SELLER'),
+('POST', '^/api/payments/confirm$', 'CONSUMER,SELLER'),
+('POST', '^/api/payments/fail$', 'CONSUMER,SELLER'),
 ('POST', '^/api/payments/create$', 'CONSUMER,SELLER'),
-('GET', '^/api/payments/refund$', 'CONSUMER,SELLER'),
 -- Points
 ('GET', '^/api/points$', 'CONSUMER,SELLER'),
+('POST', '^/api/points/charge$', 'CONSUMER,SELLER'),
+('POST', '^/api/points/deduct$', 'CONSUMER,SELLER'),
+('GET',  '^/api/points/histories$', 'CONSUMER,SELLER'),
+('POST', '^/api/points/transfer$', 'CONSUMER,SELLER'),
 -- Products
 ('POST', '^/api/products$', 'SELLER'),
 ('GET', '^/api/products$', 'SELLER'),
@@ -77,20 +84,8 @@ VALUES
 -- Searches
 ('GET', '^/api/searches/purchase/search$', 'GUEST, CONSUMER, SELLER'),
 ('GET', '^/api/searches/purchase/mine$', 'SELLER'),
-
--- 20260122
 -- AI
 ('GET', '^/api/ai/recommandations$', 'CONSUMER,SELLER'),
--- Members
-('GET', '^/api/members/role$', 'GUEST,CONSUMER,SELLER'),
--- Orders
-('GET', '/api/orders/cancel$', 'CONSUMER, SELLER'),
-('POST', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
--- Points
-('POST', '^/api/points/charge$', 'CONSUMER,SELLER'),
-('POST', '^/api/points/deduct$', 'CONSUMER,SELLER'),
-('GET',  '^/api/points/histories$', 'CONSUMER,SELLER'),
-('POST', '^/api/points/transfer$', 'CONSUMER,SELLER'),
 -- Notification settings
 ('GET', '^/api/notification-settings$', 'CONSUMER,SELLER'),
 ('PUT', '^/api/notification-settings$', 'CONSUMER,SELLER');
