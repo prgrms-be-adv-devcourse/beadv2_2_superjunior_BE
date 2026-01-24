@@ -33,7 +33,7 @@ public class GroupPurchaseInternalAiController {
     ) {
         return searchService.searchGroupPurchaseDocumentWithEmbedding(
                 request.keyword(),
-                "",//open으로 수정 해야함
+                "OPEN",
                 request.category(),
                 request.vector(),
                 request.topK()
