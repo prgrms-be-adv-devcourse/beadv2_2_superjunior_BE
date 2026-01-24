@@ -84,6 +84,7 @@ VALUES
 -- Members
 ('GET', '^/api/members/role$', 'GUEST,CONSUMER,SELLER'),
 -- Orders
+('GET', '/api/orders/cancel$', 'CONSUMER, SELLER'),
 ('POST', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
 -- Points
 ('POST', '^/api/points/charge$', 'CONSUMER,SELLER'),
