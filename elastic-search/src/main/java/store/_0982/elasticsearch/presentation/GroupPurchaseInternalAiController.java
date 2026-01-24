@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
@@ -33,7 +32,7 @@ public class GroupPurchaseInternalAiController {
     ) {
         return searchService.searchGroupPurchaseDocumentWithEmbedding(
                 request.keyword(),
-                "",//open으로 수정 해야함
+                "OPEN",
                 request.category(),
                 request.vector(),
                 request.topK()
