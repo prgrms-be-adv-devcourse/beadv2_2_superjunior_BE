@@ -87,7 +87,7 @@ public class AuthController {
                 .httpOnly(true)
                 .path("/auth")
                 .maxAge(Duration.ofDays(30))   // 30일
-                .sameSite("Lax")
+                .sameSite("Lax")    //배포 시 None으로
                 .secure(false) //배포시 true로 활성화
                 .build();
     }
