@@ -38,9 +38,10 @@ class PgFailServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @InjectMocks
-    private PgReadManager pgReadManager;
+    @Mock
+    private PgQueryService pgQueryService;
 
+    @InjectMocks
     private PgFailService pgFailService;
 
     private UUID memberId;
@@ -51,8 +52,6 @@ class PgFailServiceTest {
 
     @BeforeEach
     void setUp() {
-        pgFailService = new PgFailService(pgPaymentFailureRepository, applicationEventPublisher, pgReadManager);
-
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         paymentKey = "test_payment_key";

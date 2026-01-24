@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import store._0982.point.domain.event.PaymentCanceledTxEvent;
 
-class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
+class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
 
     private static final long PAYMENT_AMOUNT = 10_000;
 
@@ -37,7 +37,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private PgCancelService pgCancelService;
+    private PgCancelFacade pgCancelFacade;
 
     @Autowired
     private PgPaymentJpaRepository paymentPointRepository;
@@ -97,7 +97,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTask(() -> pgCancelService.refundPayment(memberId, command));
+        runSynchronizedTask(() -> pgCancelFacade.refundPayment(memberId, command));
 
         // then
         validateOwner();
@@ -118,7 +118,7 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTasks(commands, command -> pgCancelService.refundPayment(memberId, command));
+        runSynchronizedTasks(commands, command -> pgCancelFacade.refundPayment(memberId, command));
 
         // then
         validateOwner();

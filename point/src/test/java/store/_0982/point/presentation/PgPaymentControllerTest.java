@@ -19,7 +19,7 @@ import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgCreateInfo;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.dto.pg.PgPaymentInfo;
-import store._0982.point.application.pg.PgConfirmService;
+import store._0982.point.application.pg.PgConfirmFacade;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -53,7 +53,7 @@ class PgPaymentControllerTest {
     private PgFailService pgFailService;
 
     @Autowired
-    private PgConfirmService pgConfirmService;
+    private PgConfirmFacade pgConfirmFacade;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -74,8 +74,8 @@ class PgPaymentControllerTest {
         }
 
         @Bean
-        public PgConfirmService pgConfirmService() {
-            return mock(PgConfirmService.class);
+        public PgConfirmFacade pgConfirmService() {
+            return mock(PgConfirmFacade.class);
         }
     }
 
@@ -118,7 +118,7 @@ class PgPaymentControllerTest {
         // given
         PgConfirmRequest request = new PgConfirmRequest(orderId, 10000, "test_payment_key");
 
-        doNothing().when(pgConfirmService).confirmPayment(any(PgConfirmCommand.class), eq(memberId));
+        doNothing().when(pgConfirmFacade).confirmPayment(any(PgConfirmCommand.class), eq(memberId));
 
         // when & then
         mockMvc.perform(post("/api/payments/confirm")
@@ -127,7 +127,7 @@ class PgPaymentControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is2xxSuccessful());
 
-        verify(pgConfirmService).confirmPayment(any(), eq(memberId));
+        verify(pgConfirmFacade).confirmPayment(any(), eq(memberId));
     }
 
     @Test
@@ -136,7 +136,7 @@ class PgPaymentControllerTest {
         // given
         PgConfirmRequest request = new PgConfirmRequest(orderId, 10000, "test_payment_key");
 
-        doThrow(new RuntimeException("임의 에러")).when(pgConfirmService).confirmPayment(any(), eq(memberId));
+        doThrow(new RuntimeException("임의 에러")).when(pgConfirmFacade).confirmPayment(any(), eq(memberId));
 
         mockMvc.perform(post("/api/payments/confirm")
                         .header(HeaderName.ID, memberId.toString())
@@ -144,7 +144,7 @@ class PgPaymentControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().is5xxServerError());
 
-        verify(pgConfirmService).confirmPayment(any(), eq(memberId));
+        verify(pgConfirmFacade).confirmPayment(any(), eq(memberId));
     }
 
     @Test

@@ -19,15 +19,24 @@ public class PgFailService {
 
     private final PgPaymentFailureRepository pgPaymentFailureRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final PgReadManager pgReadManager;
+    private final PgQueryService pgQueryService;
 
     // TODO: 클라이언트로부터 받은 실패 데이터를 신뢰할 것인가?
     @ServiceLog
     @RetryableTransactional
     public void handlePaymentFailure(PgFailCommand command, UUID memberId) {
-        PgPayment pgPayment = pgReadManager.findFailablePayment(command.orderId(), memberId);
+        PgPayment pgPayment = pgQueryService.findFailablePayment(command.orderId(), memberId);
         pgPayment.markFailed(command.paymentKey());
         PgPaymentFailure pgPaymentFailure = PgPaymentFailure.pgError(pgPayment, command);
+        pgPaymentFailureRepository.save(pgPaymentFailure);
+        applicationEventPublisher.publishEvent(PaymentFailedTxEvent.from(pgPayment));
+    }
+
+    @RetryableTransactional
+    public void markFailedPaymentBySystem(String errorMessage, String paymentKey, UUID orderId, UUID memberId) {
+        PgPayment pgPayment = pgQueryService.findFailablePayment(orderId, memberId);
+        pgPayment.markFailed(paymentKey);
+        PgPaymentFailure pgPaymentFailure = PgPaymentFailure.systemError(pgPayment, errorMessage);
         pgPaymentFailureRepository.save(pgPaymentFailure);
         applicationEventPublisher.publishEvent(PaymentFailedTxEvent.from(pgPayment));
     }

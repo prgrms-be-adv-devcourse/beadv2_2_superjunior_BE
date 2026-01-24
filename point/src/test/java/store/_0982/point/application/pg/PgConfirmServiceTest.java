@@ -45,13 +45,8 @@ class PgConfirmServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @Mock
-    private PgCommandManager pgCommandManager;
-
     @InjectMocks
-    private PgReadManager pgReadManager;
-
-    private PgConfirmService pgConfirmService;
+    private PgConfirmFacade pgConfirmFacade;
 
     private UUID memberId;
     private UUID orderId;
@@ -59,8 +54,6 @@ class PgConfirmServiceTest {
 
     @BeforeEach
     void setUp() {
-        pgConfirmService = new PgConfirmService(tossPaymentService, pgReadManager, pgCommandManager, orderQueryService);
-
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         paymentKey = "test_payment_key";
@@ -90,7 +83,7 @@ class PgConfirmServiceTest {
         doNothing().when(applicationEventPublisher).publishEvent(any(PaymentConfirmedTxEvent.class));
 
         // when
-        pgConfirmService.confirmPayment(command, memberId);
+        pgConfirmFacade.confirmPayment(command, memberId);
 
         // then
         verify(pgPaymentRepository, times(2)).findByOrderId(orderId);
@@ -112,7 +105,7 @@ class PgConfirmServiceTest {
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
+        assertThatThrownBy(() -> pgConfirmFacade.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
 
@@ -130,7 +123,7 @@ class PgConfirmServiceTest {
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(completedPayment));
 
         // when & then
-        assertThatThrownBy(() -> pgConfirmService.confirmPayment(command, memberId))
+        assertThatThrownBy(() -> pgConfirmFacade.confirmPayment(command, memberId))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining(CustomErrorCode.ALREADY_COMPLETED_PAYMENT.getMessage());
 
