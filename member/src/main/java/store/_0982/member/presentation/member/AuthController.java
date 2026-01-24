@@ -74,7 +74,7 @@ public class AuthController {
     private ResponseCookie generateAccessTokenCookie(String accessToken) {
         return ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
-                .path("/api")
+                .path("/")  //api와 auth 전부 다 가야함 (logout 때문)
                 .maxAge(Duration.ofHours(1))   // 1시간
                 .sameSite("None")
                 .secure(true)                  // apigateway와 클라이언트 간 https 설정 후 사용
@@ -85,10 +85,10 @@ public class AuthController {
     private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .path("/api/auth/refresh")
+                .path("/auth")
                 .maxAge(Duration.ofDays(30))   // 30일
-                .sameSite("None")
-                .secure(true) // 필요 시 활성화
+                .sameSite("Lax")
+                .secure(false) //배포시 true로 활성화
                 .build();
     }
 
