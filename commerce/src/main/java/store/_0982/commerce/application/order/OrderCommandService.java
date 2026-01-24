@@ -20,7 +20,6 @@ import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
-import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
@@ -54,12 +53,12 @@ public class OrderCommandService {
     private final ProductService productService;
     private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
-    private final SellerBalanceService sellerBalanceService;
 
     private final MemberClient memberClient;
 
     private final ApplicationEventPublisher eventPublisher;
     private final OrderSettlementService orderSettlementService;
+
 
     @ServiceLog
     @Transactional
@@ -311,12 +310,6 @@ public class OrderCommandService {
     }
 
     @Transactional
-    public void completeCancellation(Order order) {
-        order.changeStatus();
-        orderSettlementService.saveOrder(order);
-    }
-
-    @Transactional
     public void confirmPurchase(UUID memberId, UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
@@ -326,5 +319,6 @@ public class OrderCommandService {
         }
 
         order.confirmPurchase();
+        orderSettlementService.saveConfirmedOrderSettlement(order);
     }
 }
