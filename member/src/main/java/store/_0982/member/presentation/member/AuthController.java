@@ -16,7 +16,6 @@ import store._0982.member.application.member.dto.LoginTokens;
 import store._0982.member.presentation.member.dto.MemberLoginRequest;
 
 import java.time.Duration;
-import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,6 +28,9 @@ public class AuthController {
     @Value("${cookie.secure}")
     private boolean secure;
 
+    private static final Duration DURATION_OF_ACCESS_TOKEN_COOKIE =  Duration.ofHours(1);
+    private static final Duration DURATION_OF_REFRESH_TOKEN_COOKIE =  Duration.ofDays(30);
+
 
     @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인하고 accessToken/refreshToken 쿠키를 발급합니다.")
     @PostMapping("/login")
@@ -38,10 +40,10 @@ public class AuthController {
                                    HttpServletResponse response) {
         LoginTokens tokens = authService.login(memberLoginRequest.toCommand());
 
-        ResponseCookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken());
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(tokens.accessToken(), DURATION_OF_ACCESS_TOKEN_COOKIE);
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
-        ResponseCookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken());
+        ResponseCookie refreshTokenCookie = generateRefreshTokenCookie(tokens.refreshToken(), DURATION_OF_REFRESH_TOKEN_COOKIE);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         return new ResponseDto<>(HttpStatus.OK, null, "로그인을 성공하였습니다.");
@@ -64,7 +66,7 @@ public class AuthController {
 
         String newAccessToken = authService.refreshAccessToken(refreshToken);
 
-        ResponseCookie accessTokenCookie = generateAccessTokenCookie(newAccessToken);
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(newAccessToken, DURATION_OF_ACCESS_TOKEN_COOKIE);
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
 
         return new ResponseDto<>(HttpStatus.OK, null, "토큰이 발급되었습니다.");
@@ -72,28 +74,32 @@ public class AuthController {
 
     @Operation(summary = "로그아웃", description = "accessToken과 refreshToken의 쿠키를 모두 만료시킵니다.")
     @GetMapping("/logout")
-    public ResponseDto<Void> logout(HttpServletRequest request, HttpServletResponse response) {
-        List<Cookie> logoutCookies = authService.logout(request.getCookies());
-        logoutCookies.forEach(response::addCookie);
+    public ResponseDto<Void> logout(HttpServletResponse response) {
+        ResponseCookie accessDelete = generateAccessTokenCookie("", Duration.ofNanos(0));
+        response.addHeader(HttpHeaders.SET_COOKIE, accessDelete.toString());
+
+        ResponseCookie refreshDelete = generateRefreshTokenCookie("", Duration.ofNanos(0));
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshDelete.toString());
+
         return new ResponseDto<>(HttpStatus.OK, null, "로그아웃이 완료되었습니다.");
     }
 
-    private ResponseCookie generateAccessTokenCookie(String accessToken) {
+    private ResponseCookie generateAccessTokenCookie(String accessToken, Duration maxAge) {
         return ResponseCookie.from("accessToken", accessToken)
                 .httpOnly(true)
                 .path("/")  //api와 auth 전부 다 가야함 (logout 때문)
-                .maxAge(Duration.ofHours(1))   // 1시간
+                .maxAge(maxAge)
                 .sameSite(sameSite)
                 .secure(secure)                  // apigateway와 클라이언트 간 https 설정 후 사용
                 .build();
     }
 
 
-    private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
+    private ResponseCookie generateRefreshTokenCookie(String refreshToken, Duration maxAge) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .path("/auth")
-                .maxAge(Duration.ofDays(30))   // 30일
+                .maxAge(maxAge)
                 .sameSite(sameSite)
                 .secure(secure)
                 .build();

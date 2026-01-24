@@ -1,6 +1,5 @@
 package store._0982.member.application.member;
 
-import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,13 +9,11 @@ import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 import store._0982.member.application.member.dto.LoginTokens;
 import store._0982.member.application.member.dto.MemberLoginCommand;
-import store._0982.member.exception.CustomErrorCode;
 import store._0982.member.domain.member.Member;
 import store._0982.member.domain.member.MemberRepository;
+import store._0982.member.exception.CustomErrorCode;
 import store._0982.member.infrastructure.member.JwtProvider;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -63,9 +60,4 @@ public class AuthService {
         }
     }
 
-    public List<Cookie> logout(Cookie[] cookies) {
-        List<Cookie> tokenCookieList = Arrays.stream(cookies).filter(cookie -> cookie.getName().contains("Token")).toList();
-        tokenCookieList.forEach(cookie -> cookie.setMaxAge(0));
-        return tokenCookieList;
-    }
 }
