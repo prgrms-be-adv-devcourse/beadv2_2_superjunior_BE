@@ -30,7 +30,7 @@ public class SecurityConfig {
                 )
         );
 
-        // Enable CORS so the CorsWebFilter can write CORS headers
+        // CORS 동작
         http.cors(corsSpec -> {});
 
         return http
@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 // 인가
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이어트
                         .pathMatchers(
                                 "/auth/**",
                                 "/webhooks/**",
@@ -52,8 +52,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/**/v3/api-docs"
                         ).permitAll()
-                        .pathMatchers(HttpMethod.OPTIONS, "/**")
-                        .permitAll()
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)
                 ).exceptionHandling(ex -> ex
