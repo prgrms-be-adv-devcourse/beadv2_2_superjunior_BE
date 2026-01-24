@@ -1,4 +1,4 @@
-package store._0982.point.application.kafka;
+package store._0982.point.infrastructure.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
