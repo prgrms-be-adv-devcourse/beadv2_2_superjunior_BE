@@ -15,5 +15,5 @@ spring:
 
 client:
   member: ${CLIENT_MEMBER}
-  commerce: ${CLIENT_COMMERCE}\
+  commerce: ${CLIENT_COMMERCE}
   ai: ${CLIENT_AI}

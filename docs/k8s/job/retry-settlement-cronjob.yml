@@ -46,6 +46,8 @@ spec:
               value: "http://member-service:8083"
             - name: CLIENT_COMMERCE
               value: "http://commerce-service:8087"
+            - name: CLIENT_AI
+              value: "http://ai-service:8088"
             envFrom:
               - secretRef:
                   name: batch-secret
