@@ -7,9 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.constant.PaymentMethod;
@@ -28,7 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import store._0982.point.domain.event.PaymentCanceledTxEvent;
 
-class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
+class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
 
     private static final long PAYMENT_AMOUNT = 10_000;
 
@@ -37,19 +34,13 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
             .build();
 
     @Autowired
-    private PgCancelService pgCancelService;
+    private PgCancelFacade pgCancelFacade;
 
     @Autowired
     private PgPaymentJpaRepository paymentPointRepository;
 
     @Autowired
     private PgPaymentCancelJpaRepository paymentCancelRepository;
-
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
-
-    @MockitoBean
-    private ApplicationEventPublisher applicationEventPublisher;
 
     private UUID memberId;
     private UUID orderId;
@@ -97,11 +88,11 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTask(() -> pgCancelService.refundPayment(memberId, command));
+        runSynchronizedTask(() -> pgCancelFacade.refundPayment(memberId, command));
 
         // then
         validateOwner();
-        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
+        assertEventPublishedOnce(PaymentCanceledTxEvent.class);
     }
 
     @Test
@@ -118,11 +109,11 @@ class PgCancelServiceConcurrencyTest extends BaseConcurrencyTest {
                 .thenReturn(tossPaymentInfo);
 
         // when
-        runSynchronizedTasks(commands, command -> pgCancelService.refundPayment(memberId, command));
+        runSynchronizedTasks(commands, command -> pgCancelFacade.refundPayment(memberId, command));
 
         // then
         validateOwner();
-        verify(applicationEventPublisher, times(1)).publishEvent(any(PaymentCanceledTxEvent.class));
+        assertEventPublishedOnce(PaymentCanceledTxEvent.class);
     }
 
     private void validateOwner() {

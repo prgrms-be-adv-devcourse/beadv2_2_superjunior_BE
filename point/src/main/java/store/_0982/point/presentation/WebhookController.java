@@ -1,11 +1,13 @@
 package store._0982.point.presentation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.dto.ResponseDto;
+import store._0982.common.log.ControllerLog;
 import store._0982.point.application.webhook.TossWebhookFacade;
 import store._0982.point.common.WebhookHeaders;
 import store._0982.point.presentation.dto.TossWebhookRequest;
@@ -14,12 +16,14 @@ import java.time.OffsetDateTime;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/webhooks")
+@RequestMapping("/webhooks")
 public class WebhookController {
 
     private final TossWebhookFacade tossWebhookFacade;
 
+    @Operation(summary = "토스 웹훅 수신", description = "토스 웹훅을 수신하는 엔드포인트입니다.")
     @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
     @PostMapping("/toss")
     public ResponseDto<Void> handleTossWebhook(
             @RequestHeader(WebhookHeaders.TOSS_RETRY_COUNT) int retryCount,

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PointTransactionJpaRepository extends JpaRepository<PointTransaction, UUID> {
+public interface PointTransactionJpaRepository extends JpaRepository<PointTransaction, UUID>, PointTransactionRepositoryCustom {
     boolean existsByIdempotencyKey(UUID idempotencyKey);
 
     boolean existsByOrderIdAndStatus(UUID orderId, PointTransactionStatus status);

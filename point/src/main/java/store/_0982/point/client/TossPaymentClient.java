@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -71,14 +70,6 @@ public class TossPaymentClient {
         String url = BASE_URL + "/" + request.paymentKey() + "/cancel";
         return handlePaymentApiErrorAndGet(
                 () -> restTemplate.postForObject(url, entity, TossPaymentInfo.class));
-    }
-
-    @Retry(name = "pg-api")
-    public TossPaymentInfo getPaymentByKey(String paymentKey) {
-        HttpHeaders headers = createHeaders();
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        return handlePaymentApiErrorAndGet(
-                () -> restTemplate.exchange(BASE_URL + "/" + paymentKey, HttpMethod.GET, entity, TossPaymentInfo.class).getBody());
     }
 
     private HttpHeaders createHeaders() {

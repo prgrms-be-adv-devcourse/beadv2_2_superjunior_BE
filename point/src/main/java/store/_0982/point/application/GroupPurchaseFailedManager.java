@@ -6,7 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.application.dto.point.PointReturnCommand;
-import store._0982.point.application.pg.PgCancelService;
+import store._0982.point.application.pg.PgCancelFacade;
 import store._0982.point.application.point.PointReturnService;
 import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.constant.PointTransactionStatus;
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class GroupPurchaseFailedManager {
 
     private final PointReturnService pointReturnService;
-    private final PgCancelService pgCancelService;
+    private final PgCancelFacade pgCancelFacade;
     private final PointTransactionRepository pointTransactionRepository;
     private final PgPaymentRepository pgPaymentRepository;
 
@@ -41,7 +41,7 @@ public class GroupPurchaseFailedManager {
                     cancelReason,
                     null
             );
-            pgCancelService.refundPayment(memberId, command);
+            pgCancelFacade.refundPayment(memberId, command);
         } else {
             throw new CustomException(CustomErrorCode.NO_PAYMENT_HISTORY);
         }

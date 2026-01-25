@@ -5,16 +5,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
-import store._0982.point.application.pg.PgTxManager;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.domain.entity.PgPayment;
-import store._0982.point.support.BaseIntegrationTest;
+import store._0982.point.support.KafkaContainerInitializer;
+import store._0982.point.support.PostgreSQLContainerInitializer;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -35,7 +36,8 @@ import static org.mockito.Mockito.*;
         "resilience4j.ratelimiter.instances.pg-confirm.limit-refresh-period=10s",
         "resilience4j.ratelimiter.instances.pg-confirm.timeout-duration=0s"
 })
-class TossResilienceTest extends BaseIntegrationTest {
+@ContextConfiguration(initializers = {PostgreSQLContainerInitializer.class, KafkaContainerInitializer.class})
+class TossResilienceTest {
 
     private static final String TEST_PAYMENT_KEY = "test-key";
     private static final long DEFAULT_AMOUNT = 1000;
@@ -48,9 +50,6 @@ class TossResilienceTest extends BaseIntegrationTest {
 
     @MockitoBean
     private RestTemplate restTemplate;
-
-    @MockitoBean
-    private PgTxManager pgTxManager;
 
     @Test
     @DisplayName("Retry 검증: 타임아웃 발생 시 지정된 횟수(3회)만큼 재시도한다")

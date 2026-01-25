@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.pg.PgCancelService;
+import store._0982.point.application.pg.PgConfirmFacade;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.client.dto.TossPaymentInfo;
@@ -36,6 +37,9 @@ class TossWebhookServiceTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private PgConfirmFacade pgConfirmFacade;
 
     @Mock
     private PgConfirmService pgConfirmService;
@@ -184,7 +188,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgCancelService).markRefundedPayment(memberId, orderId, tossPaymentInfo);
+            verify(pgCancelService).markRefundedPayment(tossPaymentInfo, orderId, memberId);
         }
 
         @Test
@@ -201,7 +205,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgCancelService).markRefundedPayment(memberId, orderId, tossPaymentInfo);
+            verify(pgCancelService).markRefundedPayment(tossPaymentInfo, orderId, memberId);
         }
 
         @Test
@@ -297,7 +301,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgCancelService).markRefundedPayment(memberId, orderId, tossPaymentInfo);
+            verify(pgCancelService).markRefundedPayment(tossPaymentInfo, orderId, memberId);
         }
 
         @Test
@@ -314,7 +318,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgCancelService).markRefundedPayment(memberId, orderId, tossPaymentInfo);
+            verify(pgCancelService).markRefundedPayment(tossPaymentInfo, orderId, memberId);
         }
 
         @Test
@@ -402,7 +406,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgConfirmService).markConfirmedPayment(memberId, orderId, tossPaymentInfo);
+            verify(pgConfirmService).markConfirmedPayment(tossPaymentInfo, orderId, memberId);
         }
 
         @Test
@@ -500,7 +504,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgConfirmService).confirmPayment(any(PgConfirmCommand.class), eq(memberId));
+            verify(pgConfirmFacade).confirmPayment(any(PgConfirmCommand.class), eq(memberId));
         }
 
         @Test
@@ -516,7 +520,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgConfirmService, never()).confirmPayment(any(), any());
+            verify(pgConfirmFacade, never()).confirmPayment(any(), any());
         }
 
         @Test
@@ -532,7 +536,7 @@ class TossWebhookServiceTest {
 
             // then
             verify(pgPaymentRepository).findByOrderId(orderId);
-            verify(pgConfirmService, never()).confirmPayment(any(), any());
+            verify(pgConfirmFacade, never()).confirmPayment(any(), any());
         }
 
         private TossPaymentInfo createInProgressPaymentInfo() {
@@ -567,7 +571,7 @@ class TossWebhookServiceTest {
 
         // then
         verify(pgPaymentRepository).findByOrderId(orderId);
-        verify(pgConfirmService, never()).confirmPayment(any(), any());
+        verify(pgConfirmFacade, never()).confirmPayment(any(), any());
         verify(pgConfirmService, never()).markConfirmedPayment(any(), any(), any());
         verify(pgCancelService, never()).markRefundedPayment(any(), any(), any());
         verify(pgFailService, never()).handlePaymentFailure(any(), any());
@@ -595,7 +599,7 @@ class TossWebhookServiceTest {
                 .hasMessageContaining(NegligibleWebhookErrorType.PAYMENT_NOT_FOUND.getMessage());
 
         verify(pgPaymentRepository).findByOrderId(orderId);
-        verify(pgConfirmService, never()).confirmPayment(any(), any());
+        verify(pgConfirmFacade, never()).confirmPayment(any(), any());
         verify(pgCancelService, never()).markRefundedPayment(any(), any(), any());
         verify(pgFailService, never()).handlePaymentFailure(any(), any());
     }

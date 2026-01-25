@@ -1,4 +1,4 @@
-package store._0982.point.application.kafka;
+package store._0982.point.infrastructure.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -10,7 +10,7 @@ import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.application.dto.point.PointReturnCommand;
-import store._0982.point.application.pg.PgCancelService;
+import store._0982.point.application.pg.PgCancelFacade;
 import store._0982.point.application.point.PointReturnService;
 import store._0982.point.common.KafkaGroupIds;
 
@@ -19,7 +19,7 @@ import store._0982.point.common.KafkaGroupIds;
 public class OrderCanceledEventListener {
 
     private final PointReturnService pointReturnService;
-    private final PgCancelService pgCancelService;
+    private final PgCancelFacade pgCancelFacade;
 
     @RetryableTopic(exclude = {DuplicateKeyException.class, CustomException.class})
     @KafkaListener(
@@ -38,7 +38,7 @@ public class OrderCanceledEventListener {
             case PG -> {
                 PgCancelCommand command = new PgCancelCommand(
                         event.getOrderId(), event.getCancelReason(), event.getAmount());
-                pgCancelService.refundPayment(event.getMemberId(), command);
+                pgCancelFacade.refundPayment(event.getMemberId(), command);
             }
             default -> throw new IllegalStateException("Unexpected payment method: " + event.getMethod());
         }

@@ -1,31 +1,61 @@
 package store._0982.point.application.pg;
 
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import store._0982.common.log.ServiceLog;
-import store._0982.point.application.TossPaymentService;
-import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.entity.PgPayment;
+import store._0982.point.domain.entity.PgPaymentCancel;
+import store._0982.point.domain.event.PaymentCanceledTxEvent;
+import store._0982.point.domain.repository.PgPaymentCancelRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class PgCancelService {
 
-    private final TossPaymentService tossPaymentService;
-    private final PgTxManager pgTxManager;
+    private final PgQueryService pgQueryService;
+    private final PgPaymentCancelRepository pgPaymentCancelRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    @ServiceLog
-    public void refundPayment(UUID memberId, PgCancelCommand command) {
-        UUID orderId = command.orderId();
-        PgPayment pgPayment = pgTxManager.findRefundablePayment(orderId, memberId);
-        TossPaymentInfo response = tossPaymentService.cancelPayment(pgPayment, command);
-        pgTxManager.markRefundedPayment(response, orderId, memberId);
+    @RetryableTransactional
+    public void markRefundedPayment(TossPaymentInfo tossPaymentInfo, UUID orderId, UUID memberId) {
+        PgPayment pgPayment = pgQueryService.findRefundablePayment(orderId, memberId);
+
+        List<String> incomingKeys = tossPaymentInfo.cancels().stream()
+                .map(TossPaymentInfo.CancelInfo::transactionKey)
+                .toList();
+        Set<String> existingKeys = pgPaymentCancelRepository.findExistingTransactionKeys(incomingKeys);
+
+        List<PgPaymentCancel> newCancels = extractNewCancellationInfo(tossPaymentInfo, existingKeys, pgPayment);
+
+        if (!newCancels.isEmpty()) {
+            pgPaymentCancelRepository.saveAllAndFlush(newCancels);
+            applicationEventPublisher.publishEvent(PaymentCanceledTxEvent.from(pgPayment));
+        }
     }
 
-    public void markRefundedPayment(UUID memberId, UUID orderId, TossPaymentInfo tossPaymentInfo) {
-        pgTxManager.markRefundedPayment(tossPaymentInfo, orderId, memberId);
+    private static @NonNull List<PgPaymentCancel> extractNewCancellationInfo(TossPaymentInfo tossPaymentInfo, Set<String> existingKeys, PgPayment pgPayment) {
+        List<PgPaymentCancel> newCancels = new ArrayList<>();
+        for (TossPaymentInfo.CancelInfo cancelInfo : tossPaymentInfo.cancels()) {
+            if (!existingKeys.contains(cancelInfo.transactionKey())) {
+                PgPaymentCancel pgPaymentCancel = PgPaymentCancel.from(
+                        pgPayment,
+                        cancelInfo.cancelReason(),
+                        cancelInfo.cancelAmount(),
+                        cancelInfo.canceledAt(),
+                        cancelInfo.transactionKey()
+                );
+                newCancels.add(pgPaymentCancel);
+                pgPayment.applyRefund(cancelInfo.cancelAmount(), cancelInfo.canceledAt());
+            }
+        }
+        return newCancels;
     }
 }

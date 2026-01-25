@@ -6,13 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import store._0982.point.client.dto.TossPaymentInfo;
+import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
-import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.constant.WebhookStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.WebhookLog;
@@ -32,7 +30,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
 
 class WebhookIntegrationTest extends BaseIntegrationTest {
 
@@ -48,13 +46,9 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private WebhookLogJpaRepository webhookLogRepository;
 
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
+    @MockitoSpyBean
+    private TossWebhookService tossWebhookService;
 
-    @MockitoBean
-    private ApplicationEventPublisher applicationEventPublisher;
-
-    private UUID memberId;
     private UUID orderId;
     private String paymentKey;
     private long amount;
@@ -66,7 +60,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         pgPaymentCancelRepository.deleteAll();
         pgPaymentRepository.deleteAll();
 
-        memberId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
         paymentKey = "test_payment_key";
         amount = 10000L;
@@ -84,14 +78,12 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         void webhook_payment_done_e2e() throws JsonProcessingException {
             // given
             String webhookId = UUID.randomUUID().toString();
-            TossPaymentInfo paymentInfo = createPaymentInfo(TossPaymentInfo.Status.DONE);
+            TossPaymentInfo paymentInfo = createCompletedPaymentInfo();
             TossWebhookRequest request = new TossWebhookRequest(
                     WebhookEvents.TOSS_PAYMENT_STATUS_CHANGED,
                     LocalDateTime.now(),
                     paymentInfo
             );
-
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
 
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
@@ -100,7 +92,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
             PgPayment updatedPayment = pgPaymentRepository.findByOrderId(orderId).orElseThrow();
             assertThat(updatedPayment.getStatus()).isEqualTo(PgPaymentStatus.COMPLETED);
 
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.SUCCESS);
         }
 
@@ -119,8 +111,6 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
-
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
 
@@ -128,7 +118,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
             PgPayment updatedPayment = pgPaymentRepository.findByOrderId(orderId).orElseThrow();
             assertThat(updatedPayment.getStatus()).isEqualTo(PgPaymentStatus.REFUNDED);
 
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.SUCCESS);
         }
 
@@ -151,7 +141,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
             PgPayment updatedPayment = pgPaymentRepository.findByOrderId(orderId).orElseThrow();
             assertThat(updatedPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);
 
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.SUCCESS);
         }
 
@@ -170,8 +160,6 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
-
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
 
@@ -179,7 +167,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
             PgPayment updatedPayment = pgPaymentRepository.findByOrderId(orderId).orElseThrow();
             assertThat(updatedPayment.getStatus()).isEqualTo(PgPaymentStatus.PARTIALLY_REFUNDED);
 
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.SUCCESS);
         }
     }
@@ -193,25 +181,26 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         void webhook_log_saved_even_on_failure() throws JsonProcessingException {
             // given
             String webhookId = UUID.randomUUID().toString();
-            TossPaymentInfo paymentInfo = createPaymentInfo(TossPaymentInfo.Status.DONE);
+            TossPaymentInfo paymentInfo = createCompletedPaymentInfo();
             TossWebhookRequest request = new TossWebhookRequest(
                     WebhookEvents.TOSS_PAYMENT_STATUS_CHANGED,
                     LocalDateTime.now(),
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey))
-                    .thenThrow(new RuntimeException("결제 조회 실패"));
+            String errorMessage = "결제 조회 실패";
+            doThrow(new RuntimeException(errorMessage))
+                    .when(tossWebhookService)
+                    .processWebhookPayment(any(TossPaymentInfo.class));
 
-            // when
-            assertThatThrownBy(() ->
-                    tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request)
-            ).isInstanceOf(RuntimeException.class);
+            // when & then
+            OffsetDateTime now = OffsetDateTime.now();
+            assertThatThrownBy(() -> tossWebhookFacade.handleTossWebhook(1, webhookId, now, request))
+                    .isInstanceOf(RuntimeException.class);
 
-            // then
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.FAILED);
-            assertThat(webhookLog.getErrorMessage()).contains("결제 조회 실패");
+            assertThat(webhookLog.getErrorMessage()).contains(errorMessage);
         }
 
         @Test
@@ -219,20 +208,18 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         void webhook_log_separate_transaction() throws JsonProcessingException {
             // given
             String webhookId = UUID.randomUUID().toString();
-            TossPaymentInfo paymentInfo = createPaymentInfo(TossPaymentInfo.Status.DONE);
+            TossPaymentInfo paymentInfo = createCompletedPaymentInfo();
             TossWebhookRequest request = new TossWebhookRequest(
                     WebhookEvents.TOSS_PAYMENT_STATUS_CHANGED,
                     LocalDateTime.now(),
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
-
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
 
             // then
-            WebhookLog webhookLog = webhookLogRepository.readByWebhookId(webhookId).orElseThrow();
+            WebhookLog webhookLog = webhookLogRepository.findByWebhookId(webhookId).orElseThrow();
             assertThat(webhookLog).isNotNull();
             assertThat(webhookLog.getStatus()).isEqualTo(WebhookStatus.SUCCESS);
         }
@@ -247,20 +234,19 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         void payment_confirmed_event_published() throws JsonProcessingException {
             // given
             String webhookId = UUID.randomUUID().toString();
-            TossPaymentInfo paymentInfo = createPaymentInfo(TossPaymentInfo.Status.DONE);
+            TossPaymentInfo paymentInfo = createCompletedPaymentInfo();
             TossWebhookRequest request = new TossWebhookRequest(
                     WebhookEvents.TOSS_PAYMENT_STATUS_CHANGED,
                     LocalDateTime.now(),
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
-
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
 
             // then
-            verify(applicationEventPublisher).publishEvent(any(PaymentConfirmedTxEvent.class));
+            long count = events.stream(PaymentConfirmedTxEvent.class).count();
+            assertThat(count).isEqualTo(1);
         }
 
         @Test
@@ -278,23 +264,22 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
                     paymentInfo
             );
 
-            when(tossPaymentService.getPaymentByKey(paymentKey)).thenReturn(paymentInfo);
-
             // when
             tossWebhookFacade.handleTossWebhook(1, webhookId, OffsetDateTime.now(), request);
 
             // then
-            verify(applicationEventPublisher).publishEvent(any(PaymentCanceledTxEvent.class));
+            long count = events.stream(PaymentCanceledTxEvent.class).count();
+            assertThat(count).isEqualTo(1);
         }
     }
 
-    private TossPaymentInfo createPaymentInfo(TossPaymentInfo.Status status) {
+    private TossPaymentInfo createCompletedPaymentInfo() {
         return TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
                 .amount(amount)
                 .method("카드")
-                .status(status)
+                .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
                 .build();

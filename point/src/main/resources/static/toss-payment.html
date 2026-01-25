@@ -94,7 +94,7 @@
                 };
 
                 try {
-                    const response = await fetch('/api/points/create', {
+                    const response = await fetch('/api/payments/create', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -118,8 +118,8 @@
                     orderId,
                     amount,
                     orderName: '테스트 상품',
-                    successUrl: 'http://localhost:8086/api/points/confirm',
-                    failUrl: 'http://localhost:8086/api/points/fail'
+                    successUrl: 'http://localhost:8086/api/payments/confirm',
+                    failUrl: 'http://localhost:8086/api/payments/fail'
                 });
             });
 

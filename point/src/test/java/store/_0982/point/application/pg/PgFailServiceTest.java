@@ -4,33 +4,29 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.pg.PgFailCommand;
-import store._0982.point.domain.constant.PaymentMethod;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentFailure;
 import store._0982.point.domain.event.PaymentFailedTxEvent;
 import store._0982.point.domain.repository.PgPaymentFailureRepository;
-import store._0982.point.domain.repository.PgPaymentRepository;
-import store._0982.point.exception.CustomErrorCode;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PgFailServiceTest {
 
-    @Mock
-    private PgPaymentRepository pgPaymentRepository;
+    private static final String PAYMENT_KEY = "test_payment_key";
+    private static final long AMOUNT = 10000;
 
     @Mock
     private PgPaymentFailureRepository pgPaymentFailureRepository;
@@ -38,77 +34,95 @@ class PgFailServiceTest {
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
+    @Mock
+    private PgQueryService pgQueryService;
+
     @InjectMocks
     private PgFailService pgFailService;
 
     private UUID memberId;
-    private PgFailCommand command;
-    private String paymentKey;
-
     private UUID orderId;
 
     @BeforeEach
     void setUp() {
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
-        paymentKey = "test_payment_key";
-        command = new PgFailCommand(
-                orderId,
-                paymentKey,
-                "PAYMENT_FAILED",
-                "카드 승인 실패",
-                10000L,
-                "{}"
-        );
     }
 
     @Test
-    @DisplayName("결제 실패 정보를 저장한다")
+    @DisplayName("PG 결제 실패를 성공적으로 처리한다")
     void handlePaymentFailure_success() {
-        // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000L);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgFailCommand command = new PgFailCommand(
+                orderId,
+                PAYMENT_KEY,
+                "INVALID_CARD",
+                "유효하지 않은 카드",
+                AMOUNT,
+                "{}"
+        );
 
-        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
+        when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);
 
-        // when
         pgFailService.handlePaymentFailure(command, memberId);
 
-        // then
-        verify(pgPaymentRepository).findByOrderId(orderId);
+        assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);
+        assertThat(pgPayment.getPaymentKey()).isEqualTo(PAYMENT_KEY);
+
         verify(pgPaymentFailureRepository).save(any(PgPaymentFailure.class));
         verify(applicationEventPublisher).publishEvent(any(PaymentFailedTxEvent.class));
     }
 
     @Test
-    @DisplayName("이미 성공(COMPLETED)된 결제를 실패 처리하려 하면 예외가 발생한다")
-    void handlePaymentFailure_exception_when_completed() {
-        // given
-        PgPayment completedPayment = PgPayment.create(memberId, orderId, 10000L);
-        completedPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), paymentKey);
+    @DisplayName("PG 결제 실패 시 이벤트가 발행된다")
+    void handlePaymentFailure_publishesEvent() {
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgFailCommand command = new PgFailCommand(
+                orderId,
+                PAYMENT_KEY,
+                "TIMEOUT",
+                "타임아웃 발생",
+                AMOUNT,
+                "{}"
+        );
 
-        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(completedPayment));
+        when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);
 
-        // when & then
-        assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(CustomErrorCode.CANNOT_HANDLE_FAILURE.getMessage());
+        pgFailService.handlePaymentFailure(command, memberId);
 
-        verify(pgPaymentFailureRepository, never()).save(any());
-        verify(applicationEventPublisher, never()).publishEvent(any());
+        ArgumentCaptor<PaymentFailedTxEvent> captor = ArgumentCaptor.forClass(PaymentFailedTxEvent.class);
+        verify(applicationEventPublisher).publishEvent(captor.capture());
+        assertThat(captor.getValue().pgPayment().getStatus()).isEqualTo(PgPaymentStatus.FAILED);
     }
 
     @Test
-    @DisplayName("존재하지 않는 주문 ID로 실패 처리 요청 시 예외가 발생한다")
-    void handlePaymentFailure_not_found() {
-        // given
-        when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+    @DisplayName("시스템 에러로 인한 결제 실패를 성공적으로 처리한다")
+    void markFailedPaymentBySystem_success() {
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        String errorMessage = "Database connection failed";
 
-        // when & then
-        assertThatThrownBy(() -> pgFailService.handlePaymentFailure(command, memberId))
-                .isInstanceOf(CustomException.class)
-                .hasMessageContaining(CustomErrorCode.PAYMENT_NOT_FOUND.getMessage());
+        when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);
 
-        verify(pgPaymentFailureRepository, never()).save(any());
-        verify(applicationEventPublisher, never()).publishEvent(any());
+        pgFailService.markFailedPaymentBySystem(errorMessage, PAYMENT_KEY, orderId, memberId);
+
+        assertThat(pgPayment.getStatus()).isEqualTo(PgPaymentStatus.FAILED);
+        assertThat(pgPayment.getPaymentKey()).isEqualTo(PAYMENT_KEY);
+
+        verify(pgPaymentFailureRepository).save(any(PgPaymentFailure.class));
+        verify(applicationEventPublisher).publishEvent(any(PaymentFailedTxEvent.class));
+    }
+
+    @Test
+    @DisplayName("시스템 에러 처리 시 이벤트가 발행된다")
+    void markFailedPaymentBySystem_publishesEvent() {
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        String errorMessage = "Internal server error";
+
+        when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);
+
+        pgFailService.markFailedPaymentBySystem(errorMessage, PAYMENT_KEY, orderId, memberId);
+
+        verify(pgQueryService).findFailablePayment(orderId, memberId);
+        verify(applicationEventPublisher).publishEvent(any(PaymentFailedTxEvent.class));
     }
 }

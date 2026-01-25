@@ -10,6 +10,7 @@ import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointTransactionInfo;
 import store._0982.point.common.RetryableTransactional;
+import store._0982.point.domain.constant.PointType;
 import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.domain.repository.PointBalanceRepository;
 import store._0982.point.domain.repository.PointTransactionRepository;
@@ -32,9 +33,9 @@ public class PointPaymentService {
         return PointBalanceInfo.from(pointBalance);
     }
 
-    public Page<PointTransactionInfo> getTransactions(UUID memberId, Pageable pageable) {
-        return pointTransactionRepository.findByMemberId(memberId, pageable)
-                .map(PointTransactionInfo::from);
+    public Page<PointTransactionInfo> getTransactions(UUID memberId, PointType type, Pageable pageable) {
+        return pointTransactionRepository.findByAllByMemberIdAndType(memberId, type, pageable)
+                .map(p -> PointTransactionInfo.from(p, type));
     }
 
     @RetryableTransactional

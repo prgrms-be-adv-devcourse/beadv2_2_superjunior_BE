@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.point.domain.constant.PointTransactionStatus;
+import store._0982.point.domain.constant.PointType;
 import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.repository.PointTransactionRepository;
 
@@ -43,7 +44,7 @@ public class PointTransactionRepositoryAdapter implements PointTransactionReposi
     }
 
     @Override
-    public Page<PointTransaction> findByMemberId(UUID memberId, Pageable pageable) {
-        return pointTransactionJpaRepository.findByMemberId(memberId, pageable);
+    public Page<PointTransaction> findByAllByMemberIdAndType(UUID memberId, PointType type, Pageable pageable) {
+        return pointTransactionJpaRepository.findAllByMemberIdAndType(memberId, type, pageable);
     }
 }

@@ -2,6 +2,7 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
@@ -58,6 +59,7 @@ public class PgPayment {
     private String receiptUrl;
 
     @CreationTimestamp
+    @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -76,6 +78,11 @@ public class PgPayment {
 
     @Column(nullable = false)
     private boolean isPartialCancelable;
+
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long version;
 
     public static PgPayment create(UUID memberId, UUID orderId, long amount) {
         return PgPayment.builder()

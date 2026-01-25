@@ -21,10 +21,6 @@ spring:
         show_sql: false
     open-in-view: false
 
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
-
 toss:
   secret-key: ${TOSS_SECRET_KEY:"abcd"}
 
