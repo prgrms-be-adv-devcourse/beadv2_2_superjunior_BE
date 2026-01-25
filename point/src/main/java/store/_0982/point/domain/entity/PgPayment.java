@@ -105,6 +105,11 @@ public class PgPayment {
         this.approvedAt = approvedAt;
     }
 
+    public void markConfirmed(PaymentMethod method, PaymentMethodDetail paymentMethodDetail, OffsetDateTime approvedAt, String paymentKey) {
+        markConfirmed(method, approvedAt, paymentKey);
+        this.paymentMethodDetail = paymentMethodDetail;
+    }
+
     public void markFailed(String paymentKey) {
         this.paymentKey = paymentKey;
         this.status = PgPaymentStatus.FAILED;

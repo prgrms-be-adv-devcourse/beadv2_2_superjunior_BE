@@ -35,6 +35,7 @@ public enum CustomErrorCode implements ErrorCode {
     ALREADY_REFUNDED_PAYMENT(HttpStatus.CONFLICT, "이미 환불된 결제입니다."),
     CANNOT_HANDLE_FAILURE(HttpStatus.CONFLICT, "실패 처리할 수 없는 결제입니다."),
     DIFFERENT_AMOUNT(HttpStatus.CONFLICT, "결제 금액이 불일치합니다."),
+    FAILED_TO_MAP_PAYMENT_METHOD(HttpStatus.CONFLICT, "결제 수단 매핑에 실패했습니다."),
     IDEMPOTENT_REQUEST(HttpStatus.CONFLICT, "중복된 요청입니다."),
     INVALID_BONUS_STATUS(HttpStatus.CONFLICT, "보너스 포인트의 상태가 올바르지 않습니다."),
     ORDER_ID_MISMATCH(HttpStatus.CONFLICT, "주문 번호가 일치하지 않습니다."),
