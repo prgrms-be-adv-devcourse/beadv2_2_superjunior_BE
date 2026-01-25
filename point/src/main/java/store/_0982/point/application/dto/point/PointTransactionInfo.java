@@ -13,7 +13,8 @@ public record PointTransactionInfo(
         PointTransactionStatus status,
         long amount,
         UUID orderId,
-        String cancelReason
+        String cancelReason,
+        String groupPurchaseName
 ) {
     public static PointTransactionInfo from(PointTransaction transaction, PointType type) {
         long amount;
@@ -32,6 +33,7 @@ public record PointTransactionInfo(
                 .amount(amount)
                 .orderId(transaction.getOrderId())
                 .cancelReason(transaction.getCancelReason())
+                .groupPurchaseName(transaction.getGroupPurchaseName())
                 .build();
     }
 }

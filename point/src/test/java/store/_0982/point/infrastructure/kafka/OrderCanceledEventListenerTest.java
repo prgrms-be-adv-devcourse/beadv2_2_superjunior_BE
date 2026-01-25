@@ -32,9 +32,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class OrderCanceledEventListenerTest extends BaseKafkaTest {
+
+    private static final String GROUP_PURCHASE_NAME = "테스트 공구";
 
     @Autowired
     private PointBalanceJpaRepository pointBalanceRepository;
@@ -71,7 +74,7 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
     void handleOrderCanceledEvent_Pg() {
         // given
         long cancelAmount = 10000;
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, cancelAmount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, cancelAmount, GROUP_PURCHASE_NAME);
         pgPayment.markConfirmed(PaymentMethod.EASY_PAY, OffsetDateTime.now(), "test_payment_key");
         pgPaymentRepository.save(pgPayment);
 
@@ -93,6 +96,7 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
 
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .cancels(List.of(cancelInfo))
+
                 .build();
 
         when(tossPaymentService.cancelPayment(any(PgPayment.class), any(PgCancelCommand.class)))
@@ -131,7 +135,8 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
                 memberId,
                 orderId,
                 UUID.randomUUID(),
-                PointAmount.of(paidAmount, bonusAmount)
+                PointAmount.of(paidAmount, bonusAmount),
+                GROUP_PURCHASE_NAME
         );
         pointTransactionRepository.save(payment);
 

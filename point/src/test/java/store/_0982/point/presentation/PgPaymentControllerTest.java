@@ -43,6 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PgPaymentController.class)
 class PgPaymentControllerTest {
 
+    private static final String PURCHASE_NAME = "테스트 공구";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -89,7 +91,7 @@ class PgPaymentControllerTest {
     @DisplayName("포인트 충전 주문을 생성한다")
     void createPayment() throws Exception {
         // given
-        PgCreateRequest request = new PgCreateRequest(orderId, 10000);
+        PgCreateRequest request = new PgCreateRequest(orderId, 10000, PURCHASE_NAME);
         PgCreateInfo createInfo = new PgCreateInfo(
                 UUID.randomUUID(),
                 memberId,
@@ -107,7 +109,7 @@ class PgPaymentControllerTest {
                         .header(HeaderName.ID, memberId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(status().isCreated());
 
         verify(pgPaymentService).createPayment(any(), eq(memberId));
     }
@@ -125,7 +127,7 @@ class PgPaymentControllerTest {
                         .header(HeaderName.ID, memberId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(status().isAccepted());
 
         verify(pgConfirmFacade).confirmPayment(any(), eq(memberId));
     }
@@ -162,7 +164,7 @@ class PgPaymentControllerTest {
                         .header(HeaderName.ID, memberId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is2xxSuccessful());
+                .andExpect(status().isAccepted());
 
         verify(pgFailService).handlePaymentFailure(any(), eq(memberId));
     }
@@ -182,7 +184,8 @@ class PgPaymentControllerTest {
                 10000L,
                 PgPaymentStatus.COMPLETED,
                 OffsetDateTime.now(),
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                PURCHASE_NAME
         );
 
         List<PgPaymentInfo> content = List.of(paymentInfo);
@@ -199,9 +202,44 @@ class PgPaymentControllerTest {
                         .param("page", "0")
                         .param("size", "20")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.data.content").isArray());
 
         verify(pgPaymentService).getPaymentHistories(eq(memberId), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("포인트 충전 내역을 상세 조회한다")
+    void getPaymentHistory() throws Exception {
+        // given
+        UUID paymentId = UUID.randomUUID();
+        PgPaymentInfo paymentInfo = new PgPaymentInfo(
+                paymentId,
+                memberId,
+                orderId,
+                PaymentMethod.CARD,
+                "test_payment_key",
+                10000L,
+                PgPaymentStatus.COMPLETED,
+                OffsetDateTime.now(),
+                OffsetDateTime.now(),
+                PURCHASE_NAME
+        );
+
+        when(pgPaymentService.getPaymentHistory(paymentId, memberId))
+                .thenReturn(paymentInfo);
+
+        // when & then
+        mockMvc.perform(get("/api/payments/{id}", paymentId)
+                        .header(HeaderName.ID, memberId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data").exists())
+                .andExpect(jsonPath("$.data.paymentPointId").value(paymentId.toString()))
+                .andExpect(jsonPath("$.data.amount").value(10000));
+
+        verify(pgPaymentService).getPaymentHistory(paymentId, memberId);
     }
 }

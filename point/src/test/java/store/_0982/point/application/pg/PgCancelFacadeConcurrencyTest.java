@@ -72,7 +72,7 @@ class PgCancelFacadeConcurrencyTest extends BaseConcurrencyTest {
                 .cancels(List.of(cancelInfo))
                 .build();
 
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, PAYMENT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, PAYMENT_AMOUNT, "테스트 공구");
         pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test-payment-key");
         paymentPointRepository.save(pgPayment);
     }

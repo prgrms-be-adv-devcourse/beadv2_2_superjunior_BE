@@ -38,7 +38,7 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PgCreateCommand command = new PgCreateCommand(orderId, 1000L);
+        PgCreateCommand command = new PgCreateCommand(orderId, 1000L, "테스트 공구");
 
         // when
         runSynchronizedTask(() -> pgPaymentService.createPayment(command, memberId));

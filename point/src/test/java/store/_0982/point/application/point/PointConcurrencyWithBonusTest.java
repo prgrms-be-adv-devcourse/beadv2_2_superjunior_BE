@@ -29,6 +29,8 @@ import static org.mockito.Mockito.when;
 @Disabled("임시 보류")
 class PointConcurrencyWithBonusTest extends BaseConcurrencyTest {
 
+    private static final String SAMPLE_PURCHASE_NAME = "테스트 공구";
+
     @Autowired
     private PointDeductService pointDeductService;
 
@@ -79,7 +81,7 @@ class PointConcurrencyWithBonusTest extends BaseConcurrencyTest {
                             .build();
                     when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
-                    return new PointDeductCommand(UUID.randomUUID(), orderId, deductAmount);
+                    return new PointDeductCommand(UUID.randomUUID(), orderId, deductAmount, SAMPLE_PURCHASE_NAME);
                 })
                 .toList();
 
@@ -124,7 +126,7 @@ class PointConcurrencyWithBonusTest extends BaseConcurrencyTest {
                             .build();
                     when(commerceServiceClient.getOrder(orderId, memberId)).thenReturn(orderInfo);
 
-                    return new PointDeductCommand(UUID.randomUUID(), orderId, useAmount);
+                    return new PointDeductCommand(UUID.randomUUID(), orderId, useAmount, SAMPLE_PURCHASE_NAME);
                 })
                 .toList();
 

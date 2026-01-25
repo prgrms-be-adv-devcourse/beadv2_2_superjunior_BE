@@ -28,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OrderConfirmedEventListenerTest extends BaseKafkaTest {
 
+    private static final String GROUP_PURCHASE_NAME = "테스트 공구";
+
     @Autowired
     private PointBalanceJpaRepository pointBalanceRepository;
 
@@ -68,7 +70,8 @@ class OrderConfirmedEventListenerTest extends BaseKafkaTest {
                 memberId,
                 orderId,
                 UUID.randomUUID(),
-                PointAmount.paid(paidAmount)
+                PointAmount.paid(paidAmount),
+                GROUP_PURCHASE_NAME
         );
         pointTransactionRepository.save(payment);
 

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PgFailServiceTest {
 
+    private static final String SAMPLE_PURCHASE_NAME = "테스트 공구";
     private static final String PAYMENT_KEY = "test_payment_key";
     private static final long AMOUNT = 10000;
 
@@ -52,7 +53,7 @@ class PgFailServiceTest {
     @Test
     @DisplayName("PG 결제 실패를 성공적으로 처리한다")
     void handlePaymentFailure_success() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
         PgFailCommand command = new PgFailCommand(
                 orderId,
                 PAYMENT_KEY,
@@ -76,7 +77,7 @@ class PgFailServiceTest {
     @Test
     @DisplayName("PG 결제 실패 시 이벤트가 발행된다")
     void handlePaymentFailure_publishesEvent() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
         PgFailCommand command = new PgFailCommand(
                 orderId,
                 PAYMENT_KEY,
@@ -98,7 +99,7 @@ class PgFailServiceTest {
     @Test
     @DisplayName("시스템 에러로 인한 결제 실패를 성공적으로 처리한다")
     void markFailedPaymentBySystem_success() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
         String errorMessage = "Database connection failed";
 
         when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);
@@ -115,7 +116,7 @@ class PgFailServiceTest {
     @Test
     @DisplayName("시스템 에러 처리 시 이벤트가 발행된다")
     void markFailedPaymentBySystem_publishesEvent() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
         String errorMessage = "Internal server error";
 
         when(pgQueryService.findFailablePayment(orderId, memberId)).thenReturn(pgPayment);

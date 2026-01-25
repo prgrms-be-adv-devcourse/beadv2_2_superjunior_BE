@@ -35,8 +35,9 @@ public record TossPaymentInfo(
 
         List<CancelInfo> cancels,
         FailureInfo failure
-) {
+) implements PaymentInfo {
 
+    @Override
     public PaymentMethod paymentMethod() {
         return switch (this.method) {
             case "카드" -> PaymentMethod.CARD;
@@ -151,8 +152,8 @@ public record TossPaymentInfo(
     @Builder
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record FailureInfo(
-        String code,
-        String message
+            String code,
+            String message
     ) {
     }
 }

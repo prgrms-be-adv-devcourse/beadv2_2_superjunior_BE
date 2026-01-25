@@ -1,9 +1,8 @@
-package store._0982.point.domain;
+package store._0982.point.domain.entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.common.exception.CustomException;
-import store._0982.point.domain.entity.PointBalance;
 import store._0982.point.exception.CustomErrorCode;
 
 import java.util.UUID;

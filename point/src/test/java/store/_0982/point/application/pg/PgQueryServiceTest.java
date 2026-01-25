@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PgQueryServiceTest {
 
+    private static final String SAMPLE_PURCHASE_NAME = "테스트 공구";
     private static final int REFUND_DAYS = 14;
     private static final String PAYMENT_KEY = "test_payment_key";
     private static final long AMOUNT = 10000;
@@ -55,7 +56,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("PENDING 상태의 결제를 조회할 수 있다")
         void success() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             PgPayment result = pgQueryService.findCompletablePayment(orderId, memberId);
@@ -78,7 +79,7 @@ class PgQueryServiceTest {
         @DisplayName("다른 회원의 결제 조회 시 예외가 발생한다")
         void fail_whenOwnerMismatch() {
             UUID otherMemberId = UUID.randomUUID();
-            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             assertThatThrownBy(() -> pgQueryService.findCompletablePayment(orderId, memberId))
@@ -89,7 +90,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("이미 완료된 결제 조회 시 예외가 발생한다")
         void fail_whenAlreadyCompleted() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
@@ -101,7 +102,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("실패한 결제 조회 시 예외가 발생한다")
         void fail_whenAlreadyFailed() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markFailed(PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
@@ -113,7 +114,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("환불된 결제 조회 시 예외가 발생한다")
         void fail_whenAlreadyRefunded() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             pgPayment.markRefunded(OffsetDateTime.now());
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
@@ -131,7 +132,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("PENDING 상태의 결제를 조회할 수 있다")
         void success() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             PgPayment result = pgQueryService.findFailablePayment(orderId, memberId);
@@ -154,7 +155,7 @@ class PgQueryServiceTest {
         @DisplayName("다른 회원의 결제 조회 시 예외가 발생한다")
         void fail_whenOwnerMismatch() {
             UUID otherMemberId = UUID.randomUUID();
-            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             assertThatThrownBy(() -> pgQueryService.findFailablePayment(orderId, memberId))
@@ -165,7 +166,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("이미 완료된 결제는 실패 처리할 수 없다")
         void fail_whenAlreadyCompleted() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
@@ -177,7 +178,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("이미 실패한 결제는 다시 실패 처리할 수 없다")
         void fail_whenAlreadyFailed() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markFailed(PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
@@ -189,7 +190,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("환불된 결제는 실패 처리할 수 없다")
         void fail_whenAlreadyRefunded() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             pgPayment.markRefunded(OffsetDateTime.now());
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
@@ -207,7 +208,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("COMPLETED 상태의 결제를 조회할 수 있다")
         void success() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
             when(paymentRules.getRefundDays()).thenReturn(REFUND_DAYS);
@@ -221,7 +222,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("PARTIALLY_REFUNDED 상태의 결제를 조회할 수 있다")
         void success_partiallyRefunded() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             pgPayment.applyRefund(1000L, OffsetDateTime.now());
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
@@ -246,7 +247,7 @@ class PgQueryServiceTest {
         @DisplayName("다른 회원의 결제 조회 시 예외가 발생한다")
         void fail_whenOwnerMismatch() {
             UUID otherMemberId = UUID.randomUUID();
-            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(otherMemberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
@@ -258,7 +259,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("완료되지 않은 결제는 환불할 수 없다")
         void fail_whenNotCompleted() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 
             assertThatThrownBy(() -> pgQueryService.findRefundablePayment(orderId, memberId))
@@ -269,7 +270,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("이미 전액 환불된 결제는 환불할 수 없다")
         void fail_whenAlreadyRefunded() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
             pgPayment.markRefunded(OffsetDateTime.now());
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
@@ -282,7 +283,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("환불 기간이 지난 결제는 환불할 수 없다")
         void fail_whenRefundPeriodExpired() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now().minusDays(REFUND_DAYS + 1), PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
             when(paymentRules.getRefundDays()).thenReturn(REFUND_DAYS);
@@ -295,7 +296,7 @@ class PgQueryServiceTest {
         @Test
         @DisplayName("실패한 결제는 환불할 수 없다")
         void fail_whenFailed() {
-            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT);
+            PgPayment pgPayment = PgPayment.create(memberId, orderId, AMOUNT, SAMPLE_PURCHASE_NAME);
             pgPayment.markFailed(PAYMENT_KEY);
             when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
 

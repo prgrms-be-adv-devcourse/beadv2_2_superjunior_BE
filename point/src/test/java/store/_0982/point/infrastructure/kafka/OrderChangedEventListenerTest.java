@@ -39,6 +39,8 @@ import static org.mockito.Mockito.when;
 
 class OrderChangedEventListenerTest extends BaseKafkaTest {
 
+    private static final String GROUP_PURCHASE_NAME = "테스트 공구";
+
     @Autowired
     private PointBalanceJpaRepository pointBalanceRepository;
 
@@ -74,7 +76,7 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
     void handleOrderChangedEvent_GroupPurchaseFail_Pg() {
         // given
         long cancelAmount = 10000;
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, cancelAmount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, cancelAmount, GROUP_PURCHASE_NAME);
         pgPayment.markConfirmed(PaymentMethod.EASY_PAY, OffsetDateTime.now(), "test_payment_key");
         pgPaymentRepository.save(pgPayment);
 
@@ -133,7 +135,8 @@ class OrderChangedEventListenerTest extends BaseKafkaTest {
                 memberId,
                 orderId,
                 UUID.randomUUID(),
-                PointAmount.of(paidAmount, bonusAmount)
+                PointAmount.of(paidAmount, bonusAmount),
+                GROUP_PURCHASE_NAME
         );
         pointTransactionRepository.save(payment);
 

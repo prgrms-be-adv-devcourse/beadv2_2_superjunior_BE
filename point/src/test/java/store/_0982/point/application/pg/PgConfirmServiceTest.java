@@ -1,5 +1,7 @@
 package store._0982.point.application.pg;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PgConfirmServiceTest {
+
+    private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
+            .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+            .build();
 
     @Mock
     private PgQueryService pgQueryService;
@@ -50,12 +56,13 @@ class PgConfirmServiceTest {
     @Test
     @DisplayName("결제 승인 마킹을 성공적으로 처리한다")
     void markConfirmedPayment_success() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount, "테스트 공구");
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
                 .amount(amount)
                 .method("카드")
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
@@ -78,12 +85,13 @@ class PgConfirmServiceTest {
     @Test
     @DisplayName("결제 승인 마킹 시 이벤트가 발행된다")
     void markConfirmedPayment_publishesEvent() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount, "테스트 공구");
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
                 .amount(amount)
                 .method("카드")
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())

@@ -1,6 +1,8 @@
 package store._0982.point.application.webhook;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -34,6 +36,10 @@ import static org.mockito.Mockito.doThrow;
 
 class WebhookIntegrationTest extends BaseIntegrationTest {
 
+    private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
+            .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+            .build();
+
     @Autowired
     private TossWebhookFacade tossWebhookFacade;
 
@@ -65,7 +71,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
         paymentKey = "test_payment_key";
         amount = 10000L;
 
-        pgPayment = PgPayment.create(memberId, orderId, amount);
+        pgPayment = PgPayment.create(memberId, orderId, amount, "테스트 공구");
         pgPaymentRepository.save(pgPayment);
     }
 
@@ -280,6 +286,7 @@ class WebhookIntegrationTest extends BaseIntegrationTest {
                 .amount(amount)
                 .method("카드")
                 .status(TossPaymentInfo.Status.DONE)
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
                 .build();
