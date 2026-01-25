@@ -22,6 +22,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3ImageUploader {
 
+    public enum ImageType {
+        PRODUCT,
+        GROUP_PURCHASE
+    }
+
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
@@ -36,9 +41,14 @@ public class S3ImageUploader {
     );
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; //10MB
 
-    public String upload(MultipartFile file, UUID sellerId) {
+    public String upload(MultipartFile file, UUID sellerId, ImageType imageType) {
         validateFile(file);
-        String key = generateKey(sellerId, file.getOriginalFilename());
+        String key;
+        if (imageType == ImageType.PRODUCT) {
+            key = generateProductKey(sellerId, file.getOriginalFilename());
+        } else {
+            key = generateGroupPurchaseKey(sellerId, file.getOriginalFilename());
+        }
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
@@ -55,8 +65,19 @@ public class S3ImageUploader {
 
     public PresignedUrlResponse generatePresignedUrl(String fileName, String contentType, UUID sellerId) {
         validateContentType(contentType);
-        String key = generateKey(sellerId, fileName);
+        String key = generateProductKey(sellerId, fileName);
 
+        return createPresignedUrlResponse(key, contentType);
+    }
+
+    public PresignedUrlResponse generatePresignedUrlForGroupPurchase(String fileName, String contentType, UUID sellerId) {
+        validateContentType(contentType);
+        String key = generateGroupPurchaseKey(sellerId, fileName);
+
+        return createPresignedUrlResponse(key, contentType);
+    }
+
+    private PresignedUrlResponse createPresignedUrlResponse(String key, String contentType) {
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
@@ -86,9 +107,12 @@ public class S3ImageUploader {
         s3Client.deleteObject(request);
     }
 
-    private String generateKey(UUID sellerId, String originalFileName) {
-        String extension = extractExtension(originalFileName);
+    private String generateProductKey(UUID sellerId, String originalFileName) {
         return String.format("products/%s/%s_%s", sellerId, UUID.randomUUID(), originalFileName);
+    }
+
+    private String generateGroupPurchaseKey(UUID sellerId, String originalFileName) {
+        return String.format("group-purchases/%s/%s_%s", sellerId, UUID.randomUUID(), originalFileName);
     }
 
     private void validateFile(MultipartFile file) {

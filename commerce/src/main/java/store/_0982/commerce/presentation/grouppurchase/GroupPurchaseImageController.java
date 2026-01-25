@@ -1,19 +1,9 @@
-package store._0982.commerce.presentation.product;
-
-import java.util.UUID;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+package store._0982.commerce.presentation.grouppurchase;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import store._0982.commerce.application.s3.S3ImageUploader;
 import store._0982.commerce.application.s3.dto.ImageUploadResponse;
 import store._0982.commerce.application.s3.dto.PresignedUrlRequest;
@@ -22,10 +12,12 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/products/images")
-public class ProductImageController {
+@RequestMapping("/api/purchases/images")
+public class GroupPurchaseImageController {
 
     private final S3ImageUploader s3ImageUploader;
 
@@ -35,7 +27,7 @@ public class ProductImageController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestBody PresignedUrlRequest request) {
 
-        PresignedUrlResponse response = s3ImageUploader.generatePresignedUrl(
+        PresignedUrlResponse response = s3ImageUploader.generatePresignedUrlForGroupPurchase(
                 request.fileName(),
                 request.contentType(),
                 memberId
@@ -49,7 +41,7 @@ public class ProductImageController {
             @RequestHeader(HeaderName.ID) UUID memberId,
             @RequestPart("file") MultipartFile file) {
 
-        String imageUrl = s3ImageUploader.upload(file, memberId, S3ImageUploader.ImageType.PRODUCT);
+        String imageUrl = s3ImageUploader.upload(file, memberId, S3ImageUploader.ImageType.GROUP_PURCHASE);
         return new ResponseDto<>(HttpStatus.OK, new ImageUploadResponse(imageUrl), "이미지 업로드 성공");
     }
 
