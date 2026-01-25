@@ -1,6 +1,7 @@
 package store._0982.gateway.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,7 +11,6 @@ import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
 import store._0982.gateway.security.token.MemberAuthenticationToken;
 
-import javax.security.auth.login.CredentialException;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -39,7 +39,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
         }
 
         return Mono.fromCallable(() -> jwtProvider.parseToken(token))
-                .onErrorMap(e -> new CredentialException())
+                .onErrorMap(e -> new BadCredentialsException("JWT 파싱 에러", e))
                 .map(GatewayJwtProvider::toMember)
                 .map(member -> toAuthenticatedToken(member.getMemberId(), member.getRole()));
     }
