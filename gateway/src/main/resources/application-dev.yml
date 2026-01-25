@@ -13,8 +13,5 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
 
-member-service:
-  url: http://localhost:8083
-
 frontend:
   url: http://localhost:3000
