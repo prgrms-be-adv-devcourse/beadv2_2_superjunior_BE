@@ -68,7 +68,7 @@ public class PointPaymentController {
     @GetMapping("/histories")
     public ResponseDto<Page<PointTransactionInfo>> getTransactions(
             @RequestHeader(HeaderName.ID) UUID memberId,
-            @RequestParam PointType type,
+            @RequestParam(required = false) PointType type,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         Page<PointTransactionInfo> response = pointPaymentService.getTransactions(memberId, type, pageable);

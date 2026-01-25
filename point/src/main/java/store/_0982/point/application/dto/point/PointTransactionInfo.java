@@ -23,7 +23,7 @@ public record PointTransactionInfo(
         } else if (type == PointType.BONUS) {
             amount = transaction.getBonusAmount();
         } else {
-            throw new IllegalArgumentException("Wrong Point Type");
+            amount = transaction.getTotalAmount();
         }
 
         return PointTransactionInfo.builder()
