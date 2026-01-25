@@ -21,7 +21,7 @@ public class ExceptionHandler {
         response.getHeaders().set("Access-Control-Allow-Origin", frontendUrl);
         response.getHeaders().set("Access-Control-Allow-Credentials", "true");
         response.getHeaders().add("Vary", "Origin");
-        response.getHeaders().remove("WWW-Authenticate");
+        response.getHeaders().remove("Www-Authenticate");
         byte[] bytes = errorCode.getMessage().getBytes(StandardCharsets.UTF_8);
         DataBuffer buffer = response.bufferFactory().wrap(bytes);
         return response.writeWith(Mono.just(buffer));
