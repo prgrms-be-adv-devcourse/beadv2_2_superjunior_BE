@@ -10,6 +10,7 @@ import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
 import store._0982.gateway.security.token.MemberAuthenticationToken;
 
+import javax.security.auth.login.CredentialException;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -38,6 +39,7 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
         }
 
         return Mono.fromCallable(() -> jwtProvider.parseToken(token))
+                .onErrorMap(e -> new CredentialException())
                 .map(GatewayJwtProvider::toMember)
                 .map(member -> toAuthenticatedToken(member.getMemberId(), member.getRole()));
     }
