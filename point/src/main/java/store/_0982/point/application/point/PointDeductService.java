@@ -56,7 +56,7 @@ public class PointDeductService {
 
         PointBalance balance = findPointBalanceForDeduction(memberId, amount);
         PointAmount deductionDelta = processDeduction(balance, amount);
-        PointTransaction used = recordPointTransaction(memberId, orderId, idempotencyKey, deductionDelta);
+        PointTransaction used = recordPointTransaction(memberId, orderId, idempotencyKey, deductionDelta, command.groupPurchaseName());
 
         return new PointDeductResult(balance, used, deductionDelta);
     }
@@ -74,8 +74,8 @@ public class PointDeductService {
         return deductionDelta;
     }
 
-    private PointTransaction recordPointTransaction(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount deductionDelta) {
-        PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deductionDelta);
+    private PointTransaction recordPointTransaction(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount deductionDelta, String groupPurchaseName) {
+        PointTransaction used = PointTransaction.used(memberId, orderId, idempotencyKey, deductionDelta, groupPurchaseName);
         pointTransactionRepository.saveAndFlush(used);
         return used;
     }

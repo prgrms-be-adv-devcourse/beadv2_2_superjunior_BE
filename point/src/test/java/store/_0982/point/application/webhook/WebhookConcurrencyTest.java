@@ -58,7 +58,7 @@ class WebhookConcurrencyTest extends BaseConcurrencyTest {
         paymentKey = "test_payment_key";
         amount = 10000L;
 
-        pgPayment = PgPayment.create(UUID.randomUUID(), orderId, amount);
+        pgPayment = PgPayment.create(UUID.randomUUID(), orderId, amount, "테스트 공구");
         pgPaymentRepository.save(pgPayment);
     }
 

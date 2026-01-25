@@ -43,6 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(PgPaymentController.class)
 class PgPaymentControllerTest {
 
+    private static final String PURCHASE_NAME = "테스트 공구";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -89,7 +91,7 @@ class PgPaymentControllerTest {
     @DisplayName("포인트 충전 주문을 생성한다")
     void createPayment() throws Exception {
         // given
-        PgCreateRequest request = new PgCreateRequest(orderId, 10000);
+        PgCreateRequest request = new PgCreateRequest(orderId, 10000, PURCHASE_NAME);
         PgCreateInfo createInfo = new PgCreateInfo(
                 UUID.randomUUID(),
                 memberId,
@@ -182,7 +184,8 @@ class PgPaymentControllerTest {
                 10000L,
                 PgPaymentStatus.COMPLETED,
                 OffsetDateTime.now(),
-                OffsetDateTime.now()
+                OffsetDateTime.now(),
+                PURCHASE_NAME
         );
 
         List<PgPaymentInfo> content = List.of(paymentInfo);

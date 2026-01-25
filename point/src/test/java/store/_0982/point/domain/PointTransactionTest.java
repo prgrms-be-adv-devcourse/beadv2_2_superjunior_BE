@@ -29,7 +29,7 @@ class PointTransactionTest {
     void createUsedHistory() {
         // when
         PointTransaction history = PointTransaction.used(
-                memberId, orderId, idempotencyKey, PointAmount.of(5000, 0));
+                memberId, orderId, idempotencyKey, PointAmount.paid(5000), "테스트 공구");
 
         // then
         assertThat(history).isNotNull();
@@ -45,7 +45,13 @@ class PointTransactionTest {
     void createReturnedHistory() {
         // when
         PointTransaction history = PointTransaction.returned(
-                memberId, orderId, idempotencyKey, PointAmount.of(3000, 0), "테스트");
+                memberId,
+                orderId,
+                idempotencyKey,
+                PointAmount.paid(3000),
+                "테스트",
+                "테스트 공구"
+        );
 
         // then
         assertThat(history).isNotNull();
@@ -65,9 +71,15 @@ class PointTransactionTest {
 
         // when
         PointTransaction usedHistory = PointTransaction.used(
-                memberId, orderId, idempotencyKey, PointAmount.of(5000, 0));
+                memberId, orderId, idempotencyKey, PointAmount.paid(5000), "테스트 공구");
         PointTransaction returnedHistory = PointTransaction.returned(
-                memberId, orderId2, idempotencyKey2, PointAmount.of(3000, 0), "테스트");
+                memberId,
+                orderId2,
+                idempotencyKey2,
+                PointAmount.paid(3000),
+                "테스트",
+                "테스트 공구"
+        );
 
         // then
         assertThat(usedHistory.getStatus()).isEqualTo(PointTransactionStatus.USED);

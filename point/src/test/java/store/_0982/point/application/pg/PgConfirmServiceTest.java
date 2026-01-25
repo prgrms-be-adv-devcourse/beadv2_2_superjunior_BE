@@ -50,7 +50,7 @@ class PgConfirmServiceTest {
     @Test
     @DisplayName("결제 승인 마킹을 성공적으로 처리한다")
     void markConfirmedPayment_success() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount, "테스트 공구");
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)
@@ -78,7 +78,7 @@ class PgConfirmServiceTest {
     @Test
     @DisplayName("결제 승인 마킹 시 이벤트가 발행된다")
     void markConfirmedPayment_publishesEvent() {
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, amount, "테스트 공구");
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .paymentKey(paymentKey)
                 .orderId(orderId)

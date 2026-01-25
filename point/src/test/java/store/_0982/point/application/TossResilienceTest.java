@@ -39,6 +39,7 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(initializers = {PostgreSQLContainerInitializer.class, KafkaContainerInitializer.class})
 class TossResilienceTest {
 
+    private static final String PURCHASE_NAME = "테스트 공구";
     private static final String TEST_PAYMENT_KEY = "test-key";
     private static final long DEFAULT_AMOUNT = 1000;
 
@@ -82,7 +83,7 @@ class TossResilienceTest {
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
         PgConfirmCommand command = new PgConfirmCommand(orderId, DEFAULT_AMOUNT, TEST_PAYMENT_KEY);
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT, PURCHASE_NAME);
 
         TossPaymentInfo tossPaymentInfo = TossPaymentInfo.builder()
                 .orderId(orderId)

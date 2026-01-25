@@ -1,5 +1,6 @@
 package store._0982.point.application;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
-import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgCancelCommand;
+import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.client.TossPaymentClient;
 import store._0982.point.client.dto.TossPaymentConfirmRequest;
 import store._0982.point.client.dto.TossPaymentInfo;
@@ -29,20 +30,28 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TossPaymentServiceTest {
 
+    private static final String GROUP_PURCHASE_NAME = "테스트 공구";
+
     @Mock
     private TossPaymentClient tossPaymentClient;
 
     @InjectMocks
     private TossPaymentService tossPaymentService;
 
+    private UUID orderId;
+    private PgPayment pgPayment;
+
+    @BeforeEach
+    void setUp() {
+        UUID memberId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
+        pgPayment = PgPayment.create(memberId, orderId, 10000, GROUP_PURCHASE_NAME);
+    }
+
     @Test
     @DisplayName("결제 승인이 성공한다")
     void confirmPayment_success() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
         PgConfirmCommand command = new PgConfirmCommand(
                 orderId,
                 10000,
@@ -74,10 +83,6 @@ class TossPaymentServiceTest {
     @DisplayName("orderId가 일치하지 않으면 예외가 발생한다")
     void confirmPayment_fail_whenOrderIdMismatch() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
         PgConfirmCommand command = new PgConfirmCommand(
                 orderId,
                 10000,
@@ -107,10 +112,6 @@ class TossPaymentServiceTest {
     @DisplayName("외부 API 타임아웃 시 예외가 발생한다")
     void confirmPayment_fail_whenTimeout() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
         PgConfirmCommand command = new PgConfirmCommand(
                 orderId,
                 10000,
@@ -130,9 +131,6 @@ class TossPaymentServiceTest {
     @DisplayName("결제 취소가 성공한다")
     void cancelPayment_success() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
         pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test_payment_key");
 
         PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000L);
@@ -170,10 +168,6 @@ class TossPaymentServiceTest {
     @DisplayName("외부 API 에러 발생 시 예외가 발생한다")
     void cancelPayment_fail_whenApiError() {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
-
         PgCancelCommand command = new PgCancelCommand(orderId, "환불 요청", 10000L);
 
         when(tossPaymentClient.cancel(any()))

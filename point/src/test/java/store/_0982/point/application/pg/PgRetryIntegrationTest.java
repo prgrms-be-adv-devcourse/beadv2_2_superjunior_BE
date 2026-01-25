@@ -39,7 +39,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
 
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000, "테스트 공구");
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         when(pgPaymentRepository.findByOrderId(orderId)).thenThrow(new QueryTimeoutException("DB Timeout"));

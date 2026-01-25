@@ -29,6 +29,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PointReturnServiceTest {
 
+    private static final String GROUP_PURCHASE_NAME = "테스트 공구";
     private static final String CANCEL_REASON = "테스트 환불";
 
     @Mock
@@ -61,7 +62,13 @@ class PointReturnServiceTest {
         PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 3000L);
         PointBalance pointBalance = new PointBalance(memberId);
         
-        PointTransaction usedTx = PointTransaction.used(memberId, orderId, UUID.randomUUID(), PointAmount.of(3000L, 0));
+        PointTransaction usedTx = PointTransaction.used(
+                memberId,
+                orderId,
+                UUID.randomUUID(),
+                PointAmount.paid(3000),
+                GROUP_PURCHASE_NAME
+        );
         
         when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
         when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
@@ -121,7 +128,13 @@ class PointReturnServiceTest {
         // given
         PointReturnCommand command = new PointReturnCommand(idempotencyKey, orderId, CANCEL_REASON, 5000L);
         PointBalance pointBalance = new PointBalance(memberId);
-        PointTransaction usedTx = PointTransaction.used(memberId, orderId, UUID.randomUUID(), PointAmount.of(3000L, 0));
+        PointTransaction usedTx = PointTransaction.used(
+                memberId,
+                orderId,
+                UUID.randomUUID(),
+                PointAmount.paid(3000),
+                GROUP_PURCHASE_NAME
+        );
 
         when(pointTransactionRepository.existsByIdempotencyKey(idempotencyKey)).thenReturn(false);
         when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));

@@ -53,7 +53,7 @@ class PgCancelServiceTest {
         memberId = UUID.randomUUID();
         orderId = UUID.randomUUID();
 
-        pgPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT);
+        pgPayment = PgPayment.create(memberId, orderId, REFUND_AMOUNT, "테스트 공구");
         pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), PAYMENT_KEY);
 
         TossPaymentInfo.CancelInfo cancelInfo = TossPaymentInfo.CancelInfo.builder()

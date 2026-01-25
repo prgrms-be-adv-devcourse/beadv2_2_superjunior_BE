@@ -61,7 +61,13 @@ public class PointReturnService {
                 usedHistory.getPointAmount() : usedHistory.calculateRefund(command.amount());
 
         PointTransaction returned = PointTransaction.returned(
-                memberId, command.orderId(), command.idempotencyKey(), refundAmount, command.cancelReason());
+                memberId,
+                command.orderId(),
+                command.idempotencyKey(),
+                refundAmount,
+                command.cancelReason(),
+                usedHistory.getGroupPurchaseName()
+        );
 
         returned = pointTransactionRepository.saveAndFlush(returned);
         point.addAmount(refundAmount);

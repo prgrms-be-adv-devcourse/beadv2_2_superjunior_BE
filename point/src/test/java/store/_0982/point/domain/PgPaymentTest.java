@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PgPaymentTest {
 
     private static final int DEFAULT_AMOUNT = 10_000;
+    private static final String PURCHASE_NAME = "테스트 공구";
 
     private UUID memberId;
     private UUID orderId;
@@ -29,7 +30,7 @@ class PgPaymentTest {
     @DisplayName("결제 포인트를 생성한다")
     void create() {
         // when
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT, PURCHASE_NAME);
 
         // then
         assertThat(pgPayment.getMemberId()).isEqualTo(memberId);
@@ -42,7 +43,7 @@ class PgPaymentTest {
     @DisplayName("결제를 승인 처리한다")
     void markConfirmed() {
         // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT, PURCHASE_NAME);
 
         OffsetDateTime approvedAt = OffsetDateTime.now();
         String paymentKey = "test_payment_key";
@@ -61,7 +62,7 @@ class PgPaymentTest {
     @DisplayName("결제를 실패 처리한다")
     void markFailed() {
         // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT, PURCHASE_NAME);
 
         // when
         pgPayment.markFailed("failed_payment_key");
@@ -74,7 +75,7 @@ class PgPaymentTest {
     @DisplayName("결제를 환불 처리한다")
     void markRefunded() {
         // given
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, DEFAULT_AMOUNT, PURCHASE_NAME);
         pgPayment.markConfirmed(PaymentMethod.CARD, OffsetDateTime.now(), "test_payment_key");
 
         OffsetDateTime refundedAt = OffsetDateTime.now();
