@@ -35,9 +35,8 @@ spring:
           model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
       chat:
         options:
-          model: gpt-4o-mini
+          model: gpt-5.2
           temperature: 0.0
 
 server:
   port: 8088
-
