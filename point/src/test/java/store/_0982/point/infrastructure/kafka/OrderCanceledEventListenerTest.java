@@ -82,6 +82,7 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
                 Clock.fixed(Instant.parse("2024-01-01T10:00:00Z"), ZoneId.systemDefault()),
                 memberId,
                 orderId,
+                "테스트 상품",
                 OrderCanceledEvent.PaymentMethod.PG,
                 cancelAmount,
                 "단순 변심"
@@ -144,6 +145,7 @@ class OrderCanceledEventListenerTest extends BaseKafkaTest {
                 Clock.fixed(Instant.parse("2024-01-01T10:00:00Z"), ZoneId.systemDefault()),
                 memberId,
                 orderId,
+                "테스트 상품",
                 OrderCanceledEvent.PaymentMethod.POINT,
                 paidAmount + bonusAmount,
                 "단순 변심"
