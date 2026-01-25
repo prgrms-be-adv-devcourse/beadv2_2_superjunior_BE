@@ -157,7 +157,7 @@ public class GroupPurchase {
         this.discountedPrice = discountedPrice;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.sellerId = productId;
+        this.productId = productId;
     }
   
     public void updateStatus(GroupPurchaseStatus status){
