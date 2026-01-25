@@ -16,4 +16,6 @@ public interface NotificationSettingRepository {
     void save(NotificationSetting notificationSetting);
 
     void saveAll(Collection<NotificationSetting> notificationSettings);
+
+    void deleteAllByMemberId(UUID memberId);
 }

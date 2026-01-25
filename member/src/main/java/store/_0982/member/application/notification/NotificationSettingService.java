@@ -54,6 +54,14 @@ public class NotificationSettingService {
         notificationSettingRepository.saveAll(settings);
     }
 
+    /**
+     * 회원 가입 실패 시 호출되는 메서드입니다.
+     */
+    @Transactional
+    public void deleteSettings(UUID memberId) {
+        notificationSettingRepository.deleteAllByMemberId(memberId);
+    }
+
     public List<NotificationSettingInfo> getAllSettings(UUID memberId) {
         Map<NotificationChannel, NotificationSetting> storedSettings = getNotificationSettings(memberId);
 

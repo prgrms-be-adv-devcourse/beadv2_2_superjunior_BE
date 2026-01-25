@@ -36,4 +36,9 @@ public class NotificationSettingAdapter implements NotificationSettingRepository
     public void saveAll(Collection<NotificationSetting> notificationSettings) {
         notificationSettingJpaRepository.saveAll(notificationSettings);
     }
+
+    @Override
+    public void deleteAllByMemberId(UUID memberId) {
+        notificationSettingJpaRepository.deleteAllByMemberId(memberId);
+    }
 }

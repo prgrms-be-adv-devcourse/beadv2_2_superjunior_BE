@@ -13,4 +13,6 @@ public interface NotificationSettingJpaRepository extends JpaRepository<Notifica
     List<NotificationSetting> findAllByMemberId(UUID memberId);
 
     Optional<NotificationSetting> findByMemberIdAndChannel(UUID memberId, NotificationChannel channel);
+
+    void deleteAllByMemberId(UUID memberId);
 }
