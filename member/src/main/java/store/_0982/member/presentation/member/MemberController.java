@@ -1,6 +1,8 @@
 package store._0982.member.presentation.member;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
+import store._0982.member.application.member.AuthService;
 import store._0982.member.application.member.MemberService;
 import store._0982.member.application.member.SellerService;
 import store._0982.member.application.member.dto.*;
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
+    private final AuthService authService;
 
     @Operation(summary = "회원가입", description = "신규 회원을 등록합니다.")
     @PostMapping
@@ -89,10 +93,11 @@ public class MemberController {
     @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
+    public ResponseDto<SellerRegisterInfo> registerSeller(HttpServletRequest request, HttpServletResponse response, @RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
         SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
         sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
+        authService.refreshAccessTokenCookie(request, response);
         return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
 

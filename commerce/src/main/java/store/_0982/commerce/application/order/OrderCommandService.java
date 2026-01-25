@@ -20,7 +20,7 @@ import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
-import store._0982.commerce.application.sellerbalance.SellerBalanceService;
+import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.order.Order;
@@ -53,11 +53,12 @@ public class OrderCommandService {
     private final ProductService productService;
     private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
-    private final SellerBalanceService sellerBalanceService;
 
     private final MemberClient memberClient;
 
     private final ApplicationEventPublisher eventPublisher;
+    private final OrderSettlementService orderSettlementService;
+
 
     @ServiceLog
     @Transactional
@@ -205,50 +206,51 @@ public class OrderCommandService {
 
         GroupPurchase groupPurchase = groupPurchaseService
                 .findByGroupPurchase(order.getGroupPurchaseId());
+        String productName = productService.findByProductName(groupPurchase.getProductId());
 
         groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
         if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
-            processCancellationBeforeSuccess(order, command.reason());
+            processCancellationBeforeSuccess(order, command.reason(), productName);
             return;
         }
 
         if (groupPurchase.isInReversedPeriod()) {
-            processCancellationWithin48Hours(order, groupPurchase.getSellerId(), command.reason());
+            processCancellationWithin48Hours(order, command.reason(), productName);
             return;
         }
 
         if (groupPurchase.isInReturnedPeriod()) {
-            processReturnAfter48Hours(order, groupPurchase.getSellerId(), command.reason());
+            processReturnAfter48Hours(order, command.reason(), productName);
             return;
         }
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
     }
 
-    private void processCancellationBeforeSuccess(Order order, String reason) {
+    private void processCancellationBeforeSuccess(Order order, String reason, String productName) {
         order.requestCancel();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
-    private void processCancellationWithin48Hours(Order order, UUID sellerId, String reason) {
+    private void processCancellationWithin48Hours(Order order, String reason, String productName) {
         order.requestReversed();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
-    private void processReturnAfter48Hours(Order order, UUID sellerId, String reason) {
+    private void processReturnAfter48Hours(Order order, String reason, String productName) {
         order.requestReturned();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount());
+        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
-    private void publishCancellationEvent(Order order, String reason, Long refundAmount) {
+    private void publishCancellationEvent(Order order, String reason, Long refundAmount, String productName) {
         eventPublisher.publishEvent(
-                new OrderCancelProcessedEvent(order, reason, refundAmount)
+                new OrderCancelProcessedEvent(order, reason, refundAmount, productName)
         );
     }
 
@@ -273,8 +275,12 @@ public class OrderCommandService {
                 continue;
             }
 
+            GroupPurchase groupPurchase = groupPurchaseService
+                    .findByGroupPurchase(order.getGroupPurchaseId());
+            String productName = productService.findByProductName(groupPurchase.getProductId());
+
             OrderCancellationPolicy.RefundAmount calculated = calculate(order, cancellationType);
-            publishCancellationEvent(order, "retry-cancel", calculated.refundAmount());
+            publishCancellationEvent(order, "retry-cancel", calculated.refundAmount(), productName) ;
         }
     }
 
@@ -303,6 +309,7 @@ public class OrderCommandService {
         }
     }
 
+    @Transactional
     public void confirmPurchase(UUID memberId, UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
@@ -312,5 +319,6 @@ public class OrderCommandService {
         }
 
         order.confirmPurchase();
+        orderSettlementService.saveConfirmedOrderSettlement(order);
     }
 }

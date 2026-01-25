@@ -6,7 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.member.domain.notification.Notification;
 import store._0982.member.domain.notification.NotificationRepository;
-import store._0982.member.domain.notification.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,13 +28,14 @@ public class NotificationAdapter implements NotificationRepository {
         return notificationJpaRepository.findByMemberIdAndStatus(memberId, status);
     }
 
-    public Page<Notification> findByMemberId(UUID memberId, Pageable pageable) {
-        return notificationJpaRepository.findByMemberId(memberId, pageable);
+    public Page<Notification> findByMemberIdAndChannel(UUID memberId, NotificationChannel channel, Pageable pageable) {
+        return notificationJpaRepository.findByMemberIdAndChannel(memberId, channel, pageable);
     }
 
     @Override
-    public Page<Notification> findByMemberIdAndStatus(UUID memberId, NotificationStatus status, Pageable pageable) {
-        return notificationJpaRepository.findByMemberIdAndStatus(memberId, status, pageable);
+    public Page<Notification> findByMemberIdAndStatusAndChannel(UUID memberId, NotificationStatus status,
+                                                                NotificationChannel channel, Pageable pageable) {
+        return notificationJpaRepository.findByMemberIdAndStatusAndChannel(memberId, status, channel, pageable);
     }
 
     @Override

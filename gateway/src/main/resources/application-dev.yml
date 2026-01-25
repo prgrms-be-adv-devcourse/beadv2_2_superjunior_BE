@@ -15,3 +15,6 @@ spring:
 
 member-service:
   url: http://localhost:8083
+
+frontend:
+  url: http://localhost:3000

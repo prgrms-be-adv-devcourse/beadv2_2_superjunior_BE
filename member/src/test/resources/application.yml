@@ -3,20 +3,9 @@ spring:
   application:
     name: notification-test
 
-  cloud:
-    config:
-      enabled: false
-
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
@@ -24,9 +13,13 @@ spring:
         hbm2ddl:
           create_namespaces: true
 
-  h2:
-    console:
-      enabled: false
+  flyway:
+    enabled: true
+    default-schema: member_schema
+    schemas:
+      - member_schema
+      - notification_schema
+    create-schemas: true
 
   kafka:
     consumer:
@@ -44,13 +37,6 @@ spring:
 kafka:
   bootstrap-servers: ${spring.embedded.kafka.brokers}
 
-# Eureka 클라이언트 비활성화
-eureka:
-  client:
-    enabled: false
-    register-with-eureka: false
-    fetch-registry: false
-
 logging:
   level:
     org.springframework.kafka: WARN
@@ -60,7 +46,3 @@ jwt:
   secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
   access-token-validity-period: 60000
   refresh-token-validity-period: 120000
-
-token:
-  internal:
-    secret: "this-is-a-long-internal-token-secret-123456"

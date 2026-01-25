@@ -7,3 +7,13 @@ spring:
     redis:
       host: localhost
       port: 6379
+
+commerce-service:
+  url: http://localhost:8087
+
+point-service:
+  url: http://localhost:8086
+
+cookie:
+  same-site: Lax
+  secure: false

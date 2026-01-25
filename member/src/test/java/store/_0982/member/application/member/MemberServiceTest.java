@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import store._0982.common.dto.PageResponse;
 import store._0982.member.application.member.dto.*;
+import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.domain.member.*;
 
 import java.util.List;
@@ -22,8 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
@@ -42,6 +43,9 @@ class MemberServiceTest {
 
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private MemberService memberService;
@@ -115,6 +119,7 @@ class MemberServiceTest {
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        doNothing().when(applicationEventPublisher).publishEvent(any(MemberDeletedServiceEvent.class));
 
         // when
         memberService.deleteMember(command);
@@ -123,6 +128,7 @@ class MemberServiceTest {
         assertThat(member.getDeletedAt()).isNotNull();
         verify(memberRepository).findById(memberId);
         verify(memberRepository).save(member);
+        verify(applicationEventPublisher).publishEvent(any(MemberDeletedServiceEvent.class));
     }
 
     @Test
@@ -292,4 +298,3 @@ class MemberServiceTest {
         verify(addressRepository).deleteById(addressId);
     }
 }
-

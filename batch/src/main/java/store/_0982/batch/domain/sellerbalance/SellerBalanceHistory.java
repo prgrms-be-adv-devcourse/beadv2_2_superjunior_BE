@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "seller_balance_history", schema = "order_schema")
+@Table(name = "seller_balance_history", schema = "settlement_schema")
 public class SellerBalanceHistory {
 
     @Id
@@ -25,8 +25,8 @@ public class SellerBalanceHistory {
     @Column(name = "settlement_id")
     private UUID settlementId;
 
-    @Column(name = "group_purchase_id")
-    private UUID groupPurchaseId;
+    @Column(name = "order_settlement_id", unique = true)
+    private UUID orderSettlementId;
 
     @Column(name = "amount", nullable = false)
     private Long amount;
@@ -36,22 +36,49 @@ public class SellerBalanceHistory {
     private SellerBalanceHistoryStatus status;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    public SellerBalanceHistory(
+    public static SellerBalanceHistory createCreditHistory(
+            UUID sellerId,
+            UUID orderSettlementId,
+            Long amount
+    ) {
+        return new SellerBalanceHistory(
+                sellerId,
+                null,
+                orderSettlementId,
+                amount,
+                SellerBalanceHistoryStatus.CREDIT
+        );
+    }
+
+    public static SellerBalanceHistory createDebitHistory(
+            UUID sellerId,
+            UUID settlementId,
+            Long amount
+    ) {
+        return new SellerBalanceHistory(
+                sellerId,
+                settlementId,
+                null,
+                amount,
+                SellerBalanceHistoryStatus.DEBIT
+        );
+    }
+
+    private SellerBalanceHistory(
             UUID memberId,
             UUID settlementId,
-            UUID groupPurchaseId,
+            UUID orderSettlementId,
             Long amount,
             SellerBalanceHistoryStatus status
     ) {
         this.historyId = UUID.randomUUID();
         this.memberId = memberId;
         this.settlementId = settlementId;
-        this.groupPurchaseId = groupPurchaseId;
+        this.orderSettlementId = orderSettlementId;
         this.amount = amount;
         this.status = status;
     }
-
 }

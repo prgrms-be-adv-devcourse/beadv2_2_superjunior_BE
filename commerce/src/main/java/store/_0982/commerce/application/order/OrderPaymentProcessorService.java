@@ -3,8 +3,10 @@ package store._0982.commerce.application.order;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.domain.order.PaymentMethod;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
@@ -17,6 +19,7 @@ import store._0982.common.kafka.dto.PointChangedEvent;
 public class OrderPaymentProcessorService {
 
     private final OrderRepository orderRepository;
+    private final OrderSettlementService orderSettlementService;
 
     @Transactional
     public void processPaymentStatusUpdate(PaymentChangedEvent event){
@@ -32,7 +35,12 @@ public class OrderPaymentProcessorService {
                 //order.markFailed();
             }
             case REFUNDED -> {
-                order.changeStatus();
+                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
+                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
+                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
+                    order.changeStatus();
+                    orderSettlementService.saveCanceledOrderSettlement(order);
+                }
             }
         }
     }
@@ -47,7 +55,12 @@ public class OrderPaymentProcessorService {
                 order.completePayment(PaymentMethod.POINT);
             }
             case REFUNDED -> {
-
+                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
+                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
+                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
+                    order.changeStatus();
+                    orderSettlementService.saveCanceledOrderSettlement(order);
+                }
             }
         }
 

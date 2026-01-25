@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
@@ -16,12 +17,15 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
+import store._0982.commerce.domain.product.Product;
+import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +41,7 @@ public class OrderQueryService {
 
     private final OrderRepository orderRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
+    private final ProductRepository productRepository;
     private final ProductVectorJpaRepository productVectorRepository;
     private final GroupPurchaseService groupPurchaseService;
 
@@ -99,6 +104,9 @@ public class OrderQueryService {
                 .collect(toMap(GroupPurchase::getGroupPurchaseId, GroupPurchase::getProductId));
         Map<UUID, ProductVector> productIdToVector = productVectors.stream()
                 .collect(toMap(ProductVector::getProductId, Function.identity()));
+        List<Product> products = productRepository.findByProductIdIn(productIds);
+        Map<UUID, String> productIdToDescription = products.stream()
+                .collect(toMap(Product::getProductId, Product::getDescription));
         return orders.stream()
                 .map(order -> {
                     UUID productId = groupPurchaseToProduct.get(order.getGroupPurchaseId());
@@ -108,6 +116,7 @@ public class OrderQueryService {
                             order.getOrderId(),
                             order.getMemberId(),
                             productId,
+                            productIdToDescription.get(productId),
                             order.getQuantity(),
                             order.getCreatedAt(),
                             order.getStatus(),
@@ -121,17 +130,30 @@ public class OrderQueryService {
         return orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.participantStatuses());
     }
 
-    private Map<UUID, String> getGroupPurchaseNames(Page<Order> orders){
-        List<UUID> groupPurchaseIds = orders.getContent().stream()
-                .map(Order::getGroupPurchaseId)
-                .distinct()
-                .toList();
 
-        return groupPurchaseService
-                .getGroupPurchaseByIds(groupPurchaseIds).stream()
-                .collect(Collectors.toMap(
-                        GroupPurchase::getGroupPurchaseId,
-                        GroupPurchase::getTitle
-                ));
+    public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
+        List<OrderStatus> statuses = List.of(new OrderStatus[]{
+                OrderStatus.CANCELLED, OrderStatus.CANCEL_REQUESTED,
+                OrderStatus.REVERSED, OrderStatus.REVERSE_REQUESTED,
+                OrderStatus.REFUNDED, OrderStatus.REFUND_REQUESTED
+        });
+
+        Page<Order> canceledOrders = orderRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
+        Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
+        return PageResponse.from(cancelInfos);
+    }
+  
+    private Map<UUID, String> getGroupPurchaseNames(Page<Order> orders){
+      List<UUID> groupPurchaseIds = orders.getContent().stream()
+              .map(Order::getGroupPurchaseId)
+              .distinct()
+              .toList();
+
+      return groupPurchaseService
+              .getGroupPurchaseByIds(groupPurchaseIds).stream()
+              .collect(Collectors.toMap(
+                      GroupPurchase::getGroupPurchaseId,
+                      GroupPurchase::getTitle
+              ));
     }
 }
