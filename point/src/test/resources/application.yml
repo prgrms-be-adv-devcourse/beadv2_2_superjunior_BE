@@ -9,6 +9,10 @@ spring:
     schemas: payment_schema
     create-schemas: true
 
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+
   jpa:
     hibernate:
       ddl-auto: validate

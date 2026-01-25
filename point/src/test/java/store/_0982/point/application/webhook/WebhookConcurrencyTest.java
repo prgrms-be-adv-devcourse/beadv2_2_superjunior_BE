@@ -2,7 +2,6 @@ package store._0982.point.application.webhook;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Disabled("트랜잭션 구조를 바꾸거나 DB 커넥션 풀을 늘리지 않으면 락에 대한 타임아웃 발생")
 class WebhookConcurrencyTest extends BaseConcurrencyTest {
 
     @Autowired
