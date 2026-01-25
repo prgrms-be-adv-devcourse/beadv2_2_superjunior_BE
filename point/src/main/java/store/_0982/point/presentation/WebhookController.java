@@ -14,7 +14,7 @@ import java.time.OffsetDateTime;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/webhooks")
+@RequestMapping("/webhooks")
 public class WebhookController {
 
     private final TossWebhookFacade tossWebhookFacade;
