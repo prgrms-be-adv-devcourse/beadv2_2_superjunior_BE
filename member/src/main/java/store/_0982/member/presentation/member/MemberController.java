@@ -75,7 +75,7 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")        //TODO: Post로 변경 (이메일 url에서 숨김 + 토큰 CREATED)
-    @GetMapping("/email/{email}")
+    @PostMapping("/email/{email}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<String> sendVerificationEmail(@PathVariable("email") String email) {
         memberService.sendVerificationEmail(email);
@@ -83,9 +83,9 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증", description = "인증 메일에 포함된 토큰으로 이메일 인증을 완료합니다.")
-    @GetMapping("/email/verification/{token}")
-    public ResponseDto<String> verifyEmail(@PathVariable("token") String token) {
-        memberService.verifyEmail(token);
+    @PostMapping("/email/verification")
+    public ResponseDto<String> verifyEmail(@RequestBody EmailVerificationRequest emailVerificationRequest) {
+        memberService.verifyEmail(emailVerificationRequest.toCommand());
         return new ResponseDto<>(HttpStatus.OK, null, "이메일 인증이 완료되었습니다.");
     }
 
