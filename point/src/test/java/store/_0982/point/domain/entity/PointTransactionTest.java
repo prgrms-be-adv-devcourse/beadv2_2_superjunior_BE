@@ -1,10 +1,9 @@
-package store._0982.point.domain;
+package store._0982.point.domain.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.point.domain.constant.PointTransactionStatus;
-import store._0982.point.domain.entity.PointTransaction;
 import store._0982.point.domain.vo.PointAmount;
 
 import java.util.UUID;

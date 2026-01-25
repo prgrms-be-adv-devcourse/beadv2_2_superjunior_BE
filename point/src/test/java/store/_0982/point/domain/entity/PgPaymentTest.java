@@ -1,11 +1,10 @@
-package store._0982.point.domain;
+package store._0982.point.domain.entity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.point.domain.constant.PaymentMethod;
 import store._0982.point.domain.constant.PgPaymentStatus;
-import store._0982.point.domain.entity.PgPayment;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
