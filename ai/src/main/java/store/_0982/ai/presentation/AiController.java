@@ -18,9 +18,9 @@ public class AiController {
     private final RecommendationService recommendationService;
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/recommandations")
+    @GetMapping("/recommendations")
     @ControllerLog
-    public ResponseDto<RecommandInfo> getRecommandations(
+    public ResponseDto<RecommandInfo> getRecommendations(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "category", defaultValue = "") String category
