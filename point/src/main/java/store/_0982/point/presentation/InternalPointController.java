@@ -27,4 +27,13 @@ public class InternalPointController {
         PointBalanceInfo balanceInfo = pointPaymentService.initializeBalance(memberId);
         return new ResponseDto<>(HttpStatus.CREATED, balanceInfo, "회원 보유 포인트 초기화 성공");
     }
+
+    @Operation(summary = "포인트 잔액 초기화 롤백", description = "회원 가입 시 초기화한 포인트 잔액을 삭제합니다.")
+    @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
+    @DeleteMapping
+    public ResponseDto<Void> rollbackBalance(@RequestHeader(HeaderName.ID) UUID memberId) {
+        pointPaymentService.rollbackBalance(memberId);
+        return new ResponseDto<>(HttpStatus.OK, null, "회원 보유 포인트 삭제 성공");
+    }
 }

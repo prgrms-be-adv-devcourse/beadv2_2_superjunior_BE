@@ -43,4 +43,9 @@ public class PointPaymentService {
         PointBalance balance = pointBalanceRepository.save(new PointBalance(memberId));
         return PointBalanceInfo.from(balance);
     }
+
+    @RetryableTransactional
+    public void rollbackBalance(UUID memberId) {
+        pointBalanceRepository.deleteByMemberId(memberId);
+    }
 }

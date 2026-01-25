@@ -23,4 +23,9 @@ public class PointBalanceRepositoryAdapter implements PointBalanceRepository {
     public PointBalance save(PointBalance afterPayment) {
         return pointBalanceJpaRepository.save(afterPayment);
     }
+
+    @Override
+    public void deleteByMemberId(UUID memberId) {
+        pointBalanceJpaRepository.deleteByMemberId(memberId);
+    }
 }
