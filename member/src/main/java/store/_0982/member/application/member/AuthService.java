@@ -1,5 +1,6 @@
 package store._0982.member.application.member;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,8 +38,13 @@ public class AuthService {
     @Value("${cookie.secure}")
     private boolean secure;
 
-    private static final Duration DURATION_OF_ACCESS_TOKEN_COOKIE =  Duration.ofHours(1);
-    private static final Duration DURATION_OF_REFRESH_TOKEN_COOKIE =  Duration.ofDays(30);
+    private Duration durationOfAccessTokenCookie;
+    private Duration durationOfRefreshTokenCookie;
+    @PostConstruct
+    public void init() {
+        durationOfAccessTokenCookie =  Duration.ofMillis(jwtProvider.accessTokenCookieValidityPeriod);
+        durationOfRefreshTokenCookie =  Duration.ofMillis(jwtProvider.refreshTokenCookieValidityPeriod);
+    }
 
 
     @Transactional
@@ -50,9 +56,9 @@ public class AuthService {
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
 
-        ResponseCookie accessTokenCookie = generateAccessTokenCookie(accessToken, DURATION_OF_ACCESS_TOKEN_COOKIE);
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(accessToken, durationOfAccessTokenCookie);
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-        ResponseCookie refreshTokenCookie = generateRefreshTokenCookie(refreshToken, DURATION_OF_REFRESH_TOKEN_COOKIE);
+        ResponseCookie refreshTokenCookie = generateRefreshTokenCookie(refreshToken, durationOfRefreshTokenCookie);
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
 
         //TODO: //redis에 등록해야함.
@@ -82,7 +88,7 @@ public class AuthService {
 
         String newAccessToken = refreshAccessToken(refreshToken);
 
-        ResponseCookie accessTokenCookie = generateAccessTokenCookie(newAccessToken, DURATION_OF_ACCESS_TOKEN_COOKIE);
+        ResponseCookie accessTokenCookie = generateAccessTokenCookie(newAccessToken, durationOfAccessTokenCookie);
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
     }
 
