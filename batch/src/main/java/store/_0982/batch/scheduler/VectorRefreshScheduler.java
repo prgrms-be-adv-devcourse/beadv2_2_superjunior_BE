@@ -20,7 +20,7 @@ public class VectorRefreshScheduler {
     private final Job vectorRefreshJob;
 
     //    @Scheduled(cron = "* * * * * *", zone = "Asia/Seoul")
-    @Scheduled(initialDelay = 0, fixedDelay = 6000000)
+    @Scheduled(initialDelay = 7000, fixedDelay = 6000000)
     public void scheduleVectorRefresh() throws Exception {
         log.info("벡터 배치 시작");
         JobParameters jobParameters = new JobParametersBuilder()
