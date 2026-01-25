@@ -1,5 +1,6 @@
 package store._0982.point.presentation;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +31,13 @@ class InternalPointControllerTest {
     @Autowired
     private PointPaymentService pointPaymentService;
 
+    private UUID memberId;
+
+    @BeforeEach
+    void setUp() {
+        memberId = UUID.randomUUID();
+    }
+
     @TestConfiguration
     static class TestConfig {
         @Bean
@@ -41,7 +50,6 @@ class InternalPointControllerTest {
     @DisplayName("회원 가입 시 포인트 잔액을 초기화한다")
     void initializeBalance() throws Exception {
         // given
-        UUID memberId = UUID.randomUUID();
         PointBalanceInfo balanceInfo = new PointBalanceInfo(
                 memberId,
                 0,
@@ -62,5 +70,22 @@ class InternalPointControllerTest {
                 .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
         verify(pointPaymentService).initializeBalance(memberId);
+    }
+
+    @Test
+    @DisplayName("회원 가입 실패 시 포인트 잔액 초기화를 롤백한다")
+    void rollbackBalance() throws Exception {
+        // given
+        doNothing().when(pointPaymentService).rollbackBalance(memberId);
+
+        // when & then
+        mockMvc.perform(delete("/internal/points")
+                        .header(HeaderName.ID, memberId.toString())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(pointPaymentService).rollbackBalance(memberId);
     }
 }
