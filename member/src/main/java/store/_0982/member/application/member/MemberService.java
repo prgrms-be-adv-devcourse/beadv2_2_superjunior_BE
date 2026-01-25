@@ -119,8 +119,9 @@ public class MemberService {
 
     @ServiceLog
     @Transactional
-    public void verifyEmail(String token) {
-        EmailToken emailToken = emailTokenRepository.findByToken(token).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
+    public void verifyEmail(EmailVerificationCommand command) {
+        EmailToken emailToken = emailTokenRepository.findByEmail(command.email()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
+        if (!emailToken.getToken().equals(command.token())) throw new CustomException(CustomErrorCode.WRONG_CODE);
         if (emailToken.isExpired()) throw new CustomException(CustomErrorCode.TIME_OUT);
         emailToken.verify();
     }

@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -13,6 +14,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "email_token", schema = "member_schema")
 public class EmailToken {
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int TOKEN_LENGTH = 6;
+    private static final int TOKEN_BOUND = (int) Math.pow(10, TOKEN_LENGTH);
 
     @Id
     @Column(name = "email_token_id", nullable = false)
@@ -21,7 +25,7 @@ public class EmailToken {
     @Column(name = "email", length = 100, nullable = false)
     private String email;
 
-    @Column(name = "token", length = 100, nullable = false, unique = true)
+    @Column(name = "token", length = TOKEN_LENGTH, nullable = false)
     private String token;
 
     @Column(name = "is_verified", nullable = false)
@@ -42,7 +46,7 @@ public class EmailToken {
         EmailToken emailToken = new EmailToken();
         emailToken.emailTokenId = UUID.randomUUID();
         emailToken.email = email;
-        emailToken.token = UUID.randomUUID().toString();
+        emailToken.token = generateToken();
         emailToken.isVerified = false;
         emailToken.createdAt = OffsetDateTime.now();
         emailToken.updatedAt = emailToken.createdAt;
@@ -51,7 +55,7 @@ public class EmailToken {
     }
 
     public EmailToken refresh() {
-        token = UUID.randomUUID().toString();
+        token = generateToken();
         isVerified = false;
         updatedAt = OffsetDateTime.now();
         expiredAt = updatedAt.plusMinutes(VALID_MINUTES);
@@ -63,8 +67,13 @@ public class EmailToken {
     }
 
     public void verify() {
-            this.isVerified = true;
-            this.updatedAt = OffsetDateTime.now();
+        this.isVerified = true;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    private static String generateToken() {
+        int value = RANDOM.nextInt(TOKEN_BOUND);
+        return String.format("%0" + TOKEN_LENGTH + "d", value);
     }
 
 }
