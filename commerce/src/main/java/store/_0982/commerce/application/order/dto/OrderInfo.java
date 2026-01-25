@@ -12,15 +12,17 @@ public record OrderInfo(
         int quantity,
         Long price,
         Long totalAmount,
+        String groupPurchaseName,
         OffsetDateTime createdAt
 ) {
-    public static OrderInfo from(Order order){
+    public static OrderInfo from(Order order, String groupPurchaseName){
         return new OrderInfo(
                 order.getOrderId(),
                 order.getStatus(),
                 order.getQuantity(),
                 order.getPrice(),
                 order.getQuantity() * order.getPrice(),
+                groupPurchaseName,
                 order.getCreatedAt()
         );
     }

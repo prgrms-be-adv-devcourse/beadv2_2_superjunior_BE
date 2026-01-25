@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -41,6 +43,7 @@ public class OrderQueryService {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
     private final ProductVectorJpaRepository productVectorRepository;
+    private final GroupPurchaseService groupPurchaseService;
 
 
     public OrderDetailInfo getOrderById(UUID requesterID, UUID orderId) {
@@ -63,14 +66,23 @@ public class OrderQueryService {
 
         Page<Order> orders = orderRepository.findBySellerIdAndDeletedIsNull(sellerId, sortPageable);
 
-        Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
+        Map<UUID, String> groupPurchaseName = getGroupPurchaseNames(orders);
+
+        Page<OrderInfo> orderInfos = orders.map(order ->
+                OrderInfo.from(order, groupPurchaseName.get(order.getGroupPurchaseId())));
+
         return PageResponse.from(orderInfos);
     }
 
     public PageResponse<OrderInfo> getOrdersByConsumer(UUID memberId, Pageable pageable) {
         Page<Order> orders = orderRepository.findByMemberIdAndDeletedIsNull(memberId, pageable);
 
-        Page<OrderInfo> orderInfos = orders.map(OrderInfo::from);
+
+        Map<UUID, String> groupPurchaseName = getGroupPurchaseNames(orders);
+
+        Page<OrderInfo> orderInfos = orders.map(order ->
+                OrderInfo.from(order, groupPurchaseName.get(order.getGroupPurchaseId())));
+
         return PageResponse.from(orderInfos);
     }
 
@@ -118,6 +130,7 @@ public class OrderQueryService {
         return orderRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, OrderStatus.participantStatuses());
     }
 
+
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         List<OrderStatus> statuses = List.of(new OrderStatus[]{
                 OrderStatus.CANCELLED, OrderStatus.CANCEL_REQUESTED,
@@ -128,5 +141,19 @@ public class OrderQueryService {
         Page<Order> canceledOrders = orderRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
         Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
         return PageResponse.from(cancelInfos);
+    }
+  
+    private Map<UUID, String> getGroupPurchaseNames(Page<Order> orders){
+      List<UUID> groupPurchaseIds = orders.getContent().stream()
+              .map(Order::getGroupPurchaseId)
+              .distinct()
+              .toList();
+
+      return groupPurchaseService
+              .getGroupPurchaseByIds(groupPurchaseIds).stream()
+              .collect(Collectors.toMap(
+                      GroupPurchase::getGroupPurchaseId,
+                      GroupPurchase::getTitle
+              ));
     }
 }
