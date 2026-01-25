@@ -36,6 +36,8 @@ spec:
               value: http://commerce-service:8087
             - name: POINT_SERVICE_URL
               value: http://point-service:8086
+            - name: JWT_COOKIE_BUFFER
+              value: "60000"
           resources:
             requests:
               cpu: "200m"
