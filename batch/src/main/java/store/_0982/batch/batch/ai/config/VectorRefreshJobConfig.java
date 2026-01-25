@@ -7,6 +7,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 
 @Configuration
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class VectorRefreshJobConfig {
     @Bean
     public Job vectorRefreshJob(Step vectorRefreshStep) {
         return new JobBuilder(JOB_NAME, jobRepository)
+                .incrementer(new RunIdIncrementer())
                 .start(vectorRefreshStep)
                 .build();
     }
