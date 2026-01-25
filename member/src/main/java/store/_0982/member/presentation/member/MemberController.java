@@ -1,6 +1,8 @@
 package store._0982.member.presentation.member;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
+import store._0982.member.application.member.AuthService;
+import store._0982.member.application.member.MemberFacade;
 import store._0982.member.application.member.MemberService;
 import store._0982.member.application.member.SellerService;
 import store._0982.member.application.member.dto.*;
@@ -25,13 +29,15 @@ import java.util.UUID;
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
+    private final AuthService authService;
+
+    private final MemberFacade memberFacade;
 
     @Operation(summary = "회원가입", description = "신규 회원을 등록합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<MemberSignUpInfo> createMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
-        MemberSignUpInfo memberSignUpInfo = memberService.createMember(memberSignUpRequest.toCommand());
-        memberService.createPointBalance(memberSignUpInfo.memberId());
+        MemberSignUpInfo memberSignUpInfo = memberFacade.createMember(memberSignUpRequest.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, memberSignUpInfo, "회원가입이 완료되었습니다.");
     }
 
@@ -71,7 +77,7 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")        //TODO: Post로 변경 (이메일 url에서 숨김 + 토큰 CREATED)
-    @GetMapping("/email/{email}")
+    @PostMapping("/email/{email}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<String> sendVerificationEmail(@PathVariable("email") String email) {
         memberService.sendVerificationEmail(email);
@@ -79,9 +85,9 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증", description = "인증 메일에 포함된 토큰으로 이메일 인증을 완료합니다.")
-    @GetMapping("/email/verification/{token}")
-    public ResponseDto<String> verifyEmail(@PathVariable("token") String token) {
-        memberService.verifyEmail(token);
+    @PostMapping("/email/verification")
+    public ResponseDto<String> verifyEmail(@RequestBody EmailVerificationRequest emailVerificationRequest) {
+        memberService.verifyEmail(emailVerificationRequest.toCommand());
         return new ResponseDto<>(HttpStatus.OK, null, "이메일 인증이 완료되었습니다.");
     }
 
@@ -89,10 +95,9 @@ public class MemberController {
     @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
-        SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
-        sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
+    public ResponseDto<SellerRegisterInfo> registerSeller(HttpServletRequest request, HttpServletResponse response, @RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
+        SellerRegisterInfo sellerRegisterInfo = memberFacade.registerSeller(sellerRegisterRequest.toCommand(memberId));
+        authService.refreshAccessTokenCookie(request, response);
         return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
 
