@@ -4,11 +4,13 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
+@CrossOrigin
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExceptionHandler {
     public static Mono<Void> responseException(ServerWebExchange exchange, CustomErrorCode errorCode) {
