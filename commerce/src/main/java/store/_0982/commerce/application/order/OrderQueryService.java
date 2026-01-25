@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
-import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
@@ -26,7 +25,6 @@ import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,7 +68,7 @@ public class OrderQueryService {
         Map<UUID, String> groupPurchaseName = getGroupPurchaseNames(orders);
 
         Page<OrderInfo> orderInfos = orders.map(order ->
-                OrderInfo.from(order, groupPurchaseName.get(order.getGroupPurchaseId())));
+                OrderInfo.from(order, order.getGroupPurchaseId(), groupPurchaseName.get(order.getGroupPurchaseId())));
 
         return PageResponse.from(orderInfos);
     }
@@ -82,7 +80,7 @@ public class OrderQueryService {
         Map<UUID, String> groupPurchaseName = getGroupPurchaseNames(orders);
 
         Page<OrderInfo> orderInfos = orders.map(order ->
-                OrderInfo.from(order, groupPurchaseName.get(order.getGroupPurchaseId())));
+                OrderInfo.from(order, order.getGroupPurchaseId(), groupPurchaseName.get(order.getGroupPurchaseId())));
 
         return PageResponse.from(orderInfos);
     }
