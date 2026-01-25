@@ -10,17 +10,12 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class EmailTokenRepositoryAdpater implements EmailTokenRepository {
+public class EmailTokenRepositoryAdapter implements EmailTokenRepository {
     private final EmailTokenJpaRepository emailTokenJpaRepository;
 
     @Override
     public EmailToken save(EmailToken emailToken) {
         return emailTokenJpaRepository.save(emailToken);
-    }
-
-    @Override
-    public Optional<EmailToken> findByToken(String token) {
-        return emailTokenJpaRepository.findByToken(token);
     }
 
     @Override
