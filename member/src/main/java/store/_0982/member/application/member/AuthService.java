@@ -50,7 +50,7 @@ public class AuthService {
     @Transactional
     @ServiceLog
     public LoginTokens login(HttpServletResponse response, MemberLoginCommand memberLoginCommand) {
-        Member member = memberRepository.findByEmail(memberLoginCommand.email()).orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
+        Member member = memberRepository.findUndeletedMemberByEmail(memberLoginCommand.email()).orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
         checkPassword(member, memberLoginCommand.password());
 
         String accessToken = jwtProvider.generateAccessToken(member);

@@ -43,4 +43,9 @@ public class MemberRepositoryAdapter implements MemberRepository {
     public Page<UUID> findIds(Pageable pageable) {
         return memberJpaRepository.findAllIds(pageable);
     }
+
+    @Override
+    public Optional<Member> findUndeletedMemberByEmail(String email) {
+        return memberJpaRepository.findUndeletedMemberByEmail(email);
+    }
 }

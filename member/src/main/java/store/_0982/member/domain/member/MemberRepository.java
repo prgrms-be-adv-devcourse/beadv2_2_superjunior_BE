@@ -18,4 +18,6 @@ public interface MemberRepository {
     void hardDelete(Member member);
 
     Page<UUID> findIds(Pageable pageable);
+
+    Optional<Member> findUndeletedMemberByEmail(String email);
 }
