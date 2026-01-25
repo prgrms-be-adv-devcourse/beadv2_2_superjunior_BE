@@ -18,6 +18,7 @@ import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.presentation.dto.PointChargeRequest;
 import store._0982.point.presentation.dto.PointDeductRequest;
 import store._0982.point.presentation.dto.PointTransferRequest;
+import store._0982.point.domain.constant.PointType;
 
 import java.util.UUID;
 
@@ -67,9 +68,10 @@ public class PointPaymentController {
     @GetMapping("/histories")
     public ResponseDto<Page<PointTransactionInfo>> getTransactions(
             @RequestHeader(HeaderName.ID) UUID memberId,
+            @RequestParam PointType type,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<PointTransactionInfo> response = pointPaymentService.getTransactions(memberId, pageable);
+        Page<PointTransactionInfo> response = pointPaymentService.getTransactions(memberId, type, pageable);
         return new ResponseDto<>(HttpStatus.OK, response, "포인트 이력 조회 성공");
     }
 
