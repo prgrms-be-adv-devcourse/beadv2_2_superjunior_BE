@@ -12,6 +12,7 @@ public record VectorSearchResponse(
         Integer maxQuantity,
         String title,
         String description,
+        String imageUrl,
         Long discountedPrice,
         String status,
         String startDate,
