@@ -73,7 +73,8 @@ public class GroupPurchaseService {
                 command.startDate(),
                 command.endDate(),
                 memberId,
-                command.productId()
+                command.productId(),
+                command.imageUrl()
         );
 
         GroupPurchase saved = groupPurchaseRepository.saveAndFlush(groupPurchase);
@@ -157,7 +158,8 @@ public class GroupPurchaseService {
                 command.discountedPrice(),
                 command.startDate(),
                 command.endDate(),
-                command.productId()
+                command.productId(),
+                command.imageUrl()
         );
 
         GroupPurchase saved = groupPurchaseRepository.saveAndFlush(findGroupPurchase);
