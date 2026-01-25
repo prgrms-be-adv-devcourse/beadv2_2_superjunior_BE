@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import store._0982.member.domain.notification.NotificationSetting;
 import store._0982.member.domain.notification.NotificationSettingRepository;
+import store._0982.member.domain.notification.constant.NotificationChannel;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -14,6 +16,11 @@ import java.util.UUID;
 public class NotificationSettingAdapter implements NotificationSettingRepository {
     
     private final NotificationSettingJpaRepository notificationSettingJpaRepository;
+
+    @Override
+    public Optional<NotificationSetting> findByMemberIdAndChannel(UUID memberId, NotificationChannel channel) {
+        return notificationSettingJpaRepository.findByMemberIdAndChannel(memberId, channel);
+    }
 
     @Override
     public List<NotificationSetting> findAllByMemberId(UUID memberId) {
@@ -28,5 +35,10 @@ public class NotificationSettingAdapter implements NotificationSettingRepository
     @Override
     public void saveAll(Collection<NotificationSetting> notificationSettings) {
         notificationSettingJpaRepository.saveAll(notificationSettings);
+    }
+
+    @Override
+    public void deleteAllByMemberId(UUID memberId) {
+        notificationSettingJpaRepository.deleteAllByMemberId(memberId);
     }
 }

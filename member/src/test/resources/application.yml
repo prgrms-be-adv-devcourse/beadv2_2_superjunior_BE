@@ -46,3 +46,9 @@ jwt:
   secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
   access-token-validity-period: 60000
   refresh-token-validity-period: 120000
+
+commerce-service:
+  url: http://localhost:8087
+
+point-service:
+  url: http://localhost:8086
