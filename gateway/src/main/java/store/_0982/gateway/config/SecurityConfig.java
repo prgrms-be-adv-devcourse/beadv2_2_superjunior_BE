@@ -12,6 +12,7 @@ import org.springframework.http.HttpMethod;
 import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.security.AccessTokenAuthenticationWebFilter;
+import store._0982.gateway.security.GuestAwareAccessDeniedHandler;
 import store._0982.gateway.security.RouteAuthorizationManager;
 
 @Configuration
@@ -22,6 +23,7 @@ public class SecurityConfig {
     private final RouteAuthorizationManager routeAuthorizationManager;
     private final AccessTokenAuthenticationWebFilter authenticationWebFilter;
     private final ExceptionHandler exceptionHandler;
+    private final GuestAwareAccessDeniedHandler guestAwareAccessDeniedHandler;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -54,10 +56,8 @@ public class SecurityConfig {
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)
                 ).exceptionHandling(ex -> ex
-                        // 인증이 아예 없을 때 (401) 만료된 토큰, 이상한 토큰
                         .authenticationEntryPoint((exchange, e) -> exceptionHandler.responseException(exchange, CustomErrorCode.INVALID))
-                        // 인증은 되었지만 권한이 없을 때 (403)
-                        .accessDeniedHandler((exchange, e) -> exceptionHandler.responseException(exchange, CustomErrorCode.FORBIDDEN)))
+                        .accessDeniedHandler(guestAwareAccessDeniedHandler))
                 .build();
     }
 

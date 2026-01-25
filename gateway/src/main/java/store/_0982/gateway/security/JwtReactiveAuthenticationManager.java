@@ -34,10 +34,6 @@ public class JwtReactiveAuthenticationManager implements ReactiveAuthenticationM
         }
 
         String token = (String) authentication.getCredentials();
-        if (token == null || token.isBlank()) {
-            return Mono.empty();
-        }
-
         return Mono.fromCallable(() -> jwtProvider.parseToken(token))
                 .onErrorMap(e -> new BadCredentialsException("JWT 파싱 에러", e))
                 .map(GatewayJwtProvider::toMember)
