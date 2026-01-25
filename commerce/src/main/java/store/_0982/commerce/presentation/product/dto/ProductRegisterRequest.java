@@ -24,11 +24,13 @@ public record ProductRegisterRequest(
 
         String originalUrl,
 
+        String imageUrl,
+
         @NotBlank
         String idempotencyKey
 ) {
 
     public ProductRegisterCommand toCommand(UUID sellerId) {
-        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, idempotencyKey, sellerId);
+        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, imageUrl, idempotencyKey, sellerId);
     }
 }

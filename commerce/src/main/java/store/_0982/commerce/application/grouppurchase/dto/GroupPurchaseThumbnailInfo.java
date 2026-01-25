@@ -19,6 +19,7 @@ public record GroupPurchaseThumbnailInfo(
         OffsetDateTime endDate,
         ProductCategory category,
         GroupPurchaseStatus status,
+        String imageUrl,
         OffsetDateTime createdAt
 ) {
     public static GroupPurchaseThumbnailInfo from(GroupPurchase groupPurchase, Long originalPrice, ProductCategory category) {
@@ -34,6 +35,7 @@ public record GroupPurchaseThumbnailInfo(
                 groupPurchase.getEndDate(),
                 category,
                 groupPurchase.getStatus(),
+                groupPurchase.getImageUrl(),
                 groupPurchase.getCreatedAt()
         );
     }

@@ -42,6 +42,9 @@ public class Product {
     @Column(name = "original_url")
     private String originalUrl;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
 
@@ -62,6 +65,7 @@ public class Product {
                                  String description,
                                  int stock,
                                  String originalUrl,
+                                 String imageUrl,
                                  String idempotencyKey,
                                  UUID sellerId) {
         return new Product(
@@ -71,6 +75,7 @@ public class Product {
                 description,
                 stock,
                 originalUrl,
+                imageUrl,
                 idempotencyKey,
                 sellerId);
     }
@@ -80,13 +85,15 @@ public class Product {
                               ProductCategory category,
                               String description,
                               int stock,
-                              String originalUrl){
+                              String originalUrl,
+                              String imageUrl){
         this.name = name;
         this.price = price;
         this.category = category;
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+        this.imageUrl = imageUrl;
     }
 
     public void softDelete() {
@@ -108,6 +115,7 @@ public class Product {
                     String description,
                     int stock,
                     String originalUrl,
+                    String imageUrl,
                     String idempotencyKey,
                     UUID sellerId) {
 
@@ -118,6 +126,7 @@ public class Product {
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+        this.imageUrl = imageUrl;
         this.idempotencyKey = idempotencyKey;
         this.sellerId = sellerId;
     }
