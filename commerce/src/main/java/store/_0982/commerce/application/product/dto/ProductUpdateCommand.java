@@ -8,6 +8,7 @@ public record ProductUpdateCommand(
         ProductCategory category,
         String description,
         int stock,
-        String originalLink
+        String originalLink,
+        String imageUrl
 ) {
 }

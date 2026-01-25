@@ -47,8 +47,8 @@ public class ProductService {
         Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
-                command.originalUrl(), command.idempotencyKey(),
-                command.sellerId());
+                command.originalUrl(), command.imageUrl(),
+                command.idempotencyKey(), command.sellerId());
 
         Product savedProduct = productRepository.save(product);
 
@@ -95,7 +95,8 @@ public class ProductService {
                 command.category(),
                 command.description(),
                 command.stock(),
-                command.originalLink());
+                command.originalLink(),
+                command.imageUrl());
 
         // AI 모듈 kafka
         eventPublisher.publishEvent(new ProductUpsertedEvent(product));
