@@ -74,6 +74,9 @@ VALUES
 ('GET', '^/api/products/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST,CONSUMER,SELLER'),
 ('DELETE', '^/api/products/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'SELLER'),
 ('PATCH', '^/api/products/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'SELLER'),
+('POST', '^/api/products/images/presigned-url$', 'SELLER'),
+('DELETE', '^/api/products/images$', 'SELLER'),
+('POST', '^/api/products/images$', 'SELLER'),
 -- Purchases
 ('GET', '^/api/purchases$', 'GUEST,CONSUMER,SELLER'),
 ('POST', '^/api/purchases$', 'SELLER'),
@@ -81,6 +84,9 @@ VALUES
 ('GET', '^/api/purchases/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST,CONSUMER,SELLER'),
 ('PATCH', '^/api/purchases/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'SELLER'),
 ('GET', '^/api/purchases/seller/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST,CONSUMER,SELLER'),
+('POST', '^/api/purchases/images/presigned-url$', 'SELLER'),
+('POST', '^/api/purchases/images$', 'SELLER'),
+('DELETE', '^/api/purchases/images$', 'SELLER'),
 -- Searches
 ('GET', '^/api/searches/purchase/search$', 'GUEST, CONSUMER, SELLER'),
 ('GET', '^/api/searches/purchase/mine$', 'SELLER'),
