@@ -12,6 +12,7 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.member.application.member.AuthService;
+import store._0982.member.application.member.MemberFacade;
 import store._0982.member.application.member.MemberService;
 import store._0982.member.application.member.SellerService;
 import store._0982.member.application.member.dto.*;
@@ -30,12 +31,13 @@ public class MemberController {
     private final SellerService sellerService;
     private final AuthService authService;
 
+    private final MemberFacade memberFacade;
+
     @Operation(summary = "회원가입", description = "신규 회원을 등록합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<MemberSignUpInfo> createMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
-        MemberSignUpInfo memberSignUpInfo = memberService.createMember(memberSignUpRequest.toCommand());
-        memberService.createPointBalance(memberSignUpInfo.memberId());
+        MemberSignUpInfo memberSignUpInfo = memberFacade.createMember(memberSignUpRequest.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, memberSignUpInfo, "회원가입이 완료되었습니다.");
     }
 
@@ -94,9 +96,7 @@ public class MemberController {
     @PostMapping("/seller")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<SellerRegisterInfo> registerSeller(HttpServletRequest request, HttpServletResponse response, @RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
-        SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
-        sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
+        SellerRegisterInfo sellerRegisterInfo = memberFacade.registerSeller(sellerRegisterRequest.toCommand(memberId));
         authService.refreshAccessTokenCookie(request, response);
         return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
