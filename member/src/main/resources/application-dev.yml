@@ -13,3 +13,7 @@ commerce-service:
 
 point-service:
   url: http://localhost:8086
+
+cookie:
+  same-site: Lax
+  secure: false

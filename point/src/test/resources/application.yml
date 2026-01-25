@@ -9,6 +9,10 @@ spring:
     schemas: payment_schema
     create-schemas: true
 
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -20,10 +24,6 @@ spring:
         format_sql: true
         show_sql: false
     open-in-view: false
-
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET:"abcd"}
 
 toss:
   secret-key: ${TOSS_SECRET_KEY:"abcd"}

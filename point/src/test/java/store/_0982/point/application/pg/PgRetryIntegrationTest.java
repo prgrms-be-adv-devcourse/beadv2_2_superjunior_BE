@@ -27,7 +27,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
             .build();
 
     @Autowired
-    private PgTxManager pgTxManager;
+    private PgConfirmService pgConfirmService;
 
     @MockitoBean
     private PgPaymentRepository pgPaymentRepository;
@@ -39,7 +39,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
 
-        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000);
+        PgPayment pgPayment = PgPayment.create(memberId, orderId, 10000, "테스트 공구");
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(pgPayment));
         when(pgPaymentRepository.findByOrderId(orderId)).thenThrow(new QueryTimeoutException("DB Timeout"));
@@ -47,7 +47,7 @@ class PgRetryIntegrationTest extends BaseIntegrationTest {
         TossPaymentInfo response = FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.class);
 
         // when & then
-        assertThatThrownBy(() -> pgTxManager.markConfirmedPayment(response, orderId, memberId))
+        assertThatThrownBy(() -> pgConfirmService.markConfirmedPayment(response, orderId, memberId))
                 .isInstanceOf(QueryTimeoutException.class);
 
         // verify

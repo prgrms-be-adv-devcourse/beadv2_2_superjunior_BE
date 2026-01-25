@@ -4,94 +4,80 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
-import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.batch.domain.order.OrderRepository;
-import store._0982.batch.domain.order.OrderStatus;
 import store._0982.batch.domain.sellerbalance.*;
-import store._0982.batch.exception.CustomErrorCode;
-import store._0982.common.exception.CustomException;
+import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.batch.domain.settlement.OrderSettlementRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SellerBalanceWriter implements ItemWriter<GroupPurchase> {
+public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
 
-    private final OrderRepository orderRepository;
     private final SellerBalanceRepository sellerBalanceRepository;
-    private final GroupPurchaseRepository groupPurchaseRepository;
-
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
+    private final OrderSettlementRepository orderSettlementRepository;
 
     @Override
-    public void write(Chunk<? extends GroupPurchase> chunk) {
-        List<GroupPurchase> groupPurchases = chunk.getItems().stream()
-                .map(gp -> (GroupPurchase) gp)
-                .toList();
+    public void write(Chunk<? extends OrderSettlement> chunk) {
+        List<OrderSettlement> orderSettlements = new ArrayList<>(chunk.getItems());
 
-        if (groupPurchases.isEmpty()) {
+        if (orderSettlements.isEmpty()) {
             return;
         }
 
-        List<UUID> groupPurchaseIds = groupPurchases.stream()
-                .map(GroupPurchase::getGroupPurchaseId)
-                .distinct()
-                .toList();
+        Map<UUID, List<OrderSettlement>> settlementsBySeller = orderSettlements.stream()
+                .collect(Collectors.groupingBy(OrderSettlement::getSellerId));
 
-        Map<UUID, GroupPurchase> gpMap = groupPurchases.stream()
-                .collect(Collectors.toMap(GroupPurchase::getGroupPurchaseId, gp -> gp));
+        List<UUID> sellerIds = new ArrayList<>(settlementsBySeller.keySet());
+        Map<UUID, SellerBalance> sellerBalanceMap = sellerBalanceRepository.findAllByMemberIdIn(sellerIds)
+                .stream()
+                .collect(Collectors.toMap(SellerBalance::getMemberId, Function.identity()));
 
-        List<GroupPurchaseAmountRow> amountRows =
-                orderRepository.sumTotalAmountByGroupPurchaseIdsAndStatus(
-                        groupPurchaseIds,
-                        OrderStatus.PURCHASE_CONFIRMED
-                );
+        List<SellerBalanceHistory> histories = new ArrayList<>(orderSettlements.size());
+        List<UUID> settlementIds = new ArrayList<>(orderSettlements.size());
+        List<SellerBalance> changedBalances = new ArrayList<>();
 
-        List<SellerBalance> sellerBalances = new ArrayList<>();
-        List<SellerBalanceHistory> sellerBalanceHistories = new ArrayList<>();
-        List<UUID> uuids = new ArrayList<>();
+        for (Map.Entry<UUID, List<OrderSettlement>> entry : settlementsBySeller.entrySet()) {
+            UUID sellerId = entry.getKey();
+            List<OrderSettlement> settlements = entry.getValue();
 
-        for (GroupPurchaseAmountRow row : amountRows) {
-            UUID groupPurchaseId = row.groupPurchaseId();
-            Long amount = row.totalAmount() == null ? 0L : row.totalAmount();
-
-            try {
-                GroupPurchase findGroupPurchase = gpMap.get(groupPurchaseId);
-                UUID sellerId = findGroupPurchase.getSellerId();
-
-                SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerId)
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
-
-                sellerBalance.increaseBalance(amount);
-                sellerBalances.add(sellerBalance);
-
-                sellerBalanceHistories.add(
-                        new SellerBalanceHistory(
-                                sellerId,
-                                null,
-                                groupPurchaseId,
-                                amount,
-                                SellerBalanceHistoryStatus.CREDIT
-                        )
-                );
-
-                uuids.add(groupPurchaseId);
-            } catch (CustomException e) {
-                log.error("[ERROR] [SELLER_BALANCE] {} failed", groupPurchaseId, e);
+            SellerBalance sellerBalance = sellerBalanceMap.get(sellerId);
+            if (sellerBalance == null) {
+                // TODO : 모니터링 필요
+                log.warn("[WARN] [sellerBalanceJob] seller balance not found. create new balance. sellerId={}", sellerId);
+                sellerBalance = new SellerBalance(sellerId);
+                sellerBalanceMap.put(sellerId, sellerBalance);
             }
+
+            long totalAmount = 0L;
+            for (OrderSettlement orderSettlement : settlements) {
+                totalAmount += orderSettlement.getTotalAmount();
+                histories.add(SellerBalanceHistory.createCreditHistory(
+                        orderSettlement.getSellerId(),
+                        orderSettlement.getOrderSettlementId(),
+                        orderSettlement.getTotalAmount()
+                ));
+                settlementIds.add(orderSettlement.getOrderSettlementId());
+            }
+            sellerBalance.increaseBalance(totalAmount);
+            changedBalances.add(sellerBalance);
         }
 
-        sellerBalanceRepository.saveAll(sellerBalances);
-        sellerBalanceHistoryRepository.saveAll(sellerBalanceHistories);
+        if (!changedBalances.isEmpty()) {
+            sellerBalanceRepository.saveAll(changedBalances);
+        }
 
-        if (!uuids.isEmpty()) groupPurchaseRepository.markAsSettled(uuids);
+        if (!histories.isEmpty()) {
+            sellerBalanceHistoryRepository.saveAll(histories);
+        }
+
+        if (!settlementIds.isEmpty()) {
+            orderSettlementRepository.markSettled(settlementIds);
+        }
     }
 }

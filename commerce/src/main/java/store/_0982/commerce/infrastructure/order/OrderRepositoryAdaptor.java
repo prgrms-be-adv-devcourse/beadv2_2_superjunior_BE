@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
-
 import store._0982.commerce.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
@@ -65,14 +64,6 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(
-            UUID groupPurchaseId, OrderStatus status) {
-        return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(
-                groupPurchaseId, status
-        );
-    }
-
-    @Override
     public boolean existsByIdempotencyKey(String idempotenceKey) {
         return orderJpaRepository.existsByIdempotencyKey(idempotenceKey);
     }
@@ -91,4 +82,26 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
         return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
     }
+
+    @Override
+    public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
+    }
+
+    @Override
+    public void bulkMarkGroupPurchaseSuccess(UUID groupPurchaseId) {
+        orderJpaRepository.bulkMarkGroupPurchaseSuccess(groupPurchaseId);
+    }
+
+    @Override
+    public List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, List<OrderStatus> orderStatuses) {
+        return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, orderStatuses);
+    }
+
+    @Override
+    public Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable) {
+        return orderJpaRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
+    }
+
+
 }

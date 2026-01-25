@@ -8,6 +8,7 @@ import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class SellerBalanceService {
@@ -28,12 +29,10 @@ public class SellerBalanceService {
     }
 
     private void saveSellerBalanceHistory(Settlement settlement, long transferAmount) {
-        SellerBalanceHistory history = new SellerBalanceHistory(
+        SellerBalanceHistory history = SellerBalanceHistory.createDebitHistory(
                 settlement.getSellerId(),
                 settlement.getSettlementId(),
-                null,
-                transferAmount,
-                SellerBalanceHistoryStatus.DEBIT
+                transferAmount
         );
         sellerBalanceHistoryRepository.save(history);
     }

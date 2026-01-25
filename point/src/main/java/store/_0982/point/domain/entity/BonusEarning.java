@@ -2,6 +2,7 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import store._0982.common.exception.CustomException;
 import store._0982.point.domain.constant.BonusEarningStatus;
@@ -58,6 +59,11 @@ public class BonusEarning {
     @CreationTimestamp
     @Column(name = "earned_at", nullable = false, updatable = false)
     private OffsetDateTime earnedAt;
+
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long version;
 
     public static BonusEarning earned(UUID memberId, long amount, BonusEarningType type,
                                       OffsetDateTime expiresAt, UUID policyId, String description) {

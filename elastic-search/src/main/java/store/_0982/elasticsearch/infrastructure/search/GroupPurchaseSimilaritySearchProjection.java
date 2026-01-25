@@ -9,6 +9,7 @@ public interface GroupPurchaseSimilaritySearchProjection {
     int getMaxQuantity();
     String getTitle();
     String getDescription();
+    String getImageUrl();
     Long getDiscountedPrice();
     String getStatus();
     Instant getStartDate();

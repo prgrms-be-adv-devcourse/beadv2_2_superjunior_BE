@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.dto.CartAddCommand;
 import store._0982.commerce.application.cart.dto.CartDeleteCommand;
@@ -18,6 +17,8 @@ import store._0982.commerce.domain.cart.CartRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.commerce.domain.product.Product;
+import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
@@ -41,6 +42,7 @@ public class CartService {
     private final GroupPurchaseService groupPurchaseService;
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductVectorJpaRepository productVectorRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public CartInfo addIntoCart(CartAddCommand command) {
@@ -93,7 +95,7 @@ public class CartService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void deleteCartById(List<Cart> carts){
         List<UUID> deleteIds = carts.stream()
                 .map(Cart::getCartId)
@@ -135,15 +137,21 @@ public class CartService {
                 .collect(toMap(GroupPurchase::getGroupPurchaseId, GroupPurchase::getProductId));
         Map<UUID, ProductVector> productIdToVector = productVectors.stream()
                 .collect(toMap(ProductVector::getProductId, Function.identity()));
+        List<Product> products = productRepository.findByProductIdIn(productIds);
+        Map<UUID, String> productIdToDescription = products.stream()
+                .collect(toMap(Product::getProductId, Product::getDescription));
+
         return carts.stream()
                 .map(cart -> {
                     UUID productId = groupPurchaseToProduct.get(cart.getGroupPurchaseId());
                     ProductVector vector = productIdToVector.get(productId);
+                    String description = productIdToDescription.get(productId);
                     float[] productVector = vector == null ? null : vector.getVector();
                     return new CartVectorInfo(
                             cart.getCartId(),
                             cart.getMemberId(),
                             productId,
+                            description,
                             cart.getQuantity(),
                             cart.getCreatedAt(),
                             cart.getUpdatedAt(),

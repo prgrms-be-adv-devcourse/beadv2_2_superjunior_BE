@@ -9,6 +9,7 @@ public record GroupPurchaseSearchRow(
         int maxQuantity,
         String title,
         String description,
+        String imageUrl,
         Long discountedPrice,
         String status,
         Instant startDate,

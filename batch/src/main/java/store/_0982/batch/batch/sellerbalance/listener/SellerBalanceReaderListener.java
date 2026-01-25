@@ -11,7 +11,7 @@ import store._0982.common.log.BatchLogMessageFormat;
 import store._0982.common.log.BatchLogMetadataFormat;
 
 /**
- * 월간 정산 Reader 에러 처리
+ * 일간 정산 Reader 에러 처리
  */
 @Slf4j
 @StepScope

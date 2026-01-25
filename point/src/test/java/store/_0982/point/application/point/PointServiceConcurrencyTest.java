@@ -33,6 +33,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
 
     private static final long BALANCE = 100_000;
     private static final long AMOUNT = 1_000;
+    private static final String PURCHASE_NAME = "테스트 공구";
 
     private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
             .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
@@ -73,7 +74,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
     @DisplayName("네트워크 장애에 의한 중복 차감 요청을 중복 처리하지 않는다")
     void concurrent_use_idempotent() throws InterruptedException {
         // given
-        PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT);
+        PointDeductCommand command = new PointDeductCommand(UUID.randomUUID(), UUID.randomUUID(), AMOUNT, PURCHASE_NAME);
         OrderInfo orderInfo = OrderInfo.builder()
                 .orderId(command.orderId())
                 .price(command.amount())
@@ -132,7 +133,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
         PointAmount deduction = pointBalance.use(AMOUNT);
 
-        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction);
+        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction, PURCHASE_NAME);
         pointTransactionRepository.save(usedTransaction);
         pointBalanceRepository.save(pointBalance);
 
@@ -157,7 +158,7 @@ class PointServiceConcurrencyTest extends BaseConcurrencyTest {
         PointBalance pointBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
         PointAmount deduction = pointBalance.use(AMOUNT);
 
-        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction);
+        PointTransaction usedTransaction = PointTransaction.used(memberId, orderId, UUID.randomUUID(), deduction, PURCHASE_NAME);
         pointTransactionRepository.save(usedTransaction);
         pointBalanceRepository.save(pointBalance);
 

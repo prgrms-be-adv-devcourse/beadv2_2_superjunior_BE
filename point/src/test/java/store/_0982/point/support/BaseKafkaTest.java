@@ -19,5 +19,4 @@ public abstract class BaseKafkaTest extends BaseIntegrationTest {
     protected void awaitUntilAsserted(ThrowingRunnable throwingRunnable) {
         await().atMost(DEFAULT_TIMEOUT, TimeUnit.SECONDS).untilAsserted(throwingRunnable);
     }
-
 }

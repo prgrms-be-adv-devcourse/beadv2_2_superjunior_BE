@@ -8,14 +8,15 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.util.Map;
 
-@SuppressWarnings({"resource", "SpellCheckingInspection"})
+@SuppressWarnings("resource")
 public class PostgreSQLContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private static final PostgreSQLContainer<?> POSTGRESQL =
             new PostgreSQLContainer<>("postgres:15-alpine")
                     .withDatabaseName("payment_test")
                     .withUsername("test")
-                    .withPassword("test");
+                    .withPassword("test")
+                    .withCommand("postgres -c max_connections=200");
 
     static {
         POSTGRESQL.start();

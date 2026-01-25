@@ -4,9 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import store._0982.point.application.TossPaymentService;
 import store._0982.point.application.dto.pg.PgCreateCommand;
 import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.infrastructure.pg.PgPaymentCancelJpaRepository;
@@ -29,12 +26,6 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
     @Autowired
     private PgPaymentCancelJpaRepository pgPaymentCancelRepository;
 
-    @MockitoBean
-    private TossPaymentService tossPaymentService;
-
-    @MockitoBean
-    private ApplicationEventPublisher applicationEventPublisher;
-
     @BeforeEach
     void setUp() {
         pgPaymentCancelRepository.deleteAll();
@@ -47,7 +38,7 @@ class PgPaymentServiceConcurrencyTest extends BaseConcurrencyTest {
         // given
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
-        PgCreateCommand command = new PgCreateCommand(orderId, 1000L);
+        PgCreateCommand command = new PgCreateCommand(orderId, 1000L, "테스트 공구");
 
         // when
         runSynchronizedTask(() -> pgPaymentService.createPayment(command, memberId));

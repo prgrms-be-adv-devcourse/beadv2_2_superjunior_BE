@@ -11,8 +11,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import store._0982.point.client.dto.TossPaymentInfo;
 import store._0982.point.common.WebhookEvents;
 import store._0982.point.domain.entity.WebhookLog;
-import store._0982.point.exception.NegligibleWebhookException;
 import store._0982.point.exception.NegligibleWebhookErrorType;
+import store._0982.point.exception.NegligibleWebhookException;
 import store._0982.point.presentation.dto.TossWebhookRequest;
 
 import java.time.LocalDateTime;
@@ -21,9 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,8 +79,8 @@ class TossWebhookFacadeTest {
         // then
         verify(webhookLogService).getUnfinishedWebhook(webhookId, transmissionTime, request, 1);
         verify(tossWebhookService).processWebhookPayment(request.data());
-        verify(webhookLog).markSuccess();
-        verify(webhookLog, never()).markFailed(anyString());
+        verify(webhookLogService).markCompleted(any(WebhookLog.class));
+        verify(webhookLogService, never()).markFailed(any(WebhookLog.class), anyString());
     }
 
     @Test
@@ -147,7 +145,7 @@ class TossWebhookFacadeTest {
 
         verify(webhookLogService).getUnfinishedWebhook(webhookId, transmissionTime, request, 1);
         verify(tossWebhookService).processWebhookPayment(request.data());
-        verify(webhookLog).markFailed(errorMessage);
-        verify(webhookLog, never()).markSuccess();
+        verify(webhookLogService).markFailed(any(WebhookLog.class), eq(errorMessage));
+        verify(webhookLogService, never()).markCompleted(any(WebhookLog.class));
     }
 }

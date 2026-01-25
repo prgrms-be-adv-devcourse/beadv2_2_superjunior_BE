@@ -2,6 +2,7 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import store._0982.common.exception.CustomException;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.exception.CustomErrorCode;
@@ -28,6 +29,11 @@ public class PointBalance {
 
     @Column(name = "last_used_at")
     private OffsetDateTime lastUsedAt;
+
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long version;
 
     public PointBalance(UUID memberId) {
         this.memberId = memberId;

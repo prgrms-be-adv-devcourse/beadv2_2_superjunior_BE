@@ -7,3 +7,13 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+
+commerce-service:
+  url: ${COMMERCE_SERVICE_URL}
+
+point-service:
+  url: ${POINT_SERVICE_URL}
+
+cookie:
+  same-site: None
+  secure: true

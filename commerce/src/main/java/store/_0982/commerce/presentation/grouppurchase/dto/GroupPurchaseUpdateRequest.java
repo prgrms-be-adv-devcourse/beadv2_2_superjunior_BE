@@ -42,11 +42,13 @@ public record GroupPurchaseUpdateRequest(
 
         @JsonProperty("productId")
         @NotNull(message = "상품 ID는 필수입니다")
-        UUID productId
+        UUID productId,
 
+        @JsonProperty("imageUrl")
+        String imageUrl
 ) {
     public GroupPurchaseUpdateCommand toCommand(){
-        return new GroupPurchaseUpdateCommand(minQuantity, maxQuantity, title, description, discountedPrice, startDate, endDate, productId);
+        return new GroupPurchaseUpdateCommand(minQuantity, maxQuantity, title, description, discountedPrice, startDate, endDate, productId, imageUrl);
     }
 
 }

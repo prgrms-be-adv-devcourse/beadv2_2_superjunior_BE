@@ -124,6 +124,3 @@ management:
 
 jwt:
   secret: ${JWT_SECRET}
-
-frontend:
-  url: http://localhost:3000

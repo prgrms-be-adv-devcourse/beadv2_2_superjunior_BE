@@ -161,7 +161,7 @@ public class Order {
         if(this.status != OrderStatus.PENDING){
             throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
         }
-        this.status = OrderStatus.ORDER_FAILED;
+        this.status = OrderStatus.PAYMENT_FAILED;
     }
 
     public boolean isExpired() {
@@ -185,7 +185,7 @@ public class Order {
     public void requestReturned() {
         if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
             throw new CustomException(CustomErrorCode.CANNOT_RETURN_ORDER_INVALID_STATUS);
-        this.status = OrderStatus.REVERSE_REQUESTED;
+        this.status = OrderStatus.REFUND_REQUESTED;
         this.cancelRequestedAt = OffsetDateTime.now();
     }
   
@@ -207,6 +207,13 @@ public class Order {
     // 환불 여부
     public boolean isReturned() {
         return this.returnedAt != null;
+    }
+
+    public void confirmPurchase(){
+        if(this.status != OrderStatus.GROUP_PURCHASE_SUCCESS){
+            throw new CustomException(CustomErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
+        }
+        this.status = OrderStatus.PURCHASE_CONFIRMED;
     }
 
     public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {

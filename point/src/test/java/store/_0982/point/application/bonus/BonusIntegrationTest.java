@@ -88,7 +88,10 @@ class BonusIntegrationTest extends BaseIntegrationTest {
         // 3. 5,000 포인트 사용 (결제)
         // 예상: 보너스 1,000 차감 + 충전포인트 4,000 차감
         UUID orderId = UUID.randomUUID();
-        pointDeductService.processDeductionWithBonus(memberId, new PointDeductCommand(UUID.randomUUID(), orderId, 5000L));
+        pointDeductService.processDeductionWithBonus(
+                memberId,
+                new PointDeductCommand(UUID.randomUUID(), orderId, 5000L, "테스트 공구")
+        );
 
         // 검증: 포인트 잔액
         PointBalance afterDeduct = pointBalanceRepository.findByMemberId(memberId).orElseThrow();

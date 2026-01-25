@@ -2,6 +2,7 @@ package store._0982.point.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
@@ -50,6 +51,8 @@ public class PgPayment {
 
     private Long refundedAmount;
 
+    private String groupPurchaseName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PgPaymentStatus status;
@@ -58,6 +61,7 @@ public class PgPayment {
     private String receiptUrl;
 
     @CreationTimestamp
+    @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
@@ -74,14 +78,21 @@ public class PgPayment {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    // TODO: 아직 미구현
     @Column(nullable = false)
     private boolean isPartialCancelable;
 
-    public static PgPayment create(UUID memberId, UUID orderId, long amount) {
+    @Version
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private Long version;
+
+    public static PgPayment create(UUID memberId, UUID orderId, long amount, String groupPurchaseName) {
         return PgPayment.builder()
                 .memberId(memberId)
                 .orderId(orderId)
                 .amount(amount)
+                .groupPurchaseName(groupPurchaseName)
                 .requestedAt(OffsetDateTime.now())  // TODO: 요청 시각도 따로 정보를 받아야 할 것 같다
                 .status(PgPaymentStatus.PENDING)
                 .build();
@@ -92,6 +103,11 @@ public class PgPayment {
         this.paymentMethod = method;
         this.paymentKey = paymentKey;
         this.approvedAt = approvedAt;
+    }
+
+    public void markConfirmed(PaymentMethod method, PaymentMethodDetail paymentMethodDetail, OffsetDateTime approvedAt, String paymentKey) {
+        markConfirmed(method, approvedAt, paymentKey);
+        this.paymentMethodDetail = paymentMethodDetail;
     }
 
     public void markFailed(String paymentKey) {

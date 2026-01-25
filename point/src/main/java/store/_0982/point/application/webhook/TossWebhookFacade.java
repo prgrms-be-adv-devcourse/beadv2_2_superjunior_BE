@@ -37,9 +37,9 @@ public class TossWebhookFacade {
         WebhookLog webhookLog = optionalWebhookLog.get();
         try {
             tossWebhookService.processWebhookPayment(request.data());
-            webhookLog.markSuccess();
+            webhookLogService.markCompleted(webhookLog);
         } catch (Exception e) {
-            webhookLog.markFailed(e.getMessage());
+            webhookLogService.markFailed(webhookLog, e.getMessage());
             throw e;
         }
     }

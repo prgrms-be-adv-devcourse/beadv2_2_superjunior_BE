@@ -12,7 +12,7 @@ import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
-import store._0982.point.application.pg.PgConfirmService;
+import store._0982.point.application.pg.PgConfirmFacade;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.application.pg.PgPaymentService;
 import store._0982.point.application.dto.pg.PgCreateInfo;
@@ -30,7 +30,7 @@ import java.util.UUID;
 public class PgPaymentController {
 
     private final PgPaymentService pgPaymentService;
-    private final PgConfirmService pgConfirmService;
+    private final PgConfirmFacade pgConfirmFacade;
     private final PgFailService pgFailService;
 
     @Operation(summary = "PG 결제 주문 생성", description = "PG 결제를 위해 주문을 생성합니다.")
@@ -53,7 +53,7 @@ public class PgPaymentController {
             @RequestBody @Valid PgConfirmRequest request,
             @RequestHeader(HeaderName.ID) UUID memberId
     ) {
-        pgConfirmService.confirmPayment(request.toCommand(), memberId);
+        pgConfirmFacade.confirmPayment(request.toCommand(), memberId);
         return new ResponseDto<>(HttpStatus.ACCEPTED, null, "결제 승인 완료");
     }
 

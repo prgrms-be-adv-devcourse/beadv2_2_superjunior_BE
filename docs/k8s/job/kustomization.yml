@@ -6,6 +6,7 @@ resources:
   - seller-balance-cronjob.yml
   - monthly-settlement-cronjob.yml
   - retry-settlement-cronjob.yml
+  - vector-refresh-cronjob.yml
 
 labels:
   - pairs:

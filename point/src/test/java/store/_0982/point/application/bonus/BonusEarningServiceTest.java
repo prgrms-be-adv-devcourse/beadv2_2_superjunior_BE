@@ -222,7 +222,7 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
 
     private void createUsedTransaction(UUID memberId, UUID orderId, long amount) {
         PointTransaction tx = PointTransaction.used(
-                memberId, orderId, UUID.randomUUID(), PointAmount.paid(amount));
+                memberId, orderId, UUID.randomUUID(), PointAmount.paid(amount), "테스트 공구");
         pointTransactionRepository.save(tx);
     }
 }

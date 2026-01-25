@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
 import store._0982.point.application.dto.pg.PgFailCommand;
 import store._0982.point.application.pg.PgCancelService;
+import store._0982.point.application.pg.PgConfirmFacade;
 import store._0982.point.application.pg.PgConfirmService;
 import store._0982.point.application.pg.PgFailService;
 import store._0982.point.client.dto.TossPaymentInfo;
@@ -21,6 +22,7 @@ import store._0982.point.exception.NegligibleWebhookException;
 public class TossWebhookService {
 
     private final ObjectMapper objectMapper;
+    private final PgConfirmFacade pgConfirmFacade;
     private final PgConfirmService pgConfirmService;
     private final PgCancelService pgCancelService;
     private final PgFailService pgFailService;
@@ -51,7 +53,7 @@ public class TossWebhookService {
             case PENDING -> {
                 PgFailCommand command = new PgFailCommand(
                         pgPayment.getOrderId(),
-                        pgPayment.getPaymentKey(),
+                        tossPaymentInfo.paymentKey(),
                         tossPaymentInfo.failure().code(),
                         tossPaymentInfo.failure().message(),
                         pgPayment.getAmount(),
@@ -74,7 +76,7 @@ public class TossWebhookService {
             case PENDING -> pgPayment.markRefunded(tossPaymentInfo.cancels().get(0).canceledAt());
 
             case COMPLETED, PARTIALLY_REFUNDED -> pgCancelService
-                    .markRefundedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
+                    .markRefundedPayment(tossPaymentInfo, pgPayment.getOrderId(), pgPayment.getMemberId());
         }
     }
 
@@ -85,7 +87,7 @@ public class TossWebhookService {
                     throw new NegligibleWebhookException(NegligibleWebhookErrorType.PAYMENT_STATUS_MISMATCH);
 
             case COMPLETED, PARTIALLY_REFUNDED -> pgCancelService
-                    .markRefundedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
+                    .markRefundedPayment(tossPaymentInfo, pgPayment.getOrderId(), pgPayment.getMemberId());
         }
     }
 
@@ -95,7 +97,7 @@ public class TossWebhookService {
                 // 무시
             }
             case PENDING -> pgConfirmService
-                    .markConfirmedPayment(pgPayment.getMemberId(), pgPayment.getOrderId(), tossPaymentInfo);
+                    .markConfirmedPayment(tossPaymentInfo, pgPayment.getOrderId(), pgPayment.getMemberId());
         }
     }
 
@@ -110,9 +112,8 @@ public class TossWebhookService {
                         pgPayment.getAmount(),
                         tossPaymentInfo.paymentKey()
                 );
-                pgConfirmService.confirmPayment(command, pgPayment.getMemberId());
+                pgConfirmFacade.confirmPayment(command, pgPayment.getMemberId());
             }
         }
     }
-
 }

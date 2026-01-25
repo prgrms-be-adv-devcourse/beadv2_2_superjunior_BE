@@ -32,6 +32,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PointDeductServiceTest {
 
+    private static final String SAMPLE_PURCHASE_NAME = "테스트 공구";
+
     @Mock
     private PointBalanceRepository pointBalanceRepository;
 
@@ -70,7 +72,7 @@ class PointDeductServiceTest {
         @DisplayName("포인트를 차감한다")
         void deduct_success() {
             // given
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000, SAMPLE_PURCHASE_NAME);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(10000);
             
@@ -101,7 +103,7 @@ class PointDeductServiceTest {
         @DisplayName("주문 검증 실패 시 차감이 실패한다")
         void deduct_fail_whenOrderValidationFails() {
             // given
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000, SAMPLE_PURCHASE_NAME);
 
             doThrow(new CustomException(CustomErrorCode.INVALID_PAYMENT_REQUEST))
                     .when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
@@ -119,7 +121,7 @@ class PointDeductServiceTest {
         @DisplayName("존재하지 않는 회원의 포인트 차감 시 예외가 발생한다")
         void deduct_fail_whenMemberNotFound() {
             // given
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000, SAMPLE_PURCHASE_NAME);
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))
@@ -136,7 +138,7 @@ class PointDeductServiceTest {
         @DisplayName("잔액 부족 시 차감이 실패한다")
         void deduct_fail_whenInsufficientBalance() {
             // given
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000, SAMPLE_PURCHASE_NAME);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(1000);
 
@@ -155,7 +157,7 @@ class PointDeductServiceTest {
         @DisplayName("중복 차감 요청 시 예외가 발생한다")
         void deduct_fail_whenDuplicateRequest() {
             // given
-            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000);
+            PointDeductCommand command = new PointDeductCommand(idempotencyKey, orderId, 5000, SAMPLE_PURCHASE_NAME);
 
             doNothing().when(orderQueryService).validateOrderPayable(memberId, orderId, 5000);
             when(pointTransactionRepository.existsByOrderIdAndStatus(orderId, PointTransactionStatus.USED))

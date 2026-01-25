@@ -5,15 +5,20 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import store._0982.gateway.exception.CustomErrorCode;
+import store._0982.gateway.exception.ExceptionHandler;
 import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
 import store._0982.gateway.security.token.AccessTokenAuthenticationToken;
 import store._0982.gateway.security.token.MemberAuthenticationToken;
 
 @Component
 public class AccessTokenAuthenticationWebFilter extends AuthenticationWebFilter {
-    public AccessTokenAuthenticationWebFilter(GatewayJwtProvider gatewayJwtProvider) {
+
+    public AccessTokenAuthenticationWebFilter(GatewayJwtProvider gatewayJwtProvider, ExceptionHandler exceptionHandler) {
         super(new JwtReactiveAuthenticationManager(gatewayJwtProvider));
         setServerAuthenticationConverter(accessTokenAuthenticationConverter());
+        setAuthenticationFailureHandler((exchange, exception) ->
+            exceptionHandler.responseException(exchange.getExchange(), CustomErrorCode.INVALID));
     }
 
     private ServerAuthenticationConverter accessTokenAuthenticationConverter() {
