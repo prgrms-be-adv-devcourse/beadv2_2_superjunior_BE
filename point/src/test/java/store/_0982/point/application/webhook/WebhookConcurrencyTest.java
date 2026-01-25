@@ -1,6 +1,8 @@
 package store._0982.point.application.webhook;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WebhookConcurrencyTest extends BaseConcurrencyTest {
+
+    private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
+            .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+            .build();
 
     @Autowired
     private TossWebhookFacade tossWebhookFacade;
@@ -209,6 +215,7 @@ class WebhookConcurrencyTest extends BaseConcurrencyTest {
                 .amount(amount)
                 .method("카드")
                 .status(TossPaymentInfo.Status.DONE)
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
                 .build();

@@ -1,5 +1,7 @@
 package store._0982.point.application.pg;
 
+import com.navercorp.fixturemonkey.FixtureMonkey;
+import com.navercorp.fixturemonkey.api.introspector.ConstructorPropertiesArbitraryIntrospector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PgConfirmServiceTest {
+
+    private static final FixtureMonkey FIXTURE_MONKEY = FixtureMonkey.builder()
+            .objectIntrospector(ConstructorPropertiesArbitraryIntrospector.INSTANCE)
+            .build();
 
     @Mock
     private PgQueryService pgQueryService;
@@ -56,6 +62,7 @@ class PgConfirmServiceTest {
                 .orderId(orderId)
                 .amount(amount)
                 .method("카드")
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
@@ -84,6 +91,7 @@ class PgConfirmServiceTest {
                 .orderId(orderId)
                 .amount(amount)
                 .method("카드")
+                .card(FIXTURE_MONKEY.giveMeOne(TossPaymentInfo.Card.class))
                 .status(TossPaymentInfo.Status.DONE)
                 .requestedAt(OffsetDateTime.now())
                 .approvedAt(OffsetDateTime.now())
