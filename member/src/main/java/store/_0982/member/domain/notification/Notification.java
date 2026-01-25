@@ -17,9 +17,9 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Builder(access = AccessLevel.PRIVATE)
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Table(
         name = "notification",
         schema = "notification_schema",
@@ -68,17 +68,22 @@ public class Notification {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reference_type", nullable = false, length = 20)
+    private ReferenceType referenceType;
+
     @Column(name = "reference_id", nullable = false)
     private UUID referenceId;
 
-    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId, UUID referenceId) {
+    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId) {
         return Notification.builder()
                 .memberId(memberId)
                 .channel(channel)
-                .referenceId(referenceId)
+                .referenceId(content.referenceId())
                 .type(content.type())
                 .title(content.title())
                 .message(content.message())
+                .referenceType(content.type().getReferenceType())
                 .status(NotificationStatus.SENT)
                 .build();
     }
@@ -94,10 +99,6 @@ public class Notification {
             throw new CustomException(CustomErrorCode.CANNOT_READ);
         }
         this.status = NotificationStatus.READ;
-    }
-
-    public ReferenceType getReferenceType() {
-        return type.getReferenceType();
     }
 
     @PrePersist

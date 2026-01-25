@@ -3,6 +3,9 @@ spring:
   application:
     name: notification-test
 
+  profiles:
+    active: dev
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -46,3 +49,4 @@ jwt:
   secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
   access-token-validity-period: 60000
   refresh-token-validity-period: 120000
+  cookie-buffer: 60000

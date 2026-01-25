@@ -10,10 +10,7 @@ import store._0982.member.domain.notification.constant.NotificationChannel;
 import store._0982.member.domain.notification.NotificationSetting;
 import store._0982.member.domain.notification.NotificationSettingRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,10 +47,19 @@ public class NotificationSettingService {
      */
     @Transactional
     public void initializeSettings(UUID memberId) {
+        // TODO: 약관 동의 항목을 만들어서 채널 별로 알림 수신 여부를 따로 받아야 할 것 같음
         List<NotificationSetting> settings = Arrays.stream(NotificationChannel.values())
                 .map(channel -> NotificationSetting.create(memberId, channel, true))
                 .toList();
         notificationSettingRepository.saveAll(settings);
+    }
+
+    /**
+     * 회원 가입 실패 시 호출되는 메서드입니다.
+     */
+    @Transactional
+    public void deleteSettings(UUID memberId) {
+        notificationSettingRepository.deleteAllByMemberId(memberId);
     }
 
     public List<NotificationSettingInfo> getAllSettings(UUID memberId) {
@@ -69,6 +75,16 @@ public class NotificationSettingService {
                     return NotificationSettingInfo.of(channel, true);
                 })
                 .toList();
+    }
+
+    public boolean isEnabled(UUID memberId, NotificationChannel channel) {
+        if (channel.isDefaultChannel()) {
+            return true;
+        }
+
+        return notificationSettingRepository.findByMemberIdAndChannel(memberId, channel)
+                .map(NotificationSetting::isEnabled)
+                .orElse(true);
     }
 
     private @NonNull Map<NotificationChannel, NotificationSetting> getNotificationSettings(UUID memberId) {

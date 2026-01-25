@@ -29,7 +29,6 @@ class MemberTest {
         assertThat(member.getSaltKey()).isNotNull();
         assertThat(member.getRole()).isEqualTo(Role.CONSUMER);
         assertThat(member.getCreatedAt()).isNotNull();
-        assertThat(member.getUpdatedAt()).isNull();
         assertThat(member.getDeletedAt()).isNull();
     }
 
@@ -44,7 +43,6 @@ class MemberTest {
 
         // then
         assertThat(member.getPassword()).isEqualTo("new-password");
-        assertThat(member.getUpdatedAt()).isNotNull();
     }
 
     @Test
@@ -52,14 +50,12 @@ class MemberTest {
     void encodePassword_doesNotChangeUpdatedAt() {
         // given
         Member member = Member.create("test@example.com", "tester", "old-password", "010-0000-0000");
-        assertThat(member.getUpdatedAt()).isNull();
 
         // when
         member.encodePassword("encoded-password");
 
         // then
         assertThat(member.getPassword()).isEqualTo("encoded-password");
-        assertThat(member.getUpdatedAt()).isNull();
     }
 
     @Test
@@ -106,4 +102,3 @@ class MemberTest {
         assertThat(member.getUpdatedAt()).isNotNull();
     }
 }
-

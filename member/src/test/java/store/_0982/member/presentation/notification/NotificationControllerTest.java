@@ -98,7 +98,7 @@ class NotificationControllerTest {
                 new NotificationInfo(
                         UUID.randomUUID(),
                         memberId,
-                        NotificationType.POINT_RECHARGED,
+                        NotificationType.POINT_CHARGED,
                         "포인트 충전",
                         "10,000원이 충전되었습니다.",
                         null,
@@ -148,7 +148,7 @@ class NotificationControllerTest {
                 new NotificationInfo(
                         UUID.randomUUID(),
                         memberId,
-                        NotificationType.POINT_RECHARGED,
+                        NotificationType.POINT_CHARGED,
                         "포인트 충전",
                         "10,000원이 충전되었습니다.",
                         null,
