@@ -33,7 +33,7 @@ VALUES
 ('POST', '^/api/members/address$', 'CONSUMER,SELLER'),
 ('DELETE', '^/api/members/address/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
 ('GET', '^/api/members/addresses$', 'CONSUMER,SELLER'),
-('POST', '^/api/members/email/[^/]+$', 'GUEST'),
+('POST', '^/api/members/email/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$', 'GUEST'),
 ('POST', '^/api/members/email/verification$', 'GUEST'),
 ('GET', '^/api/members/name/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'GUEST'),
 ('PUT', '^/api/members/password$', 'CONSUMER,SELLER'),
