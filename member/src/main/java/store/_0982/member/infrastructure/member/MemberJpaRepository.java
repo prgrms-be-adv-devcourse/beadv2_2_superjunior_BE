@@ -16,4 +16,7 @@ public interface MemberJpaRepository extends JpaRepository<Member, UUID> {
 
     @Query("select m.memberId from Member m")
     Page<UUID> findAllIds(Pageable pageable);
+
+    @Query("select m from Member m where m.email = :email and m.deletedAt is null")
+    Optional<Member> findUndeletedMemberByEmail(String email);
 }

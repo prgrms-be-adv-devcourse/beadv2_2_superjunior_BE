@@ -35,11 +35,11 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "256Mi"
-              ephemeral-storage: "512Mi"
+              memory: "378Mi"
+              ephemeral-storage: "768Mi"
             limits:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "768Mi"
               ephemeral-storage: "1Gi"
           ports:
             - containerPort: 8082
@@ -55,9 +55,9 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8082
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
 ---
 apiVersion: v1

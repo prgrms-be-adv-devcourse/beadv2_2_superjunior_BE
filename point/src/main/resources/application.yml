@@ -95,3 +95,7 @@ resilience4j:
           seconds: 1
         timeout-duration:
           seconds: 10
+
+payment:
+  rules:
+    refund-days: 14

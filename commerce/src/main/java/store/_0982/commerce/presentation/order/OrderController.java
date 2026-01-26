@@ -12,6 +12,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.commerce.application.order.OrderService;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.order.dto.OrderRegisterInfo;
@@ -100,12 +101,32 @@ public class OrderController {
 
     @PostMapping("/cancel/{orderId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseDto<OrderInfo> cancelOrder(
+    public ResponseDto<Void> cancelOrder(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
             @PathVariable UUID orderId,
             @RequestBody OrderCancelRequest orderCancelRequest
             ) {
         orderService.cancelOrder(orderCancelRequest.toCommand(memberId, orderId));
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
+    }
+
+    @GetMapping("/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderCancelInfo>> getCanceledOrders(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            Pageable pageable
+    ) {
+        PageResponse<OrderCancelInfo> response = orderService.getCanceledOrders(memberId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, response, "주문 취소 목록을 조회했습니다.");
+    }
+
+    @PatchMapping("/{orderId}/purchase-confirmed")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> confirmPurchase(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ){
+        orderService.confirmPurchase(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
     }
 }

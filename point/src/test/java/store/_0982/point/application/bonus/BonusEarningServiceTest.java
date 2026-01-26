@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import store._0982.point.application.dto.bonus.BonusEarnCommand;
-import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.domain.constant.BonusPolicyType;
 import store._0982.point.domain.entity.BonusPolicy;
 import store._0982.point.domain.entity.PointBalance;
@@ -66,11 +65,10 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
         bonusPolicyRepository.save(policy);
 
         createUsedTransaction(memberId, orderId, paidAmount);
-        BonusEarnCommand command = new BonusEarnCommand(UUID.randomUUID(), orderId);
-        OrderInfo orderInfo = createOrderInfo(paidAmount);
+        BonusEarnCommand command = new BonusEarnCommand(UUID.randomUUID(), orderId, null, null);
 
         // when
-        bonusEarningService.processBonus(memberId, command, orderInfo);
+        bonusEarningService.processBonus(memberId, command);
 
         // then
         PointBalance updatedBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
@@ -93,10 +91,9 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
 
         createUsedTransaction(memberId, orderId, paidAmount);
         BonusEarnCommand command = new BonusEarnCommand(UUID.randomUUID(), orderId);
-        OrderInfo orderInfo = createOrderInfo(paidAmount);
 
         // when
-        bonusEarningService.processBonus(memberId, command, orderInfo);
+        bonusEarningService.processBonus(memberId, command);
 
         // then
         PointBalance updatedBalance = pointBalanceRepository.findByMemberId(memberId).orElseThrow();
@@ -121,10 +118,9 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
 
         createUsedTransaction(memberId, orderId, paidAmount);
         BonusEarnCommand command = new BonusEarnCommand(UUID.randomUUID(), orderId);
-        OrderInfo orderInfo = createOrderInfo(paidAmount);
 
         // when
-        bonusEarningService.processBonus(memberId, command, orderInfo);
+        bonusEarningService.processBonus(memberId, command);
 
         // then
         assertThat(bonusEarningRepository.findAll()).isEmpty();
@@ -147,7 +143,7 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
         bonusPolicyRepository.save(policy);
 
         createUsedTransaction(memberId, orderId, 100_000L);
-        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId), createOrderInfo(100_000L));
+        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId));
 
         // then
         assertThat(bonusEarningRepository.findAll()).isEmpty();
@@ -162,7 +158,7 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
         bonusPolicyRepository.save(policy);
 
         createUsedTransaction(memberId, orderId, 100_000L);
-        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId), createOrderInfo(100_000L));
+        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId));
 
         // then
         assertThat(bonusEarningRepository.findAll()).hasSize(1);
@@ -183,7 +179,7 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
         bonusPolicyRepository.save(policy);
 
         createUsedTransaction(memberId, orderId, 100_000L);
-        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId), createOrderInfo(100_000L));
+        bonusEarningService.processBonus(memberId, new BonusEarnCommand(UUID.randomUUID(), orderId));
 
         // then
         assertThat(bonusEarningRepository.findAll()).isEmpty();
@@ -200,10 +196,9 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
 
         createUsedTransaction(memberId, orderId, paidAmount);
         BonusEarnCommand command = new BonusEarnCommand(UUID.randomUUID(), orderId);
-        OrderInfo orderInfo = createOrderInfo(paidAmount);
 
         // when
-        bonusEarningService.processBonus(memberId, command, orderInfo);
+        bonusEarningService.processBonus(memberId, command);
 
         // then
         assertThat(bonusEarningRepository.findAll()).hasSize(1)
@@ -227,17 +222,7 @@ class BonusEarningServiceTest extends BaseIntegrationTest {
 
     private void createUsedTransaction(UUID memberId, UUID orderId, long amount) {
         PointTransaction tx = PointTransaction.used(
-                memberId, orderId, UUID.randomUUID(), PointAmount.paid(amount));
+                memberId, orderId, UUID.randomUUID(), PointAmount.paid(amount), "테스트 공구");
         pointTransactionRepository.save(tx);
-    }
-
-    private OrderInfo createOrderInfo(long amount) {
-        return OrderInfo.builder()
-                .orderId(orderId)
-                .memberId(memberId)
-                .price(amount)
-                .quantity(1)
-                .status(OrderInfo.Status.COMPLETED)
-                .build();
     }
 }

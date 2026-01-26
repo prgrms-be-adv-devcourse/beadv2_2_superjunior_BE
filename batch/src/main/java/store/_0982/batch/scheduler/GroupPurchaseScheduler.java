@@ -17,7 +17,7 @@ public class GroupPurchaseScheduler {
     private final JobLauncher jobLauncher;
     private final Job groupPurchaseJob;
 
-    @Scheduled(cron = "0 */2 * * * *")
+//    @Scheduled(cron = "0 */2 * * * *")
     public void scheduledGroupPurchase() throws Exception{
         jobLauncher.run(groupPurchaseJob,
                 new JobParametersBuilder()

@@ -16,7 +16,8 @@ public record PgPaymentInfo(
         long amount,
         PgPaymentStatus status,
         OffsetDateTime createdAt,
-        OffsetDateTime requestedAt
+        OffsetDateTime requestedAt,
+        String groupPurchaseName
 ) {
     public static PgPaymentInfo from(PgPayment pgPayment) {
         return new PgPaymentInfo(
@@ -28,7 +29,8 @@ public record PgPaymentInfo(
                 pgPayment.getAmount(),
                 pgPayment.getStatus(),
                 pgPayment.getCreatedAt(),
-                pgPayment.getRequestedAt()
+                pgPayment.getRequestedAt(),
+                pgPayment.getGroupPurchaseName()
         );
     }
 }

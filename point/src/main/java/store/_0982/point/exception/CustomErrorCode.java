@@ -12,6 +12,7 @@ public enum CustomErrorCode implements ErrorCode {
     // 400 Bad Request
     INVALID_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 금액입니다."),
     INVALID_PAYMENT_REQUEST(HttpStatus.BAD_REQUEST, "유효하지 않은 결제 요청입니다."),
+    INVALID_WEBHOOK(HttpStatus.BAD_REQUEST, "잘못된 웹훅 요청입니다."),
     IDEMPOTENCY_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "멱등키가 전달되지 않았습니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     PAYMENT_KEY_IS_NULL(HttpStatus.BAD_REQUEST, "PaymentKey 값이 없습니다."),
@@ -34,9 +35,11 @@ public enum CustomErrorCode implements ErrorCode {
     ALREADY_REFUNDED_PAYMENT(HttpStatus.CONFLICT, "이미 환불된 결제입니다."),
     CANNOT_HANDLE_FAILURE(HttpStatus.CONFLICT, "실패 처리할 수 없는 결제입니다."),
     DIFFERENT_AMOUNT(HttpStatus.CONFLICT, "결제 금액이 불일치합니다."),
+    FAILED_TO_MAP_PAYMENT_METHOD(HttpStatus.CONFLICT, "결제 수단 매핑에 실패했습니다."),
     IDEMPOTENT_REQUEST(HttpStatus.CONFLICT, "중복된 요청입니다."),
     INVALID_BONUS_STATUS(HttpStatus.CONFLICT, "보너스 포인트의 상태가 올바르지 않습니다."),
     ORDER_ID_MISMATCH(HttpStatus.CONFLICT, "주문 번호가 일치하지 않습니다."),
+    NO_PAYMENT_HISTORY(HttpStatus.CONFLICT, "포인트 및 PG 결제 내역을 찾을 수 없습니다."),
     NOT_COMPLETED_PAYMENT(HttpStatus.CONFLICT, "환불할 수 없는 상태입니다."),
 
     // 500 Internal Server Error

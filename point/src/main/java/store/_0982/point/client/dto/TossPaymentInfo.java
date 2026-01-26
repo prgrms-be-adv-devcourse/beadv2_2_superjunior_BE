@@ -33,9 +33,11 @@ public record TossPaymentInfo(
         OffsetDateTime requestedAt,
         OffsetDateTime approvedAt,
 
-        List<CancelInfo> cancels
-) {
+        List<CancelInfo> cancels,
+        FailureInfo failure
+) implements PaymentInfo {
 
+    @Override
     public PaymentMethod paymentMethod() {
         return switch (this.method) {
             case "카드" -> PaymentMethod.CARD;
@@ -144,6 +146,14 @@ public record TossPaymentInfo(
             String cancelReason,
             OffsetDateTime canceledAt,
             String transactionKey
+    ) {
+    }
+
+    @Builder
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record FailureInfo(
+            String code,
+            String message
     ) {
     }
 }

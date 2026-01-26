@@ -17,8 +17,12 @@ public class JwtConfig {
     @Value("${jwt.refresh-token-validity-period}")
     private long refreshTokenValidityPeriod; //ms 단위
 
+    @Value("${jwt.cookie-buffer}")
+    private long jwtCookieBuffer; //ms 단위
+
+
     @Bean
     public JwtProvider jwtProvider() {
-        return new JwtProvider(jwtSecret, accessTokenValidityPeriod, refreshTokenValidityPeriod);
+        return new JwtProvider(jwtSecret, accessTokenValidityPeriod, refreshTokenValidityPeriod, jwtCookieBuffer);
     }
 }

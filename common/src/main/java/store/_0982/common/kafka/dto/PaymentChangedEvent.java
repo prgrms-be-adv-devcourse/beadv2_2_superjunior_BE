@@ -15,26 +15,22 @@ public class PaymentChangedEvent extends BaseEvent {
 
     private UUID memberId;
     private UUID orderId;
-    private PaymentMethod method;
+    private long amount;
+    private UUID paymentId;
     private Status status;
 
-    public PaymentChangedEvent(Clock clock, UUID memberId, UUID orderId, PaymentMethod method, Status status) {
+    public PaymentChangedEvent(Clock clock, UUID memberId, UUID orderId, long amount, UUID paymentId, Status status) {
         super(clock);
         this.memberId = memberId;
         this.orderId = orderId;
-        this.method = method;
+        this.amount = amount;
+        this.paymentId = paymentId;
         this.status = status;
     }
 
     public enum Status {
-        PENDING,
-        COMPLETED,
-        FAILED,
+        PAYMENT_COMPLETED,
+        PAYMENT_FAILED,
         REFUNDED
-    }
-
-    public enum PaymentMethod {
-        POINT,
-        PG
     }
 }

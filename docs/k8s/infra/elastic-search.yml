@@ -77,9 +77,9 @@ spec:
             httpGet:
               path: /_cluster/health
               port: 9200
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:

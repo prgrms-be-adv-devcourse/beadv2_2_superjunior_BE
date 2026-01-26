@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.lang.Nullable;
 import store._0982.common.exception.CustomException;
 import store._0982.point.domain.vo.PointAmount;
 import store._0982.point.domain.constant.PointTransactionStatus;
@@ -56,6 +57,9 @@ public class PointTransaction {
     @Column(name = "order_id", updatable = false)
     private UUID orderId;
 
+    @Column(updatable = false)
+    private String groupPurchaseName;
+
     @Column(name = "cancel_reason")
     private String cancelReason;
 
@@ -68,13 +72,24 @@ public class PointTransaction {
                 .build();
     }
 
-    public static PointTransaction used(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount) {
+    public static PointTransaction bonusEarned(UUID memberId, @Nullable UUID orderId, UUID idempotencyKey, PointAmount amount) {
+        return PointTransaction.builder()
+                .memberId(memberId)
+                .orderId(orderId)
+                .idempotencyKey(idempotencyKey)
+                .status(PointTransactionStatus.BONUS_EARNED)
+                .pointAmount(amount)
+                .build();
+    }
+
+    public static PointTransaction used(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount, String groupPurchaseName) {
         return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
                 .status(PointTransactionStatus.USED)
                 .pointAmount(amount)
                 .orderId(orderId)
+                .groupPurchaseName(groupPurchaseName)
                 .build();
     }
 
@@ -87,7 +102,8 @@ public class PointTransaction {
                 .build();
     }
 
-    public static PointTransaction returned(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount, String cancelReason) {
+    public static PointTransaction returned(UUID memberId, UUID orderId, UUID idempotencyKey, PointAmount amount,
+                                            String cancelReason, String groupPurchaseName) {
         return PointTransaction.builder()
                 .memberId(memberId)
                 .idempotencyKey(idempotencyKey)
@@ -95,6 +111,7 @@ public class PointTransaction {
                 .pointAmount(amount)
                 .orderId(orderId)
                 .cancelReason(cancelReason)
+                .groupPurchaseName(groupPurchaseName)
                 .build();
     }
 

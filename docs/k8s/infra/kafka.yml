@@ -30,21 +30,23 @@ spec:
               name: kafka
             - containerPort: 9093
               name: controller
+            - containerPort: 19092
+              name: external
           env:
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
               value: "broker,controller"
             - name: KAFKA_LISTENERS
-              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+              value: "PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:19092"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
               value: "1@localhost:9093"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka-service:9092"
+              value: "PLAINTEXT://kafka-service:9092,EXTERNAL://localhost:19092"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
@@ -75,9 +77,9 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 9092
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             tcpSocket:
@@ -113,5 +115,9 @@ spec:
       targetPort: 9092
       protocol: TCP
       name: kafka
+    - port: 19092
+      targetPort: 19092
+      protocol: TCP
+      name: external
   selector:
     app: kafka

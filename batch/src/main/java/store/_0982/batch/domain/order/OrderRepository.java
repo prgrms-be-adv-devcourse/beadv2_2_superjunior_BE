@@ -28,7 +28,7 @@ public interface OrderRepository {
 
     List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
 
-    List<Order> findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(List<UUID> groupPurchaseIds, OrderStatus status);
+    List<Order> findByGroupPurchaseIdInAndStatus(List<UUID> groupPurchaseIds, OrderStatus status);
 
     boolean existsByIdempotencyKey(String idempotenceKey);
 }

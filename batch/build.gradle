@@ -26,6 +26,13 @@ dependencies {
 
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    //ND4J 벡터 계산 라이브러리
+    implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7'
+
+    //ai
+    implementation "org.hibernate.orm:hibernate-vector:6.6.36.Final"
+
 }
 
 bootJar {

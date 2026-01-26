@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
+import store._0982.point.application.dto.bonus.BonusDeductCommand;
 import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.BonusEarningStatus;
 import store._0982.point.domain.entity.BonusDeduction;
@@ -25,13 +26,13 @@ public class BonusDeductionService {
 
     @ServiceLog
     @RetryableTransactional
-    public void deductBonus(UUID memberId, UUID transactionId, long deductAmount) {
+    public void deductBonus(UUID memberId, BonusDeductCommand command) {
         List<BonusEarning> usableEarnings = bonusEarningRepository.findByMemberIdAndStatusInOrderByExpiresAtAsc(
                 memberId,
                 List.of(BonusEarningStatus.ACTIVE, BonusEarningStatus.PARTIALLY_USED)
         );
 
-        List<BonusDeduction> deductions = processBonusDeduction(transactionId, deductAmount, usableEarnings);
+        List<BonusDeduction> deductions = processBonusDeduction(command.transactionId(), command.deductAmount(), usableEarnings);
         bonusDeductionRepository.saveAll(deductions);
     }
 

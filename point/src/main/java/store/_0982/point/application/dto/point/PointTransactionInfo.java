@@ -2,6 +2,7 @@ package store._0982.point.application.dto.point;
 
 import lombok.Builder;
 import store._0982.point.domain.constant.PointTransactionStatus;
+import store._0982.point.domain.constant.PointType;
 import store._0982.point.domain.entity.PointTransaction;
 
 import java.util.UUID;
@@ -10,19 +11,29 @@ import java.util.UUID;
 public record PointTransactionInfo(
         UUID id,
         PointTransactionStatus status,
-        long paidPoint,
-        long bonusPoint,
+        long amount,
         UUID orderId,
-        String cancelReason
+        String cancelReason,
+        String groupPurchaseName
 ) {
-    public static PointTransactionInfo from(PointTransaction transaction) {
+    public static PointTransactionInfo from(PointTransaction transaction, PointType type) {
+        long amount;
+
+        if (type == PointType.PAID) {
+            amount = transaction.getPaidAmount();
+        } else if (type == PointType.BONUS) {
+            amount = transaction.getBonusAmount();
+        } else {
+            amount = transaction.getTotalAmount();
+        }
+
         return PointTransactionInfo.builder()
                 .id(transaction.getId())
                 .status(transaction.getStatus())
-                .paidPoint(transaction.getPaidAmount())
-                .bonusPoint(transaction.getBonusAmount())
+                .amount(amount)
                 .orderId(transaction.getOrderId())
                 .cancelReason(transaction.getCancelReason())
+                .groupPurchaseName(transaction.getGroupPurchaseName())
                 .build();
     }
 }

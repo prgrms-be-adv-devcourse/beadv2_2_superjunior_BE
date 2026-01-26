@@ -5,6 +5,11 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
+import store._0982.member.common.notification.NotificationContent;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.time.OffsetDateTime;
@@ -15,8 +20,18 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "notification", schema = "notification_schema")
+@Table(
+        name = "notification",
+        schema = "notification_schema",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_notification_deduplication",
+                        columnNames = {"reference_id", "notification_type", "member_id"}
+                )
+        }
+)
 public class Notification {
+
     @Id
     @Column(name = "notification_id", nullable = false)
     private UUID id;
@@ -25,7 +40,7 @@ public class Notification {
     private UUID memberId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "notification_type", nullable = false, length = 20)
+    @Column(name = "notification_type", nullable = false, length = 50)
     private NotificationType type;
 
     @Enumerated(EnumType.STRING)
@@ -37,10 +52,6 @@ public class Notification {
 
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "reference_type", nullable = false, length = 30)
-    private ReferenceType referenceType;
 
     @Column(name = "failure_message", columnDefinition = "TEXT")
     private String failureMessage;
@@ -57,8 +68,25 @@ public class Notification {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "reference_type", nullable = false, length = 20)
+    private ReferenceType referenceType;
+
     @Column(name = "reference_id", nullable = false)
     private UUID referenceId;
+
+    public static Notification from(NotificationContent content, NotificationChannel channel, UUID memberId) {
+        return Notification.builder()
+                .memberId(memberId)
+                .channel(channel)
+                .referenceId(content.referenceId())
+                .type(content.type())
+                .title(content.title())
+                .message(content.message())
+                .referenceType(content.type().getReferenceType())
+                .status(NotificationStatus.SENT)
+                .build();
+    }
 
     public void validateMemberId(UUID memberId) {
         if (!this.memberId.equals(memberId)) {

@@ -34,7 +34,12 @@ public class PgPaymentService {
                 .map(PgCreateInfo::from)
                 .orElseGet(() -> {
                     try {
-                        PgPayment pgPayment = PgPayment.create(memberId, orderId, command.amount());
+                        PgPayment pgPayment = PgPayment.create(
+                                memberId,
+                                orderId,
+                                command.amount(),
+                                command.groupPurchaseName()
+                        );
                         return PgCreateInfo.from(pgPaymentRepository.saveAndFlush(pgPayment));
                     } catch (DataIntegrityViolationException e) {
                         return pgPaymentRepository.findByOrderId(orderId)

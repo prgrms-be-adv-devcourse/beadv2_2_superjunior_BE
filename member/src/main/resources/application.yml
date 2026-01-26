@@ -38,6 +38,24 @@ spring:
           starttls:
             enable: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${REGISTRATION_GOOGLE_CLIENT_ID}
+            client-secret: ${REGISTRATION_GOOGLE_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+#              - openid
+              - profile
+              - email
+            client-name: Google
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+
 server:
   port: 8083
 
@@ -59,6 +77,7 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-validity-period: ${JWT_ACCESS_TOKEN_VALIDITY_PERIOD}
   refresh-token-validity-period: ${JWT_REFRESH_TOKEN_VALIDITY_PERIOD}
+  cookie-buffer: ${JWT_COOKIE_BUFFER:60000}
 
 springdoc:
   swagger-ui:

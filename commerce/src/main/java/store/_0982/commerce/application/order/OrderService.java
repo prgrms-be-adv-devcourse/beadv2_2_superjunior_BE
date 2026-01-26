@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
+import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.commerce.domain.order.Order;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,7 +20,6 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
-
     /**
      * 주문 생성
      *
@@ -91,5 +92,69 @@ public class OrderService {
      */
     public List<Order> getAllOrderByMemberId(UUID memberId) {
         return orderQueryService.getAllOrderByMemberId(memberId);
+    }
+
+    /**
+     * 주문 취소 재시도 배치
+     */
+    public void retryCancelOrder() {
+        orderCommandService.retryCancelOrder();
+    }
+
+    /**
+     * internal orderVector 조회
+     *
+     * @param memberId
+     * @return List<OrderVectorInfo>
+     */
+    public List<OrderVectorInfo> getOrderVector(UUID memberId) {
+        return orderQueryService.getOrderVector(memberId);
+    }
+
+    /**
+     * 공동구매 실패한 주문 상태 변경 처리
+     *
+     * @param groupPurchaseId 주문 UUID
+     */
+    public void processGroupPurchaseFailure(UUID groupPurchaseId){
+        orderCommandService.processGroupPurchaseFailure(groupPurchaseId);
+    }
+
+    /**
+     * 공동 구매 상태에 따라 주문 상태 변경 처리
+     * @param event 이벤트
+     */
+    public void handleUpdatedGroupPurchase(GroupPurchaseEvent event){
+        orderCommandService.handleUpdatedGroupPurchase(event);
+    }
+
+    /**
+     * 구매 확정
+     *
+     * @param memberId 유저 id
+     * @param orderId 주문 id
+     */
+    public void confirmPurchase(UUID memberId, UUID orderId) {
+        orderCommandService.confirmPurchase(memberId, orderId);
+    }
+
+    /**
+     * 공동구매 참여자
+     * @param groupPurchaseId 공동구매 id
+     * @return 참여자 uuid
+     */
+    public List<UUID> getGroupPurchaseParticipants(UUID groupPurchaseId) {
+        return orderQueryService.getGroupPurchaseParticipants(groupPurchaseId);
+    }
+
+    /**
+     * 주문 취소 목록 조회
+     *
+     * @param memberId
+     * @param pageable
+     * @return
+     */
+    public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
+        return orderQueryService.getCanceledOrders(memberId, pageable);
     }
 }

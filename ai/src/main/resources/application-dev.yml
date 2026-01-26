@@ -2,3 +2,6 @@
 spring:
   kafka:
     bootstrap-servers: localhost:9092
+
+client:
+  search: http://localhost:8082

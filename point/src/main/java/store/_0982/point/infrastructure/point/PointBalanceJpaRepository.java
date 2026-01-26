@@ -8,4 +8,6 @@ import java.util.UUID;
 
 public interface PointBalanceJpaRepository extends JpaRepository<PointBalance, UUID> {
     Optional<PointBalance> findByMemberId(UUID memberId);
+
+    void deleteByMemberId(UUID memberId);
 }
