@@ -1,9 +1,14 @@
 package store._0982.commerce.application.order;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
+import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
+import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderStatus;
@@ -19,7 +24,11 @@ import store._0982.common.kafka.dto.PointChangedEvent;
 public class OrderPaymentProcessorService {
 
     private final OrderRepository orderRepository;
+    private final GroupPurchaseRepository groupPurchaseRepository;
     private final OrderSettlementService orderSettlementService;
+    private final ProductService productService;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void processPaymentStatusUpdate(PaymentChangedEvent event){
@@ -29,6 +38,13 @@ public class OrderPaymentProcessorService {
         switch(event.getStatus()){
             case PAYMENT_COMPLETED -> {
                 order.completePayment(PaymentMethod.PG);
+                GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                String productName = productService.findByProductName(groupPurchase.getProductId());
+                eventPublisher.publishEvent(new OrderCreateProcessedEvent(
+                        order,
+                        productName
+                ));
             }
             case PAYMENT_FAILED -> {
                 // TODO: 재시도 로직을 한다면 바로 상태 변경 X
@@ -53,6 +69,13 @@ public class OrderPaymentProcessorService {
         switch(event.getStatus()){
             case USED -> {
                 order.completePayment(PaymentMethod.POINT);
+                GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                String productName = productService.findByProductName(groupPurchase.getProductId());
+                eventPublisher.publishEvent(new OrderCreateProcessedEvent(
+                        order,
+                        productName
+                ));
             }
             case REFUNDED -> {
                 if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
