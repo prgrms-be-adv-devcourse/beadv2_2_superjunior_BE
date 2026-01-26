@@ -48,8 +48,8 @@ public class MemberService {
         return MemberSignUpInfo.from(memberRepository.save(member));
     }
 
-    @Transactional(noRollbackFor = CustomException.class) //사용자에게는 Error 메세지를 보내지만 결과는 커밋
     @ServiceLog
+    @Transactional
     public void createPointBalance(UUID memberId) throws FeignException {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
