@@ -45,6 +45,8 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     //Resilience4j
     implementation 'io.github.resilience4j:resilience4j-spring-boot3'
+    //OAuth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:postgresql'

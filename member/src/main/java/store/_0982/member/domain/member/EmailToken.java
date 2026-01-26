@@ -22,7 +22,7 @@ public class EmailToken {
     @Column(name = "email_token_id", nullable = false)
     private UUID emailTokenId;
 
-    @Column(name = "email", length = 100, nullable = false)
+    @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
 
     @Column(name = "token", length = TOKEN_LENGTH, nullable = false)
