@@ -52,7 +52,10 @@ public class AuthService {
     public LoginTokens login(HttpServletResponse response, MemberLoginCommand memberLoginCommand) {
         Member member = memberRepository.findUndeletedMemberByEmail(memberLoginCommand.email()).orElseThrow(() -> new CustomException(CustomErrorCode.FAILED_LOGIN));
         checkPassword(member, memberLoginCommand.password());
+        return issueTokens(member, response);
+    }
 
+    public LoginTokens issueTokens(Member member, HttpServletResponse response) {
         String accessToken = jwtProvider.generateAccessToken(member);
         String refreshToken = jwtProvider.generateRefreshToken(member);
 

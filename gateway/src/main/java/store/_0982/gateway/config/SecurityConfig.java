@@ -51,7 +51,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**",
-                                "/**/v3/api-docs"
+                                "/**/v3/api-docs",
+                                "/oauth2/authorization/**"
                         ).permitAll()
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)

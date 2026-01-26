@@ -17,3 +17,7 @@ point-service:
 cookie:
   same-site: None
   secure: true
+
+app:
+  oauth2:
+    frontend-redirect-url: https://0982.vercel.app

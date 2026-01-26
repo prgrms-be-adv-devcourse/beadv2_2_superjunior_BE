@@ -17,3 +17,7 @@ point-service:
 cookie:
   same-site: Lax
   secure: false
+
+app:
+  oauth2:
+    frontend-redirect-url: http://localhost:3000

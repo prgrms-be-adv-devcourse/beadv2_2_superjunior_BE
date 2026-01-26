@@ -40,16 +40,13 @@ public class MemberService {
     @ServiceLog
     @Transactional
     public MemberSignUpInfo createMember(MemberSignUpCommand command) {
-        checkEmailDuplication(command.email());
-        checkEmailVerification(command.email());
-        checkNameDuplication(command.name());
         Member member = Member.create(command.email(), command.name(), command.password(), command.phoneNumber());
         member.encodePassword(passwordEncoder.encode(member.getSaltKey() + member.getPassword()));
         return MemberSignUpInfo.from(memberRepository.save(member));
     }
 
-    @Transactional(noRollbackFor = CustomException.class) //사용자에게는 Error 메세지를 보내지만 결과는 커밋
     @ServiceLog
+    @Transactional
     public void createPointBalance(UUID memberId) throws FeignException {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
@@ -78,7 +75,7 @@ public class MemberService {
 
     @Transactional
     public ProfileUpdateInfo updateProfile(ProfileUpdateCommand command) {
-        checkNameDuplication(command.name());
+//        checkNameDuplication(command.name());
         Member member = memberRepository.findById(command.memberId()).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_EXIST_MEMBER));
         member.update(command.name(), command.phoneNumber());
         return ProfileUpdateInfo.from(member);
@@ -95,14 +92,14 @@ public class MemberService {
         }
     }
 
-    private void checkEmailDuplication(String email) {
+    void checkEmailDuplication(String email) {
         if (memberRepository.findByEmail(email).isPresent())
             throw new CustomException(CustomErrorCode.DUPLICATED_EMAIL);
     }
 
-    public void checkNameDuplication(String name) {
-        if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
-    }
+//    public void checkNameDuplication(String name) {
+//        if (memberRepository.findByName(name).isPresent()) throw new CustomException(CustomErrorCode.DUPLICATED_NAME);
+//    }
 
     public String getEmailAddress(UUID memberId) {
         return memberRepository.findById(memberId)
@@ -128,7 +125,7 @@ public class MemberService {
         emailToken.verify();
     }
 
-    private void checkEmailVerification(String email) {
+    void checkEmailVerification(String email) {
         EmailToken emailToken = emailTokenRepository.findByEmail(email).orElseThrow(() -> new CustomException(CustomErrorCode.NOT_FOUND));
         if (!emailToken.isVerified())
             throw new CustomException(CustomErrorCode.NOT_VERIFIED_EMAIL);

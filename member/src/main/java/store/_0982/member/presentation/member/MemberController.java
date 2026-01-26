@@ -69,12 +69,12 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, memberService.updateProfile(command), "프로필 정보가 변경되었습니다.");
     }
 
-    @Operation(summary = "이름 중복 체크", description = "회원의 이름이 사용가능한지 확인합니다.")
-    @GetMapping("/name/{name}")
-    public ResponseDto<String> checkNameDuplication(@PathVariable("name") String name) {
-        memberService.checkNameDuplication(name);
-        return new ResponseDto<>(HttpStatus.OK, name, "사용가능한 이름입니다.");
-    }
+//    @Operation(summary = "이름 중복 체크", description = "회원의 이름이 사용가능한지 확인합니다.")
+//    @GetMapping("/name/{name}")
+//    public ResponseDto<String> checkNameDuplication(@PathVariable("name") String name) {
+//        memberService.checkNameDuplication(name);
+//        return new ResponseDto<>(HttpStatus.OK, name, "사용가능한 이름입니다.");
+//    }
 
     @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")        //TODO: Post로 변경 (이메일 url에서 숨김 + 토큰 CREATED)
     @PostMapping("/email/{email}")
