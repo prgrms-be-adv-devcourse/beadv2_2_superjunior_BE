@@ -42,7 +42,7 @@ spec:
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "1@kafka-0.kafka-service:9093"
+              value: "1@localhost:9093"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_ADVERTISED_LISTENERS
@@ -77,9 +77,9 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 9092
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             tcpSocket:
