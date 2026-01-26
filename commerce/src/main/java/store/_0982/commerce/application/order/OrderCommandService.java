@@ -18,7 +18,6 @@ import store._0982.commerce.application.order.dto.OrderRegisterCommand;
 import store._0982.commerce.application.order.dto.OrderRegisterInfo;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
-import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
@@ -93,12 +92,6 @@ public class OrderCommandService {
         );
 
         Order savedOrder = orderRepository.save(order);
-
-        String productName = productService.getProductInfo(groupPurchase.getProductId()).name();
-        eventPublisher.publishEvent(new OrderCreateProcessedEvent(
-                savedOrder,
-                productName
-        ));
 
         return OrderRegisterInfo.from(savedOrder);
 
