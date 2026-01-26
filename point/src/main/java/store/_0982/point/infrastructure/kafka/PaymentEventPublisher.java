@@ -35,6 +35,8 @@ public class PaymentEventPublisher {
         return new PaymentChangedEvent(
                 pgPayment.getMemberId(),
                 pgPayment.getOrderId(),
+                pgPayment.getAmount(),
+                pgPayment.getId(),
                 status
         );
     }

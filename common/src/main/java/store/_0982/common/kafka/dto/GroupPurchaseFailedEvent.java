@@ -10,6 +10,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("unused")
 public class GroupPurchaseFailedEvent extends BaseEvent {
 
     private UUID groupPurchaseId;
