@@ -216,10 +216,11 @@ public class Order {
         this.status = OrderStatus.PURCHASE_CONFIRMED;
     }
 
-    public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+    public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
         return new OrderCanceledEvent(
                 this.memberId,
                 this.orderId,
+                productName,
                 cancelReason,
                 method,
                 amount

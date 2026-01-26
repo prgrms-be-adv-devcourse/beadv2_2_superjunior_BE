@@ -17,6 +17,7 @@ public class OrderCanceledKafkaEventPublisher {
 
     public void publish(OrderCancelProcessedEvent event) {
         OrderCanceledEvent kafkaEvent = event.order().toEvent(
+                event.productName(),
                 event.reason(),
                 OrderCanceledEvent.PaymentMethod.valueOf(
                         event.order().getPaymentMethod().name()
