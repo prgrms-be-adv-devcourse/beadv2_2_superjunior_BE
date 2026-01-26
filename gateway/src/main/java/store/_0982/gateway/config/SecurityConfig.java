@@ -52,7 +52,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/**/v3/api-docs",
-                                "/oauth2/authorization/**"
+                                "/oauth2/authorization/**",
+                                "/login/oauth2/code/**"
                         ).permitAll()
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)

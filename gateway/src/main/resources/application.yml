@@ -16,7 +16,7 @@ spring:
             - id: member-auth
               uri: ${MEMBER_SERVICE_URL:http://localhost:8083}
               predicates:
-                - Path=/auth/**, /oauth2/authorization/**
+                - Path=/auth/**, /oauth2/authorization/**, /login/oauth2/code/**
 
             - id: member-docs
               uri: ${MEMBER_SERVICE_URL:http://localhost:8083}
