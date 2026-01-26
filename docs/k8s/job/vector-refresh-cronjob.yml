@@ -7,7 +7,7 @@ metadata:
     component: cronjob
     job-type: vector-refresh
 spec:
-  schedule: "13 3 * * *"
+  schedule: "13 * * * *"
   timeZone: "Asia/Seoul"
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
