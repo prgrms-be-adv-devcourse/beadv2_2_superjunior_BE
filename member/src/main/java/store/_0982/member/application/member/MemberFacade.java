@@ -17,6 +17,9 @@ public class MemberFacade {
     private final SellerService sellerService;
 
     public MemberSignUpInfo createMember(MemberSignUpCommand command) {
+        memberService.checkEmailDuplication(command.email());
+        memberService.checkEmailVerification(command.email());
+//        memberService.checkNameDuplication(command.name());
         MemberSignUpInfo memberSignUpInfo = memberService.createMember(command);
         try{
             notificationSettingService.initializeSettings(memberSignUpInfo.memberId());
@@ -31,6 +34,17 @@ public class MemberFacade {
         SellerRegisterInfo sellerRegisterInfo = sellerService.registerSeller(command);
         sellerService.createSellerBalance(sellerRegisterInfo.sellerId());
         return sellerRegisterInfo;
+    }
+
+    public MemberSignUpInfo createGoogleMember(MemberSignUpCommand command){
+        MemberSignUpInfo memberSignUpInfo = memberService.createMember(command);
+        try{
+            notificationSettingService.initializeSettings(memberSignUpInfo.memberId());
+            memberService.createPointBalance(memberSignUpInfo.memberId());
+        } catch (Exception e) {
+            memberService.cancelMemberCreation(memberSignUpInfo.memberId());
+        }
+        return memberSignUpInfo;
     }
 
 }
