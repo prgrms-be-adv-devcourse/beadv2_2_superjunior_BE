@@ -19,6 +19,7 @@ import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class SellerBalanceServiceTest {
@@ -65,7 +67,7 @@ class SellerBalanceServiceTest {
         }
 
         @Test
-        @DisplayName("존재하지 않는 판매자는 새로운 balance를 생성하여 반환한다")
+        @DisplayName("존재하지 않는 판매자는 예외를 던진다")
         void getBalance_nonExistingBalance() {
             // given
             UUID memberId = UUID.randomUUID();
@@ -73,14 +75,8 @@ class SellerBalanceServiceTest {
             when(sellerBalanceRepository.findByMemberId(memberId))
                     .thenReturn(Optional.empty());
 
-            // when
-            SellerBalanceInfo result = sellerBalanceService.getBalance(memberId);
-
-            // then
-            assertThat(result).isNotNull();
-            assertThat(result.memberId()).isEqualTo(memberId);
-            assertThat(result.balance()).isZero();
-            assertThat(result.sellerBalanceId()).isNotNull();
+            // when & then
+            assertThrows(CustomException.class, () -> sellerBalanceService.getBalance(memberId));
             verify(sellerBalanceRepository).findByMemberId(memberId);
         }
     }

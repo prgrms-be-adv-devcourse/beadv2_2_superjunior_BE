@@ -17,6 +17,7 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.commerce.domain.product.ProductVectorRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
@@ -48,7 +49,7 @@ class ProductServiceTest {
     private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Mock
-    private store._0982.commerce.domain.product.ProductVectorRepository productVectorRepository;
+    private ProductVectorRepository productVectorRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -96,7 +97,9 @@ class ProductServiceTest {
                     ProductUpsertedEvent.Category.FOOD
             ));
 
-            when(productRepository.saveAndFlush(any(Product.class)))
+            when(productRepository.findByIdempotencyKey("test-key"))
+                    .thenReturn(Optional.empty());
+            when(productRepository.save(any(Product.class)))
                     .thenReturn(savedProduct);
 
             // when
@@ -115,8 +118,9 @@ class ProductServiceTest {
             assertThat(result.sellerId()).isEqualTo(sellerId);
             assertThat(result.createdAt()).isEqualTo(now);
 
-            verify(productRepository).saveAndFlush(any(Product.class));
-            verify(kafkaTemplate).send(any(), any(), any());
+            verify(productRepository).findByIdempotencyKey("test-key");
+            verify(productRepository).save(any(Product.class));
+            verify(eventPublisher).publishEvent(any());
         }
     }
 
@@ -242,7 +246,8 @@ class ProductServiceTest {
         UUID productId = UUID.randomUUID();
 
         when(savedProduct.getProductId()).thenReturn(productId);
-        when(productRepository.saveAndFlush(any(Product.class))).thenReturn(savedProduct);
+        when(productRepository.findByIdempotencyKey("test-key")).thenReturn(Optional.empty());
+        when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
         ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
         when(event.getProductId()).thenReturn(productId);
@@ -254,12 +259,9 @@ class ProductServiceTest {
 
         // then
         assertThat(result).isNotNull();
-        verify(productRepository).saveAndFlush(any(Product.class));
-        verify(kafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_UPSERTED),
-                anyString(),
-                eq(event)
-        );
+        verify(productRepository).findByIdempotencyKey("test-key");
+        verify(productRepository).save(any(Product.class));
+        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
