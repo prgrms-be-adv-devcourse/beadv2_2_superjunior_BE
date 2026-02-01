@@ -1,18 +1,24 @@
 package store._0982.commerce.presentation.grouppurchase;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
+import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.PageResponse;
 
@@ -22,18 +28,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mockito.Mockito;
-import org.springframework.http.MediaType;
-import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
-import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
-import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,6 +75,7 @@ class GroupPurchaseControllerTest {
                     now.plusDays(7),
                     sellerId,
                     productId,
+                    "https://example.com/original.jpg",
                     "https://example.com/image.jpg",
                     ProductCategory.FOOD,
                     GroupPurchaseStatus.OPEN,
@@ -106,7 +102,8 @@ class GroupPurchaseControllerTest {
                     .andExpect(jsonPath("$.data.currentQuantity").value(50))
                     .andExpect(jsonPath("$.data.sellerId").value(sellerId.toString()))
                     .andExpect(jsonPath("$.data.productId").value(productId.toString()))
-                    .andExpect(jsonPath("$.data.originalUrl").value("https://example.com/image.jpg"))
+                    .andExpect(jsonPath("$.data.originalUrl").value("https://example.com/original.jpg"))
+                    .andExpect(jsonPath("$.data.imageUrl").value("https://example.com/image.jpg"))
                     .andExpect(jsonPath("$.data.category").value("FOOD"))
                     .andExpect(jsonPath("$.data.status").value("OPEN"));
 
@@ -145,11 +142,13 @@ class GroupPurchaseControllerTest {
                     100,
                     "테스트 공동구매 1",
                     15000L,
+                    20000L,
                     50,
                     now.minusDays(1),
                     now.plusDays(7),
                     ProductCategory.FOOD,
                     GroupPurchaseStatus.OPEN,
+                    "https://example.com/image1.jpg",
                     now.minusDays(2)
             );
 
@@ -159,11 +158,13 @@ class GroupPurchaseControllerTest {
                     50,
                     "테스트 공동구매 2",
                     25000L,
+                    30000L,
                     30,
                     now.minusDays(2),
                     now.plusDays(5),
                     ProductCategory.ELECTRONICS,
                     GroupPurchaseStatus.SCHEDULED,
+                    "https://example.com/image2.jpg",
                     now.minusDays(3)
             );
 
@@ -262,11 +263,13 @@ class GroupPurchaseControllerTest {
                     30,
                     "테스트 공동구매 3",
                     18000L,
+                    22000L,
                     20,
                     now.minusDays(3),
                     now.plusDays(4),
                     ProductCategory.FASHION,
                     GroupPurchaseStatus.OPEN,
+                    "https://example.com/image3.jpg",
                     now.minusDays(4)
             );
 
@@ -327,11 +330,13 @@ class GroupPurchaseControllerTest {
                     100,
                     "판매자 공동구매 1",
                     15000L,
+                    20000L,
                     50,
                     now.minusDays(1),
                     now.plusDays(7),
                     ProductCategory.FOOD,
                     GroupPurchaseStatus.OPEN,
+                    "https://example.com/seller1.jpg",
                     now.minusDays(2)
             );
 
@@ -341,11 +346,13 @@ class GroupPurchaseControllerTest {
                     50,
                     "판매자 공동구매 2",
                     25000L,
+                    30000L,
                     30,
                     now.minusDays(2),
                     now.plusDays(5),
                     ProductCategory.ELECTRONICS,
                     GroupPurchaseStatus.SCHEDULED,
+                    "https://example.com/seller2.jpg",
                     now.minusDays(3)
             );
 
@@ -543,11 +550,11 @@ class GroupPurchaseControllerTest {
         UUID productId = UUID.randomUUID();
 
         GroupPurchaseRegisterRequest request = new GroupPurchaseRegisterRequest(
-                10,100,"공동구매 제목","공동구매 설명", 2000L,
-                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1),productId);
+                10, 100, "공동구매 제목", "공동구매 설명", 2000L,
+                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), productId, null);
 
         GroupPurchaseInfo response = new GroupPurchaseInfo(UUID.randomUUID(), 10,100,2000L,
-                "공동구매 제목", "공동구매 설명", GroupPurchaseStatus.SCHEDULED,
+                "공동구매 제목", "공동구매 설명", GroupPurchaseStatus.SCHEDULED, "https://example.com/image.jpg",
                 OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1),memberId, productId,OffsetDateTime.now(),OffsetDateTime.now());
 
         Mockito.when(groupPurchaseService.createGroupPurchase(
@@ -576,9 +583,8 @@ class GroupPurchaseControllerTest {
         UUID memberId = UUID.randomUUID();
 
         GroupPurchaseUpdateRequest request = new GroupPurchaseUpdateRequest(
-                10,100,"수정 제목", "수정 설명", 2000L,
-                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID()
-        );
+                10, 100, "수정 제목", "수정 설명", 2000L,
+                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID(), null);
 
         GroupPurchaseInfo response = Mockito.mock(GroupPurchaseInfo.class);
 
@@ -608,7 +614,7 @@ class GroupPurchaseControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(
                                         new GroupPurchaseUpdateRequest(10,100,"수정 제목", "수정 설명", 2000L,
-                                                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID())
+                                                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID(), null)
                                 ))
                 )
                 .andExpect(status().isUnauthorized());
@@ -623,7 +629,7 @@ class GroupPurchaseControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(
                                         new GroupPurchaseUpdateRequest(0,0,"수정 제목", "수정 설명", 2000L,
-                                                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID())
+                                                OffsetDateTime.now().plusHours(1), OffsetDateTime.now().plusDays(1), UUID.randomUUID(), null)
                                 ))
                 )
                 .andExpect(status().isBadRequest());

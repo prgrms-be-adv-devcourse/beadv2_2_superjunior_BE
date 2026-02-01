@@ -61,13 +61,15 @@ class GrouppurchaseIntegrationTest {
     @DisplayName("공동구매를 상세 조회한다")
     void getGroupPurchaseDetail_success() throws Exception {
         // given
-        Product product = new Product(
+        Product product = Product.createProduct(
                 "테스트 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트 상품 설명",
                 100,
                 "https://example.com/product",
+                null,
+                "test-key",
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
@@ -83,7 +85,8 @@ class GrouppurchaseIntegrationTest {
                 startDate,
                 endDate,
                 testMemberId,
-                savedProduct.getProductId()
+                savedProduct.getProductId(),
+                null
         );
         GroupPurchase savedGroupPurchase = groupPurchaseRepository.saveAndFlush(groupPurchase);
 
@@ -145,24 +148,24 @@ class GrouppurchaseIntegrationTest {
     @DisplayName("공동구매 목록을 페이징하여 조회한다")
     void getGroupPurchaseList_success() throws Exception {
         // given - 상품 3개 생성
-        Product product1 = productRepository.saveAndFlush(new Product(
-                "상품1", 10000L, ProductCategory.BEAUTY, "설명1", 100, "url1", testMemberId));
-        Product product2 = productRepository.saveAndFlush(new Product(
-                "상품2", 20000L, ProductCategory.FASHION, "설명2", 200, "url2", testMemberId));
-        Product product3 = productRepository.saveAndFlush(new Product(
-                "상품3", 30000L, ProductCategory.FOOD, "설명3", 300, "url3", testMemberId));
+        Product product1 = productRepository.saveAndFlush(Product.createProduct(
+                "상품1", 10000L, ProductCategory.BEAUTY, "설명1", 100, "url1", null, "test-key", testMemberId));
+        Product product2 = productRepository.saveAndFlush(Product.createProduct(
+                "상품2", 20000L, ProductCategory.FASHION, "설명2", 200, "url2", null, "test-key", testMemberId));
+        Product product3 = productRepository.saveAndFlush(Product.createProduct(
+                "상품3", 30000L, ProductCategory.FOOD, "설명3", 300, "url3", null, "test-key", testMemberId));
 
         // given - 공동구매 3개 생성
         OffsetDateTime now = OffsetDateTime.now();
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 10, 50, "공동구매1", "설명1", 5000L,
-                now.plusDays(1), now.plusDays(7), testMemberId, product1.getProductId()));
+                now.plusDays(1), now.plusDays(7), testMemberId, product1.getProductId(), null));
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 20, 60, "공동구매2", "설명2", 15000L,
-                now.plusDays(2), now.plusDays(8), testMemberId, product2.getProductId()));
+                now.plusDays(2), now.plusDays(8), testMemberId, product2.getProductId(), null));
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 30, 70, "공동구매3", "설명3", 25000L,
-                now.plusDays(3), now.plusDays(9), testMemberId, product3.getProductId()));
+                now.plusDays(3), now.plusDays(9), testMemberId, product3.getProductId(), null));
 
         // when & then - 첫 페이지 조회
         mockMvc.perform(
@@ -208,23 +211,23 @@ class GrouppurchaseIntegrationTest {
         UUID seller1 = UUID.randomUUID();
         UUID seller2 = UUID.randomUUID();
 
-        Product p1 = productRepository.saveAndFlush(new Product(
-                "판매자1상품1", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", seller1));
-        Product p2 = productRepository.saveAndFlush(new Product(
-                "판매자1상품2", 20000L, ProductCategory.FASHION, "설명", 200, "url", seller1));
-        Product p3 = productRepository.saveAndFlush(new Product(
-                "판매자2상품1", 30000L, ProductCategory.FOOD, "설명", 300, "url", seller2));
+        Product p1 = productRepository.saveAndFlush(Product.createProduct(
+                "판매자1상품1", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", seller1));
+        Product p2 = productRepository.saveAndFlush(Product.createProduct(
+                "판매자1상품2", 20000L, ProductCategory.FASHION, "설명", 200, "url", null, "test-key", seller1));
+        Product p3 = productRepository.saveAndFlush(Product.createProduct(
+                "판매자2상품1", 30000L, ProductCategory.FOOD, "설명", 300, "url", null, "test-key", seller2));
 
         OffsetDateTime now = OffsetDateTime.now();
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 10, 50, "판매자1공동구매1", "설명", 5000L,
-                now.plusDays(1), now.plusDays(7), seller1, p1.getProductId()));
+                now.plusDays(1), now.plusDays(7), seller1, p1.getProductId(), null));
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 20, 60, "판매자1공동구매2", "설명", 15000L,
-                now.plusDays(2), now.plusDays(8), seller1, p2.getProductId()));
+                now.plusDays(2), now.plusDays(8), seller1, p2.getProductId(), null));
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 30, 70, "판매자2공동구매1", "설명", 25000L,
-                now.plusDays(3), now.plusDays(9), seller2, p3.getProductId()));
+                now.plusDays(3), now.plusDays(9), seller2, p3.getProductId(), null));
 
         // when & then
         mockMvc.perform(
@@ -251,13 +254,13 @@ class GrouppurchaseIntegrationTest {
         UUID otherSeller = UUID.randomUUID();
         UUID targetSeller = UUID.randomUUID();
 
-        Product product = productRepository.saveAndFlush(new Product(
-                "다른판매자상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", otherSeller));
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "다른판매자상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", otherSeller));
 
         OffsetDateTime now = OffsetDateTime.now();
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 10, 50, "다른판매자공동구매", "설명", 5000L,
-                now.plusDays(1), now.plusDays(7), otherSeller, product.getProductId()));
+                now.plusDays(1), now.plusDays(7), otherSeller, product.getProductId(), null));
 
         // when & then
         mockMvc.perform(
@@ -289,14 +292,14 @@ class GrouppurchaseIntegrationTest {
     @DisplayName("SCHEDULED 상태의 공동구매를 삭제한다")
     void deleteGroupPurchase_success() throws Exception {
         // given
-        Product product = productRepository.saveAndFlush(new Product(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 50, 100, "삭제할 공동구매", "설명",
                 5000L, now.plusDays(1), now.plusDays(7),
-                testMemberId, product.getProductId()));
+                testMemberId, product.getProductId(), null));
         UUID purchaseId = groupPurchase.getGroupPurchaseId();
 
         // when & then - HTTP 응답 검증
@@ -324,14 +327,14 @@ class GrouppurchaseIntegrationTest {
     @DisplayName("OPEN 상태의 공동구매는 삭제할 수 없다")
     void deleteGroupPurchase_openStatus() throws Exception {
         // given
-        Product product = productRepository.saveAndFlush(new Product(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = new GroupPurchase(
                 50, 100, "OPEN 공동구매", "설명",
                 5000L, now.minusDays(1), now.plusDays(7),
-                testMemberId, product.getProductId());
+                testMemberId, product.getProductId(), null);
         groupPurchase.updateStatus(store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus.OPEN);
         groupPurchaseRepository.saveAndFlush(groupPurchase);
 
@@ -349,14 +352,14 @@ class GrouppurchaseIntegrationTest {
     void deleteGroupPurchase_forbidden() throws Exception {
         // given - 다른 판매자의 상품 및 공동구매 생성
         UUID otherSeller = UUID.randomUUID();
-        Product product = productRepository.saveAndFlush(new Product(
-                "다른 판매자 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", otherSeller));
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "다른 판매자 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", otherSeller));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 50, 100, "다른 판매자 공동구매", "설명",
                 5000L, now.plusDays(1), now.plusDays(7),
-                otherSeller, product.getProductId()));
+                otherSeller, product.getProductId(), null));
 
         // when & then
         mockMvc.perform(
@@ -386,14 +389,14 @@ class GrouppurchaseIntegrationTest {
     @DisplayName("공동구매 삭제 시 헤더에 Member ID가 없으면 401 에러를 반환한다")
     void deleteGroupPurchase_missingMemberId() throws Exception {
         // given - 공동구매 생성
-        Product product = productRepository.saveAndFlush(new Product(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", testMemberId));
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
                 50, 100, "공동구매", "설명",
                 5000L, now.plusDays(1), now.plusDays(7),
-                testMemberId, product.getProductId()));
+                testMemberId, product.getProductId(), null));
 
         // when & then
         mockMvc.perform(

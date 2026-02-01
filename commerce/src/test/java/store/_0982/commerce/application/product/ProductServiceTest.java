@@ -7,35 +7,28 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
-
 import store._0982.commerce.application.product.dto.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
-
+import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.dto.ProductEvent;
+import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import store._0982.common.dto.PageResponse;
-import store._0982.common.kafka.KafkaTopics;
-
-import javax.swing.*;
-import java.util.List;
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -49,7 +42,13 @@ class ProductServiceTest {
     private GroupPurchaseRepository groupPurchaseRepository;
 
     @Mock
-    private KafkaTemplate<String, ProductEvent> kafkaTemplate;
+    private KafkaTemplate<String, ProductUpsertedEvent> kafkaTemplate;
+
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+    @Mock
+    private store._0982.commerce.domain.product.ProductVectorRepository productVectorRepository;
 
     @InjectMocks
     private ProductService productService;
@@ -72,7 +71,9 @@ class ProductServiceTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg",
+                    null,
+                    null,
+                    "test-key",
                     sellerId
             );
 
@@ -83,20 +84,16 @@ class ProductServiceTest {
             when(savedProduct.getCategory()).thenReturn(ProductCategory.FOOD);
             when(savedProduct.getDescription()).thenReturn("맛있는 테스트 상품입니다.");
             when(savedProduct.getStock()).thenReturn(100);
-            when(savedProduct.getOriginalUrl()).thenReturn("https://example.com/image.jpg");
+            when(savedProduct.getOriginalUrl()).thenReturn(null);
+            when(savedProduct.getImageUrl()).thenReturn(null);
             when(savedProduct.getSellerId()).thenReturn(sellerId);
             when(savedProduct.getCreatedAt()).thenReturn(now);
-            when(savedProduct.toEvent()).thenReturn(new ProductEvent(
+            when(savedProduct.getCategory()).thenReturn(ProductCategory.FOOD);
+            when(savedProduct.toEvent(any(ProductCategory.class))).thenReturn(new ProductUpsertedEvent(
                     productId,
                     "테스트 상품",
-                    10000L,
-                    "FOOD",
                     "맛있는 테스트 상품입니다.",
-                    100,
-                    "https://example.com/image.jpg",
-                    sellerId,
-                    now.toString(),
-                    null
+                    ProductUpsertedEvent.Category.FOOD
             ));
 
             when(productRepository.saveAndFlush(any(Product.class)))
@@ -113,7 +110,8 @@ class ProductServiceTest {
             assertThat(result.category()).isEqualTo(ProductCategory.FOOD);
             assertThat(result.description()).isEqualTo("맛있는 테스트 상품입니다.");
             assertThat(result.stock()).isEqualTo(100);
-            assertThat(result.originalUrl()).isEqualTo("https://example.com/image.jpg");
+            assertThat(result.originalUrl()).isNull();
+            assertThat(result.imageUrl()).isNull();
             assertThat(result.sellerId()).isEqualTo(sellerId);
             assertThat(result.createdAt()).isEqualTo(now);
 
@@ -136,7 +134,7 @@ class ProductServiceTest {
             Product product = mock(Product.class);
             when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
-            when(product.toEvent()).thenReturn(mock(ProductEvent.class));
+            when(product.toEvent(any(ProductCategory.class))).thenReturn(mock(ProductUpsertedEvent.class));
 
             when(productRepository.findById(productId))
                     .thenReturn(java.util.Optional.of(product));
@@ -165,7 +163,7 @@ class ProductServiceTest {
             Product product = mock(Product.class);
             when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
-            when(product.toEvent()).thenReturn(mock(ProductEvent.class));
+            when(product.toEvent(any(ProductCategory.class))).thenReturn(mock(ProductUpsertedEvent.class));
 
             when(productRepository.findById(productId))
                     .thenReturn(java.util.Optional.of(product));
@@ -237,7 +235,7 @@ class ProductServiceTest {
         ProductRegisterCommand command = new ProductRegisterCommand(
                 "상품 이름", 10000L,
                 ProductCategory.BEAUTY, "상품 설명",
-                100, "originalUrl", sellerId
+                100, null, null, "test-key", sellerId
         );
 
         Product savedProduct = mock(Product.class);
@@ -246,9 +244,10 @@ class ProductServiceTest {
         when(savedProduct.getProductId()).thenReturn(productId);
         when(productRepository.saveAndFlush(any(Product.class))).thenReturn(savedProduct);
 
-        ProductEvent event = mock(ProductEvent.class);
-        when(event.getId()).thenReturn(productId);
-        when(savedProduct.toEvent()).thenReturn(event);
+        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
+        when(event.getProductId()).thenReturn(productId);
+        when(savedProduct.getCategory()).thenReturn(ProductCategory.BEAUTY);
+        when(savedProduct.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         ProductRegisterInfo result = productService.createProduct(command);
@@ -329,14 +328,14 @@ class ProductServiceTest {
         ProductUpdateCommand command = new ProductUpdateCommand(
                 "수정 상품" ,10000L,
                 ProductCategory.BEAUTY, "수정 설명",
-                100, "originalNewUrl"
+                100, "originalUrl", null
         );
 
         when(productRepository.saveAndFlush(product)).thenReturn(product);
 
-        ProductEvent event = mock(ProductEvent.class);
-        when(event.getId()).thenReturn(productId);
-        when(product.toEvent()).thenReturn(event);
+        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
+        when(event.getProductId()).thenReturn(productId);
+        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         ProductUpdateInfo result = productService.updateProduct(productId, command);
@@ -351,13 +350,14 @@ class ProductServiceTest {
                 command.category(),
                 command.description(),
                 command.stock(),
-                command.originalLink()
+                command.originalLink(),
+                command.imageUrl()
         );
         verify(productRepository).saveAndFlush(product);
         verify(kafkaTemplate).send(
                 eq(KafkaTopics.PRODUCT_UPSERTED),
                 anyString(),
-                any(ProductEvent.class)
+                any(ProductUpsertedEvent.class)
         );
     }
 
@@ -392,8 +392,8 @@ class ProductServiceTest {
         when(groupPurchaseRepository.existsByProductId(productId))
                 .thenReturn(false);
 
-        ProductEvent event = mock(ProductEvent.class);
-        when(product.toEvent()).thenReturn(event);
+        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
+        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         productService.deleteProduct(productId, memberId);
@@ -403,7 +403,7 @@ class ProductServiceTest {
         verify(kafkaTemplate).send(
                 eq(KafkaTopics.PRODUCT_DELETED),
                 anyString(),
-                any(ProductEvent.class)
+                any(ProductUpsertedEvent.class)
         );
     }
 
@@ -437,8 +437,8 @@ class ProductServiceTest {
         when(groupPurchaseRepository.existsByProductId(productId))
                 .thenReturn(true);
 
-        ProductEvent event = mock(ProductEvent.class);
-        when(product.toEvent()).thenReturn(event);
+        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
+        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         productService.deleteProduct(productId,memberId);
@@ -449,7 +449,7 @@ class ProductServiceTest {
         verify(kafkaTemplate).send(
                 eq(KafkaTopics.PRODUCT_DELETED),
                 anyString(),
-                any(ProductEvent.class)
+                any(ProductUpsertedEvent.class)
         );
     }
 

@@ -114,20 +114,22 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
 
     private Product createTestProduct() {
-        return new Product(
+        return Product.createProduct(
                 "테스트 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트 설명",
                 100,
                 null,
+                null,
+                "test-key",
                 testSellerId
         );
     }
 
     private GroupPurchase createTestGroupPurchase(UUID productId, int maxQuantity){
         return new GroupPurchase(
-                10,maxQuantity,"테스트 공동구매", "테스트 공동 구매 설명",
-                12000L, OffsetDateTime.now().plusMinutes(5), OffsetDateTime.now().plusDays(7), testSellerId, productId);
+                10, maxQuantity, "테스트 공동구매", "테스트 공동 구매 설명",
+                12000L, OffsetDateTime.now().plusMinutes(5), OffsetDateTime.now().plusDays(7), testSellerId, productId, null);
     }
 }
