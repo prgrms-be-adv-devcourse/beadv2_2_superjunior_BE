@@ -10,10 +10,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 

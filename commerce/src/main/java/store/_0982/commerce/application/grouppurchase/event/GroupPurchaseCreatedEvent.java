@@ -1,6 +1,6 @@
 package store._0982.commerce.application.grouppurchase.event;
 
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.product.Product;
 
 public record GroupPurchaseCreatedEvent(

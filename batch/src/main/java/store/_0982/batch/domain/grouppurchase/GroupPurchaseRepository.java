@@ -13,28 +13,6 @@ import java.util.UUID;
 public interface GroupPurchaseRepository {
 	GroupPurchase save(GroupPurchase groupPurchase);
 
-    Optional<GroupPurchase> findById(UUID purchaseId);
-
-    Page<GroupPurchase> findAll(Pageable pageable);
-
-    Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
-
-    void delete(GroupPurchase groupPurchase);
-
-    GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
-
     List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
-
-    int openReadyGroupPurchases(OffsetDateTime now);
-
-    boolean existsByProductId(UUID productId);
-
-    boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
-
-    List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
-
-    List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
-
-    void markAsSettled(List<UUID> uuids);
 }
 

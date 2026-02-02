@@ -6,9 +6,9 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.exception.CustomException;
 
 import java.util.UUID;

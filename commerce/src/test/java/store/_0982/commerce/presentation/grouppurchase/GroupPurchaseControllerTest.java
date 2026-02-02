@@ -15,10 +15,11 @@ import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.dto.PageResponse;
 
 import java.time.OffsetDateTime;

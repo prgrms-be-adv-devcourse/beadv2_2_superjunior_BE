@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.exception.CustomException;
+import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
@@ -55,6 +57,9 @@ public class GroupPurchase {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
@@ -83,7 +88,8 @@ public class GroupPurchase {
                          OffsetDateTime startDate,
                          OffsetDateTime endDate,
                          UUID sellerId,
-                         UUID productId){
+                         UUID productId,
+                         String imageUrl){
         this.groupPurchaseId = UUID.randomUUID();
         this.minQuantity = mintQuantity;
         this.maxQuantity = maxQuantity;
@@ -95,7 +101,62 @@ public class GroupPurchase {
         this.endDate = endDate;
         this.sellerId = sellerId;
         this.productId = productId;
+        this.imageUrl = imageUrl;
         this.currentQuantity = 0;
+    }
+
+	    private boolean canParticipate(int quantity) {
+        return status == GroupPurchaseStatus.OPEN
+                && (this.currentQuantity + quantity <= this.maxQuantity);
+    }
+
+    private void checkAndUpdateStatusIfMaxReached() {
+        if (this.currentQuantity == this.maxQuantity) {
+            this.status = GroupPurchaseStatus.SUCCESS;
+        }
+    }
+
+    public boolean increaseQuantity(int quantity) {
+        if (!canParticipate(quantity)) {
+            return false;
+        }
+
+        this.currentQuantity += quantity;
+        checkAndUpdateStatusIfMaxReached();
+
+        return true;
+    }
+
+    public void decreaseQuantity(int quantity){
+        if(this.currentQuantity - quantity < 0){
+            throw new CustomException(EntityErrorCode.DECREASE_QUANTITY_FAILED);
+        }
+        this.currentQuantity -= quantity;
+    }
+
+    public boolean isInReversedPeriod() {
+        if (this.succeededAt == null) {
+            return false;
+        }
+        return OffsetDateTime.now().isBefore(this.succeededAt.plusDays(2));
+    }
+
+    public boolean isInReturnedPeriod() {
+        if (this.succeededAt == null)
+            return false;
+        return OffsetDateTime.now().isAfter(this.succeededAt.plusDays(2))
+                && OffsetDateTime.now().isBefore(this.succeededAt.plusWeeks(2));
+    }
+
+    public void markAsReturned() {
+        if (this.returnedAt != null) {
+            throw new IllegalStateException("이미 환불 처리된 공동구매입니다.");
+        }
+        this.returnedAt = OffsetDateTime.now();
+    }
+
+    public boolean isReturned() {
+        return this.returnedAt != null;
     }
 
     public void open() {
@@ -118,6 +179,30 @@ public class GroupPurchase {
             throw new IllegalStateException("OPEN 일 때만 변경 가능");
         }
         this.status = GroupPurchaseStatus.FAILED;
+    }
+
+    public void updateGroupPurchase(int mintQuantity,
+                                    int maxQuantity,
+                                    String title,
+                                    String description,
+                                    Long discountedPrice,
+                                    OffsetDateTime startDate,
+                                    OffsetDateTime endDate,
+                                    UUID productId,
+                                    String imageUrl){
+        this.minQuantity = mintQuantity;
+        this.maxQuantity = maxQuantity;
+        this.title = title;
+        this.description = description;
+        this.discountedPrice = discountedPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.productId = productId;
+        this.imageUrl = imageUrl;
+    }
+
+    public void updateStatus(GroupPurchaseStatus status){
+        this.status = status;
     }
 
     public GroupPurchaseEvent toEvent(GroupPurchaseEvent.Status groupPurchaseStatus,
