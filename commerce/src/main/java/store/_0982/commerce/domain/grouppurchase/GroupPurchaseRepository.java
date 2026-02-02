@@ -2,6 +2,8 @@ package store._0982.commerce.domain.grouppurchase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

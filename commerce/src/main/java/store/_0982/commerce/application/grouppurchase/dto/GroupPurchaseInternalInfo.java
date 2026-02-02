@@ -1,6 +1,6 @@
 package store._0982.commerce.application.grouppurchase.dto;
 
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
 import java.util.UUID;
 

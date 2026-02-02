@@ -1,4 +1,4 @@
-package store._0982.batch.domain.settlement;
+package store._0982.common.domain.settlement;
 
 import java.time.OffsetDateTime;
 import java.time.YearMonth;

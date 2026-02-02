@@ -1,4 +1,4 @@
-package store._0982.batch.domain.product;
+package store._0982.common.domain.product;
 
 public enum ProductCategory {
     HOME,        // 생활 & 주방

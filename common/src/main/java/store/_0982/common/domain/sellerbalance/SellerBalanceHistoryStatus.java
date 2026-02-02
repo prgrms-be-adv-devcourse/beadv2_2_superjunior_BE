@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.sellerbalance;
+package store._0982.common.domain.sellerbalance;
 
 public enum SellerBalanceHistoryStatus {
     CREDIT,     // 입금/증가

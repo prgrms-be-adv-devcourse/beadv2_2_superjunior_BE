@@ -15,14 +15,14 @@ import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInf
 import store._0982.commerce.application.product.dto.CartVectorInfo;
 import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.cart.CartRepository;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.Product;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;

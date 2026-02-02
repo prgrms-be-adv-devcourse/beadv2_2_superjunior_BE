@@ -1,7 +1,7 @@
 package store._0982.commerce.application.sellerbalance.dto;
 
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistoryStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

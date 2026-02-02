@@ -1,13 +1,12 @@
 package store._0982.batch.infrastructure.client.member;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.settlement.Settlement;
 import store._0982.common.dto.ResponseDto;
 
 import java.util.Collections;

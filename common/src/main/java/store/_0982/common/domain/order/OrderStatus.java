@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.order;
+package store._0982.common.domain.order;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public enum OrderStatus {
     REFUND_REQUESTED,       // 반품 요청
     REFUNDED,               // 반품 완료
 
-    PURCHASE_CONFIRMED;     // 구매 확정
+    PURCHASE_CONFIRMED;      // 구매 확정
 
     public static List<OrderStatus> participantStatuses(){
         return List.of(
@@ -31,5 +31,4 @@ public enum OrderStatus {
                 GROUP_PURCHASE_FAIL
         );
     }
-
 }

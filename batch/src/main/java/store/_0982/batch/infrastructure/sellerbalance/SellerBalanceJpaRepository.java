@@ -1,7 +1,7 @@
 package store._0982.batch.infrastructure.sellerbalance;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalance;
 
 import java.util.List;
 import java.util.Optional;

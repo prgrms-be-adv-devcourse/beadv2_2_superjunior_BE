@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.product.dto.ProductRegisterCommand;
 import store._0982.commerce.application.product.dto.ProductRegisterInfo;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
 import store._0982.common.HeaderName;
 
@@ -62,7 +61,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    null,
+                    null,
+                    "test-key"
             );
 
             ProductRegisterInfo info = new ProductRegisterInfo(
@@ -72,7 +73,8 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg",
+                    null,
+                    null,
                     memberId,
                     OffsetDateTime.now()
             );
@@ -96,7 +98,6 @@ class ProductControllerTest {
                     .andExpect(jsonPath("$.data.category").value("FOOD"))
                     .andExpect(jsonPath("$.data.description").value("맛있는 테스트 상품입니다."))
                     .andExpect(jsonPath("$.data.stock").value(100))
-                    .andExpect(jsonPath("$.data.originalUrl").value("https://example.com/image.jpg"))
                     .andExpect(jsonPath("$.data.sellerId").value(memberId.toString()));
 
             verify(productService, times(1)).createProduct(any(ProductRegisterCommand.class));
@@ -112,7 +113,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    null,
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -139,7 +142,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    null,
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -168,7 +173,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -195,7 +202,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -222,7 +231,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     100,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -249,7 +260,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     -10,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -276,7 +289,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "맛있는 테스트 상품입니다.",
                     0,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then
@@ -303,7 +318,9 @@ class ProductControllerTest {
                     ProductCategory.FOOD,
                     "",
                     100,
-                    "https://example.com/image.jpg"
+                    "https://example.com/image.jpg",
+                    null,
+                    "test-key"
             );
 
             // when & then

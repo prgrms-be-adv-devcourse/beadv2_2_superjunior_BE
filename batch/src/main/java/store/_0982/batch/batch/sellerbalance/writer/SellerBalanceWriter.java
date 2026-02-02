@@ -5,11 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.batch.domain.sellerbalance.*;
-import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
+import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.domain.settlement.OrderSettlementRepository;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.settlement.OrderSettlement;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

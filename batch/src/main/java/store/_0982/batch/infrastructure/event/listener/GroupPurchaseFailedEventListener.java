@@ -6,11 +6,9 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseChunkFailedEvent;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseFailedProcessedEvent;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.infrastructure.kafka.publisher.GroupPurchaseFailedKafkaEventPublisher;
-import store._0982.common.kafka.dto.GroupPurchaseFailedEvent;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
-import javax.swing.*;
 import java.util.List;
 
 @Component

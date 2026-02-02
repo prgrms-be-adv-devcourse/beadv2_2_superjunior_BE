@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.sellerbalance;
+package store._0982.common.domain.sellerbalance;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
@@ -47,8 +47,19 @@ public class SellerBalance {
 
     public void increaseBalance(Long amount) {
         if (amount < 0)
-            throw new CustomException(CustomErrorCode.INVALID_SETTLEMENT_AMOUNT);
+            throw new CustomException(EntityErrorCode.INVALID_SETTLEMENT_AMOUNT);
         this.settlementBalance += amount;
     }
 
+    public void decreaseBalance(Long amount) {
+        if (amount < 0)
+            throw new CustomException(EntityErrorCode.INVALID_SETTLEMENT_AMOUNT);
+        if (this.settlementBalance < amount)
+            throw new CustomException(EntityErrorCode.INSUFFICIENT_BALANCE);
+        this.settlementBalance -= amount;
+    }
+
+    public void resetBalance() {
+        this.settlementBalance = 0L;
+    }
 }

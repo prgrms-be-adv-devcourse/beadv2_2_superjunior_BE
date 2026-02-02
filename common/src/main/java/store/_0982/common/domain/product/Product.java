@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.product;
+package store._0982.common.domain.product;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -60,14 +60,14 @@ public class Product {
     private OffsetDateTime deletedAt;
 
     public static Product createProduct(String name,
-                                 Long price,
-                                 ProductCategory category,
-                                 String description,
-                                 int stock,
-                                 String originalUrl,
-                                 String imageUrl,
-                                 String idempotencyKey,
-                                 UUID sellerId) {
+                                        Long price,
+                                        ProductCategory category,
+                                        String description,
+                                        int stock,
+                                        String originalUrl,
+                                        String imageUrl,
+                                        String idempotencyKey,
+                                        UUID sellerId) {
         return new Product(
                 name,
                 price,

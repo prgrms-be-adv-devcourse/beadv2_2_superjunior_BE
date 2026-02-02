@@ -1,14 +1,16 @@
-package store._0982.commerce.domain.settlement;
+package store._0982.common.domain.settlement;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import store._0982.commerce.domain.order.OrderStatus;
+import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "order_settlement", schema = "settlement_schema")
@@ -41,7 +43,7 @@ public class OrderSettlement {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "settled_id")
+    @Column(name = "settled_at")
     private OffsetDateTime settledAt;
 
     public static OrderSettlement createOrderSettlement(

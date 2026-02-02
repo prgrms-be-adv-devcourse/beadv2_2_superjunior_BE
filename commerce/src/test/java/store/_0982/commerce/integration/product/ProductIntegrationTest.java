@@ -13,10 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
 import store._0982.common.HeaderName;
@@ -75,7 +72,9 @@ class ProductIntegrationTest {
                 ProductCategory.BEAUTY,
                 "테스트 상품 설명",
                 100,
-                "https://example.com/product"
+                "https://example.com/product",
+                null,
+                "test-key"
         );
 
         // when & then - HTTP 응답 검증
@@ -155,7 +154,9 @@ class ProductIntegrationTest {
                 ProductCategory.BEAUTY,
                 "테스트 상품 설명",
                 100,
-                "https://example.com/product"
+                "https://example.com/product",
+                null,
+                "test-key"
         );
 
         // when & then - Member ID 헤더 없이 요청
@@ -178,7 +179,9 @@ class ProductIntegrationTest {
                 ProductCategory.BEAUTY,
                 "테스트 상품 설명",
                 100,
-                null  // 선택 필드
+                null,  // 선택 필드
+                null,
+                "test-key"
         );
 
         // when & then
@@ -197,13 +200,15 @@ class ProductIntegrationTest {
     @DisplayName("공동구매에 사용되지 않은 상품은 하드 삭제된다")
     void deleteProduct_hardDelete_success() throws Exception {
         // given - 상품 생성
-        Product product = new Product(
+        Product product = Product.createProduct(
                 "삭제할 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트용 상품",
                 100,
                 "https://example.com/product",
+                null,
+                "test-key",
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
@@ -235,13 +240,15 @@ class ProductIntegrationTest {
     @DisplayName("공동구매에 사용된 상품은 소프트 삭제된다")
     void deleteProduct_softDelete_success() throws Exception {
         // given - 상품 생성
-        Product product = new Product(
+        Product product = Product.createProduct(
                 "소프트 삭제할 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트용 상품",
                 100,
                 "https://example.com/product",
+                null,
+                "test-key",
                 testMemberId
         );
         Product savedProduct = productRepository.save(product);
@@ -256,7 +263,8 @@ class ProductIntegrationTest {
                 OffsetDateTime.now().plusDays(1),
                 OffsetDateTime.now().plusDays(7),
                 testMemberId,
-                savedProduct.getProductId()
+                savedProduct.getProductId(),
+                null
         );
         groupPurchaseRepository.save(groupPurchase);
 
@@ -303,13 +311,15 @@ class ProductIntegrationTest {
     void deleteProduct_forbidden() throws Exception {
         // given - 다른 판매자의 상품 생성
         UUID otherSellerId = UUID.randomUUID();
-        Product product = new Product(
+        Product product = Product.createProduct(
                 "다른 판매자 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트용 상품",
                 100,
                 "https://example.com/product",
+                null,
+                "test-key",
                 otherSellerId
         );
         Product savedProduct = productRepository.save(product);

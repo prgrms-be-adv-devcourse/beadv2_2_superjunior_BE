@@ -2,6 +2,8 @@ package store._0982.batch.domain.grouppurchase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -11,28 +13,6 @@ import java.util.UUID;
 public interface GroupPurchaseRepository {
 	GroupPurchase save(GroupPurchase groupPurchase);
 
-    Optional<GroupPurchase> findById(UUID purchaseId);
-
-    Page<GroupPurchase> findAll(Pageable pageable);
-
-    Page<GroupPurchase> findAllBySellerId(UUID sellerId, Pageable pageable);
-
-    void delete(GroupPurchase groupPurchase);
-
-    GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
-
     List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
-
-    int openReadyGroupPurchases(OffsetDateTime now);
-
-    boolean existsByProductId(UUID productId);
-
-    boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
-
-    List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
-
-    List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
-
-    void markAsSettled(List<UUID> uuids);
 }
 

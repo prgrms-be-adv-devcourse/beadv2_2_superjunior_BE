@@ -1,8 +1,10 @@
 package store._0982.commerce.presentation.product.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import store._0982.commerce.application.product.dto.ProductRegisterCommand;
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.util.UUID;
 

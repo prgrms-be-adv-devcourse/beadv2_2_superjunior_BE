@@ -10,11 +10,8 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.support.BaseConcurrencyTest;
@@ -114,20 +111,22 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
 
     private Product createTestProduct() {
-        return new Product(
+        return Product.createProduct(
                 "테스트 상품",
                 10000L,
                 ProductCategory.BEAUTY,
                 "테스트 설명",
                 100,
                 null,
+                null,
+                "test-key",
                 testSellerId
         );
     }
 
     private GroupPurchase createTestGroupPurchase(UUID productId, int maxQuantity){
         return new GroupPurchase(
-                10,maxQuantity,"테스트 공동구매", "테스트 공동 구매 설명",
-                12000L, OffsetDateTime.now().plusMinutes(5), OffsetDateTime.now().plusDays(7), testSellerId, productId);
+                10, maxQuantity, "테스트 공동구매", "테스트 공동 구매 설명",
+                12000L, OffsetDateTime.now().plusMinutes(5), OffsetDateTime.now().plusDays(7), testSellerId, productId, null);
     }
 }

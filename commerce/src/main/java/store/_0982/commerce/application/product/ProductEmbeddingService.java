@@ -13,11 +13,11 @@ import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.commerce.application.product.dto.ProductEmbeddingCompleteInfo;
 import store._0982.commerce.application.product.event.VectorCollectedEvent;
 import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.log.ServiceLog;
 

@@ -1,4 +1,4 @@
-package store._0982.batch.domain.settlement;
+package store._0982.common.domain.settlement;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.domain.settlement.SettlementStatus;
 import store._0982.common.kafka.dto.SettlementDoneEvent;
 
 import java.math.BigDecimal;

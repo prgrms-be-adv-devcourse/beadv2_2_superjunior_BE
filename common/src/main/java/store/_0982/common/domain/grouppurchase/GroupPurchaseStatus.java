@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.grouppurchase;
+package store._0982.common.domain.grouppurchase;
 
 public enum GroupPurchaseStatus {
     SCHEDULED,       // 진행전

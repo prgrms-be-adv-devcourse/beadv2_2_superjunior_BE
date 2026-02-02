@@ -6,10 +6,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.product.Product;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
 

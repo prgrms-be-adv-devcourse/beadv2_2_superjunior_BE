@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
-import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

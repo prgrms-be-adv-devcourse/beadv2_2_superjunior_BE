@@ -1,7 +1,7 @@
 package store._0982.commerce.infrastructure.settlement;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import store._0982.commerce.domain.settlement.OrderSettlement;
+import store._0982.common.domain.settlement.OrderSettlement;
 
 import java.util.UUID;
 
