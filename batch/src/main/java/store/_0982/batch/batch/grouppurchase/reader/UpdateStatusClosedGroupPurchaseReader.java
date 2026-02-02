@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
-import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
