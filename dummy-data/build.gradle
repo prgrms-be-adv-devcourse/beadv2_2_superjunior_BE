@@ -1,0 +1,27 @@
+dependencies {
+    /* === Web */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    /* === JPA / DB === */
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'org.postgresql:postgresql'       // PostgreSQL 드라이버
+
+    //common 모듈
+    implementation project(':common')
+
+    testImplementation 'org.springframework.security:spring-security-test'
+
+
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:junit-jupiter'
+
+    jib {
+        from {
+            image = 'eclipse-temurin:17-jre'
+        }
+    }
+}
+
+bootJar {
+    enabled = true
+}
