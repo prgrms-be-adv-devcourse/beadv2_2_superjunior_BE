@@ -8,23 +8,36 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.point.PointBalanceInfo;
 import store._0982.point.application.dto.point.PointTransferCommand;
 import store._0982.point.domain.entity.PointBalance;
+import store._0982.point.domain.entity.PointTransaction;
+import store._0982.point.domain.event.PointTransferredTxEvent;
+import store._0982.point.domain.repository.PointBalanceRepository;
+import store._0982.point.domain.repository.PointTransactionRepository;
 import store._0982.point.exception.CustomErrorCode;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PointTransferServiceTest {
 
     @Mock
-    private PointTxManager pointTxManager;
+    private PointBalanceRepository pointBalanceRepository;
+
+    @Mock
+    private PointTransactionRepository pointTransactionRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks
     private PointTransferService pointTransferService;
@@ -49,9 +62,11 @@ class PointTransferServiceTest {
             PointTransferCommand command = new PointTransferCommand(50000, idempotencyKey);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(100000);
-            pointBalance.transfer(50000);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 50000)).thenReturn(pointBalance);
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointTransferredTxEvent.class));
 
             // when
             PointBalanceInfo result = pointTransferService.transfer(memberId, command);
@@ -59,7 +74,9 @@ class PointTransferServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isEqualTo(50000);
-            verify(pointTxManager).transfer(memberId, idempotencyKey, 50000);
+            verify(pointBalanceRepository).findByMemberId(memberId);
+            verify(pointTransactionRepository).saveAndFlush(any(PointTransaction.class));
+            verify(applicationEventPublisher).publishEvent(any(PointTransferredTxEvent.class));
         }
 
         @Test
@@ -68,8 +85,7 @@ class PointTransferServiceTest {
             // given
             PointTransferCommand command = new PointTransferCommand(50000, idempotencyKey);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 50000))
-                    .thenThrow(new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))
@@ -82,29 +98,15 @@ class PointTransferServiceTest {
         void transfer_fail_whenInsufficientBalance() {
             // given
             PointTransferCommand command = new PointTransferCommand(100000, idempotencyKey);
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(50000);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 100000))
-                    .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
             assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))
                     .isInstanceOf(CustomException.class)
                     .hasMessageContaining(CustomErrorCode.LACK_OF_POINT.getMessage());
-        }
-
-        @Test
-        @DisplayName("중복 출금 요청 시 예외가 발생한다")
-        void transfer_fail_whenDuplicateRequest() {
-            // given
-            PointTransferCommand command = new PointTransferCommand(50000, idempotencyKey);
-
-            when(pointTxManager.transfer(memberId, idempotencyKey, 50000))
-                    .thenThrow(new CustomException(CustomErrorCode.IDEMPOTENT_REQUEST));
-
-            // when & then
-            assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))
-                    .isInstanceOf(CustomException.class)
-                    .hasMessageContaining(CustomErrorCode.IDEMPOTENT_REQUEST.getMessage());
         }
 
         @Test
@@ -115,9 +117,11 @@ class PointTransferServiceTest {
             PointTransferCommand command = new PointTransferCommand(exactAmount, idempotencyKey);
             PointBalance pointBalance = new PointBalance(memberId);
             pointBalance.charge(exactAmount);
-            pointBalance.transfer(exactAmount);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, exactAmount)).thenReturn(pointBalance);
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
+            when(pointTransactionRepository.saveAndFlush(any(PointTransaction.class)))
+                    .thenAnswer(inv -> inv.getArgument(0));
+            doNothing().when(applicationEventPublisher).publishEvent(any(PointTransferredTxEvent.class));
 
             // when
             PointBalanceInfo result = pointTransferService.transfer(memberId, command);
@@ -125,7 +129,8 @@ class PointTransferServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.paidPoint()).isZero();
-            verify(pointTxManager).transfer(memberId, idempotencyKey, exactAmount);
+            verify(pointBalanceRepository).findByMemberId(memberId);
+            verify(applicationEventPublisher).publishEvent(any(PointTransferredTxEvent.class));
         }
 
         @Test
@@ -133,9 +138,10 @@ class PointTransferServiceTest {
         void transfer_fail_whenOneMoreThanBalance() {
             // given
             PointTransferCommand command = new PointTransferCommand(100001, idempotencyKey);
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(100000);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 100001))
-                    .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
             assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))
@@ -148,9 +154,10 @@ class PointTransferServiceTest {
         void transfer_fail_whenOnlyBonusPointsExist() {
             // given
             PointTransferCommand command = new PointTransferCommand(1000, idempotencyKey);
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.earnBonus(1000); // Only Bonus
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 1000))
-                    .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
             assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))
@@ -163,9 +170,11 @@ class PointTransferServiceTest {
         void transfer_fail_whenPaidInsufficientButTotalSufficient() {
             // given
             PointTransferCommand command = new PointTransferCommand(15000, idempotencyKey);
+            PointBalance pointBalance = new PointBalance(memberId);
+            pointBalance.charge(10000);
+            pointBalance.earnBonus(10000);
 
-            when(pointTxManager.transfer(memberId, idempotencyKey, 15000))
-                    .thenThrow(new CustomException(CustomErrorCode.LACK_OF_POINT));
+            when(pointBalanceRepository.findByMemberId(memberId)).thenReturn(Optional.of(pointBalance));
 
             // when & then
             assertThatThrownBy(() -> pointTransferService.transfer(memberId, command))

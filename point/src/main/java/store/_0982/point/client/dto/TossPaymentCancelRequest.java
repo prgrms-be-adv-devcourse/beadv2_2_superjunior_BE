@@ -11,7 +11,15 @@ public record TossPaymentCancelRequest(
     public static TossPaymentCancelRequest from(PgPayment pgPayment, PgCancelCommand command) {
         return new TossPaymentCancelRequest(
                 pgPayment.getPaymentKey(),
-                pgPayment.getAmount(),
+                decideCancelAmount(pgPayment, command),
                 command.cancelReason());
+    }
+
+    private static long decideCancelAmount(PgPayment pgPayment, PgCancelCommand command) {
+        Long cancelAmount = command.amount();
+        if (cancelAmount == null) {
+            return pgPayment.getAmount();
+        }
+        return cancelAmount;
     }
 }

@@ -9,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
-import store._0982.common.kafka.dto.PaymentChangedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -162,7 +161,7 @@ public class Order {
         if(this.status != OrderStatus.PENDING){
             throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
         }
-        this.status = OrderStatus.ORDER_FAILED;
+        this.status = OrderStatus.PAYMENT_FAILED;
     }
 
     public boolean isExpired() {
@@ -186,8 +185,15 @@ public class Order {
     public void requestReturned() {
         if (this.status != OrderStatus.GROUP_PURCHASE_SUCCESS)
             throw new CustomException(CustomErrorCode.CANNOT_RETURN_ORDER_INVALID_STATUS);
-        this.status = OrderStatus.REVERSE_REQUESTED;
+        this.status = OrderStatus.REFUND_REQUESTED;
         this.cancelRequestedAt = OffsetDateTime.now();
+    }
+  
+    public void changeStatus() {
+        if (this.status == OrderStatus.CANCEL_REQUESTED) this.status = OrderStatus.CANCELLED;
+        if (this.status == OrderStatus.REVERSE_REQUESTED) this.status = OrderStatus.REVERSED;
+        if (this.status == OrderStatus.REFUND_REQUESTED) this.status = OrderStatus.REFUNDED;
+        this.cancelledAt = OffsetDateTime.now();
     }
 
     // 환불 완료
@@ -203,20 +209,21 @@ public class Order {
         return this.returnedAt != null;
     }
 
-    public OrderCanceledEvent toEvent(String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+    public void confirmPurchase(){
+        if(this.status != OrderStatus.GROUP_PURCHASE_SUCCESS){
+            throw new CustomException(CustomErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
+        }
+        this.status = OrderStatus.PURCHASE_CONFIRMED;
+    }
+
+    public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
         return new OrderCanceledEvent(
                 this.memberId,
                 this.orderId,
+                productName,
                 cancelReason,
                 method,
                 amount
         );
-    }
-
-    public void changeStatus(PaymentChangedEvent.Status status) {
-        this.status = OrderStatus.valueOf(
-                status.name()
-        );
-        this.cancelledAt = OffsetDateTime.now();
     }
 }

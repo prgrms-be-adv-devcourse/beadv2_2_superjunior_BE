@@ -3,13 +3,15 @@ package store._0982.member.infrastructure.notification;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.TestPropertySource;
-import store._0982.member.domain.notification.*;
+import store._0982.member.domain.notification.Notification;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
+import store._0982.member.support.BaseIntegrationTest;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,12 +19,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@Import(NotificationAdapter.class)
-@TestPropertySource(properties = {
-        "spring.jpa.properties.hibernate.hbm2ddl.create_namespaces=true"
-})
-class NotificationAdapterTest {
+class NotificationAdapterTest extends BaseIntegrationTest {
 
     @Autowired
     private NotificationJpaRepository notificationJpaRepository;
@@ -82,7 +79,7 @@ class NotificationAdapterTest {
         notificationJpaRepository.save(notification2);
 
         // when
-        Page<Notification> result = notificationAdapter.findByMemberId(memberId, pageable);
+        Page<Notification> result = notificationAdapter.findByMemberIdAndChannel(memberId, NotificationChannel.IN_APP, pageable);
 
         // then
         assertThat(result.getContent()).hasSize(2);
@@ -102,7 +99,8 @@ class NotificationAdapterTest {
         notificationJpaRepository.save(notification);
 
         // when
-        Page<Notification> result = notificationAdapter.findByMemberIdAndStatus(memberId, status, pageable);
+        Page<Notification> result = notificationAdapter.findByMemberIdAndStatusAndChannel(
+                memberId, status, NotificationChannel.IN_APP, pageable);
 
         // then
         assertThat(result.getContent()).hasSize(1);
@@ -131,7 +129,7 @@ class NotificationAdapterTest {
         return Notification.builder()
                 .id(id)
                 .memberId(UUID.randomUUID())
-                .type(NotificationType.POINT_RECHARGED)
+                .type(NotificationType.POINT_CHARGED)
                 .channel(NotificationChannel.IN_APP)
                 .title("테스트 알림")
                 .message("테스트 메시지")
@@ -145,7 +143,7 @@ class NotificationAdapterTest {
         return Notification.builder()
                 .id(UUID.randomUUID())
                 .memberId(memberId)
-                .type(NotificationType.POINT_RECHARGED)
+                .type(NotificationType.POINT_CHARGED)
                 .channel(NotificationChannel.IN_APP)
                 .title("테스트 알림")
                 .message("테스트 메시지")

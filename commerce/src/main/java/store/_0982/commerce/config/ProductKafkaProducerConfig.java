@@ -8,7 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEmbeddingCompleteEvent;
+import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 
@@ -29,12 +29,12 @@ public class ProductKafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventProducerFactory() {
+    public ProducerFactory<String, ProductEmbeddingCompletedEvent> productEmbeddingCompleteEventProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean(name = "defaultRetryTopicKafkaTemplate")
-    public KafkaTemplate<String, ProductEmbeddingCompleteEvent> productEmbeddingCompleteEventKafkaTemplate() {
+    public KafkaTemplate<String, ProductEmbeddingCompletedEvent> productEmbeddingCompleteEventKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(productEmbeddingCompleteEventProducerFactory());
     }
 

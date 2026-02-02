@@ -19,6 +19,10 @@ public class GroupPurchase {
     @Id
     private UUID groupPurchaseId;
 
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @Column(name = "min_quantity", nullable = false)
     private int minQuantity;
 
@@ -53,6 +57,15 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
+    @Column(name = "returned_at")
+    private OffsetDateTime returnedAt;
+
+    @Column(name = "succeeded_at")
+    private OffsetDateTime succeededAt;
+
+    @Column(name = "settled_at")
+    private OffsetDateTime settledAt; // 정산 완료 시간
+
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
@@ -60,12 +73,6 @@ public class GroupPurchase {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
-
-    @Column(name = "returned_at")
-    private OffsetDateTime returnedAt;
-
-    @Column(name = "succeeded_at")
-    private OffsetDateTime succeededAt;
 
     public GroupPurchase(int mintQuantity,
                          int maxQuantity,
@@ -102,6 +109,7 @@ public class GroupPurchase {
             throw new IllegalStateException("OPEN 일 때만 변경 가능");
         }
         this.status = GroupPurchaseStatus.SUCCESS;
+        this.succeededAt = OffsetDateTime.now();
     }
 
     public void markFailed(){

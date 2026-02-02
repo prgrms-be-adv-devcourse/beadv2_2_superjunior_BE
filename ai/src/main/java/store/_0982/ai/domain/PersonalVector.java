@@ -32,9 +32,13 @@ public class PersonalVector {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    public PersonalVector(UUID memberId, float[] vector) {
+    @Column(name = "interest_summary")
+    private String interestSummary;
+
+    public PersonalVector(UUID memberId, float[] vector, String interestSummary) {
         this.memberId = memberId;
         this.vector = vector;
+        this.interestSummary = interestSummary;
     }
 
     public void updateVector(float[] vector) {

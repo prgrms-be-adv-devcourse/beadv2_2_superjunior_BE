@@ -7,9 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CustomErrorCode {
-    // 401 Bad Request
     INVALID(HttpStatus.UNAUTHORIZED, "비정상 토큰입니다."),
-    // 403
+    UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다.");
 
     private final HttpStatus httpStatus;

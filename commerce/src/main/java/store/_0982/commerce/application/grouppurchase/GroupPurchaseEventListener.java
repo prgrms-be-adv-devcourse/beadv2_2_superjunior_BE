@@ -9,7 +9,6 @@ import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCreated
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
@@ -81,7 +80,7 @@ public class GroupPurchaseEventListener {
                 GroupPurchaseEvent.Status.valueOf(
                         event.groupPurchase().getStatus().name()
                 ),
-                GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE,
+                GroupPurchaseEvent.EventStatus.INCREASE_PARTICIPATE,
                 event.product().getPrice(),
                 GroupPurchaseEvent.ProductCategory.valueOf(
                         event.product().getCategory().name()

@@ -26,6 +26,8 @@ spec:
               value: "kafka-service:9092"
             - name: OPENAI_EMBEDDING_MODEL
               value: text-embedding-3-small
+            - name: CLIENT_SEARCH
+              value: http://search-service:8082
           envFrom:
             - secretRef:
                 name: ai-secret
@@ -53,9 +55,9 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8088
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
 ---
 apiVersion: v1

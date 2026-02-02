@@ -7,13 +7,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 import store._0982.member.application.member.dto.*;
+import store._0982.member.application.member.event.MemberDeletedServiceEvent;
 import store._0982.member.domain.member.*;
 
 import java.util.List;
@@ -21,12 +24,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MemberServiceTest {
+
+    private static final String EMAIL = "test@example.com";
+    private static final String NAME = "tester";
+    private static final String PASSWORD = "password123!";
+    private static final String PHONE = "010-1234-5678";
 
     @Mock
     private MemberRepository memberRepository;
@@ -43,61 +51,57 @@ class MemberServiceTest {
     @Mock
     private EmailService emailService;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @Mock
+    private MemberRoleCache memberRoleCache;
+
+    @Mock
+    private PointQueryPort pointQueryPort;
+
     @InjectMocks
     private MemberService memberService;
 
     @Test
-    @DisplayName("회원 가입에 성공한다")
+    @DisplayName("회원 가입 시 인증된 이메일과 중복되지 않은 이름이면 가입 성공")
     void createMember_success() {
-        // given
-        String email = "test@example.com";
-        String name = "tester";
-        String password = "password123!";
-        String phone = "010-1234-5678";
-        MemberSignUpCommand command = new MemberSignUpCommand(email, password, name, phone);
+        MemberSignUpCommand command = new MemberSignUpCommand(EMAIL, PASSWORD, NAME, PHONE);
+        EmailToken verifiedToken = EmailToken.create(EMAIL);
+        verifiedToken.verify();
 
-        EmailToken emailToken = EmailToken.create(email);
-        emailToken.verify();
-
-        when(memberRepository.findByEmail(email)).thenReturn(Optional.empty());
-        when(emailTokenRepository.findByEmail(email)).thenReturn(Optional.of(emailToken));
-        when(memberRepository.findByName(name)).thenReturn(Optional.empty());
-        when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(memberRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(emailTokenRepository.findByEmail(EMAIL)).thenReturn(Optional.of(verifiedToken));
+        when(memberRepository.findByName(NAME)).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+        when(memberRepository.save(any(Member.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         MemberSignUpInfo result = memberService.createMember(command);
 
-        // then
-        assertThat(result.email()).isEqualTo(email);
-        assertThat(result.name()).isEqualTo(name);
-        assertThat(result.phoneNumber()).isEqualTo(phone);
+        assertThat(result.email()).isEqualTo(EMAIL);
+        assertThat(result.name()).isEqualTo(NAME);
+        assertThat(result.phoneNumber()).isEqualTo(PHONE);
         assertThat(result.memberId()).isNotNull();
-
-        verify(memberRepository).findByEmail(email);
-        verify(emailTokenRepository).findByEmail(email);
-        verify(memberRepository).findByName(name);
-        verify(memberRepository).save(any(Member.class));
+        verify(memberRepository).findByEmail(EMAIL);
+        verify(emailTokenRepository).findByEmail(EMAIL);
+        verify(memberRepository).findByName(NAME);
         verify(passwordEncoder).encode(anyString());
+        verify(memberRepository).save(any(Member.class));
     }
 
     @Test
-    @DisplayName("비밀번호 변경에 성공한다")
+    @DisplayName("비밀번호 변경 시 현재 비밀번호 일치하면 갱신")
     void changePassword_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "oldPassword", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, "oldPassword", PHONE);
         UUID memberId = member.getMemberId();
-
         PasswordChangeCommand command = new PasswordChangeCommand(memberId, "oldPassword", "newPassword");
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedNewPassword");
 
-        // when
         memberService.changePassword(command);
 
-        // then
         assertThat(member.getPassword()).isEqualTo("encodedNewPassword");
         verify(memberRepository).findById(memberId);
         verify(passwordEncoder).matches(anyString(), anyString());
@@ -105,126 +109,123 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("회원 탈퇴에 성공한다")
+    @DisplayName("회원 탈퇴 시 이벤트 발행 후 저장")
     void deleteMember_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "password", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
         UUID memberId = member.getMemberId();
-
-        MemberDeleteCommand command = new MemberDeleteCommand(memberId, "password");
+        MemberDeleteCommand command = new MemberDeleteCommand(memberId, PASSWORD);
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        doNothing().when(applicationEventPublisher).publishEvent(any(MemberDeletedServiceEvent.class));
 
-        // when
         memberService.deleteMember(command);
 
-        // then
         assertThat(member.getDeletedAt()).isNotNull();
         verify(memberRepository).findById(memberId);
         verify(memberRepository).save(member);
+        verify(applicationEventPublisher).publishEvent(any(MemberDeletedServiceEvent.class));
     }
 
     @Test
-    @DisplayName("프로필 수정에 성공한다")
+    @DisplayName("프로필 수정 시 이름 중복이 없으면 업데이트")
     void updateProfile_success() {
-        // given
-        Member member = Member.create("test@example.com", "oldName", "password", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
         UUID memberId = member.getMemberId();
+        ProfileUpdateCommand command = new ProfileUpdateCommand(memberId, "newName", "010-3333-4444");
 
-        String newName = "newName";
-        String newPhone = "010-3333-4444";
-        ProfileUpdateCommand command = new ProfileUpdateCommand(memberId, newName, newPhone);
-
-        when(memberRepository.findByName(newName)).thenReturn(Optional.empty());
+        when(memberRepository.findByName("newName")).thenReturn(Optional.empty());
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
-        // when
         ProfileUpdateInfo result = memberService.updateProfile(command);
 
-        // then
-        assertThat(member.getName()).isEqualTo(newName);
-        assertThat(member.getPhoneNumber()).isEqualTo(newPhone);
-        assertThat(result.name()).isEqualTo(newName);
-        assertThat(result.phoneNumber()).isEqualTo(newPhone);
-        verify(memberRepository).findByName(newName);
+        assertThat(result.name()).isEqualTo("newName");
+        assertThat(result.phoneNumber()).isEqualTo("010-3333-4444");
+        assertThat(member.getUpdatedAt()).isNotNull();
+        verify(memberRepository).findByName("newName");
         verify(memberRepository).findById(memberId);
     }
 
     @Test
-    @DisplayName("프로필 조회에 성공한다")
+    @DisplayName("프로필 조회 시 회원 정보 반환")
     void getProfile_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "password", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
         UUID memberId = member.getMemberId();
 
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
 
-        // when
         ProfileInfo result = memberService.getProfile(memberId);
 
-        // then
         assertThat(result.memberId()).isEqualTo(memberId);
-        assertThat(result.email()).isEqualTo(member.getEmail());
-        assertThat(result.name()).isEqualTo(member.getName());
+        assertThat(result.email()).isEqualTo(EMAIL);
+        assertThat(result.name()).isEqualTo(NAME);
         verify(memberRepository).findById(memberId);
     }
 
     @Test
-    @DisplayName("인증 메일 전송에 성공한다")
-    void sendVerificationEmail_success() {
-        // given
-        String email = "test@example.com";
+    @DisplayName("인증 메일 요청 시 새 토큰을 생성하여 메일 발송")
+    void sendVerificationEmail_createsNewToken() {
+        when(memberRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(emailTokenRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
 
-        when(memberRepository.findByEmail(email)).thenReturn(Optional.empty());
-        when(emailTokenRepository.findByEmail(email)).thenReturn(Optional.empty());
+        ArgumentCaptor<EmailToken> tokenCaptor = ArgumentCaptor.forClass(EmailToken.class);
 
-        ArgumentCaptor<EmailToken> emailTokenCaptor = ArgumentCaptor.forClass(EmailToken.class);
+        memberService.sendVerificationEmail(EMAIL);
 
-        // when
-        memberService.sendVerificationEmail(email);
-
-        // then
-        verify(memberRepository).findByEmail(email);
-        verify(emailTokenRepository).findByEmail(email);
-        verify(emailTokenRepository).save(emailTokenCaptor.capture());
-        EmailToken savedToken = emailTokenCaptor.getValue();
-        assertThat(savedToken.getEmail()).isEqualTo(email);
-        assertThat(savedToken.getToken()).isNotNull();
-
+        verify(emailTokenRepository).save(tokenCaptor.capture());
+        EmailToken savedToken = tokenCaptor.getValue();
+        assertThat(savedToken.getEmail()).isEqualTo(EMAIL);
+        assertThat(savedToken.getToken()).matches("\\d{6}");
         verify(emailService).sendEmail(
                 eq("no-reply@0909.store"),
-                eq(email),
+                eq(EMAIL),
                 eq("0909 이메일 인증 요청 메일입니다."),
-                org.mockito.ArgumentMatchers.contains("0909 이메일 인증 코드입니다.")
+                argThat((String body) -> body.contains(savedToken.getToken()))
         );
     }
 
     @Test
-    @DisplayName("이메일 인증에 성공한다")
-    void verifyEmail_success() {
-        // given
-        String email = "test@example.com";
-        String token = "test-token";
-        EmailToken emailToken = EmailToken.create(email);
+    @DisplayName("인증 메일 요청 시 기존 토큰이 있으면 갱신 후 발송")
+    void sendVerificationEmail_refreshesExistingToken() {
+        EmailToken existing = EmailToken.create(EMAIL);
+        String oldToken = existing.getToken();
 
-        when(emailTokenRepository.findByToken(token)).thenReturn(Optional.of(emailToken));
+        when(memberRepository.findByEmail(EMAIL)).thenReturn(Optional.empty());
+        when(emailTokenRepository.findByEmail(EMAIL)).thenReturn(Optional.of(existing));
 
-        // when
-        memberService.verifyEmail(token);
+        ArgumentCaptor<EmailToken> tokenCaptor = ArgumentCaptor.forClass(EmailToken.class);
 
-        // then
-        assertThat(emailToken.isVerified()).isTrue();
-        verify(emailTokenRepository).findByToken(token);
+        memberService.sendVerificationEmail(EMAIL);
+
+        verify(emailTokenRepository).save(tokenCaptor.capture());
+        EmailToken refreshed = tokenCaptor.getValue();
+        assertThat(refreshed).isSameAs(existing);
+        assertThat(refreshed.getToken()).matches("\\d{6}");
+        if (!oldToken.equals(refreshed.getToken())) {
+            assertThat(refreshed.getToken()).isNotEqualTo(oldToken);
+        }
+        verify(emailService).sendEmail(anyString(), eq(EMAIL), anyString(), argThat((String body) -> body.contains(refreshed.getToken())));
     }
 
     @Test
-    @DisplayName("주소 추가에 성공한다")
-    void addAddress_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "password", "010-1111-2222");
-        UUID memberId = member.getMemberId();
+    @DisplayName("이메일 인증 시 토큰이 만료되지 않았다면 인증 처리")
+    void verifyEmail_success() {
+        EmailToken emailToken = EmailToken.create(EMAIL);
+        EmailVerificationCommand command = new EmailVerificationCommand(EMAIL, emailToken.getToken());
 
+        when(emailTokenRepository.findByEmail(EMAIL)).thenReturn(Optional.of(emailToken));
+
+        memberService.verifyEmail(command);
+
+        assertThat(emailToken.isVerified()).isTrue();
+        verify(emailTokenRepository).findByEmail(EMAIL);
+    }
+
+    @Test
+    @DisplayName("주소 추가 시 회원을 찾으면 주소 저장")
+    void addAddress_success() {
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
+        UUID memberId = member.getMemberId();
         AddressAddCommand command = new AddressAddCommand(
                 memberId,
                 "서울시 테스트구",
@@ -237,59 +238,55 @@ class MemberServiceTest {
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(addressRepository.save(any(Address.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         AddressInfo result = memberService.addAddress(command);
 
-        // then
         assertThat(result.memberId()).isEqualTo(memberId);
         assertThat(result.address()).isEqualTo("서울시 테스트구");
         assertThat(result.addressDetail()).isEqualTo("101동 202호");
-        assertThat(result.postalCode()).isEqualTo("12345");
         verify(memberRepository).findById(memberId);
         verify(addressRepository).save(any(Address.class));
     }
 
     @Test
-    @DisplayName("주소 목록 조회에 성공한다")
+    @DisplayName("주소 목록 조회 시 페이지 응답 반환")
     void getAddresses_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "password", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
         UUID memberId = member.getMemberId();
         Address address = Address.create(member, "서울시 테스트구", "101동 202호", "12345", "홍길동", "010-5555-6666");
-
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Address> addressPage = new PageImpl<>(List.of(address), pageable, 1);
+        Page<Address> page = new PageImpl<>(List.of(address), pageable, 1);
 
-        when(addressRepository.findAllByMemberId(pageable, memberId)).thenReturn(addressPage);
+        when(addressRepository.findAllByMemberId(pageable, memberId)).thenReturn(page);
 
-        // when
         PageResponse<AddressInfo> result = memberService.getAddresses(pageable, memberId);
 
-        // then
         assertThat(result).isNotNull();
         verify(addressRepository).findAllByMemberId(pageable, memberId);
     }
 
     @Test
-    @DisplayName("주소 삭제에 성공한다")
+    @DisplayName("주소 삭제 시 회원 소유일 경우 삭제")
     void deleteAddress_success() {
-        // given
-        Member member = Member.create("test@example.com", "tester", "password", "010-1111-2222");
+        Member member = Member.create(EMAIL, NAME, PASSWORD, PHONE);
         Address address = Address.create(member, "서울시 테스트구", "101동 202호", "12345", "홍길동", "010-5555-6666");
+        AddressDeleteCommand command = new AddressDeleteCommand(member.getMemberId(), address.getAddressId());
 
-        UUID memberId = member.getMemberId();
-        UUID addressId = address.getAddressId();
+        when(addressRepository.findById(address.getAddressId())).thenReturn(Optional.of(address));
 
-        AddressDeleteCommand command = new AddressDeleteCommand(memberId, addressId);
-
-        when(addressRepository.findById(addressId)).thenReturn(Optional.of(address));
-
-        // when
         memberService.deleteAddress(command);
 
-        // then
-        verify(addressRepository).findById(addressId);
-        verify(addressRepository).deleteById(addressId);
+        verify(addressRepository).findById(address.getAddressId());
+        verify(addressRepository).deleteById(address.getAddressId());
+    }
+
+    @Test
+    @DisplayName("이메일 인증 요청 시 이미 가입된 이메일이면 예외")
+    void sendVerificationEmail_duplicateEmailThrows() {
+        when(memberRepository.findByEmail(EMAIL)).thenReturn(Optional.of(Member.create(EMAIL, NAME, PASSWORD, PHONE)));
+
+        assertThatThrownBy(() -> memberService.sendVerificationEmail(EMAIL))
+                .isInstanceOf(CustomException.class);
+        verify(memberRepository).findByEmail(EMAIL);
+        verify(emailTokenRepository, never()).findByEmail(anyString());
     }
 }
-

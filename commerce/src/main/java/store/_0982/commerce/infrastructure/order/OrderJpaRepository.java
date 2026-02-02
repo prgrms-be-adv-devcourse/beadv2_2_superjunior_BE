@@ -3,9 +3,14 @@ package store._0982.commerce.infrastructure.order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,11 +25,48 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
 
-    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
-
     boolean existsByIdempotencyKey(String idempotenceKey);
 
     Optional<Order> findByIdempotencyKey(String idempotenceKey);
 
     List<Order> findAllByMemberId(UUID memberId);
+
+    List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Order o
+        SET o.status = 'GROUP_PURCHASE_FAIL'
+        WHERE o.groupPurchaseId = :groupPurchaseId
+        AND o.status = 'PAYMENT_COMPLETED'
+    """)
+    void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Order o
+        SET o.status = 'GROUP_PURCHASE_SUCCESS'
+        WHERE o.groupPurchaseId = :groupPurchaseId
+        AND o.status = 'PAYMENT_COMPLETED'
+    """)
+    void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+
+    @Query("""
+        SELECT o.memberId
+        FROM Order o
+        WHERE o.groupPurchaseId = :groupPurchaseId
+            AND o.status IN :statuses
+            AND o.deletedAt IS NULL
+    """)
+    List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, @Param("statuses") List<OrderStatus> statuses);
+
+    @Query("""
+        SELECT o
+        FROM Order o
+        WHERE o.status IN :statuses
+            AND o.memberId = :memberId
+            AND o.deletedAt IS NULL
+    """)
+    Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable);
 }

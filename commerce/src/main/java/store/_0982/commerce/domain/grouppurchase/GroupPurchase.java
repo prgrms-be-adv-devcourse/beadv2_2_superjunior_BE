@@ -56,6 +56,9 @@ public class GroupPurchase {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
@@ -84,7 +87,8 @@ public class GroupPurchase {
                          OffsetDateTime startDate,
                          OffsetDateTime endDate,
                          UUID sellerId,
-                         UUID productId){
+                         UUID productId,
+                         String imageUrl){
         this.groupPurchaseId = UUID.randomUUID();
         this.minQuantity = mintQuantity;
         this.maxQuantity = maxQuantity;
@@ -96,17 +100,8 @@ public class GroupPurchase {
         this.endDate = endDate;
         this.sellerId = sellerId;
         this.productId = productId;
+        this.imageUrl = imageUrl;
         this.currentQuantity = 0;
-    }
-
-
-    public boolean applyParticipationResult(boolean success, int quantity){
-        if(success){
-            return increaseQuantity(quantity);
-        }else{
-            decreaseQuantity(quantity);
-            return true;
-        }
     }
 
     private boolean canParticipate(int quantity) {
@@ -159,7 +154,8 @@ public class GroupPurchase {
                                     Long discountedPrice,
                                     OffsetDateTime startDate,
                                     OffsetDateTime endDate,
-                                    UUID productId){
+                                    UUID productId,
+                                    String imageUrl){
         this.minQuantity = mintQuantity;
         this.maxQuantity = maxQuantity;
         this.title = title;
@@ -167,7 +163,8 @@ public class GroupPurchase {
         this.discountedPrice = discountedPrice;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.sellerId = productId;
+        this.productId = productId;
+        this.imageUrl = imageUrl;
     }
   
     public void updateStatus(GroupPurchaseStatus status){

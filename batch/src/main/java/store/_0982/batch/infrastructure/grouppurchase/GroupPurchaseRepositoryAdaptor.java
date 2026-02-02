@@ -80,4 +80,9 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds) {
         return groupPurchaseJpaRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
     }
+
+    @Override
+    public void markAsSettled(List<UUID> uuids) {
+        groupPurchaseJpaRepository.markAsSettled(uuids, OffsetDateTime.now());
+    }
 }

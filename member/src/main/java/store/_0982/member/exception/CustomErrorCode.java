@@ -18,6 +18,7 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "전화번호는 9~15자리의 숫자와 '-'만 입력 가능합니다."),
     REQUEST_HEADER_IS_NULL(HttpStatus.BAD_REQUEST, "필요한 헤더가 전달되지 않았습니다."),
     NOT_VERIFIED_EMAIL(HttpStatus.BAD_REQUEST, "인증되지 않은 이메일입니다."),
+    WRONG_CODE(HttpStatus.BAD_REQUEST, "잘못된 인증코드입니다."),
     // Seller
     INVALID_SELLER_ACCOUNT_NUMBER(HttpStatus.BAD_REQUEST, "계좌번호는 숫자만 입력 가능합니다."),
     INVALID_SELLER_BANK_CODE(HttpStatus.BAD_REQUEST, "은행 코드는 숫자만 입력 가능합니다."),

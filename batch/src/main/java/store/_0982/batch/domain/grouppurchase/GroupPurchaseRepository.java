@@ -32,5 +32,7 @@ public interface GroupPurchaseRepository {
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
+    void markAsSettled(List<UUID> uuids);
 }
 

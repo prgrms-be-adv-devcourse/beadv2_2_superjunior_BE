@@ -21,6 +21,7 @@ public record GroupPurchaseDetailInfo(
         UUID sellerId,
         UUID productId,
         String originalUrl,
+        String imageUrl,
         ProductCategory category,
         GroupPurchaseStatus status,
         OffsetDateTime createdAt
@@ -40,6 +41,7 @@ public record GroupPurchaseDetailInfo(
                 groupPurchase.getSellerId(),
                 groupPurchase.getProductId(),
                 originalUrl,
+                groupPurchase.getImageUrl(),
                 category,
                 groupPurchase.getStatus(),
                 groupPurchase.getCreatedAt()

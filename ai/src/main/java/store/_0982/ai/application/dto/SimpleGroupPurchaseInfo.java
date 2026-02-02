@@ -1,7 +1,9 @@
 package store._0982.ai.application.dto;
 
+import java.util.UUID;
+
 public record SimpleGroupPurchaseInfo(
-        String groupPurchaseId,
+        UUID groupPurchaseId,
         String title,
         String description,
         String productId,

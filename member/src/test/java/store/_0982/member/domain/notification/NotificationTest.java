@@ -3,6 +3,10 @@ package store._0982.member.domain.notification;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import store._0982.common.exception.CustomException;
+import store._0982.member.domain.notification.constant.NotificationChannel;
+import store._0982.member.domain.notification.constant.NotificationStatus;
+import store._0982.member.domain.notification.constant.NotificationType;
+import store._0982.member.domain.notification.constant.ReferenceType;
 import store._0982.member.exception.CustomErrorCode;
 
 import java.util.UUID;
@@ -61,7 +65,7 @@ class NotificationTest {
         // given
         Notification notification = Notification.builder()
                 .memberId(UUID.randomUUID())
-                .type(NotificationType.POINT_RECHARGED)
+                .type(NotificationType.POINT_CHARGED)
                 .channel(NotificationChannel.IN_APP)
                 .title("테스트")
                 .message("테스트 메시지")
@@ -85,7 +89,7 @@ class NotificationTest {
         Notification notification = Notification.builder()
                 .id(existingId)
                 .memberId(UUID.randomUUID())
-                .type(NotificationType.POINT_RECHARGED)
+                .type(NotificationType.POINT_CHARGED)
                 .channel(NotificationChannel.IN_APP)
                 .title("테스트")
                 .message("테스트 메시지")
@@ -105,7 +109,7 @@ class NotificationTest {
         return Notification.builder()
                 .id(UUID.randomUUID())
                 .memberId(memberId)
-                .type(NotificationType.GROUP_PURCHASE_COMPLETED)
+                .type(NotificationType.POINT_CHARGED)
                 .channel(NotificationChannel.IN_APP)
                 .title("포인트 충전")
                 .message("1000원 충전")

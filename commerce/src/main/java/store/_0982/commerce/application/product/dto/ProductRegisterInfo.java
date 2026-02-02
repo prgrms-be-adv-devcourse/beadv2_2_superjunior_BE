@@ -14,6 +14,7 @@ public record  ProductRegisterInfo(
         String description,
         int stock,
         String originalUrl,
+        String imageUrl,
         UUID sellerId,
         OffsetDateTime createdAt
 ) {
@@ -27,6 +28,7 @@ public record  ProductRegisterInfo(
                 product.getDescription(),
                 product.getStock(),
                 product.getOriginalUrl(),
+                product.getImageUrl(),
                 product.getSellerId(),
                 product.getCreatedAt());
     }

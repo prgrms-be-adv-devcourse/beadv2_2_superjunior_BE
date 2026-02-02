@@ -11,6 +11,7 @@ public record ProductRegisterCommand(
         String description,
         int stock,
         String originalUrl,
+        String imageUrl,
         String idempotencyKey,
         UUID sellerId
 ) {

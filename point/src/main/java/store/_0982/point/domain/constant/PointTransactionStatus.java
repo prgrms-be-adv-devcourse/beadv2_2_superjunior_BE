@@ -2,8 +2,8 @@ package store._0982.point.domain.constant;
 
 public enum PointTransactionStatus {
     CHARGED,
+    BONUS_EARNED,
     TRANSFERRED,
-    RETURN_PENDING,
     RETURNED,
     USED
 }

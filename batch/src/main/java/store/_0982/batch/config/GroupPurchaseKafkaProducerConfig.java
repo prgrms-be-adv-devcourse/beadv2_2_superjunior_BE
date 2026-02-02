@@ -9,6 +9,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
+import store._0982.common.kafka.dto.GroupPurchaseFailedEvent;
 
 @Configuration
 public class GroupPurchaseKafkaProducerConfig {
@@ -17,13 +18,27 @@ public class GroupPurchaseKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
+    public ProducerFactory<String, GroupPurchaseFailedEvent> groupPurchaseFailedEventProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+    @Bean
     public ProducerFactory<String, GroupPurchaseEvent> groupPurchaseProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
+    public KafkaTemplate<String, GroupPurchaseFailedEvent> groupPurchaseFailedEventKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseFailedEventProducerFactory());
+    }
+
+    @Bean
     public KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(groupPurchaseProducerFactory());
+    }
+
+    @Bean
+    public NewTopic groupPurchaseFailedTopic() {
+        return KafkaCommonConfigs.createTopic(KafkaTopics.GROUP_PURCHASE_FAILED);
     }
 
     @Bean

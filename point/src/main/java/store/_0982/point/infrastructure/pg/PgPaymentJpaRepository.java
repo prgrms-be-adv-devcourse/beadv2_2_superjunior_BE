@@ -3,6 +3,7 @@ package store._0982.point.infrastructure.pg;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import store._0982.point.domain.constant.PgPaymentStatus;
 import store._0982.point.domain.entity.PgPayment;
 
 import java.util.Optional;
@@ -13,5 +14,5 @@ public interface PgPaymentJpaRepository extends JpaRepository<PgPayment, UUID> {
 
     Optional<PgPayment> findByOrderId(UUID orderId);
 
-    Optional<PgPayment> findByPaymentKey(String paymentKey);
+    boolean existsByOrderIdAndStatus(UUID orderId, PgPaymentStatus status);
 }

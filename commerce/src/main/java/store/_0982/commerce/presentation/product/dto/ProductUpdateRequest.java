@@ -9,9 +9,10 @@ public record ProductUpdateRequest(
         ProductCategory category,
         String description,
         int stock,
-        String originalLink
+        String originalLink,
+        String imageUrl
 ) {
     public ProductUpdateCommand toCommand(){
-        return new ProductUpdateCommand(name, price, category, description, stock, originalLink);
+        return new ProductUpdateCommand(name, price, category, description, stock, originalLink, imageUrl);
     }
 }

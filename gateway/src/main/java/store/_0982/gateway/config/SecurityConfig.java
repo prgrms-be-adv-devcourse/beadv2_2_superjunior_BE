@@ -7,12 +7,12 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
-import store._0982.gateway.domain.MemberCache;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.http.HttpMethod;
 import store._0982.gateway.exception.CustomErrorCode;
 import store._0982.gateway.exception.ExceptionHandler;
-import store._0982.gateway.infrastructure.jwt.GatewayJwtProvider;
-import store._0982.gateway.infrastructure.member.MemberServiceClient;
+import store._0982.gateway.security.AccessTokenAuthenticationWebFilter;
+import store._0982.gateway.security.GuestAwareAccessDeniedHandler;
 import store._0982.gateway.security.RouteAuthorizationManager;
 
 @Configuration
@@ -21,34 +21,45 @@ import store._0982.gateway.security.RouteAuthorizationManager;
 public class SecurityConfig {
 
     private final RouteAuthorizationManager routeAuthorizationManager;
-    private final GatewayJwtProvider gatewayJwtProvider;
-    private final MemberCache memberCache;
-    private final MemberServiceClient memberServiceClient;
-    private final AuthenticationWebFilter authenticationWebFilter;
+    private final AccessTokenAuthenticationWebFilter authenticationWebFilter;
+    private final ExceptionHandler exceptionHandler;
+    private final GuestAwareAccessDeniedHandler guestAwareAccessDeniedHandler;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        authenticationWebFilter.setRequiresAuthenticationMatcher(
+                ServerWebExchangeMatchers.pathMatchers(
+                        "/api/**"
+                )
+        );
 
-        return http.csrf(ServerHttpSecurity.CsrfSpec::disable).httpBasic(ServerHttpSecurity.HttpBasicSpec::disable).formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+        return http
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                .logout(ServerHttpSecurity.LogoutSpec::disable)
                 // 인증 필터
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 // 인가
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 프리플라이어트
                         .pathMatchers(
+                                "/auth/**",
+                                "/webhooks/**",
                                 "/actuator/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/webjars/**",
-                                "/**/v3/api-docs"
+                                "/**/v3/api-docs",
+                                "/oauth2/authorization/**",
+                                "/login/oauth2/code/**"
                         ).permitAll()
                         // 라우팅 별 권한 체크
                         .anyExchange().access(routeAuthorizationManager)
                 ).exceptionHandling(ex -> ex
-                        // 인증이 아예 없을 때 (401) 만료된 토큰, 이상한 토큰
-                        .authenticationEntryPoint((exchange, e) -> ExceptionHandler.responseException(exchange, CustomErrorCode.INVALID))
-                        // 인증은 되었지만 권한이 없을 때 (403)
-                        .accessDeniedHandler((exchange, e) -> ExceptionHandler.responseException(exchange, CustomErrorCode.FORBIDDEN)))
+                        .authenticationEntryPoint((exchange, e) -> exceptionHandler.responseException(exchange, CustomErrorCode.INVALID))
+                        .accessDeniedHandler(guestAwareAccessDeniedHandler))
                 .build();
     }
 

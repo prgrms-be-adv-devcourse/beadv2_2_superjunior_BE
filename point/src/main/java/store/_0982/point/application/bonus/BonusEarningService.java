@@ -6,7 +6,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import store._0982.common.exception.CustomException;
 import store._0982.point.application.dto.bonus.BonusEarnCommand;
-import store._0982.point.client.dto.OrderInfo;
 import store._0982.point.common.RetryableTransactional;
 import store._0982.point.domain.constant.BonusPolicyType;
 import store._0982.point.domain.constant.PointTransactionStatus;
@@ -38,12 +37,12 @@ public class BonusEarningService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @RetryableTransactional
-    public void processBonus(UUID memberId, BonusEarnCommand command, OrderInfo orderInfo) {
+    public void processBonus(UUID memberId, BonusEarnCommand command) {
         PointTransaction transaction = getValidTransaction(memberId, command.orderId());
         PointBalance balance = pointBalanceRepository.findByMemberId(memberId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.MEMBER_NOT_FOUND));
 
-        findApplicablePolicy(transaction.getPaidAmount(), orderInfo)
+        findApplicablePolicy(transaction.getPaidAmount(), command)
                 .ifPresent(policy -> applyBonusPolicy(memberId, command, balance, transaction, policy));
     }
 
@@ -56,12 +55,12 @@ public class BonusEarningService {
         return transaction;
     }
 
-    private Optional<BonusPolicy> findApplicablePolicy(long paidAmount, OrderInfo orderInfo) {
+    private Optional<BonusPolicy> findApplicablePolicy(long paidAmount, BonusEarnCommand command) {
         return bonusPolicyRepository.findBestPolicy(
                 BonusPolicyType.PURCHASE_REWARD,
                 paidAmount,
-                orderInfo.groupPurchaseId(),
-                null  // TODO: 나중에 상품 카테고리를 feign으로 받게 되면 추가
+                command.groupPurchaseId(),
+                command.productCategory()
         );
     }
 
@@ -77,8 +76,8 @@ public class BonusEarningService {
 
     private void earnBonus(UUID memberId, BonusEarnCommand command,
                            PointBalance balance, BonusPolicy policy, Long bonusAmount) {
-        PointTransaction earningTx = PointTransaction.charged(
-                memberId, command.idempotencyKey(), PointAmount.bonus(bonusAmount));
+        PointTransaction earningTx = PointTransaction.bonusEarned(
+                memberId, command.orderId(), command.idempotencyKey(), PointAmount.bonus(bonusAmount));
 
         BonusEarning bonusEarning = BonusEarning.fromOrder(
                 memberId,

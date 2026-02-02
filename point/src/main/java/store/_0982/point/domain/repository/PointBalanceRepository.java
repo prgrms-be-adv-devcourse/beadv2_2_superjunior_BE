@@ -9,4 +9,6 @@ public interface PointBalanceRepository {
     Optional<PointBalance> findByMemberId(UUID memberId);
 
     PointBalance save(PointBalance afterPayment);
+
+    void deleteByMemberId(UUID memberId);
 }

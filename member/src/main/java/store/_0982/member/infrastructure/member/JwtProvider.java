@@ -17,11 +17,15 @@ public class JwtProvider {
     private final Key key;
     private final long accessTokenValidityPeriod;
     private final long refreshTokenValidityPeriod;
+    public final long  accessTokenCookieValidityPeriod;
+    public final long  refreshTokenCookieValidityPeriod;
 
-    public JwtProvider(String secretKey, long accessTokenValidityPeriod, long refreshTokenValidityPeriod) {
+    public JwtProvider(String secretKey, long accessTokenValidityPeriod, long refreshTokenValidityPeriod, long jwtCookieBuffer) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         this.accessTokenValidityPeriod = accessTokenValidityPeriod;
         this.refreshTokenValidityPeriod = refreshTokenValidityPeriod;
+        this.accessTokenCookieValidityPeriod = accessTokenValidityPeriod + jwtCookieBuffer;
+        this.refreshTokenCookieValidityPeriod =  refreshTokenValidityPeriod;
     }
 
     public String generateAccessToken(Member member) {
@@ -31,6 +35,7 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(member.getMemberId().toString())
                 .setIssuer("member-service")
+                .claim("role", member.getRole())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)

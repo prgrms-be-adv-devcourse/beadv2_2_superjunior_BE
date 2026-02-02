@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.batch.domain.sellerbalance.SellerBalanceHistory;
 import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -25,4 +26,8 @@ public class SellerBalanceHistoryRepositoryAdapter implements SellerBalanceHisto
         return sellerBalanceHistoryJpaRepository.findAllByMemberId(memberId, pageable);
     }
 
+    @Override
+    public void saveAll(List<SellerBalanceHistory> sellerBalanceHistories) {
+        sellerBalanceHistoryJpaRepository.saveAll(sellerBalanceHistories);
+    }
 }

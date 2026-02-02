@@ -32,6 +32,12 @@ spec:
               value: "redis-service"
             - name: REDIS_PORT
               value: "6379"
+            - name: COMMERCE_SERVICE_URL
+              value: http://commerce-service:8087
+            - name: POINT_SERVICE_URL
+              value: http://point-service:8086
+            - name: JWT_COOKIE_BUFFER
+              value: "60000"
           resources:
             requests:
               cpu: "200m"
@@ -55,9 +61,9 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8083
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
 
 ---

@@ -5,6 +5,7 @@ import java.util.UUID;
 public record PointDeductCommand(
         UUID idempotencyKey,
         UUID orderId,
-        long amount
+        long amount,
+        String groupPurchaseName
 ) {
 }

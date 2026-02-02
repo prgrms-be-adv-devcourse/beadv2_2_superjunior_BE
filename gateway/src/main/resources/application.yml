@@ -11,7 +11,12 @@ spring:
             - id: member-api
               uri: ${MEMBER_SERVICE_URL:http://localhost:8083}
               predicates:
-                - Path=/api/members/**, /api/auth/**, /api/notifications/**
+                - Path=/api/members/**, /api/notifications/**, /api/notification-settings/**
+
+            - id: member-auth
+              uri: ${MEMBER_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/auth/**, /oauth2/authorization/**, /login/oauth2/code/**
 
             - id: member-docs
               uri: ${MEMBER_SERVICE_URL:http://localhost:8083}
@@ -68,6 +73,26 @@ spring:
               filters:
                 - RewritePath=/v3/api-docs/ai, /v3/api-docs
 
+            - id: webhook
+              uri: ${POINT_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/webhooks/**
+              filters:
+                - WebhookWhitelist=cidrs[
+                    13.124.18.147,
+                    13.124.108.35,
+                    3.36.173.151,
+                    3.38.81.32,
+                    115.92.221.121,
+                    115.92.221.122,
+                    115.92.221.123,
+                    115.92.221.125,
+                    115.92.221.126,
+                    115.92.221.127
+                  ]
+
+
+
 springdoc:
   swagger-ui:
     # Gateway Swagger UI에서 선택할 수 있는 문서 목록
@@ -99,6 +124,3 @@ management:
 
 jwt:
   secret: ${JWT_SECRET}
-
-frontend:
-  url: http://localhost:3000

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository;
 import store._0982.ai.domain.PersonalVector;
 import store._0982.ai.domain.PersonalVectorRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

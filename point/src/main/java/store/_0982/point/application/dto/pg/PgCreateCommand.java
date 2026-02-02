@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record PgCreateCommand(
         UUID orderId,
-        long amount
+        long amount,
+        String groupPurchaseName
 ) {
 }

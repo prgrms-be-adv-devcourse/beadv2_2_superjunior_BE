@@ -28,7 +28,7 @@ public class GroupPurchaseRetryService {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
 
-        if (!groupPurchase.applyParticipationResult(true, quantity)) {
+        if (!groupPurchase.increaseQuantity(quantity)) {
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
         }
 

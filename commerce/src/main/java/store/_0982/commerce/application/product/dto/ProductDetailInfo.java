@@ -14,6 +14,7 @@ public record ProductDetailInfo(
         String description,
         int stock,
         String originalLink,
+        String imageUrl,
         UUID sellerId,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
@@ -27,6 +28,7 @@ public record ProductDetailInfo(
                 product.getDescription(),
                 product.getStock(),
                 product.getOriginalUrl(),
+                product.getImageUrl(),
                 product.getSellerId(),
                 product.getCreatedAt(),
                 product.getUpdatedAt());

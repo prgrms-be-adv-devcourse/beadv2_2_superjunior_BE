@@ -8,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.BaseEvent;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 import store._0982.common.kafka.dto.OrderChangedEvent;
 import store._0982.common.kafka.dto.OrderCreatedEvent;
@@ -17,6 +18,16 @@ public class OrderKafkaProducerConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    @Bean
+    public ProducerFactory<String, BaseEvent> retryProducerFactory() {
+        return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
+    }
+
+    @Bean
+    public KafkaTemplate<String, BaseEvent> retryKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(retryProducerFactory());
+    }
 
     @Bean
     public ProducerFactory<String, OrderCreatedEvent> orderCreatedEventProducerFactory() {

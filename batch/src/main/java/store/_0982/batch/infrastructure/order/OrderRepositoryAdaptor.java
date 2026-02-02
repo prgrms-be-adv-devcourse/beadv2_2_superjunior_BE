@@ -15,6 +15,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 public class OrderRepositoryAdaptor implements OrderRepository {
+
     private final OrderJpaRepository orderJpaRepository;
 
     @Override
@@ -71,9 +72,9 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+    public List<Order> findByGroupPurchaseIdInAndStatus(
             List<UUID> groupPurchaseIds, OrderStatus status) {
-        return orderJpaRepository.findByGroupPurchaseIdInAndStatusAndDeletedAtIsNull(
+        return orderJpaRepository.findByGroupPurchaseIdInAndStatus(
                 groupPurchaseIds, status
         );
     }

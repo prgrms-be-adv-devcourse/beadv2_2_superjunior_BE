@@ -8,8 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.product.dto.*;
-import store._0982.commerce.application.product.event.ProductCreatedEvent;
+import store._0982.commerce.application.product.event.ProductUpsertedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.commerce.domain.product.ProductVectorRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
@@ -31,6 +32,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ProductVectorRepository productVectorRepository;
 
     @ServiceLog
     @Transactional
@@ -45,13 +47,13 @@ public class ProductService {
         Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
-                command.originalUrl(), command.idempotencyKey(),
-                command.sellerId());
+                command.originalUrl(), command.imageUrl(),
+                command.idempotencyKey(), command.sellerId());
 
         Product savedProduct = productRepository.save(product);
 
         // AI 모듈 kafka
-        eventPublisher.publishEvent(new ProductCreatedEvent(product));
+        eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductRegisterInfo.from(savedProduct);
     }
@@ -93,7 +95,11 @@ public class ProductService {
                 command.category(),
                 command.description(),
                 command.stock(),
-                command.originalLink());
+                command.originalLink(),
+                command.imageUrl());
+
+        // AI 모듈 kafka
+        eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductUpdateInfo.from(product);
     }
@@ -121,7 +127,15 @@ public class ProductService {
         } else {
             // hard delete
             productRepository.delete(findProduct);
+
+            // vector 제거
+            productVectorRepository.deleteById(findProduct.getProductId());
         }
     }
 
+    public String findByProductName(UUID productId) {
+        Product findProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        return findProduct.getName();
+    }
 }

@@ -1,5 +1,7 @@
 package store._0982.commerce.domain.order;
 
+import java.util.List;
+
 public enum OrderStatus {
     PENDING,                // 주문 생성 (결제 대기)
 
@@ -20,5 +22,14 @@ public enum OrderStatus {
     REFUND_REQUESTED,       // 반품 요청
     REFUNDED,               // 반품 완료
 
-    PURCHASE_CONFIRMED      // 구매 확정
+    PURCHASE_CONFIRMED;     // 구매 확정
+
+    public static List<OrderStatus> participantStatuses(){
+        return List.of(
+                PAYMENT_COMPLETED,
+                GROUP_PURCHASE_SUCCESS,
+                GROUP_PURCHASE_FAIL
+        );
+    }
+
 }

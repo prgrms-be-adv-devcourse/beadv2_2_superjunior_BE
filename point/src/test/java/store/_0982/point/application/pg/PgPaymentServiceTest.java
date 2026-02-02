@@ -22,6 +22,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PgPaymentServiceTest {
 
+    private static final String SAMPLE_PURCHASE_NAME = "테스트 공구";
+
     @Mock
     private PgPaymentRepository pgPaymentRepository;
 
@@ -41,7 +43,7 @@ class PgPaymentServiceTest {
     @DisplayName("포인트 충전 주문을 생성한다")
     void createPaymentPoint_success() {
         // given
-        PgCreateCommand command = new PgCreateCommand(orderId, 10000);
+        PgCreateCommand command = new PgCreateCommand(orderId, 10000, SAMPLE_PURCHASE_NAME);
 
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
         when(pgPaymentRepository.saveAndFlush(any(PgPayment.class)))
@@ -61,9 +63,9 @@ class PgPaymentServiceTest {
     @DisplayName("이미 존재하는 주문번호로 생성 요청 시 기존 정보를 반환한다")
     void createPaymentPoint_returnExisting() {
         // given
-        PgCreateCommand command = new PgCreateCommand(orderId, 10000);
+        PgCreateCommand command = new PgCreateCommand(orderId, 10000, SAMPLE_PURCHASE_NAME);
 
-        PgPayment existingPgPayment = PgPayment.create(memberId, orderId, 10000);
+        PgPayment existingPgPayment = PgPayment.create(memberId, orderId, 10000, SAMPLE_PURCHASE_NAME);
         when(pgPaymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existingPgPayment));
 
         // when

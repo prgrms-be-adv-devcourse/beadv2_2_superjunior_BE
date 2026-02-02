@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,6 +35,11 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     @Override
     public Optional<Product> findByIdempotencyKey(String idempotencyKey) {
         return productJpaRepository.findByIdempotencyKey(idempotencyKey);
+    }
+
+    @Override
+    public List<Product> findByProductIdIn(List<UUID> productIds) {
+        return productJpaRepository.findByProductIdIn(productIds);
     }
 
     public Optional<Product> findById(UUID productId) {

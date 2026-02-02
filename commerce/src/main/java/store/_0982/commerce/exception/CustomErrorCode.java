@@ -43,6 +43,7 @@ public enum CustomErrorCode implements ErrorCode {
     CANNOT_CANCEL_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태의 주문만 취소할 수 있습니다."),
     CANNOT_REVERSE_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 취소할 수 있습니다."),
     CANNOT_RETURN_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 반품할 수 있습니다."),
+    CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 구매 확정할 수 있습니다."),
 
     POSTAL_CODE_IS_NULL(HttpStatus.BAD_REQUEST, "우편 주소가 없습니다."),
     INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "잘못된 수신자 이름입니다."),

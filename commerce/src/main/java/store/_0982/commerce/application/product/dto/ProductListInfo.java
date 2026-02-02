@@ -10,6 +10,7 @@ public record ProductListInfo(
         UUID productId,
         String name,
         Long price,
+        String imageUrl,
         ProductCategory category,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt
@@ -19,6 +20,7 @@ public record ProductListInfo(
                 product.getProductId(),
                 product.getName(),
                 product.getPrice(),
+                product.getImageUrl(),
                 product.getCategory(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()

@@ -13,6 +13,7 @@ public record ProductUpdateInfo(
         String description,
         int stock,
         String originalLink,
+        String imageUrl,
         UUID sellerId
 ) {
     public static ProductUpdateInfo from(Product product){
@@ -24,6 +25,7 @@ public record ProductUpdateInfo(
                 product.getDescription(),
                 product.getStock(),
                 product.getOriginalUrl(),
+                product.getImageUrl(),
                 product.getSellerId()
         );
     }

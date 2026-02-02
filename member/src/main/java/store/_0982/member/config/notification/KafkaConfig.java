@@ -15,6 +15,7 @@ import store._0982.member.common.notification.KafkaGroupIds;
 @EnableKafka
 @Configuration
 public class KafkaConfig {
+
     @Value("${kafka.bootstrap-servers}")
     private String bootStrapServers;
 
@@ -29,11 +30,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, BaseEvent> kakaoConsumerFactory() {
-        return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.KAKAO);
-    }
-
-    @Bean
     public ConsumerFactory<String, BaseEvent> emailConsumerFactory() {
         return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.EMAIL);
     }
@@ -41,11 +37,6 @@ public class KafkaConfig {
     @Bean
     public ConsumerFactory<String, BaseEvent> inAppConsumerFactory() {
         return KafkaCommonConfigs.defaultConsumerFactory(bootStrapServers, KafkaGroupIds.IN_APP);
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, BaseEvent> kakaoListenerContainerFactory() {
-        return KafkaCommonConfigs.defaultConcurrentKafkaListenerContainerFactory(kakaoConsumerFactory());
     }
 
     @Bean

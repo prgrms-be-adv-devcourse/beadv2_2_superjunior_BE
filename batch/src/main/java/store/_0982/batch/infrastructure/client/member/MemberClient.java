@@ -1,10 +1,8 @@
 package store._0982.batch.infrastructure.client.member;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
@@ -47,5 +45,8 @@ public interface MemberClient {
                 .stream()
                 .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
     }
+
+    @GetMapping("/internal/members/member-ids")
+    ResponseDto<List<UUID>> getMemberIds(@RequestParam int currentPage, @RequestParam int pageSize);
 
 }

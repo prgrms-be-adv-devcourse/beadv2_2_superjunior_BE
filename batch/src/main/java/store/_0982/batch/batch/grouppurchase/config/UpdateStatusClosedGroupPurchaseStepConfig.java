@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResult;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
 import store._0982.batch.batch.grouppurchase.policy.GroupPurchasePolicy;
 import store._0982.batch.batch.grouppurchase.processor.UpdateStatusClosedGroupPurchaseProcessor;
 import store._0982.batch.batch.grouppurchase.writer.UpdateStatusClosedGroupPurchaseWriter;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,10 +27,10 @@ public class UpdateStatusClosedGroupPurchaseStepConfig {
 
     @Bean
     public Step updateStatusClosedGroupPurchaseStep(
-            @Qualifier("updateStatusClosedGroupPurchase") JpaPagingItemReader<GroupPurchase> updateStatusClosedGroupPurchaseReader
+            @Qualifier("updateStatusClosedGroupPurchase") JpaPagingItemReader<GroupPurchaseWithProduct> updateStatusClosedGroupPurchaseReader
     ) {
         return new StepBuilder("updateStatusClosedGroupPurchaseStep", jobRepository)
-                .<GroupPurchase, GroupPurchaseResult>chunk(GroupPurchasePolicy.GroupPurchase.CHUNK_UNIT, transactionManager)
+                .<GroupPurchaseWithProduct, GroupPurchaseResultWithProductInfo>chunk(GroupPurchasePolicy.GroupPurchase.CHUNK_UNIT, transactionManager)
                 .reader(updateStatusClosedGroupPurchaseReader)
                 .processor(updateStatusClosedGroupPurchaseProcessor)
                 .writer(updateStatusClosedGroupPurchaseWriter)

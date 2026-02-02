@@ -11,9 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EmailTokenJpaRepository extends JpaRepository<EmailToken, UUID> {
-    Optional<EmailToken> findByToken(String token);
     Optional<EmailToken> findByEmail(String email);
-    void deleteByEmail(String email);
     @Modifying
     @Query("delete from EmailToken et where et.expiredAt < :now")
     void deleteExpiredTokens(@Param("now") OffsetDateTime now);
