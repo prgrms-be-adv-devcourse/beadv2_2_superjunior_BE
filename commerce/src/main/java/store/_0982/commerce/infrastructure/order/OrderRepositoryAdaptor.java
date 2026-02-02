@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
-import store._0982.commerce.domain.order.OrderStatus;
+import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

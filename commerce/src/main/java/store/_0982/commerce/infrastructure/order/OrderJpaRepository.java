@@ -6,9 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.OrderStatus;
+import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;

@@ -2,8 +2,8 @@ package store._0982.commerce.infrastructure.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.sellerbalance.SellerBalance;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.common.domain.sellerbalance.SellerBalance;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package store._0982.commerce.application.order.dto;
 
-import store._0982.commerce.domain.order.OrderStatus;
 import store._0982.commerce.domain.order.Order;
+import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
