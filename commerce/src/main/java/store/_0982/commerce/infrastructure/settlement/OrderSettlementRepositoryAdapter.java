@@ -2,8 +2,8 @@ package store._0982.commerce.infrastructure.settlement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.settlement.OrderSettlement;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
+import store._0982.common.domain.settlement.OrderSettlement;
 
 @RequiredArgsConstructor
 @Repository

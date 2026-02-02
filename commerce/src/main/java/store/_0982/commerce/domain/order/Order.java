@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 

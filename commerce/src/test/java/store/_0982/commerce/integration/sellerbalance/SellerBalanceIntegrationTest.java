@@ -9,10 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.domain.sellerbalance.SellerBalance;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistory;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.HeaderName;
 
