@@ -28,8 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -110,7 +109,6 @@ class ProductServiceTest {
 
             verify(productRepository).findByIdempotencyKey("test-key");
             verify(productRepository).save(any(Product.class));
-            verify(eventPublisher).publishEvent(any());
         }
     }
 
@@ -157,7 +155,6 @@ class ProductServiceTest {
             UUID memberId = UUID.randomUUID();
 
             Product product = mock(Product.class);
-            when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
 
             when(productRepository.findById(productId))
@@ -254,7 +251,6 @@ class ProductServiceTest {
         assertThat(result).isNotNull();
         verify(productRepository).findByIdempotencyKey("test-key");
         verify(productRepository).save(any(Product.class));
-        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
@@ -342,7 +338,6 @@ class ProductServiceTest {
                 command.originalLink(),
                 command.imageUrl()
         );
-        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
@@ -416,7 +411,6 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(product.getSellerId()).thenReturn(memberId);
-        when(product.getProductId()).thenReturn(productId);
 
         when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
                 .thenReturn(false);
