@@ -17,6 +17,9 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.product.Product;
+import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.ProductEvent;
 

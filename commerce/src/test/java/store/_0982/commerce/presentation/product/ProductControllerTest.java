@@ -15,6 +15,7 @@ import store._0982.commerce.application.product.dto.ProductRegisterCommand;
 import store._0982.commerce.application.product.dto.ProductRegisterInfo;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
