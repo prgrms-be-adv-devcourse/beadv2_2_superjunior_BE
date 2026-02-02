@@ -59,9 +59,7 @@ public abstract class BaseExceptionHandler {
     public ResponseEntity<ResponseDto<String>> handleMissingHeaderException(MissingRequestHeaderException e) {
         CustomException ex = switch (e.getHeaderName()) {
             case HeaderName.ID -> new CustomException(DefaultErrorCode.NO_LOGIN_INFO);
-            case HeaderName.EMAIL -> new CustomException(DefaultErrorCode.NO_EMAIL_INFO);
             case HeaderName.ROLE -> new CustomException(DefaultErrorCode.NO_ROLE_INFO);
-            case HeaderName.TOKEN -> new CustomException(DefaultErrorCode.NO_TOKEN_INFO);
             default -> new CustomException(DefaultErrorCode.REQUEST_HEADER_IS_NULL);
         };
         return handleCustomException(ex);
