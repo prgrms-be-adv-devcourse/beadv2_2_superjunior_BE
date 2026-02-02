@@ -15,6 +15,9 @@ import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryIn
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistoryStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 
@@ -24,8 +27,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SellerBalanceServiceTest {
