@@ -3,9 +3,12 @@ package store._0982.batch.application.sellerbalance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.batch.domain.sellerbalance.*;
-import store._0982.batch.domain.settlement.Settlement;
+import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
+import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.exception.CustomErrorCode;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.settlement.Settlement;
 import store._0982.common.exception.CustomException;
 
 @Transactional(readOnly = true)

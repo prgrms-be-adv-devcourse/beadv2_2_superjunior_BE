@@ -1,4 +1,4 @@
-package store._0982.batch.domain.settlement;
+package store._0982.common.domain.settlement;
 
 public enum SettlementStatus {
     PENDING,

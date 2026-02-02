@@ -5,7 +5,7 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
 @Component
 @RequiredArgsConstructor

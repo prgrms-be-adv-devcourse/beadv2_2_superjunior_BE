@@ -16,8 +16,8 @@ import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListe
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.LowBalanceNotificationProcessor;
 import store._0982.batch.batch.settlement.writer.LowBalanceNotificationWriter;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
-import store._0982.batch.domain.settlement.Settlement;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.settlement.Settlement;
 
 import java.util.Map;
 

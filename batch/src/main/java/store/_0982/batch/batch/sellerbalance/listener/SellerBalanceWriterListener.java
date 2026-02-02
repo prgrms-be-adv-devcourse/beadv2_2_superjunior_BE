@@ -7,7 +7,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.Chunk;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.log.BatchLogMessageFormat;
 import store._0982.common.log.BatchLogMetadataFormat;
 

@@ -1,4 +1,4 @@
-package store._0982.batch.domain.order;
+package store._0982.common.domain.order;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.domain.order.OrderStatus;
+import store._0982.common.domain.order.PaymentMethod;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

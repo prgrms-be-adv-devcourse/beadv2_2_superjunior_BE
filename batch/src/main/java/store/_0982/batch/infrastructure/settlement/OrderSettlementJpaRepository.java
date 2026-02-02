@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.common.domain.settlement.OrderSettlement;
 
 import java.util.List;
 import java.util.UUID;

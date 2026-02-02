@@ -3,7 +3,7 @@ package store._0982.batch.infrastructure.sellerbalance;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import store._0982.batch.domain.sellerbalance.SellerBalanceHistory;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
 
 import java.util.UUID;
 

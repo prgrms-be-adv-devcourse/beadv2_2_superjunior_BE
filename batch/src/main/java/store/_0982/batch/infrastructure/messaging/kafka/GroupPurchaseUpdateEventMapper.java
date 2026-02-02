@@ -1,7 +1,7 @@
 package store._0982.batch.infrastructure.messaging.kafka;
 
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
-import store._0982.batch.domain.product.Product;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.product.Product;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 public class GroupPurchaseUpdateEventMapper {

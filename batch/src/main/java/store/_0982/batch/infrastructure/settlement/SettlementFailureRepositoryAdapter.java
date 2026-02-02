@@ -2,8 +2,8 @@ package store._0982.batch.infrastructure.settlement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.batch.domain.settlement.SettlementFailureRepository;
+import store._0982.common.domain.settlement.SettlementFailure;
 
 import java.util.List;
 import java.util.UUID;

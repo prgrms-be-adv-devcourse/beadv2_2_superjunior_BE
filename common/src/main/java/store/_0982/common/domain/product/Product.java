@@ -1,4 +1,4 @@
-package store._0982.batch.domain.product;
+package store._0982.common.domain.product;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

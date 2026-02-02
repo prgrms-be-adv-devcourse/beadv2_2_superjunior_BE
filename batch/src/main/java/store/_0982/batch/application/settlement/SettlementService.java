@@ -3,9 +3,9 @@ package store._0982.batch.application.settlement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.batch.domain.settlement.Settlement;
-import store._0982.batch.domain.settlement.SettlementFailure;
 import store._0982.batch.domain.settlement.SettlementFailureRepository;
+import store._0982.common.domain.settlement.Settlement;
+import store._0982.common.domain.settlement.SettlementFailure;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor

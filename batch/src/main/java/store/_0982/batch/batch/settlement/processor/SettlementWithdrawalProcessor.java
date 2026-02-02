@@ -3,9 +3,9 @@ package store._0982.batch.batch.settlement.processor;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
-import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementPeriod;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.settlement.Settlement;
 
 import java.math.BigDecimal;
 

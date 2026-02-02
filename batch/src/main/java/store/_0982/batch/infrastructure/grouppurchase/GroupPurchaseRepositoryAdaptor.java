@@ -5,9 +5,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
 import java.time.OffsetDateTime;
 import java.util.List;

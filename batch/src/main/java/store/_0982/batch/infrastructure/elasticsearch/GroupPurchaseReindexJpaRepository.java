@@ -3,7 +3,7 @@ package store._0982.batch.infrastructure.elasticsearch;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
 import java.time.OffsetDateTime;
 import java.util.List;

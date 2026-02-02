@@ -8,8 +8,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseChunkUpdateEvent;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
 
 import java.util.ArrayList;
 import java.util.List;

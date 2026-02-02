@@ -6,8 +6,8 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import store._0982.batch.application.settlement.event.SettlementDeferredEvent;
-import store._0982.batch.domain.settlement.Settlement;
 import store._0982.batch.domain.settlement.SettlementRepository;
+import store._0982.common.domain.settlement.Settlement;
 
 import java.util.List;
 

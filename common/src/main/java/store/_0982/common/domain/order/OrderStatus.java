@@ -1,4 +1,4 @@
-package store._0982.batch.domain.order;
+package store._0982.common.domain.order;
 
 public enum OrderStatus {
     PENDING,                // 주문 생성 (결제 대기)

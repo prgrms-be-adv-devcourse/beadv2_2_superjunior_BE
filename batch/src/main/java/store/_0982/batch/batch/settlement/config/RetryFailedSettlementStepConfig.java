@@ -17,9 +17,8 @@ import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListe
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.processor.RetryFailedSettlementProcessor;
 import store._0982.batch.batch.settlement.writer.RetryFailedSettlementWriter;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
-import store._0982.batch.domain.settlement.Settlement;
-import store._0982.batch.domain.settlement.SettlementFailure;
+import store._0982.common.domain.settlement.Settlement;
+import store._0982.common.domain.settlement.SettlementFailure;
 import store._0982.common.exception.CustomException;
 
 import java.util.Map;

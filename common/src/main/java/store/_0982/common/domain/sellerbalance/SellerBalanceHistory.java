@@ -1,10 +1,11 @@
-package store._0982.batch.domain.sellerbalance;
+package store._0982.common.domain.sellerbalance;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistoryStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

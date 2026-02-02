@@ -16,7 +16,7 @@ import store._0982.batch.batch.sellerbalance.listener.SellerBalanceStepListener;
 import store._0982.batch.batch.sellerbalance.listener.SellerBalanceWriterListener;
 import store._0982.batch.batch.sellerbalance.policy.SellerBalancePolicy;
 import store._0982.batch.batch.sellerbalance.writer.SellerBalanceWriter;
-import store._0982.batch.domain.settlement.OrderSettlement;
+import store._0982.common.domain.settlement.OrderSettlement;
 import store._0982.common.exception.CustomException;
 
 @RequiredArgsConstructor

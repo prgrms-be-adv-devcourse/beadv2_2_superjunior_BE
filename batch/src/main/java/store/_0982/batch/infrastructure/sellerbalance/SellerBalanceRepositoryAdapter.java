@@ -2,8 +2,8 @@ package store._0982.batch.infrastructure.sellerbalance;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.domain.sellerbalance.SellerBalance;
 import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.common.domain.sellerbalance.SellerBalance;
 
 import java.util.List;
 import java.util.Optional;

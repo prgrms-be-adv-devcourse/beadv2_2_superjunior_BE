@@ -1,5 +1,7 @@
 package store._0982.batch.domain.sellerbalance;
 
+import store._0982.common.domain.sellerbalance.SellerBalance;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
