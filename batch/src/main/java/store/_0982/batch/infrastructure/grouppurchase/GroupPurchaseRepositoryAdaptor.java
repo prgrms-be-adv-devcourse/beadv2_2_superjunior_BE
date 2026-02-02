@@ -85,4 +85,14 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public void markAsSettled(List<UUID> uuids) {
         groupPurchaseJpaRepository.markAsSettled(uuids, OffsetDateTime.now());
     }
+
+    @Override
+    public int bulkUpdateStatus(List<UUID> ids, GroupPurchaseStatus status) {
+        return groupPurchaseJpaRepository.bulkUpdateStatus(ids, status, OffsetDateTime.now());
+    }
+
+    @Override
+    public int bulkUpdateStatusWithSucceededAt(List<UUID> ids, GroupPurchaseStatus status) {
+        return groupPurchaseJpaRepository.bulkUpdateStatusWithSucceededAt(ids, status, OffsetDateTime.now());
+    }
 }

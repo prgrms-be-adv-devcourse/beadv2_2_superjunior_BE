@@ -42,4 +42,16 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     void markAsSettled(
             @Param("uuids") List<UUID> uuids,
             @Param("now") OffsetDateTime now);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE GroupPurchase g SET g.status = :status, g.updatedAt = :now WHERE g.groupPurchaseId IN :ids")
+    int bulkUpdateStatus(@Param("ids") List<UUID> ids,
+                         @Param("status") GroupPurchaseStatus status,
+                         @Param("now") OffsetDateTime now);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE GroupPurchase  g SET g.status = :status, g.succeededAt = :now, g.updatedAt = :now WHERE g.groupPurchaseId IN :ids")
+    int bulkUpdateStatusWithSucceededAt(@Param("ids") List<UUID> ids,
+                         @Param("status") GroupPurchaseStatus status,
+                         @Param("now") OffsetDateTime now);
 }

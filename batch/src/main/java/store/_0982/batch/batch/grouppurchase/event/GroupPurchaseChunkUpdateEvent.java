@@ -1,10 +1,10 @@
 package store._0982.batch.batch.grouppurchase.event;
 
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultProjection;
 
 import java.util.List;
 
 public record GroupPurchaseChunkUpdateEvent(
-    List<GroupPurchaseResultWithProductInfo> updatedItems
+    List<GroupPurchaseResultProjection> updatedItems
 ) {
 }

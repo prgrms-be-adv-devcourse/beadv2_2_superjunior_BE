@@ -3,21 +3,19 @@ package store._0982.batch.batch.grouppurchase.processor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseProjection;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultProjection;
+import store._0982.batch.domain.grouppurchase.GroupPurchaseStatus;
 
 @Component
 @RequiredArgsConstructor
-public class UpdateStatusClosedGroupPurchaseProcessor implements ItemProcessor<GroupPurchaseWithProduct, GroupPurchaseResultWithProductInfo> {
+public class UpdateStatusClosedGroupPurchaseProcessor implements ItemProcessor<GroupPurchaseProjection, GroupPurchaseResultProjection> {
 
     @Override
-    public GroupPurchaseResultWithProductInfo process(GroupPurchaseWithProduct item) throws Exception {
+    public GroupPurchaseResultProjection process(GroupPurchaseProjection item) throws Exception {
+        boolean isSuccess = item.currentQuantity() >= item.minQuantity();
+        GroupPurchaseStatus targetStatus = isSuccess ? GroupPurchaseStatus.SUCCESS : GroupPurchaseStatus.FAILED;
 
-        GroupPurchase groupPurchase = item.groupPurchase();
-
-        boolean isSuccess = groupPurchase.getCurrentQuantity() >= groupPurchase.getMinQuantity();
-
-        return new GroupPurchaseResultWithProductInfo(groupPurchase, item.product(), isSuccess);
+        return GroupPurchaseResultProjection.from(item, targetStatus, isSuccess);
     }
 }

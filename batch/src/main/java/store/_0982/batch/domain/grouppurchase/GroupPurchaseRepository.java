@@ -34,5 +34,9 @@ public interface GroupPurchaseRepository {
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
 
     void markAsSettled(List<UUID> uuids);
+
+    int bulkUpdateStatus(List<UUID> ids, GroupPurchaseStatus status);
+
+    int bulkUpdateStatusWithSucceededAt(List<UUID> ids, GroupPurchaseStatus status);
 }
 

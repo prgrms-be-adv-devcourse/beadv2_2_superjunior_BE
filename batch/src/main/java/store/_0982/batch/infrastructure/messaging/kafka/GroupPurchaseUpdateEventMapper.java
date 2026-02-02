@@ -1,26 +1,25 @@
 package store._0982.batch.infrastructure.messaging.kafka;
 
-import store._0982.batch.domain.grouppurchase.GroupPurchase;
-import store._0982.batch.domain.product.Product;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultProjection;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 public class GroupPurchaseUpdateEventMapper {
 
-    public static GroupPurchaseEvent toMessage(GroupPurchase groupPurchase, Product product){
+    public static GroupPurchaseEvent toMessage(GroupPurchaseResultProjection result) {
         return new GroupPurchaseEvent(
-                groupPurchase.getGroupPurchaseId(),
-                groupPurchase.getSellerId(),
-                groupPurchase.getTitle(),
-                groupPurchase.getDescription(),
-                groupPurchase.getDiscountedPrice(),
-                groupPurchase.getProductId(),
-                GroupPurchaseEvent.Status.valueOf(groupPurchase.getStatus().name()),
-                groupPurchase.getEndDate().toString(),
-                groupPurchase.getUpdatedAt().toString(),
-                groupPurchase.getCurrentQuantity(),
+                result.groupPurchaseId(),
+                result.sellerId(),
+                result.title(),
+                result.description(),
+                result.discountedPrice(),
+                result.productId(),
+                GroupPurchaseEvent.Status.valueOf(result.targetStatus().name()),
+                result.endDate().toString(),
+                result.updatedAt() != null ? result.updatedAt().toString() : null,
+                result.currentQuantity(),
                 GroupPurchaseEvent.EventStatus.UPDATE_GROUP_PURCHASE,
-                product.getPrice(),
-                GroupPurchaseEvent.ProductCategory.valueOf(product.getCategory().name())
+                result.originalPrice(),
+                GroupPurchaseEvent.ProductCategory.valueOf(result.productCategory().name())
         );
     }
 }
