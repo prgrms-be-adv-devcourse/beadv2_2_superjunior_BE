@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -41,6 +42,9 @@ public class Product {
     @Column(name = "original_url")
     private String originalUrl;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
 
@@ -55,13 +59,65 @@ public class Product {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    public Product(String name,
-                   Long price,
-                   ProductCategory category,
-                   String description,
-                   int stock,
-                   String originalUrl,
-                   UUID sellerId) {
+    public static Product createProduct(String name,
+                                        Long price,
+                                        ProductCategory category,
+                                        String description,
+                                        int stock,
+                                        String originalUrl,
+                                        String imageUrl,
+                                        String idempotencyKey,
+                                        UUID sellerId) {
+        return new Product(
+                name,
+                price,
+                category,
+                description,
+                stock,
+                originalUrl,
+                imageUrl,
+                idempotencyKey,
+                sellerId);
+    }
+
+    public void updateProduct(String name,
+                              Long price,
+                              ProductCategory category,
+                              String description,
+                              int stock,
+                              String originalUrl,
+                              String imageUrl){
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.description = description;
+        this.stock  = stock;
+        this.originalUrl = originalUrl;
+        this.imageUrl = imageUrl;
+    }
+
+    public void softDelete() {
+        this.deletedAt = OffsetDateTime.now();
+    }
+
+    public ProductUpsertedEvent toEvent(ProductCategory category) {
+        return new ProductUpsertedEvent(
+                this.productId,
+                this.name,
+                this.description,
+                ProductUpsertedEvent.Category.valueOf(category.name())
+        );
+    }
+
+    private Product(String name,
+                    Long price,
+                    ProductCategory category,
+                    String description,
+                    int stock,
+                    String originalUrl,
+                    String imageUrl,
+                    String idempotencyKey,
+                    UUID sellerId) {
 
         this.productId = UUID.randomUUID();
         this.name = name;
@@ -70,24 +126,8 @@ public class Product {
         this.description = description;
         this.stock  = stock;
         this.originalUrl = originalUrl;
+        this.imageUrl = imageUrl;
+        this.idempotencyKey = idempotencyKey;
         this.sellerId = sellerId;
-    }
-
-    public void updateProduct(String name,
-                              Long price,
-                              ProductCategory category,
-                              String description,
-                              int stock,
-                              String originalUrl){
-        this.name = name;
-        this.price = price;
-        this.category = category;
-        this.description = description;
-        this.stock  = stock;
-        this.originalUrl = originalUrl;
-    }
-
-    public void softDelete() {
-        this.deletedAt = OffsetDateTime.now();
     }
 }

@@ -16,7 +16,6 @@ import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInf
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
 import store._0982.common.HeaderName;

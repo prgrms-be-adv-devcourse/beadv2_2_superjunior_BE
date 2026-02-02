@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.common.domain.product.Product;
 
 import java.util.List;
 import java.util.Optional;

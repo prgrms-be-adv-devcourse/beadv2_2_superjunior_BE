@@ -19,8 +19,6 @@ import store._0982.commerce.application.grouppurchase.dto.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;

@@ -1,6 +1,6 @@
 package store._0982.commerce.application.product.dto;
 
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.util.UUID;
 

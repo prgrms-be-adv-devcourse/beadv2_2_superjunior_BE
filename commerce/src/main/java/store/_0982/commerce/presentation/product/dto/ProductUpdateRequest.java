@@ -1,7 +1,7 @@
 package store._0982.commerce.presentation.product.dto;
 
 import store._0982.commerce.application.product.dto.ProductUpdateCommand;
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.ProductCategory;
 
 public record ProductUpdateRequest(
         String name,

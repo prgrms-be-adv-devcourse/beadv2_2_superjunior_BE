@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.product.dto.ProductRegisterCommand;
 import store._0982.commerce.application.product.dto.ProductRegisterInfo;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
 import store._0982.common.HeaderName;
 
