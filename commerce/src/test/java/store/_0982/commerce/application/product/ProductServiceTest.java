@@ -7,11 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import store._0982.commerce.application.product.dto.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.Product;
@@ -20,8 +20,6 @@ import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVectorRepository;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductUpsertedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -31,6 +29,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,10 +42,7 @@ class ProductServiceTest {
     private GroupPurchaseRepository groupPurchaseRepository;
 
     @Mock
-    private KafkaTemplate<String, ProductUpsertedEvent> kafkaTemplate;
-
-    @Mock
-    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+    private ApplicationEventPublisher eventPublisher;
 
     @Mock
     private ProductVectorRepository productVectorRepository;
@@ -90,12 +86,6 @@ class ProductServiceTest {
             when(savedProduct.getSellerId()).thenReturn(sellerId);
             when(savedProduct.getCreatedAt()).thenReturn(now);
             when(savedProduct.getCategory()).thenReturn(ProductCategory.FOOD);
-            when(savedProduct.toEvent(any(ProductCategory.class))).thenReturn(new ProductUpsertedEvent(
-                    productId,
-                    "테스트 상품",
-                    "맛있는 테스트 상품입니다.",
-                    ProductUpsertedEvent.Category.FOOD
-            ));
 
             when(productRepository.findByIdempotencyKey("test-key"))
                     .thenReturn(Optional.empty());
@@ -138,10 +128,11 @@ class ProductServiceTest {
             Product product = mock(Product.class);
             when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
-            when(product.toEvent(any(ProductCategory.class))).thenReturn(mock(ProductUpsertedEvent.class));
 
             when(productRepository.findById(productId))
                     .thenReturn(java.util.Optional.of(product));
+            when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
+                    .thenReturn(false);
             when(groupPurchaseRepository.existsByProductId(productId))
                     .thenReturn(false);
 
@@ -150,10 +141,11 @@ class ProductServiceTest {
 
             // then
             verify(productRepository).findById(productId);
+            verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
             verify(groupPurchaseRepository).existsByProductId(productId);
             verify(productRepository).delete(product);
             verify(productRepository, never()).save(any());
-            verify(kafkaTemplate).send(any(), any(), any());
+            verify(productVectorRepository).deleteById(productId);
         }
 
 
@@ -167,10 +159,11 @@ class ProductServiceTest {
             Product product = mock(Product.class);
             when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
-            when(product.toEvent(any(ProductCategory.class))).thenReturn(mock(ProductUpsertedEvent.class));
 
             when(productRepository.findById(productId))
                     .thenReturn(java.util.Optional.of(product));
+            when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
+                    .thenReturn(false);
             when(groupPurchaseRepository.existsByProductId(productId))
                     .thenReturn(true);
 
@@ -179,11 +172,12 @@ class ProductServiceTest {
 
             // then
             verify(productRepository).findById(productId);
+            verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
             verify(groupPurchaseRepository).existsByProductId(productId);
             verify(product).softDelete();
             verify(productRepository).save(product);
             verify(productRepository, never()).delete(any());
-            verify(kafkaTemplate).send(any(), any(), any());
+            verify(productVectorRepository, never()).deleteById(any());
         }
 
         @Test
@@ -202,6 +196,7 @@ class ProductServiceTest {
                     .hasMessageContaining("상품을 찾을 수 없습니다.");
 
             verify(productRepository).findById(productId);
+            verify(groupPurchaseRepository, never()).existsByProductIdAndStatusIn(any(), anyList());
             verify(groupPurchaseRepository, never()).existsByProductId(any());
             verify(productRepository, never()).delete(any());
         }
@@ -226,6 +221,7 @@ class ProductServiceTest {
                     .hasMessageContaining("본인이 등록한 상품이 아닙니다.");
 
             verify(productRepository).findById(productId);
+            verify(groupPurchaseRepository, never()).existsByProductIdAndStatusIn(any(), anyList());
             verify(groupPurchaseRepository, never()).existsByProductId(any());
             verify(productRepository, never()).delete(any());
         }
@@ -249,10 +245,7 @@ class ProductServiceTest {
         when(productRepository.findByIdempotencyKey("test-key")).thenReturn(Optional.empty());
         when(productRepository.save(any(Product.class))).thenReturn(savedProduct);
 
-        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
-        when(event.getProductId()).thenReturn(productId);
         when(savedProduct.getCategory()).thenReturn(ProductCategory.BEAUTY);
-        when(savedProduct.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         ProductRegisterInfo result = productService.createProduct(command);
@@ -333,12 +326,6 @@ class ProductServiceTest {
                 100, "originalUrl", null
         );
 
-        when(productRepository.saveAndFlush(product)).thenReturn(product);
-
-        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
-        when(event.getProductId()).thenReturn(productId);
-        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
-
         // when
         ProductUpdateInfo result = productService.updateProduct(productId, command);
 
@@ -355,12 +342,7 @@ class ProductServiceTest {
                 command.originalLink(),
                 command.imageUrl()
         );
-        verify(productRepository).saveAndFlush(product);
-        verify(kafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_UPSERTED),
-                anyString(),
-                any(ProductUpsertedEvent.class)
-        );
+        verify(eventPublisher).publishEvent(any());
     }
 
     @Test
@@ -391,22 +373,20 @@ class ProductServiceTest {
         when(product.getSellerId()).thenReturn(memberId);
         when(product.getProductId()).thenReturn(productId);
 
+        when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
+                .thenReturn(false);
         when(groupPurchaseRepository.existsByProductId(productId))
                 .thenReturn(false);
-
-        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
-        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         productService.deleteProduct(productId, memberId);
 
         // then
+        verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
+        verify(groupPurchaseRepository).existsByProductId(productId);
         verify(productRepository).delete(product);
-        verify(kafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                anyString(),
-                any(ProductUpsertedEvent.class)
-        );
+        verify(productVectorRepository).deleteById(productId);
+        verify(productRepository, never()).save(any());
     }
 
     @Test
@@ -423,6 +403,8 @@ class ProductServiceTest {
         ).isInstanceOf(CustomException.class)
                 .hasMessageContaining("상품을 찾을 수 없습니다.");
 
+        verify(groupPurchaseRepository, never()).existsByProductIdAndStatusIn(any(), anyList());
+        verify(groupPurchaseRepository, never()).existsByProductId(any());
     }
 
     @Test
@@ -436,23 +418,21 @@ class ProductServiceTest {
         when(product.getSellerId()).thenReturn(memberId);
         when(product.getProductId()).thenReturn(productId);
 
+        when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
+                .thenReturn(false);
         when(groupPurchaseRepository.existsByProductId(productId))
                 .thenReturn(true);
-
-        ProductUpsertedEvent event = mock(ProductUpsertedEvent.class);
-        when(product.toEvent(any(ProductCategory.class))).thenReturn(event);
 
         // when
         productService.deleteProduct(productId,memberId);
 
         // then
+        verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
+        verify(groupPurchaseRepository).existsByProductId(productId);
         verify(product).softDelete();
         verify(productRepository).save(product);
-        verify(kafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                anyString(),
-                any(ProductUpsertedEvent.class)
-        );
+        verify(productRepository, never()).delete(any());
+        verify(productVectorRepository, never()).deleteById(any());
     }
 
     @Test
@@ -470,5 +450,8 @@ class ProductServiceTest {
         assertThatThrownBy(() -> productService.deleteProduct(productId, sellerId)
         ).isInstanceOf(CustomException.class)
                 .hasMessageContaining("본인이 등록한 상품이 아닙니다.");
+
+        verify(groupPurchaseRepository, never()).existsByProductIdAndStatusIn(any(), anyList());
+        verify(groupPurchaseRepository, never()).existsByProductId(any());
     }
 }
