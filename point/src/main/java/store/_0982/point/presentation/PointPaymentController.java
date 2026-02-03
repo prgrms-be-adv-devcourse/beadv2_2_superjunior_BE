@@ -34,6 +34,7 @@ public class PointPaymentController {
 
     @Operation(summary = "포인트 충전", description = "포인트를 수동적으로 충전한다.")
     @ResponseStatus(HttpStatus.CREATED)
+    @ControllerLog
     @PostMapping("/charge")
     public ResponseDto<PointBalanceInfo> chargePoints(
             @RequestHeader(HeaderName.ID) UUID memberId,
@@ -77,6 +78,7 @@ public class PointPaymentController {
 
     @Operation(summary = "포인트 출금", description = "보유한 포인트를 출금한다.")
     @ResponseStatus(HttpStatus.CREATED)
+    @ControllerLog
     @PostMapping("/transfer")
     public ResponseDto<PointBalanceInfo> transfer(
             @RequestHeader(HeaderName.ID) UUID memberId,

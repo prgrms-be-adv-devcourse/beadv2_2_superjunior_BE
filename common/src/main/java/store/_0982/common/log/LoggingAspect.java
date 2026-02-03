@@ -17,7 +17,6 @@ import store._0982.common.log.property.LoggingAutoProperties;
 
 import java.util.Objects;
 
-// TODO: 민감한 정보 동적 마킹 구현 필요 (커스텀 어노테이션 생성)
 @Aspect
 @RequiredArgsConstructor
 public class LoggingAspect {
@@ -29,8 +28,8 @@ public class LoggingAspect {
     public void controller() {
     }
 
-    @Pointcut("@annotation(ServiceLog) && @within(org.springframework.stereotype.Service)")
-    public void service() {
+    @Pointcut("@annotation(serviceLog) && @within(org.springframework.stereotype.Service)")
+    public void service(ServiceLog serviceLog) {
     }
 
     @Around("controller()")
@@ -48,7 +47,7 @@ public class LoggingAspect {
         String uri = request.getRequestURI();
         String method = request.getMethod();
         String memberId = request.getHeader(HeaderName.ID);
-        log.atInfo().log(LogFormat.requestOf(method, uri, memberId));
+        log.atInfo().log(LogFormat.request(method, uri, memberId));
 
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
@@ -56,12 +55,12 @@ public class LoggingAspect {
 
         HttpServletResponse response = attributes.getResponse();
         HttpStatus status = HttpStatus.valueOf(Objects.requireNonNull(response).getStatus());
-        log.atInfo().log(LogFormat.responseOf(status, method, uri, endTime, memberId));
+        log.atInfo().log(LogFormat.response(status, method, uri, endTime, memberId));
         return result;
     }
 
-    @Around("service()")
-    public Object logService(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around(value = "service(serviceLog)", argNames = "joinPoint,serviceLog")
+    public Object logService(ProceedingJoinPoint joinPoint, ServiceLog serviceLog) throws Throwable {
         // enabled로 설정해 놓지 않으면 로깅 없음
         if (!properties.getService().enabled()) {
             return joinPoint.proceed();
@@ -69,18 +68,28 @@ public class LoggingAspect {
 
         Logger log = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
         String methodName = joinPoint.getSignature().getName();
-        log.atInfo().log(LogFormat.serviceStartOf(methodName, joinPoint.getArgs()));
+        int threshold = getThreshold(serviceLog);
 
         long startTime = System.currentTimeMillis();
         try {
             Object result = joinPoint.proceed();
-            long endTime = System.currentTimeMillis() - startTime;
-            log.atInfo().log(LogFormat.serviceCompleteOf(methodName, endTime));
+            long executionTime = System.currentTimeMillis() - startTime;
+            if (executionTime >= threshold) {
+                log.atInfo().log(LogFormat.serviceComplete(methodName, executionTime));
+            }
             return result;
         } catch (Exception e) {
-            long endTime = System.currentTimeMillis() - startTime;
-            log.atWarn().log(LogFormat.serviceFailOf(methodName, endTime));
+            long executionTime = System.currentTimeMillis() - startTime;
+            log.atWarn().log(LogFormat.serviceFail(methodName, executionTime));
             throw e;
         }
+    }
+
+    private int getThreshold(ServiceLog serviceLog) {
+        Integer propertyThreshold = properties.getService().slowThresholdMs();
+        if (propertyThreshold != null) {
+            return propertyThreshold;
+        }
+        return serviceLog.slowThresholdMs();
     }
 }
