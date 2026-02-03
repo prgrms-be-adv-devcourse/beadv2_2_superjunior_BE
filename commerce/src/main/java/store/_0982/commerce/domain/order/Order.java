@@ -24,6 +24,9 @@ public class Order {
     @Column(name = "order_id", nullable = false, unique = true, updatable = false)
     private UUID orderId;
 
+    @Column(name = "order_number", unique = true, nullable = false)
+    private String orderNumber;
+
     @Column(name = "quantity", nullable = false, updatable = false)
     private int quantity;
 
