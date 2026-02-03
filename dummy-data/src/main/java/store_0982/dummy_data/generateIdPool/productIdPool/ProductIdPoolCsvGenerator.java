@@ -10,9 +10,6 @@ public class ProductIdPoolCsvGenerator {
 
     public static void generate(Path output, int productCount) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(output)) {
-            writer.write("product_id");
-            writer.newLine();
-
             for (int i = 0; i < productCount; i++) {
                 UUID productId = UUID.randomUUID();
                 writer.write(productId.toString());

@@ -10,10 +10,6 @@ public class MemberIdPoolCsvGenerator {
 
     public static void generate(Path output, int memberCount) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(output)) {
-            // CSV header
-            writer.write("member_id");
-            writer.newLine();
-
             for (int i = 0; i < memberCount; i++) {
                 UUID memberId = UUID.randomUUID();
                 writer.write(memberId.toString());

@@ -10,9 +10,6 @@ public class OrderIdPoolCsvGenerator {
 
     public static void generate(Path output, int orderCount) throws IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(output)) {
-            writer.write("order_id");
-            writer.newLine();
-
             for (int i = 0; i < orderCount; i++) {
                 UUID orderId = UUID.randomUUID();
                 writer.write(orderId.toString());
