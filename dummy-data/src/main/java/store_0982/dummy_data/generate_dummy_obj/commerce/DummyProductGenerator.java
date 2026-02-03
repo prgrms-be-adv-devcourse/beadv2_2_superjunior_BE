@@ -1,18 +1,25 @@
 package store_0982.dummy_data.generate_dummy_obj.commerce;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.api.Randomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.common.domain.product.Product;
+import store_0982.dummy_data.generate_dummy_obj.commerce.row.ProductCsvRow;
 import store_0982.dummy_data.util.Utils;
 
 @Component
@@ -26,7 +33,17 @@ public class DummyProductGenerator {
     private String productDummyPath;
 
     public List<Product> generate(int count) throws IOException {
-        EasyRandomParameters parameters = new EasyRandomParameters();
+        EasyRandomParameters parameters = new EasyRandomParameters()
+                .randomize(
+                        (Field field) -> field.getName().equals("price")
+                                && field.getDeclaringClass().equals(Product.class),
+                        (Randomizer<Long>) () -> ThreadLocalRandom.current().nextLong(0, 1_000_001)
+                )
+                .randomize(
+                        (Field field) -> field.getName().equals("stock")
+                                && field.getDeclaringClass().equals(Product.class),
+                        (Randomizer<Integer>) () -> ThreadLocalRandom.current().nextInt(1, 10_001)
+                );
         EasyRandom easyRandom = new EasyRandom(parameters);
 
         List<UUID> productIds = readIds(Path.of(productIdPoolPath), count);
@@ -42,6 +59,7 @@ public class DummyProductGenerator {
                     Product product = easyRandom.nextObject(Product.class);
                     Utils.setField(product, "productId", productIds.get(i));
                     Utils.setField(product, "sellerId", memberIds.get(i / 2));
+                    Utils.setField(product, "deletedAt", null);
                     return product;
                 })
                 .toList();
@@ -65,43 +83,35 @@ public class DummyProductGenerator {
 
     private void writeProductCsv(List<Product> products, Path output) throws IOException {
         Files.createDirectories(output.getParent());
-        try (BufferedWriter writer = Files.newBufferedWriter(output)) {
-            writer.write("product_id,name,price,category,description,stock,original_url,seller_id,created_at,updated_at,deleted_at,idempotency_key,image_url");
-            writer.newLine();
+        CsvMapper mapper = new CsvMapper();
+        mapper.findAndRegisterModules();
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+        CsvSchema schema = mapper.schemaFor(ProductCsvRow.class).withHeader();
 
+        try (var writer = Files.newBufferedWriter(output);
+             var sequenceWriter = mapper.writer(schema).writeValues(writer)) {
             for (Product product : products) {
-                writer.write(toCsvRow(product));
-                writer.newLine();
+                sequenceWriter.write(toCsvRow(product));
             }
         }
     }
 
-    private String toCsvRow(Product product) {
-        return String.join(",",
-                escape(product.getProductId()),
-                escape(product.getName()),
-                escape(product.getPrice()),
-                escape(product.getCategory()),
-                escape(product.getDescription()),
-                escape(product.getStock()),
-                escape(product.getOriginalUrl()),
-                escape(product.getSellerId()),
-                escape(product.getCreatedAt()),
-                escape(product.getUpdatedAt()),
-                escape(product.getDeletedAt()),
-                escape(product.getIdempotencyKey()),
-                escape(product.getImageUrl())
+    private ProductCsvRow toCsvRow(Product product) {
+        return new ProductCsvRow(
+                product.getProductId(),
+                product.getName(),
+                product.getPrice(),
+                product.getCategory(),
+                product.getDescription(),
+                product.getStock(),
+                product.getOriginalUrl(),
+                product.getSellerId(),
+                product.getCreatedAt(),
+                product.getUpdatedAt(),
+                product.getDeletedAt(),
+                product.getIdempotencyKey(),
+                product.getImageUrl()
         );
-    }
-
-    private String escape(Object value) {
-        if (value == null) {
-            return "";
-        }
-        String text = String.valueOf(value);
-        if (text.contains("\"") || text.contains(",") || text.contains("\n") || text.contains("\r")) {
-            return "\"" + text.replace("\"", "\"\"") + "\"";
-        }
-        return text;
     }
 }
