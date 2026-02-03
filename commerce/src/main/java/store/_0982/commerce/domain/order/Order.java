@@ -11,7 +11,10 @@ import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 
+import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Getter
@@ -100,6 +103,7 @@ public class Order {
             UUID groupPurchaseId,
             String idempotencyKey) {
         this.orderId = UUID.randomUUID();
+        this.orderNumber = generateOrderNumber();
         this.quantity = quantity;
         this.price = price;
         this.memberId = memberId;
@@ -138,6 +142,21 @@ public class Order {
         );
     }
 
+    public static String generateOrderNumber() {
+        String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        String random = generateRandomAlphanumeric();
+        return "ORD-" + date + "-" + random;
+    }
+
+    private static String generateRandomAlphanumeric() {
+        String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom RANDOM = new SecureRandom();
+        StringBuilder sb = new StringBuilder(8);
+        for (int i = 0; i < 8; i++) {
+            sb.append(CHARS.charAt(RANDOM.nextInt(CHARS.length())));
+        }
+        return sb.toString();
+    }
 
     // 결제 완료
     public void completePayment(PaymentMethod paymentMethod) {
