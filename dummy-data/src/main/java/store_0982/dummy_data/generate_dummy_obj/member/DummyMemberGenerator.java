@@ -1,4 +1,4 @@
-package store_0982.dummy_data.generateDummyObject.member;
+package store_0982.dummy_data.generate_dummy_obj.member;
 
 import org.jeasy.random.EasyRandom;
 import org.springframework.beans.factory.annotation.Value;
