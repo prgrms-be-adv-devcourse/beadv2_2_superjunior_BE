@@ -11,6 +11,7 @@ dependencies {
 
     //도메인 의존성 추가
     implementation(project(path: ':member', configuration: 'domainElements'))
+    implementation(project(path: ':commerce', configuration: 'domainElements'))
 
     testImplementation 'org.springframework.security:spring-security-test'
 
