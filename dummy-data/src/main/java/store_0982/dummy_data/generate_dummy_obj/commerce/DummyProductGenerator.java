@@ -1,4 +1,4 @@
-package store_0982.dummy_data.generate_dummy_obj.product;
+package store_0982.dummy_data.generate_dummy_obj.commerce;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
