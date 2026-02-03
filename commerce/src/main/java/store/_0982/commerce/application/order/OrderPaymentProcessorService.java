@@ -50,14 +50,14 @@ public class OrderPaymentProcessorService {
                 // TODO: 재시도 로직을 한다면 바로 상태 변경 X
                 //order.markFailed();
             }
-            case REFUNDED -> {
-                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
-                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
-                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
-                    order.changeStatus();
-                    orderSettlementService.saveCanceledOrderSettlement(order);
-                }
-            }
+//            case REFUNDED -> {
+//                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
+//                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
+//                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
+//                    order.changeStatus();
+//                    orderSettlementService.saveCanceledOrderSettlement(order);
+//                }
+//            }
         }
     }
 
@@ -77,14 +77,14 @@ public class OrderPaymentProcessorService {
                         productName
                 ));
             }
-            case REFUNDED -> {
-                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
-                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
-                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
-                    order.changeStatus();
-                    orderSettlementService.saveCanceledOrderSettlement(order);
-                }
-            }
+//            case REFUNDED -> {
+//                if (order.getStatus() == OrderStatus.CANCEL_REQUESTED ||
+//                        order.getStatus() == OrderStatus.REVERSE_REQUESTED ||
+//                        order.getStatus() == OrderStatus.REFUND_REQUESTED) {
+//                    order.changeStatus();
+//                    orderSettlementService.saveCanceledOrderSettlement(order);
+//                }
+//            }
         }
 
     }

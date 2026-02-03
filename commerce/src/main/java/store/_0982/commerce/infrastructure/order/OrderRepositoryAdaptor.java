@@ -78,10 +78,10 @@ public class OrderRepositoryAdaptor implements OrderRepository {
         return orderJpaRepository.findAllByMemberId(memberId);
     }
 
-    @Override
-    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
-        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
-    }
+//    @Override
+//    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
+//        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
+//    }
 
     @Override
     public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {

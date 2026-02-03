@@ -51,8 +51,8 @@ public class OrderSettlementService {
     private OrderCancellationPolicy.CancellationType mapCancellationType(OrderStatus status) {
         return switch (status) {
             case CANCELLED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
-            case REVERSED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
-            case REFUNDED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
+//            case REVERSED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
+//            case REFUNDED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
             default -> null;
         };
     }

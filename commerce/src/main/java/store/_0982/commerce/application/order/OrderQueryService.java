@@ -132,9 +132,9 @@ public class OrderQueryService {
 
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         List<OrderStatus> statuses = List.of(new OrderStatus[]{
-                OrderStatus.CANCELLED, OrderStatus.CANCEL_REQUESTED,
-                OrderStatus.REVERSED, OrderStatus.REVERSE_REQUESTED,
-                OrderStatus.REFUNDED, OrderStatus.REFUND_REQUESTED
+//                OrderStatus.CANCELLED, OrderStatus.CANCEL_REQUESTED,
+//                OrderStatus.REVERSED, OrderStatus.REVERSE_REQUESTED,
+//                OrderStatus.REFUNDED, OrderStatus.REFUND_REQUESTED
         });
 
         Page<Order> canceledOrders = orderRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);

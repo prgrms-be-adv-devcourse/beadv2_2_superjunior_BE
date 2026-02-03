@@ -30,7 +30,7 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
 
     List<Order> findAllByMemberId(UUID memberId);
 
-    List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
+    //List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
 
     @Modifying(clearAutomatically = true)
     @Query("""

@@ -71,8 +71,8 @@ public class Order {
     @Column(name = "paid_at")
     private OffsetDateTime paidAt; // 결제 완료 시간
 
-    @Column(name = "cancelled_at")
-    private OffsetDateTime cancelledAt; // 취소 완료 시간
+    @Column(name = "canceled_at")
+    private OffsetDateTime canceledAt; // 취소 완료 시간
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
@@ -166,6 +166,13 @@ public class Order {
 
     public boolean isExpired() {
         return OffsetDateTime.now().isAfter(this.expiredAt);
+    }
+
+    public void confirmed(){
+        if(this.status != OrderStatus.PAYMENT_COMPLETED){
+            throw new CustomException(CustomErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
+        }
+        this.status = OrderStatus.CONFIRMED;
     }
 
     public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {

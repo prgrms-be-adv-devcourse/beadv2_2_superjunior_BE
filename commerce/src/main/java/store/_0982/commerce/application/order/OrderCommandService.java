@@ -221,21 +221,21 @@ public class OrderCommandService {
     }
 
     private void processCancellationBeforeSuccess(Order order, String reason, String productName) {
-        order.requestCancel();
+        //order.requestCancel();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
         publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void processCancellationWithin48Hours(Order order, String reason, String productName) {
-        order.requestReversed();
+        //order.requestReversed();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
         publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void processReturnAfter48Hours(Order order, String reason, String productName) {
-        order.requestReturned();
+        //order.requestReturned();
 
         OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
         publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
@@ -250,40 +250,41 @@ public class OrderCommandService {
     @ServiceLog
     @Transactional
     public void retryCancelOrder() {
-        List<OrderStatus> pendingStatuses = List.of(
-                OrderStatus.CANCEL_REQUESTED,
-                OrderStatus.REVERSE_REQUESTED,
-                OrderStatus.REFUND_REQUESTED
-        );
-
-        OffsetDateTime minutesAgo = OffsetDateTime.now().minusMinutes(15);
-        List<Order> pendingOrders = orderRepository.findAllByStatusInAndCancelRequestAtBefore(pendingStatuses, minutesAgo);
-        if (pendingOrders.isEmpty()) {
-            return;
-        }
-
-        for (Order order : pendingOrders) {
-            OrderCancellationPolicy.CancellationType cancellationType = mapCancellationType(order.getStatus());
-            if (cancellationType == null) {
-                continue;
-            }
-
-            GroupPurchase groupPurchase = groupPurchaseService
-                    .findByGroupPurchase(order.getGroupPurchaseId());
-            String productName = productService.findByProductName(groupPurchase.getProductId());
-
-            OrderCancellationPolicy.RefundAmount calculated = calculate(order, cancellationType);
-            publishCancellationEvent(order, "retry-cancel", calculated.refundAmount(), productName) ;
-        }
+//        List<OrderStatus> pendingStatuses = List.of(
+//                OrderStatus.CANCEL_REQUESTED,
+//                OrderStatus.REVERSE_REQUESTED,
+//                OrderStatus.REFUND_REQUESTED
+//        );
+//
+//        OffsetDateTime minutesAgo = OffsetDateTime.now().minusMinutes(15);
+//        List<Order> pendingOrders = orderRepository.findAllByStatusInAndCancelRequestAtBefore(pendingStatuses, minutesAgo);
+//        if (pendingOrders.isEmpty()) {
+//            return;
+//        }
+//
+//        for (Order order : pendingOrders) {
+//            OrderCancellationPolicy.CancellationType cancellationType = mapCancellationType(order.getStatus());
+//            if (cancellationType == null) {
+//                continue;
+//            }
+//
+//            GroupPurchase groupPurchase = groupPurchaseService
+//                    .findByGroupPurchase(order.getGroupPurchaseId());
+//            String productName = productService.findByProductName(groupPurchase.getProductId());
+//
+//            OrderCancellationPolicy.RefundAmount calculated = calculate(order, cancellationType);
+//            publishCancellationEvent(order, "retry-cancel", calculated.refundAmount(), productName) ;
+//        }
     }
 
     private OrderCancellationPolicy.CancellationType mapCancellationType(OrderStatus status) {
-        return switch (status) {
-            case CANCEL_REQUESTED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
-            case REVERSE_REQUESTED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
-            case REFUND_REQUESTED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
-            default -> null;
-        };
+//        return switch (status) {
+//            case CANCEL_REQUESTED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
+//            case REVERSE_REQUESTED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
+//            case REFUND_REQUESTED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
+//            default -> null;
+//        };
+        return null;
     }
     
     @ServiceLog
@@ -311,7 +312,7 @@ public class OrderCommandService {
             throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
         }
 
-        order.confirmPurchase();
+        order.confirmed();
         orderSettlementService.saveConfirmedOrderSettlement(order);
     }
 }

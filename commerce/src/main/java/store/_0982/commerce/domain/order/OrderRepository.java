@@ -35,7 +35,7 @@ public interface OrderRepository {
 
     List<Order> findAllByMemberId(UUID memberId);
 
-    List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
+    //List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
 
     void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
 

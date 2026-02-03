@@ -51,7 +51,7 @@ public class CanceledOrder {
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
-    @Column(name = "cancel_requested_at")
+    @Column(name = "canceled_at")
     private OffsetDateTime canceledAt; // 취소 요청 시간
 
     @Column(name = "returned_at")
