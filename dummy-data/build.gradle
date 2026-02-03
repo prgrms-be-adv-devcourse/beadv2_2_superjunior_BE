@@ -14,6 +14,9 @@ dependencies {
     implementation(project(path: ':commerce', configuration: 'domainElements'))
     implementation(project(path: ':point', configuration: 'domainElements'))
 
+    //Easy Random
+    implementation 'org.jeasy:easy-random-core:5.0.0'
+
     testImplementation 'org.springframework.security:spring-security-test'
 
     testImplementation 'org.testcontainers:postgresql'
