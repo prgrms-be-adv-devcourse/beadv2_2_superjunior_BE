@@ -2,6 +2,7 @@ package store._0982.common.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,12 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import store._0982.common.HeaderName;
+import store._0982.common.log.property.LoggingAutoProperties;
 
 import java.util.Objects;
 
 // TODO: 민감한 정보 동적 마킹 구현 필요 (커스텀 어노테이션 생성)
 @Aspect
+@RequiredArgsConstructor
 public class LoggingAspect {
+
+    private final LoggingAutoProperties properties;
+
     @Pointcut("@annotation(ControllerLog) && (@within(org.springframework.stereotype.Controller) " +
             "|| @within(org.springframework.web.bind.annotation.RestController))")
     public void controller() {
@@ -29,6 +35,11 @@ public class LoggingAspect {
 
     @Around("controller()")
     public Object logController(ProceedingJoinPoint joinPoint) throws Throwable {
+        // enabled로 설정해 놓지 않으면 로깅 없음
+        if (!properties.getController().enabled()) {
+            return joinPoint.proceed();
+        }
+
         Logger log = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
         ServletRequestAttributes attributes = (ServletRequestAttributes)
                 Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
@@ -51,6 +62,11 @@ public class LoggingAspect {
 
     @Around("service()")
     public Object logService(ProceedingJoinPoint joinPoint) throws Throwable {
+        // enabled로 설정해 놓지 않으면 로깅 없음
+        if (!properties.getService().enabled()) {
+            return joinPoint.proceed();
+        }
+
         Logger log = LoggerFactory.getLogger(joinPoint.getTarget().getClass());
         String methodName = joinPoint.getSignature().getName();
         log.atInfo().log(LogFormat.serviceStartOf(methodName, joinPoint.getArgs()));
