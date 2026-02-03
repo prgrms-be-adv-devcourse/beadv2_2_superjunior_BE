@@ -1,4 +1,4 @@
-package store_0982.dummy_data.generateIdPool.productIdPool;
+package store_0982.dummy_data.generate_id_pool.productIdPool;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

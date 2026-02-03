@@ -1,24 +1,24 @@
-package store_0982.dummy_data.generateIdPool;
+package store_0982.dummy_data.generate_id_pool;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import store_0982.dummy_data.generateIdPool.groupPurchaseIdPool.GroupPurchaseIdPoolCsvGenerator;
-import store_0982.dummy_data.generateIdPool.memberIdPool.MemberIdPoolCsvGenerator;
-import store_0982.dummy_data.generateIdPool.orderIdPool.OrderIdPoolCsvGenerator;
-import store_0982.dummy_data.generateIdPool.productIdPool.ProductIdPoolCsvGenerator;
+import store_0982.dummy_data.generate_id_pool.groupPurchaseIdPool.GroupPurchaseIdPoolCsvGenerator;
+import store_0982.dummy_data.generate_id_pool.memberIdPool.MemberIdPoolCsvGenerator;
+import store_0982.dummy_data.generate_id_pool.orderIdPool.OrderIdPoolCsvGenerator;
+import store_0982.dummy_data.generate_id_pool.productIdPool.ProductIdPoolCsvGenerator;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
+@Order(1)
 public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
-
-    private final ApplicationContext applicationContext;
 
     @Value("${dummy-data.member-id-pool.count}")
     private int memberCount;
@@ -46,9 +46,7 @@ public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
         generateIfMissing(productOutputPath, productCount, IdPoolType.PRODUCT);
         generateIfMissing(groupPurchaseOutputPath, groupPurchaseCount, IdPoolType.GROUP_PURCHASE);
         generateIfMissing(orderOutputPath, orderCount, IdPoolType.ORDER);
-
-        int exitCode = SpringApplication.exit(applicationContext, () -> 0);
-        System.exit(exitCode);
+        log.info("ID풀 생성 완료");
     }
 
     private void generateIfMissing(String outputPath, int count, IdPoolType type) throws Exception {
