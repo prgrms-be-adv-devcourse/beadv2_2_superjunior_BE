@@ -13,6 +13,7 @@ dependencies {
     implementation(project(path: ':member', configuration: 'domainElements'))
     implementation(project(path: ':commerce', configuration: 'domainElements'))
     implementation(project(path: ':point', configuration: 'domainElements'))
+    implementation 'org.jeasy:easy-random-core:5.0.0'
 
     testImplementation 'org.springframework.security:spring-security-test'
 
