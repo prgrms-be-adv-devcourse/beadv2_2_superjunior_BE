@@ -63,9 +63,11 @@ public class OrderCommandService {
     @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
-        // 이미 처리 요청된 주문인지 확인
-        if(orderRepository.existsByIdempotencyKey(command.requestId())){
-            throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
+        // 이미 처리된 주문이면 기존 결과 반환
+        Optional<Order> existingOrder = orderRepository.findByIdempotenceKey(command.requestId());
+
+        if(existingOrder.isPresent()){
+            return OrderRegisterInfo.from(existingOrder.get());
         }
 
         // 주문자 존재 여부
