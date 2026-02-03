@@ -68,3 +68,22 @@ dependencies {
 bootJar {
     enabled = true
 }
+
+tasks.register('domainJar', Jar) {
+    archiveClassifier = 'domain'
+    from(sourceSets.main.output) {
+        include 'store/_0982/member/domain/**'
+    }
+    dependsOn classes
+}
+configurations {
+    domainElements {                       // 도메인 전용 소비용 구성
+        canBeConsumed = true               // 다른 모듈에서 가져올 수 있게
+        canBeResolved = false              // 이 구성 자체로 의존성 해석은 안 함
+        attributes.attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME)) // 일반 런타임 사용 속성
+    }
+}
+artifacts {
+    archives tasks.named('domainJar')
+    domainElements tasks.named('domainJar')
+}

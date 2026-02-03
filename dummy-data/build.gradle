@@ -9,8 +9,10 @@ dependencies {
     //common 모듈
     implementation project(':common')
 
-    testImplementation 'org.springframework.security:spring-security-test'
+    //도메인 의존성 추가
+    implementation(project(path: ':member', configuration: 'domainElements'))
 
+    testImplementation 'org.springframework.security:spring-security-test'
 
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.testcontainers:junit-jupiter'
