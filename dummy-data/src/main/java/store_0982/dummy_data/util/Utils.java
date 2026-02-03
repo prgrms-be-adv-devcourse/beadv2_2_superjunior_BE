@@ -1,7 +1,5 @@
 package store_0982.dummy_data.util;
 
-
-
 import java.lang.reflect.Field;
 
 public class Utils {
