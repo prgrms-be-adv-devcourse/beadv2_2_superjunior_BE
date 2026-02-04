@@ -8,6 +8,7 @@ import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 @JsonPropertyOrder({
         "groupPurchaseId",
+        "version",
         "minQuantity",
         "maxQuantity",
         "title",
@@ -28,6 +29,7 @@ import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 })
 public record GroupPurchaseCsvRow(
         UUID groupPurchaseId,
+        Long version,
         int minQuantity,
         int maxQuantity,
         String title,
