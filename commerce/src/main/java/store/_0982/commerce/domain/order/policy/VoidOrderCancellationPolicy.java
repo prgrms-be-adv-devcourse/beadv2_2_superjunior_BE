@@ -13,6 +13,8 @@ import store._0982.commerce.domain.order.OrderCancellationPolicy;
 @Component
 public class VoidOrderCancellationPolicy implements OrderCancellationPolicy {
 
+    private static final String POLICY_ID = "CANCEL_POLICY_VOID_V1";
+
     @Override
     public RefundAmount calculate(Order order) {
         long paidAmount = order.getPaidPrice();
@@ -22,6 +24,11 @@ public class VoidOrderCancellationPolicy implements OrderCancellationPolicy {
                 0L,          // 수수료 없음
                 0L
         );
+    }
+
+    @Override
+    public String getPolicyId() {
+        return POLICY_ID;
     }
 
     @Override

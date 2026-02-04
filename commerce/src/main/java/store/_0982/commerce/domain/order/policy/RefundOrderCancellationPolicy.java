@@ -16,6 +16,7 @@ public class RefundOrderCancellationPolicy implements OrderCancellationPolicy {
 
     private static final double CANCELLATION_FEE_RATE = 0.20;  // 20%
     private static final long SHIPPING_FEE = 6000L;            // 택배비
+    private static final String POLICY_ID = "CANCEL_POLICY_REFUND_V1";
 
     @Override
     public RefundAmount calculate(Order order) {
@@ -24,6 +25,11 @@ public class RefundOrderCancellationPolicy implements OrderCancellationPolicy {
         long refund = paidAmount - fee - SHIPPING_FEE;
 
         return new RefundAmount(refund, fee, SHIPPING_FEE);
+    }
+
+    @Override
+    public String getPolicyId() {
+        return POLICY_ID;
     }
 
     @Override

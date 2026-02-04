@@ -86,8 +86,8 @@ public class CanceledOrderService {
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
                         refundAmount.refundAmount(),
-                        null,
-                        null,
+                        voidOrderCancellationPolicy.getPolicyId(),
+                        voidOrderCancellationPolicy.buildSnapshot(refundAmount),
                         command.reason(),
                         command.detailReason(),
                         command.idempotencyKey(),
@@ -107,8 +107,8 @@ public class CanceledOrderService {
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
                         refundAmount.refundAmount(),
-                        null,
-                        null,
+                        reversalOrderCancellationPolicy.getPolicyId(),
+                        reversalOrderCancellationPolicy.buildSnapshot(refundAmount),
                         command.reason(),
                         command.detailReason(),
                         command.idempotencyKey(),
@@ -128,8 +128,8 @@ public class CanceledOrderService {
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
                         refundAmount.refundAmount(),
-                        null,
-                        null,
+                        refundOrderCancellationPolicy.getPolicyId(),
+                        refundOrderCancellationPolicy.buildSnapshot(refundAmount),
                         command.reason(),
                         command.detailReason(),
                         command.idempotencyKey(),
@@ -140,21 +140,23 @@ public class CanceledOrderService {
                 return;
             }
         } else if (command.reason().isSellerFault()) {
+            RefundAmount refundAmount = voidOrderCancellationPolicy.calculate(order);
             CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                     order.getOrderId(),
                     command.memberId(),
                     order.getPaidPrice(),
-                    0,
-                    0,
-                    order.getPaidPrice(),
-                    null,
-                    null,
+                    refundAmount.cancellationFee(),
+                    refundAmount.shippingFee(),
+                    refundAmount.refundAmount(),
+                    voidOrderCancellationPolicy.getPolicyId(),
+                    voidOrderCancellationPolicy.buildSnapshot(refundAmount),
                     command.reason(),
                     command.detailReason(),
                     command.idempotencyKey(),
                     order.getPaymentMethod()
             );
             canceledOrderRepository.save(canceledOrder);
+            publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
             return;
         }
 

@@ -11,11 +11,28 @@ public interface OrderCancellationPolicy {
     RefundAmount calculate(Order order);
 
     /**
+     * 정책 식별자 (버전 포함)
+     */
+    String getPolicyId();
+
+    /**
      * 정책 타입 반환
-     *
-     * @return 정책 타입
      */
     PolicyType getPolicyType();
+
+    /**
+     * 정책 스냅샷(JSON 등)을 생성한다.
+     */
+    default String buildSnapshot(RefundAmount refundAmount) {
+        return String.format(
+                "{\"policyType\":\"%s\",\"policyId\":\"%s\",\"cancellationFee\":%d,\"shippingFee\":%d,\"refundAmount\":%d}",
+                getPolicyType().name(),
+                getPolicyId(),
+                refundAmount.cancellationFee(),
+                refundAmount.shippingFee(),
+                refundAmount.refundAmount()
+        );
+    }
 
     /**
      * 환불 금액 정보

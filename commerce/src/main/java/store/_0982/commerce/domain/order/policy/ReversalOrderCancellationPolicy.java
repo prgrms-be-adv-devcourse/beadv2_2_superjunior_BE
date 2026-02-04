@@ -14,6 +14,7 @@ import store._0982.commerce.domain.order.OrderCancellationPolicy;
 public class ReversalOrderCancellationPolicy implements OrderCancellationPolicy {
 
     private static final double CANCELLATION_FEE_RATE = 0.20;  // 20%
+    private static final String POLICY_ID = "CANCEL_POLICY_REVERSAL_V1";
 
     @Override
     public RefundAmount calculate(Order order) {
@@ -22,6 +23,11 @@ public class ReversalOrderCancellationPolicy implements OrderCancellationPolicy 
         long refund = paidAmount - fee;
 
         return new RefundAmount(refund, fee, 0L);
+    }
+
+    @Override
+    public String getPolicyId() {
+        return POLICY_ID;
     }
 
     @Override
