@@ -94,6 +94,7 @@ public class Order {
     private Order(
             int quantity,
             Long price,
+            Long paidPrice,
             UUID memberId,
             String address,
             String addressDetail,
@@ -106,6 +107,7 @@ public class Order {
         this.orderNumber = generateOrderNumber();
         this.quantity = quantity;
         this.price = price;
+        this.paidPrice = paidPrice;
         this.memberId = memberId;
         this.status = OrderStatus.PENDING;
         this.address = address;
@@ -120,6 +122,7 @@ public class Order {
 
     public static Order create(int quantity,
                                Long price,
+                               Long paidPrice,
                                UUID memberId,
                                String address,
                                String addressDetail,
@@ -131,6 +134,7 @@ public class Order {
         return new Order(
                 quantity,
                 price,
+                paidPrice,
                 memberId,
                 address,
                 addressDetail,
