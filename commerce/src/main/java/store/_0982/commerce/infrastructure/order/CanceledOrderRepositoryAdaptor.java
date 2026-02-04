@@ -2,9 +2,12 @@ package store._0982.commerce.infrastructure.order;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.commerce.domain.order.CancelStatus;
 import store._0982.commerce.domain.order.CanceledOrder;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,5 +29,10 @@ public class CanceledOrderRepositoryAdaptor implements CanceledOrderRepository {
     @Override
     public void save(CanceledOrder canceledOrder) {
         canceledOrderJpaRepository.save(canceledOrder);
+    }
+
+    @Override
+    public List<CanceledOrder> findAllByStatusInAndCanceledAtBefore(List<CancelStatus> pendingStatuses, OffsetDateTime minutesAgo) {
+        return canceledOrderJpaRepository.findAllByStatusInAndCanceledAtBefore(pendingStatuses, minutesAgo);
     }
 }
