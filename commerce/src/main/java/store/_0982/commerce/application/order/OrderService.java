@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
-import store._0982.commerce.domain.order.Order;
+import store._0982.common.domain.order.Order;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 

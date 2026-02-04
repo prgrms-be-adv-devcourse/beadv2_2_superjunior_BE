@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.order;
+package store._0982.common.domain.order;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,9 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.commerce.exception.CustomErrorCode;
-import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.exception.CustomException;
+import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.security.SecureRandom;
@@ -170,7 +169,7 @@ public class Order {
         }
 
         if(this.status != OrderStatus.PENDING){
-            throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_COMPLETED_ORDER_INVALID_STATUS);
+            throw new CustomException(EntityErrorCode.CANNOT_PAYMENT_COMPLETED_ORDER_INVALID_STATUS);
         }
         this.status = OrderStatus.PAYMENT_COMPLETED;
         this.paymentMethod = paymentMethod;
@@ -185,18 +184,24 @@ public class Order {
         }
 
         if(this.status != OrderStatus.PENDING){
-            throw new CustomException(CustomErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
+            throw new CustomException(EntityErrorCode.CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS);
         }
         this.status = OrderStatus.PAYMENT_FAILED;
     }
 
+    public void markExpired(){
+        if(this.status != OrderStatus.PENDING){
+            return;
+        }
+        this.status = OrderStatus.EXPIRED;
+    }
     public boolean isExpired() {
         return OffsetDateTime.now().isAfter(this.expiredAt);
     }
 
     public void confirmed(){
         if(this.status != OrderStatus.PAYMENT_COMPLETED){
-            throw new CustomException(CustomErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
+            throw new CustomException(EntityErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
         }
         this.status = OrderStatus.CONFIRMED;
     }
