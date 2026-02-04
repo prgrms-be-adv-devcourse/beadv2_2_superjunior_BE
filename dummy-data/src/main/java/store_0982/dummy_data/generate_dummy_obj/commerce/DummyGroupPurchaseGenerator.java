@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -60,10 +59,11 @@ public class DummyGroupPurchaseGenerator {
                     + ", actual=" + memberIds.size());
         }
 
-        return IntStream.range(0, groupPurchaseIds.size())
+                return IntStream.range(0, groupPurchaseIds.size())
                 .mapToObj(i -> {
                     GroupPurchase groupPurchase = easyRandom.nextObject(GroupPurchase.class);
                     Utils.setField(groupPurchase, "groupPurchaseId", groupPurchaseIds.get(i));
+                    Utils.setField(groupPurchase, "version", 0L);
                     Utils.setField(groupPurchase, "sellerId", memberIds.get(i / 2));
                     Utils.setField(groupPurchase, "productId", productIds.get(i));
 
