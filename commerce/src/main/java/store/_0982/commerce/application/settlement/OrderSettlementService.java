@@ -8,6 +8,7 @@ import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
 import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.domain.settlement.OrderSettlement;
+import store._0982.common.domain.settlement.OrderSettlementStatus;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class OrderSettlementService {
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
                 order.getPrice() * order.getQuantity(),
-                order.getStatus());
+                OrderSettlementStatus.COMPLETED);
 
         orderSettlementRepository.save(orderSettlement);
     }
@@ -43,7 +44,7 @@ public class OrderSettlementService {
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
                 cancellationFee,
-                order.getStatus()
+                OrderSettlementStatus.BUYER_CANCEL
         );
         orderSettlementRepository.save(orderSettlement);
     }

@@ -12,10 +12,7 @@ import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
-import store._0982.commerce.domain.order.CancelReason;
-import store._0982.commerce.domain.order.CanceledOrderRepository;
-import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.commerce.domain.order.*;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.OrderStatus;
@@ -88,7 +85,21 @@ public class CanceledOrderService {
                 return;
             }
         } else if (command.reason().isSellerFault()) {
-            orderSettlementService.saveCanceledOrderSettlement(order);
+            CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                    order.getOrderId(),
+                    command.memberId(),
+                    order.getPaidPrice(),
+                    0,
+                    0,
+                    order.getPaidPrice(),
+                    null,
+                    null,
+                    command.reason(),
+                    command.detailReason(),
+                    command.idempotencyKey(),
+                    order.getPaymentMethod()
+            );
+            canceledOrderRepository.save(canceledOrder);
         }
 
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);

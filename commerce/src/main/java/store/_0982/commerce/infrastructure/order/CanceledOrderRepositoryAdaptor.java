@@ -2,6 +2,7 @@ package store._0982.commerce.infrastructure.order;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.commerce.domain.order.CanceledOrder;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 
 import java.util.UUID;
@@ -20,5 +21,10 @@ public class CanceledOrderRepositoryAdaptor implements CanceledOrderRepository {
     @Override
     public boolean existsByOrderId(UUID orderId) {
         return canceledOrderJpaRepository.existsByOrderId(orderId);
+    }
+
+    @Override
+    public void save(CanceledOrder canceledOrder) {
+        canceledOrderJpaRepository.save(canceledOrder);
     }
 }

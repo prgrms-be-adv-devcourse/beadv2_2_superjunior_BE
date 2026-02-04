@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -20,9 +19,6 @@ public class OrderSettlement {
     @Column(name = "order_settlement_id", nullable = false)
     private UUID orderSettlementId;
 
-    @Column(name = "order_id", nullable = false, updatable = false)
-    private UUID orderId;
-
     @Column(name = "seller_id", nullable = false, updatable = false)
     private UUID sellerId;
 
@@ -33,11 +29,11 @@ public class OrderSettlement {
     private Long totalAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
+    @Column(name = "order_settlement_status", nullable = false)
+    private OrderSettlementStatus orderSettlementStatus;
 
-    @Column(name = "settlement_id")
-    private UUID settlementId;
+    @Column(name = "order_id", nullable = false, updatable = false)
+    private UUID orderId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -51,9 +47,15 @@ public class OrderSettlement {
             UUID sellerId,
             UUID groupPurchaseId,
             Long totalAmount,
-            OrderStatus orderStatus
+            OrderSettlementStatus orderSettlementStatus
     ) {
-        return new OrderSettlement(orderId, sellerId, groupPurchaseId, totalAmount, orderStatus);
+        return new OrderSettlement(
+                orderId,
+                sellerId,
+                groupPurchaseId,
+                totalAmount,
+                orderSettlementStatus
+        );
     }
 
     private OrderSettlement(
@@ -61,12 +63,13 @@ public class OrderSettlement {
             UUID sellerId,
             UUID groupPurchaseId,
             Long totalAmount,
-            OrderStatus orderStatus) {
+            OrderSettlementStatus orderSettlementStatus
+    ) {
         this.orderSettlementId = UUID.randomUUID();
         this.orderId = orderId;
         this.sellerId = sellerId;
         this.groupPurchaseId = groupPurchaseId;
         this.totalAmount = totalAmount;
-        this.orderStatus = orderStatus;
+        this.orderSettlementStatus = orderSettlementStatus;
     }
 }

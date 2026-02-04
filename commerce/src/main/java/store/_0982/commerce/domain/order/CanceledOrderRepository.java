@@ -7,4 +7,6 @@ public interface CanceledOrderRepository {
     boolean existsByIdempotencyKey(String idempotencyKey);
 
     boolean existsByOrderId(UUID orderId);
+
+    void save(CanceledOrder canceledOrder);
 }
