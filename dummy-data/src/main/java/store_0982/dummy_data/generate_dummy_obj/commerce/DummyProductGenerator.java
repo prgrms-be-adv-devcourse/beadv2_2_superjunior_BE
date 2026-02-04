@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
@@ -14,17 +15,21 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import net.datafaker.Faker;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.jeasy.random.api.Randomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.common.domain.product.Product;
+import store._0982.common.domain.product.ProductCategory;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.ProductCsvRow;
 import store_0982.dummy_data.util.Utils;
 
 @Component
 public class DummyProductGenerator {
+
+    private final Faker faker = new Faker(new Locale("ko", "ko"));
 
     @Value("${dummy-data.product-id-pool.path}")
     private String productIdPoolPath;
@@ -60,6 +65,13 @@ public class DummyProductGenerator {
                     Product product = easyRandom.nextObject(Product.class);
                     Utils.setField(product, "productId", productIds.get(i));
                     Utils.setField(product, "sellerId", memberIds.get(i / 2));
+                    ProductCategory category = product.getCategory();
+                    if (category == null) {
+                        category = ProductCategory.values()[ThreadLocalRandom.current().nextInt(ProductCategory.values().length)];
+                        Utils.setField(product, "category", category);
+                    }
+                    Utils.setField(product, "name", buildName(category));
+                    Utils.setField(product, "description", buildDescription(category));
                     Utils.setField(product, "idempotencyKey", UUID.randomUUID().toString());
                     OffsetDateTime createdAt = randomCreatedAt();
                     OffsetDateTime updatedAt = randomUpdatedAt(createdAt);
@@ -97,6 +109,7 @@ public class DummyProductGenerator {
 
         try (var writer = Files.newBufferedWriter(output);
              var sequenceWriter = mapper.writer(schema).writeValues(writer)) {
+            writer.write('\uFEFF');
             for (Product product : products) {
                 sequenceWriter.write(toCsvRow(product));
             }
@@ -130,5 +143,34 @@ public class DummyProductGenerator {
     private OffsetDateTime randomUpdatedAt(OffsetDateTime createdAt) {
         int secondsForward = ThreadLocalRandom.current().nextInt(0, 30 * 24 * 60 * 60);
         return createdAt.plusSeconds(secondsForward);
+    }
+
+    private String buildName(ProductCategory category) {
+        return switch (category) {
+            case HOME -> "생활용품 " + faker.commerce().productName();
+            case FOOD -> "식품 " + faker.commerce().productName();
+            case HEALTH -> "건강 " + faker.commerce().productName();
+            case BEAUTY -> "뷰티 " + faker.commerce().productName();
+            case FASHION -> "패션 " + faker.commerce().productName();
+            case ELECTRONICS -> "전자 " + faker.commerce().productName();
+            case KIDS -> "키즈 " + faker.commerce().productName();
+            case HOBBY -> "취미 " + faker.commerce().productName();
+            case PET -> "반려 " + faker.commerce().productName();
+        };
+    }
+
+    private String buildDescription(ProductCategory category) {
+        String prefix = switch (category) {
+            case HOME -> "집안에서 유용한 ";
+            case FOOD -> "신선한 재료로 만든 ";
+            case HEALTH -> "건강을 챙기는 ";
+            case BEAUTY -> "피부와 스타일을 위한 ";
+            case FASHION -> "데일리로 활용하기 좋은 ";
+            case ELECTRONICS -> "실용적인 기능을 갖춘 ";
+            case KIDS -> "아이들을 위한 ";
+            case HOBBY -> "취미 생활에 딱 맞는 ";
+            case PET -> "반려동물을 위한 ";
+        };
+        return prefix + faker.lorem().sentence();
     }
 }
