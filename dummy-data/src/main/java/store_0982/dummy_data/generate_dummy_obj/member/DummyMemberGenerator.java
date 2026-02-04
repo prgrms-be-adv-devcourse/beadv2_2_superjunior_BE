@@ -1,6 +1,7 @@
 package store_0982.dummy_data.generate_dummy_obj.member;
 
 import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.common.auth.Role;
@@ -25,7 +26,7 @@ public class DummyMemberGenerator {
     private int count;
     @Value("${dummy-data.member-dummy.path}")
     private String dummyPath;
-    private final EasyRandom easyRandom = new EasyRandom();
+    private final EasyRandom easyRandom = new EasyRandom(new EasyRandomParameters().collectionSizeRange(0,0).randomizationDepth(1));
 
     public void readIdAndWriteMember() {
         Path idPool = Path.of(idPoolPath);
@@ -52,6 +53,7 @@ public class DummyMemberGenerator {
                 writer.write(row);
                 generated++;
             }
+            writer.flush();
         } catch (IOException | IllegalAccessException e) {
             throw new IllegalStateException("Failed to generate dummy members", e);
         }

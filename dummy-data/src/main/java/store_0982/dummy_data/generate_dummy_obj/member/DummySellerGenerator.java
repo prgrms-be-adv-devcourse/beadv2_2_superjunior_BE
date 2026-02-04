@@ -1,6 +1,7 @@
 package store_0982.dummy_data.generate_dummy_obj.member;
 
 import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.member.domain.member.Seller;
@@ -24,7 +25,7 @@ public class DummySellerGenerator {
     private int count;
     @Value("${dummy-data.seller-dummy.path}")
     private String dummyPath;
-    private EasyRandom easyRandom = new EasyRandom();
+    private final EasyRandom easyRandom = new EasyRandom(new EasyRandomParameters().collectionSizeRange(0,0).randomizationDepth(1));
 
     public void readIdAndWriteSeller() {
         Path idPool = Path.of(idPoolPath);
@@ -53,6 +54,7 @@ public class DummySellerGenerator {
                 writer.write(row);
                 generated++;
             }
+            writer.flush();
         } catch (IOException | IllegalAccessException e) {
             throw new IllegalStateException("Failed to generate dummy sellers", e);
         }

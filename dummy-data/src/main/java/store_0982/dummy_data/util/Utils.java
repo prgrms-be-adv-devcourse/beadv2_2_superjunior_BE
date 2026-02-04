@@ -16,7 +16,7 @@ public class Utils {
     }
 
     public static <T> String makeCsvHeaderString(Class<T> clazz, List<String> excluded) {
-        String camelCase =  String.join("," ,Stream.of(clazz.getDeclaredFields()).map(Field::getName).filter(name -> !excluded.contains(name)).toList()) + "\n";
+        String camelCase =  String.join("," ,Stream.of(clazz.getDeclaredFields()).sorted((f1, f2) -> f1.getName().compareTo(f2.getName())).map( f -> "\"" + f.getName() + "\"" ).filter(name -> !excluded.contains(name)).toList()) + "\n";
         return toSnakeCase(camelCase);
     }
 
@@ -35,6 +35,7 @@ public class Utils {
     public static <T> String makeCsvRowString(T entity, List<String> excluded) throws IllegalAccessException {
         List<Field> fields = Stream.of(entity.getClass().getDeclaredFields())
                 .filter(f -> !excluded.contains(f.getName()))
+                .sorted((f1, f2) -> f1.getName().compareTo(f2.getName()))
                 .toList();
         StringBuilder row = new StringBuilder();
         for (Field field : fields) {
@@ -43,7 +44,7 @@ public class Utils {
             }
             field.setAccessible(true);
             Object value = field.get(entity);
-            row.append(value != null ? value : "");
+            row.append(value != null ? "\""+value.toString()+"\"" : "\"\"");
         }
         row.append('\n');
         return row.toString();
