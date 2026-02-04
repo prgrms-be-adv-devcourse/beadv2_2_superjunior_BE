@@ -8,6 +8,7 @@ import store._0982.commerce.domain.order.CanceledOrderRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -34,5 +35,10 @@ public class CanceledOrderRepositoryAdaptor implements CanceledOrderRepository {
     @Override
     public List<CanceledOrder> findAllByStatusInAndCanceledAtBefore(List<CancelStatus> pendingStatuses, OffsetDateTime minutesAgo) {
         return canceledOrderJpaRepository.findAllByStatusInAndCanceledAtBefore(pendingStatuses, minutesAgo);
+    }
+
+    @Override
+    public Optional<CanceledOrder> findByOrderId(UUID orderId) {
+        return canceledOrderJpaRepository.findByOrderId(orderId);
     }
 }

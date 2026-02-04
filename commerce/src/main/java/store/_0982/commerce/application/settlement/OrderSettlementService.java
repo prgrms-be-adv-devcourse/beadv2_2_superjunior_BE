@@ -29,7 +29,17 @@ public class OrderSettlementService {
     }
 
     @Transactional
-    public void saveCanceledOrderSettlementByBuyer(Order order, CanceledOrder canceledOrder) {
+    public void saveCanceledOrderSettlement(Order order, CanceledOrder canceledOrder) {
+        if (canceledOrder.getReason().isSellerFault()) {
+            saveCanceledOrderSettlementBySeller(order, canceledOrder);
+            return;
+        }
+        if (canceledOrder.getReason().isBuyerFault()) {
+            saveCanceledOrderSettlementByBuyer(order, canceledOrder);
+        }
+    }
+
+    private void saveCanceledOrderSettlementByBuyer(Order order, CanceledOrder canceledOrder) {
         OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
                 canceledOrder.getOrderId(),
                 order.getSellerId(),
@@ -40,8 +50,7 @@ public class OrderSettlementService {
         orderSettlementRepository.save(orderSettlement);
     }
 
-    @Transactional
-    public void saveCanceledOrderSettlementBySeller(Order order, CanceledOrder canceledOrder) {
+    private void saveCanceledOrderSettlementBySeller(Order order, CanceledOrder canceledOrder) {
         OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
                 canceledOrder.getOrderId(),
                 order.getSellerId(),

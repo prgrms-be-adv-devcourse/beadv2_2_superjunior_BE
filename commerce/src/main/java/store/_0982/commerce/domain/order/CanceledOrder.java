@@ -77,6 +77,11 @@ public class CanceledOrder {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    public void markCompleted() {
+        this.returnedAt = OffsetDateTime.now();
+        status = CancelStatus.COMPLETED;
+    }
+
     public static CanceledOrder createCanceledOrder(
             UUID orderId,
             UUID memberId,
