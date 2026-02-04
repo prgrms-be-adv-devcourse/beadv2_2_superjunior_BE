@@ -19,7 +19,8 @@ public class VoidOrderCancellationPolicy implements OrderCancellationPolicy {
 
         return new RefundAmount(
                 paidAmount,  // 전액 환불
-                0L           // 수수료 없음
+                0L,          // 수수료 없음
+                0L
         );
     }
 

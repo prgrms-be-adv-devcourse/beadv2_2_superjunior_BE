@@ -21,7 +21,7 @@ public class ReversalOrderCancellationPolicy implements OrderCancellationPolicy 
         long fee = (long) (paidAmount * CANCELLATION_FEE_RATE);
         long refund = paidAmount - fee;
 
-        return new RefundAmount(refund, fee);
+        return new RefundAmount(refund, fee, 0L);
     }
 
     @Override

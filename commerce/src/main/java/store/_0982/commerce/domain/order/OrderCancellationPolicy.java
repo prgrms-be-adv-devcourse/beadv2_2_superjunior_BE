@@ -25,7 +25,8 @@ public interface OrderCancellationPolicy {
      */
     record RefundAmount(
             long refundAmount,
-            long cancellationFee
+            long cancellationFee,
+            long shippingFee
     ) {}
 
     enum PolicyType {

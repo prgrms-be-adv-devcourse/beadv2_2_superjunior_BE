@@ -23,7 +23,7 @@ public class RefundOrderCancellationPolicy implements OrderCancellationPolicy {
         long fee = (long) (paidAmount * CANCELLATION_FEE_RATE);
         long refund = paidAmount - fee - SHIPPING_FEE;
 
-        return new RefundAmount(refund, fee);
+        return new RefundAmount(refund, fee, SHIPPING_FEE);
     }
 
     @Override

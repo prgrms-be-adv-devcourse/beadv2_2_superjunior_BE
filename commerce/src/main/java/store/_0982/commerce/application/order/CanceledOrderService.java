@@ -13,6 +13,10 @@ import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.order.*;
+import store._0982.commerce.domain.order.OrderCancellationPolicy.RefundAmount;
+import store._0982.commerce.domain.order.policy.RefundOrderCancellationPolicy;
+import store._0982.commerce.domain.order.policy.ReversalOrderCancellationPolicy;
+import store._0982.commerce.domain.order.policy.VoidOrderCancellationPolicy;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.OrderStatus;
@@ -32,6 +36,9 @@ public class CanceledOrderService {
     private final CanceledOrderRepository canceledOrderRepository;
 
     private final ApplicationEventPublisher eventPublisher;
+    private final VoidOrderCancellationPolicy voidOrderCancellationPolicy;
+    private final ReversalOrderCancellationPolicy reversalOrderCancellationPolicy;
+    private final RefundOrderCancellationPolicy refundOrderCancellationPolicy;
 
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,
@@ -71,17 +78,65 @@ public class CanceledOrderService {
             groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
             if (groupPurchase.isInVoidPeriod()) {
-                processCancellationBeforeSuccess(order, command.detailReason(), productName);
+                RefundAmount refundAmount = voidOrderCancellationPolicy.calculate(order);
+                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                        order.getOrderId(),
+                        command.memberId(),
+                        order.getPaidPrice(),
+                        refundAmount.cancellationFee(),
+                        refundAmount.shippingFee(),
+                        refundAmount.refundAmount(),
+                        null,
+                        null,
+                        command.reason(),
+                        command.detailReason(),
+                        command.idempotencyKey(),
+                        order.getPaymentMethod()
+                );
+                canceledOrderRepository.save(canceledOrder);
+                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
                 return;
             }
 
             if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
-                processCancellationWithin48Hours(order, command.detailReason(), productName);
+                RefundAmount refundAmount = reversalOrderCancellationPolicy.calculate(order);
+                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                        order.getOrderId(),
+                        command.memberId(),
+                        order.getPaidPrice(),
+                        refundAmount.cancellationFee(),
+                        refundAmount.shippingFee(),
+                        refundAmount.refundAmount(),
+                        null,
+                        null,
+                        command.reason(),
+                        command.detailReason(),
+                        command.idempotencyKey(),
+                        order.getPaymentMethod()
+                );
+                canceledOrderRepository.save(canceledOrder);
+                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
                 return;
             }
 
             if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
-                processReturnAfter48Hours(order, command.detailReason(), productName);
+                RefundAmount refundAmount = refundOrderCancellationPolicy.calculate(order);
+                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                        order.getOrderId(),
+                        command.memberId(),
+                        order.getPaidPrice(),
+                        refundAmount.cancellationFee(),
+                        refundAmount.shippingFee(),
+                        refundAmount.refundAmount(),
+                        null,
+                        null,
+                        command.reason(),
+                        command.detailReason(),
+                        command.idempotencyKey(),
+                        order.getPaymentMethod()
+                );
+                canceledOrderRepository.save(canceledOrder);
+                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
                 return;
             }
         } else if (command.reason().isSellerFault()) {
@@ -100,29 +155,10 @@ public class CanceledOrderService {
                     order.getPaymentMethod()
             );
             canceledOrderRepository.save(canceledOrder);
+            return;
         }
 
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
-    }
-
-    private void processCancellationBeforeSuccess(Order order, String reason, String productName) {
-
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
-    }
-
-    private void processCancellationWithin48Hours(Order order, String reason, String productName) {
-        order.requestReversed();
-
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
-    }
-
-    private void processReturnAfter48Hours(Order order, String reason, String productName) {
-        order.requestReturned();
-
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void publishCancellationEvent(Order order, String reason, Long refundAmount, String productName) {
