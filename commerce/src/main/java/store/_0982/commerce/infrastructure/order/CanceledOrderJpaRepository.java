@@ -7,4 +7,7 @@ import java.util.UUID;
 
 public interface CanceledOrderJpaRepository extends JpaRepository<CanceledOrder, UUID> {
 
+    boolean existsByIdempotencyKey(String idempotencyKey);
+
+    boolean existsByOrderId(UUID orderId);
 }

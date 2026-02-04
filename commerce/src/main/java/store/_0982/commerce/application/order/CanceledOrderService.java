@@ -1,6 +1,7 @@
 package store._0982.commerce.application.order;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -11,6 +12,7 @@ import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
+import store._0982.commerce.domain.order.CancelReason;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
@@ -32,6 +34,8 @@ public class CanceledOrderService {
     private final OrderRepository orderRepository;
     private final CanceledOrderRepository canceledOrderRepository;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,
             maxAttempts = 10,
@@ -44,6 +48,11 @@ public class CanceledOrderService {
     @ServiceLog
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
+        if (canceledOrderRepository.existsByIdempotencyKey(command.idempotencyKey())
+                || canceledOrderRepository.existsByOrderId(command.orderId())) {
+            return;
+        }
+
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
@@ -57,25 +66,34 @@ public class CanceledOrderService {
 
         GroupPurchase groupPurchase = groupPurchaseService
                 .findByGroupPurchase(order.getGroupPurchaseId());
-        String productName = productService.findByProductName(groupPurchase.getProductId());
 
+        String productName = productService.findByProductName(groupPurchase.getProductId());
         order.requestCanceledAt();
 
-        if (groupPurchase.isInVoidPeriod()) {
+        if (command.reason() == CancelReason.CHANGE_OF_MIND) {
             groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-            processCancellationBeforeSuccess(order, command.reason(), productName);
-            return;
+
+            if (groupPurchase.isInVoidPeriod()) {
+                processCancellationBeforeSuccess(order, command.reason(), productName);
+                return;
+            }
+
+            if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
+                processCancellationWithin48Hours(order, command.reason(), productName);
+                return;
+            }
+
+            if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
+                processReturnAfter48Hours(order, command.reason(), productName);
+                return;
+            }
+        } else if (command.reason() == CancelReason.DELIVERY_DELAY ||
+                command.reason() == CancelReason.OUT_OF_STOCK ||
+                command.reason() == CancelReason.PRODUCT_DEFECT) {
+
+            orderSettlementService.saveCanceledOrderSettlement(order);
         }
 
-        if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
-            processCancellationWithin48Hours(order, command.reason(), productName);
-            return;
-        }
-
-        if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
-            processReturnAfter48Hours(order, command.reason(), productName);
-            return;
-        }
         throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
     }
 
