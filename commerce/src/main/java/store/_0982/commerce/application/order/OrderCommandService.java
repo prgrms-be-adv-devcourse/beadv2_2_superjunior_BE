@@ -34,11 +34,8 @@ import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static store._0982.commerce.domain.order.OrderCancellationPolicy.calculate;
 
 @Service
 @RequiredArgsConstructor
@@ -223,22 +220,22 @@ public class OrderCommandService {
     private void processCancellationBeforeSuccess(Order order, String reason, String productName) {
         //order.requestCancel();
 
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
+        // OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS);
+        // publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void processCancellationWithin48Hours(Order order, String reason, String productName) {
         //order.requestReversed();
 
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
+//        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS);
+//        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void processReturnAfter48Hours(Order order, String reason, String productName) {
         //order.requestReturned();
 
-        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
-        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
+//        OrderCancellationPolicy.RefundAmount refundAmount = calculate(order, OrderCancellationPolicy.CancellationType.AFTER_48_HOURS);
+//        publishCancellationEvent(order, reason, refundAmount.refundAmount(), productName);
     }
 
     private void publishCancellationEvent(Order order, String reason, Long refundAmount, String productName) {
@@ -279,7 +276,7 @@ public class OrderCommandService {
 
     private OrderCancellationPolicy.CancellationType mapCancellationType(OrderStatus status) {
 //        return switch (status) {
-//            case CANCEL_REQUESTED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
+//            case CANCEL_REQUESTED -> OrderCancellationPolicy.CancellationType.BEFORE_SUCCESS;
 //            case REVERSE_REQUESTED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
 //            case REFUND_REQUESTED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
 //            default -> null;
