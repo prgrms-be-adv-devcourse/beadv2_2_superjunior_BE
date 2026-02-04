@@ -19,5 +19,7 @@ dummy-data:
     path: docs/dummy-data/id-pools/order_id_pool.csv
   member-dummy:
     path: docs/dummy-data/dummy-datas/member-dummy.csv
+  seller-dummy:
+    path: docs/dummy-data/dummy-datas/seller-dummy.csv
   product-dummy:
     path: docs/dummy-data/dummy-datas/product-dummy.csv

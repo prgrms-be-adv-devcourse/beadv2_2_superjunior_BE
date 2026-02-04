@@ -3,8 +3,7 @@ package store_0982.dummy_data.generate_dummy_obj.member;
 import org.jeasy.random.EasyRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import store._0982.common.auth.Role;
-import store._0982.member.domain.member.Member;
+import store._0982.member.domain.member.Seller;
 import store_0982.dummy_data.util.Utils;
 
 import java.io.BufferedReader;
@@ -18,20 +17,21 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-public class DummyMemberGenerator {
+public class DummySellerGenerator {
     @Value("${dummy-data.member-id-pool.path}")
     private String idPoolPath;
     @Value("${dummy-data.member-id-pool.count}")
     private int count;
-    @Value("${dummy-data.member-dummy.path}")
+    @Value("${dummy-data.seller-dummy.path}")
     private String dummyPath;
-    private final EasyRandom easyRandom = new EasyRandom();
+    private EasyRandom easyRandom = new EasyRandom();
 
-    public void readIdAndWriteMember() {
+    public void readIdAndWriteSeller() {
         Path idPool = Path.of(idPoolPath);
         Path output = Path.of(dummyPath);
-        List<String> excluded = new LinkedList<>();
-        excluded.add("addresses"); // avoid writing collection column
+        List<String> excludedFields = new LinkedList<>();
+        excludedFields.add("member"); // avoid circular reference in CSV
+
         try {
             Files.createDirectories(output.getParent());
         } catch (IOException e) {
@@ -40,30 +40,31 @@ public class DummyMemberGenerator {
 
         try (BufferedReader reader = Files.newBufferedReader(idPool);
              BufferedWriter writer = Files.newBufferedWriter(output)) {
-            int generated = 0;
-            String headerLine = Utils.makeCsvHeaderString(Member.class, excluded);
+            String headerLine = Utils.makeCsvHeaderString(Seller.class, excludedFields);
             writer.write(headerLine);
 
             String line;
+            int generated = 0;
+
             while (generated < count && (line = reader.readLine()) != null) {
                 UUID memberId = UUID.fromString(line.trim());
-                Member dummyMember = createDummyMember(memberId);
-                String row = Utils.makeCsvRowString(dummyMember, excluded);
+                Seller dummySeller = createDummySeller(memberId);
+                String row = Utils.makeCsvRowString(dummySeller, excludedFields);
                 writer.write(row);
                 generated++;
             }
         } catch (IOException | IllegalAccessException e) {
-            throw new IllegalStateException("Failed to generate dummy members", e);
+            throw new IllegalStateException("Failed to generate dummy sellers", e);
         }
     }
 
-    private Member createDummyMember(UUID memberId) {
-        Member dummyMember = easyRandom.nextObject(Member.class);
-        Utils.setField(dummyMember, "memberId", memberId);
-        Utils.setField(dummyMember, "createdAt", OffsetDateTime.now());
-        Utils.setField(dummyMember, "updatedAt", OffsetDateTime.now());
-        Utils.setField(dummyMember, "role", Role.SELLER);
-        Utils.setField(dummyMember, "status", Member.Status.ACTIVE);
-        return dummyMember;
+    private Seller createDummySeller(UUID memberId) {
+        Seller dummySeller = easyRandom.nextObject(Seller.class);
+        Utils.setField(dummySeller, "sellerId", memberId);
+        Utils.setField(dummySeller, "createdAt", OffsetDateTime.now());
+        Utils.setField(dummySeller, "updatedAt", OffsetDateTime.now());
+        dummySeller.confirm();
+
+        return dummySeller;
     }
 }
