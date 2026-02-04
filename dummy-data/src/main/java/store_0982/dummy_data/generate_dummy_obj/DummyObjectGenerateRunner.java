@@ -7,6 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import store_0982.dummy_data.generate_dummy_obj.commerce.DummyGroupPurchaseGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyProductGenerator;
 
 @Component
@@ -17,11 +18,15 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
 
     private final ApplicationContext applicationContext;
     private final DummyProductGenerator dummyProductGenerator;
+    private final DummyGroupPurchaseGenerator dummyGroupPurchaseGenerator;
 
     @Value("${dummy-data.product-id-pool.count}")
     private int productCount;
+    @Value("${dummy-data.group-purchase-id-pool.count}")
+    private int groupPurchaseCount;
     @Override
     public void run(org.springframework.boot.ApplicationArguments args) throws Exception {
         dummyProductGenerator.generateAndWriteCsv(productCount);
+        dummyGroupPurchaseGenerator.generateAndWriteCsv(groupPurchaseCount);
     }
 }

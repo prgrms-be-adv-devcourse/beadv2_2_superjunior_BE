@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -59,6 +60,11 @@ public class DummyProductGenerator {
                     Product product = easyRandom.nextObject(Product.class);
                     Utils.setField(product, "productId", productIds.get(i));
                     Utils.setField(product, "sellerId", memberIds.get(i / 2));
+                    Utils.setField(product, "idempotencyKey", UUID.randomUUID().toString());
+                    OffsetDateTime createdAt = randomCreatedAt();
+                    OffsetDateTime updatedAt = randomUpdatedAt(createdAt);
+                    Utils.setField(product, "createdAt", createdAt);
+                    Utils.setField(product, "updatedAt", updatedAt);
                     Utils.setField(product, "deletedAt", null);
                     return product;
                 })
@@ -113,5 +119,16 @@ public class DummyProductGenerator {
                 product.getIdempotencyKey(),
                 product.getImageUrl()
         );
+    }
+
+    private OffsetDateTime randomCreatedAt() {
+        int daysBack = ThreadLocalRandom.current().nextInt(0, 365);
+        int secondsBack = ThreadLocalRandom.current().nextInt(0, 24 * 60 * 60);
+        return OffsetDateTime.now().minusDays(daysBack).minusSeconds(secondsBack);
+    }
+
+    private OffsetDateTime randomUpdatedAt(OffsetDateTime createdAt) {
+        int secondsForward = ThreadLocalRandom.current().nextInt(0, 30 * 24 * 60 * 60);
+        return createdAt.plusSeconds(secondsForward);
     }
 }

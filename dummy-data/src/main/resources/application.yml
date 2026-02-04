@@ -21,3 +21,5 @@ dummy-data:
     path: docs/dummy-data/dummy-datas/member-dummy.csv
   product-dummy:
     path: docs/dummy-data/dummy-datas/product-dummy.csv
+  group-purchase-dummy:
+    path: docs/dummy-data/dummy-datas/group-purchase-dummy.csv
