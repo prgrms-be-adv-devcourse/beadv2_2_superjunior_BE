@@ -37,7 +37,7 @@ public class DummyGroupPurchaseGenerator {
 
     public void generateAndWriteCsv(int count) throws IOException {
         List<UUID> groupPurchaseIds = readIds(Path.of(groupPurchaseIdPoolPath), count);
-        int requiredMembers = (count + 1) / 2;
+        int requiredMembers = (count + 9) / 10;
         List<UUID> memberIds = readIds(Path.of(memberIdPoolPath), requiredMembers);
         if (memberIds.size() < requiredMembers) {
             throw new IllegalStateException("Not enough member IDs for group purchases. required=" + requiredMembers
@@ -75,7 +75,7 @@ public class DummyGroupPurchaseGenerator {
                 GroupPurchase groupPurchase = easyRandom.nextObject(GroupPurchase.class);
                 Utils.setField(groupPurchase, "groupPurchaseId", groupPurchaseIds.get(index));
                 Utils.setField(groupPurchase, "version", 0L);
-                Utils.setField(groupPurchase, "sellerId", memberIds.get(index / 2));
+                Utils.setField(groupPurchase, "sellerId", memberIds.get(index / 10));
                 Utils.setField(groupPurchase, "productId", productRow.productId());
 
                 int minQuantity = ThreadLocalRandom.current().nextInt(1, 6);

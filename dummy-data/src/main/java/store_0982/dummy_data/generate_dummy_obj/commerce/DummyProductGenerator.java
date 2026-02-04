@@ -34,6 +34,8 @@ public class DummyProductGenerator {
     private String memberIdPoolPath;
     @Value("${dummy-data.product-dummy.path}")
     private String productDummyPath;
+    @Value("${dummy-data.category.pet-percent}")
+    private int petPercent;
 
     public List<Product> generate(int count) throws IOException {
         EasyRandomParameters parameters = new EasyRandomParameters()
@@ -50,7 +52,7 @@ public class DummyProductGenerator {
         EasyRandom easyRandom = new EasyRandom(parameters);
 
         List<UUID> productIds = readIds(Path.of(productIdPoolPath), count);
-        int requiredMembers = (count + 1) / 2;
+        int requiredMembers = (count + 9) / 10;
         List<UUID> memberIds = readIds(Path.of(memberIdPoolPath), requiredMembers);
         if (memberIds.size() < requiredMembers) {
             throw new IllegalStateException("Not enough member IDs for products. required=" + requiredMembers
@@ -61,12 +63,9 @@ public class DummyProductGenerator {
                 .mapToObj(i -> {
                     Product product = easyRandom.nextObject(Product.class);
                     Utils.setField(product, "productId", productIds.get(i));
-                    Utils.setField(product, "sellerId", memberIds.get(i / 2));
-                    ProductCategory category = product.getCategory();
-                    if (category == null) {
-                        category = ProductCategory.values()[ThreadLocalRandom.current().nextInt(ProductCategory.values().length)];
-                        Utils.setField(product, "category", category);
-                    }
+                    Utils.setField(product, "sellerId", memberIds.get(i / 10));
+                    ProductCategory category = pickCategory();
+                    Utils.setField(product, "category", category);
                     Utils.setField(product, "name", ProductTextProvider.name(category));
                     Utils.setField(product, "description", ProductTextProvider.description(category));
                     Utils.setField(product, "idempotencyKey", UUID.randomUUID().toString());
@@ -140,6 +139,19 @@ public class DummyProductGenerator {
     private OffsetDateTime randomUpdatedAt(OffsetDateTime createdAt) {
         int secondsForward = ThreadLocalRandom.current().nextInt(0, 30 * 24 * 60 * 60);
         return createdAt.plusSeconds(secondsForward);
+    }
+
+    private ProductCategory pickCategory() {
+        int roll = ThreadLocalRandom.current().nextInt(100);
+        if (roll < petPercent) {
+            return ProductCategory.PET;
+        }
+        ProductCategory[] categories = ProductCategory.values();
+        ProductCategory pick;
+        do {
+            pick = categories[ThreadLocalRandom.current().nextInt(categories.length)];
+        } while (pick == ProductCategory.PET);
+        return pick;
     }
 
 }
