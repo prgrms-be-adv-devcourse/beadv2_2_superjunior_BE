@@ -70,27 +70,24 @@ public class CanceledOrderService {
         String productName = productService.findByProductName(groupPurchase.getProductId());
         order.requestCanceledAt();
 
-        if (command.reason() == CancelReason.CHANGE_OF_MIND) {
+        if (command.reason().isBuyerFault()) {
             groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
             if (groupPurchase.isInVoidPeriod()) {
-                processCancellationBeforeSuccess(order, command.reason(), productName);
+                processCancellationBeforeSuccess(order, command.detailReason(), productName);
                 return;
             }
 
             if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
-                processCancellationWithin48Hours(order, command.reason(), productName);
+                processCancellationWithin48Hours(order, command.detailReason(), productName);
                 return;
             }
 
             if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
-                processReturnAfter48Hours(order, command.reason(), productName);
+                processReturnAfter48Hours(order, command.detailReason(), productName);
                 return;
             }
-        } else if (command.reason() == CancelReason.DELIVERY_DELAY ||
-                command.reason() == CancelReason.OUT_OF_STOCK ||
-                command.reason() == CancelReason.PRODUCT_DEFECT) {
-
+        } else if (command.reason().isSellerFault()) {
             orderSettlementService.saveCanceledOrderSettlement(order);
         }
 
