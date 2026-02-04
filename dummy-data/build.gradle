@@ -15,7 +15,6 @@ dependencies {
     implementation(project(path: ':point', configuration: 'domainElements'))
     implementation 'org.jeasy:easy-random-core:5.0.0'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv'
-    implementation 'net.datafaker:datafaker:2.4.2'
 
     //Easy Random
     implementation 'org.jeasy:easy-random-core:5.0.0'
