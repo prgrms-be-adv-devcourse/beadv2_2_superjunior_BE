@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.exception.CustomException;
 import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
@@ -105,7 +104,7 @@ public class GroupPurchase {
         this.currentQuantity = 0;
     }
 
-	    private boolean canParticipate(int quantity) {
+    private boolean canParticipate(int quantity) {
         return status == GroupPurchaseStatus.OPEN
                 && (this.currentQuantity + quantity <= this.maxQuantity);
     }
