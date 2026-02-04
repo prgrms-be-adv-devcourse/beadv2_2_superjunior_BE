@@ -45,6 +45,10 @@ public class OrderCancelService {
         Order order = orderRepository.findById(command.orderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
+        if (order.getStatus() != OrderStatus.PAYMENT_COMPLETED) {
+            throw new CustomException(CustomErrorCode.CANNOT_CANCEL_ORDER_INVALID_STATUS);
+        }
+
         if (!command.memberId().equals(order.getMemberId())) {
             throw new CustomException(CustomErrorCode.ORDER_ACCESS_DENIED);
         }
@@ -53,19 +57,20 @@ public class OrderCancelService {
                 .findByGroupPurchase(order.getGroupPurchaseId());
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
-        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+        order.requestCanceledAt();
 
-        if (order.getStatus() == OrderStatus.PAYMENT_COMPLETED) {
+        if (groupPurchase.isInVoidPeriod()) {
+            groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
             processCancellationBeforeSuccess(order, command.reason(), productName);
             return;
         }
 
-        if (groupPurchase.isInReversedPeriod()) {
+        if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
             processCancellationWithin48Hours(order, command.reason(), productName);
             return;
         }
 
-        if (groupPurchase.isInReturnedPeriod()) {
+        if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
             processReturnAfter48Hours(order, command.reason(), productName);
             return;
         }

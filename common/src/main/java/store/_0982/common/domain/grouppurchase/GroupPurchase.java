@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.exception.CustomException;
 import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
@@ -134,18 +133,23 @@ public class GroupPurchase {
         this.currentQuantity -= quantity;
     }
 
-    public boolean isInReversedPeriod() {
+    public boolean isInVoidPeriod() {
+        return this.succeededAt == null;
+    }
+
+    public boolean isInReversedPeriod(OffsetDateTime canceledAt) {
         if (this.succeededAt == null) {
             return false;
         }
-        return OffsetDateTime.now().isBefore(this.succeededAt.plusDays(2));
+        return canceledAt.isBefore(this.succeededAt.plusDays(2));
     }
 
-    public boolean isInReturnedPeriod() {
-        if (this.succeededAt == null)
+    public boolean isInReturnedPeriod(OffsetDateTime canceledAt) {
+        if (this.succeededAt == null) {
             return false;
-        return OffsetDateTime.now().isAfter(this.succeededAt.plusDays(2))
-                && OffsetDateTime.now().isBefore(this.succeededAt.plusWeeks(2));
+        }
+        return canceledAt.isAfter(this.succeededAt.plusDays(2))
+                && canceledAt.isBefore(this.succeededAt.plusWeeks(2));
     }
 
     public void markAsReturned() {
