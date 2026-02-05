@@ -90,6 +90,11 @@ public class Order {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    public void requestCanceledAt() {
+        this.status = OrderStatus.CANCELLED;
+        this.canceledAt = OffsetDateTime.now();
+    }
+
     private Order(
             int quantity,
             Long price,

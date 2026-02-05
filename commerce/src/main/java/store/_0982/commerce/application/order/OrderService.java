@@ -20,6 +20,8 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
+    private final CanceledOrderService canceledOrderService;
+
     /**
      * 주문 생성
      *
@@ -81,7 +83,7 @@ public class OrderService {
      * @param command
      */
     public void cancelOrder(OrderCancelCommand command) {
-        orderCommandService.cancelOrder(command);
+        canceledOrderService.cancelOrder(command);
     }
 
     /**
@@ -98,7 +100,7 @@ public class OrderService {
      * 주문 취소 재시도 배치
      */
     public void retryCancelOrder() {
-        orderCommandService.retryCancelOrder();
+        canceledOrderService.retryCancelOrder();
     }
 
     /**

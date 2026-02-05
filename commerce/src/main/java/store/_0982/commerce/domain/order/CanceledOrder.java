@@ -28,11 +28,23 @@ public class CanceledOrder {
     @Column(name = "member_id", nullable = false, updatable = false)
     private UUID memberId;
 
-    @Column(name = "returned_amount", nullable = false)
-    private Long returnedAmount;
+    @Column(name = "original_paid_amount", nullable = false)
+    private Long originalPaidAmount;    // 취소 전 실제 결제액
 
-    @Column(name = "fee", nullable = false)
-    private Long fee;
+    @Column(name = "cancel_fee_amount", nullable = false)
+    private Long cancelFeeAmount;       // 취소 수수료
+
+    @Column(name = "shipping_fee_amount", nullable = false)
+    private Long shippingFeeAmount;     // 배송비
+
+    @Column(name = "refund_amount", nullable = false)
+    private Long refundAmount;          // 최종 환불액
+
+    @Column(name = "policy_id", nullable = false, length = 60)
+    private String policyId;            // 취소 정책
+
+    @Column(name = "policy_snapshot", columnDefinition = "text")
+    private String policySnapshot;      // 취소 정책 스냅샷 - JSON 문자열
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -45,7 +57,7 @@ public class CanceledOrder {
     @Column(name = "detail_reason")
     private String detailReason;
 
-    @Column(name = "idempotency_key", unique = true, nullable = false)
+    @Column(name = "idempotency_key", unique = true, nullable = false, updatable = false)
     private String idempotencyKey;
 
     @Enumerated(EnumType.STRING)
@@ -66,11 +78,20 @@ public class CanceledOrder {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
+    public void markCompleted() {
+        this.returnedAt = OffsetDateTime.now();
+        status = CancelStatus.COMPLETED;
+    }
+
     public static CanceledOrder createCanceledOrder(
             UUID orderId,
             UUID memberId,
-            Long returnedAmount,
-            Long fee,
+            long originalPaidAmount,
+            long cancelFeeAmount,
+            long shippingFeeAmount,
+            long refundAmount,
+            String policyId,
+            String policySnapshot,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -78,8 +99,12 @@ public class CanceledOrder {
         return new CanceledOrder(
                 orderId,
                 memberId,
-                returnedAmount,
-                fee,
+                originalPaidAmount,
+                cancelFeeAmount,
+                shippingFeeAmount,
+                refundAmount,
+                policyId,
+                policySnapshot,
                 reason,
                 detailReason,
                 idempotencyKey,
@@ -89,8 +114,12 @@ public class CanceledOrder {
     private CanceledOrder(
             UUID orderId,
             UUID memberId,
-            Long returnedAmount,
-            Long fee,
+            long originalPaidAmount,
+            long cancelFeeAmount,
+            long shippingFeeAmount,
+            long refundAmount,
+            String policyId,
+            String policySnapshot,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -98,8 +127,12 @@ public class CanceledOrder {
         this.canceledOrderId = UUID.randomUUID();
         this.orderId = orderId;
         this.memberId = memberId;
-        this.returnedAmount = returnedAmount;
-        this.fee = fee;
+        this.originalPaidAmount = originalPaidAmount;
+        this.cancelFeeAmount = cancelFeeAmount;
+        this.shippingFeeAmount = shippingFeeAmount;
+        this.refundAmount = refundAmount;
+        this.policyId = policyId;
+        this.policySnapshot = policySnapshot;
         this.status = CancelStatus.REQUESTED;
         this.reason = reason;
         this.detailReason = detailReason;
@@ -108,14 +141,14 @@ public class CanceledOrder {
         this.canceledAt = OffsetDateTime.now();
     }
 
-    public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+    public OrderCanceledEvent toEvent(String productName, OrderCanceledEvent.PaymentMethod method) {
         return new OrderCanceledEvent(
                 this.memberId,
                 this.orderId,
                 productName,
-                cancelReason,
+                this.detailReason,
                 method,
-                amount
+                this.refundAmount
         );
     }
 }
