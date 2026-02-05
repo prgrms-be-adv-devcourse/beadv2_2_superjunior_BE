@@ -42,5 +42,8 @@ public final class KafkaTopics {
     public static final String MEMBER_DELETED = "member.deleted";
     public static final String MEMBER_LOGGED_IN = "member.logged-in";
 
+    @Deprecated(forRemoval = true)
     public static final String SETTLEMENT_DONE = "settlement.done";
+
+    public static final String SELLER_PAYOUT_DONE = "seller-payout.done";
 }
