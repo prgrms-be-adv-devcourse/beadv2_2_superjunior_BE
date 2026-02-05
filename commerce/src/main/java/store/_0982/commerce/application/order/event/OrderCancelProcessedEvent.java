@@ -1,11 +1,9 @@
 package store._0982.commerce.application.order.event;
 
-import store._0982.commerce.domain.order.Order;
+import store._0982.commerce.domain.order.CanceledOrder;
 
 public record OrderCancelProcessedEvent(
-    Order order,
-    String reason,
-    Long amount,
-    String productName
+        CanceledOrder canceledOrder,
+        String productName
 ) {
 }

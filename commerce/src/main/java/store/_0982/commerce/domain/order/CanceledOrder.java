@@ -140,14 +140,14 @@ public class CanceledOrder {
         this.canceledAt = OffsetDateTime.now();
     }
 
-    public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
+    public OrderCanceledEvent toEvent(String productName, OrderCanceledEvent.PaymentMethod method) {
         return new OrderCanceledEvent(
                 this.memberId,
                 this.orderId,
                 productName,
-                cancelReason,
+                this.detailReason,
                 method,
-                amount
+                this.refundAmount
         );
     }
 }

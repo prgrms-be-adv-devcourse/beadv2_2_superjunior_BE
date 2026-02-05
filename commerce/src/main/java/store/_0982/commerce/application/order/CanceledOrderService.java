@@ -95,7 +95,7 @@ public class CanceledOrderService {
                         order.getPaymentMethod()
                 );
                 canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
+                publishCancellationEvent(canceledOrder, productName);
                 return;
             }
 
@@ -116,7 +116,7 @@ public class CanceledOrderService {
                         order.getPaymentMethod()
                 );
                 canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
+                publishCancellationEvent(canceledOrder, productName);
                 return;
             }
 
@@ -137,7 +137,7 @@ public class CanceledOrderService {
                         order.getPaymentMethod()
                 );
                 canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
+                publishCancellationEvent(canceledOrder, productName);
                 return;
             }
         } else if (command.reason().isSellerFault()) {
@@ -157,7 +157,7 @@ public class CanceledOrderService {
                     order.getPaymentMethod()
             );
             canceledOrderRepository.save(canceledOrder);
-            publishCancellationEvent(order, command.detailReason(), refundAmount.refundAmount(), productName);
+            publishCancellationEvent(canceledOrder, productName);
             return;
         }
 
@@ -187,22 +187,20 @@ public class CanceledOrderService {
                 continue;
             }
 
-            OrderCancellationPolicy policy = resolvePolicy(canceledOrder, order);
+            OrderCancellationPolicy policy = resolvePolicy(canceledOrder);
             if (policy == null) {
                 continue;
             }
-
-            RefundAmount calculated = policy.calculate(order);
 
             GroupPurchase groupPurchase = groupPurchaseService
                     .findByGroupPurchase(order.getGroupPurchaseId());
             String productName = productService.findByProductName(groupPurchase.getProductId());
 
-            publishCancellationEvent(order, canceledOrder.getDetailReason(), calculated.refundAmount(), productName);
+            publishCancellationEvent(canceledOrder, productName);
         }
     }
 
-    private OrderCancellationPolicy resolvePolicy(CanceledOrder canceledOrder, Order order) {
+    private OrderCancellationPolicy resolvePolicy(CanceledOrder canceledOrder) {
         String policyId = canceledOrder.getPolicyId();
         if (policyId != null) {
             if (policyId.equals(voidOrderCancellationPolicy.getPolicyId())) {
@@ -218,9 +216,9 @@ public class CanceledOrderService {
         return null;
     }
 
-    private void publishCancellationEvent(Order order, String reason, Long refundAmount, String productName) {
+    private void publishCancellationEvent(CanceledOrder canceledOrder, String productName) {
         eventPublisher.publishEvent(
-                new OrderCancelProcessedEvent(order, reason, refundAmount, productName)
+                new OrderCancelProcessedEvent(canceledOrder, productName)
         );
     }
 }
