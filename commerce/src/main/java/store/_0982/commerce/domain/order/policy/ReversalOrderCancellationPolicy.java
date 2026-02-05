@@ -1,8 +1,8 @@
 package store._0982.commerce.domain.order.policy;
 
 import org.springframework.stereotype.Component;
-import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderCancellationPolicy;
+import store._0982.common.domain.order.Order;
 
 /**
  * 공동구매 성공 후 48시간 이내 취소 정책 (철회)

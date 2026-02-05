@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.order.CanceledOrder;
-import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.settlement.OrderSettlement;
 import store._0982.common.domain.settlement.OrderSettlementStatus;
 

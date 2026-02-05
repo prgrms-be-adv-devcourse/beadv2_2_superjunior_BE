@@ -1,5 +1,7 @@
 package store._0982.commerce.domain.order;
 
+import store._0982.common.domain.order.Order;
+
 public interface OrderCancellationPolicy {
 
     /**

@@ -15,12 +15,14 @@ import store._0982.commerce.application.order.dto.OrderRegisterInfo;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.order.Order;
+import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.order.Order;
+import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
@@ -51,9 +53,11 @@ public class OrderCommandService {
     @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
-        // 이미 처리 요청된 주문인지 확인
-        if(orderRepository.existsByIdempotencyKey(command.requestId())){
-            throw new CustomException(CustomErrorCode.DUPLICATE_ORDER);
+        // 이미 처리된 주문이면 기존 결과 반환
+        Optional<Order> existingOrder = orderRepository.findByIdempotenceKey(command.requestId());
+
+        if(existingOrder.isPresent()){
+            return OrderRegisterInfo.from(existingOrder.get());
         }
 
         // 주문자 존재 여부
@@ -69,6 +73,7 @@ public class OrderCommandService {
         Order order = Order.create(
                 command.quantity(),
                 groupPurchase.getDiscountedPrice(),
+                ((long) command.quantity() * groupPurchase.getDiscountedPrice()),
                 memberId,
                 command.address(),
                 command.addressDetail(),
@@ -146,6 +151,7 @@ public class OrderCommandService {
             Order order = Order.create(
                     cart.getQuantity(),
                     groupPurchase.getDiscountedPrice(),
+                    ((long) cart.getQuantity() * groupPurchase.getDiscountedPrice()),
                     memberId,
                     command.address(),
                     command.addressDetail(),
