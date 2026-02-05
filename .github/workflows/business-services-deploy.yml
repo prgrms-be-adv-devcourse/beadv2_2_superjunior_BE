@@ -10,12 +10,12 @@ on:
       - 'member/**'
       - 'point/**'
       - 'commerce/**'
+      - 'ai/**'
+      - 'elastic-search/**'
       - 'common/**'
       - 'build.gradle'
       - 'settings.gradle'
       - 'docs/k8s/service/*.yml'
-      - '!docs/k8s/service/ai.yml'
-      - '!docs/k8s/service/search.yml'
       - 'business-services-deploy.yml'
 
 jobs:
@@ -27,6 +27,8 @@ jobs:
       member: ${{ steps.filter.outputs.member }}
       point: ${{ steps.filter.outputs.point }}
       commerce: ${{ steps.filter.outputs.commerce }}
+      ai: ${{ steps.filter.outputs.ai }}
+      search: ${{ steps.filter.outputs.search }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -70,6 +72,20 @@ jobs:
             echo "commerce=true" >> $GITHUB_OUTPUT
           else
             echo "commerce=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # AI
+          if echo "$CHANGED_FILES" | grep -qE '^(ai/|common/|build\.gradle|settings\.gradle|docs/k8s/service/ai\.yml)'; then
+            echo "ai=true" >> $GITHUB_OUTPUT
+          else
+            echo "ai=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Search
+          if echo "$CHANGED_FILES" | grep -qE '^(search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
+            echo "search=true" >> $GITHUB_OUTPUT
+          else
+            echo "search=false" >> $GITHUB_OUTPUT
           fi
 
   # Gateway 배포
@@ -151,3 +167,44 @@ jobs:
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+  # Search 배포
+  deploy-search:
+    needs: [ detect-changes, deploy-commerce ]
+    if: always() && needs.detect-changes.outputs.search == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: search
+          module-name: elastic-search
+          manifest-path: docs/k8s/service/search.yml
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  # AI 배포
+  deploy-ai:
+    needs: [ detect-changes, deploy-search ]
+    if: always() && needs.detect-changes.outputs.ai == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Search 배포
+        uses: ./.github/actions/deploy-business-service
+        with:
+          service-name: ai
+          manifest-path: docs/k8s/service/ai.yml
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
