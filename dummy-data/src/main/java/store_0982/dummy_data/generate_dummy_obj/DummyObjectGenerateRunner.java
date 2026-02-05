@@ -18,7 +18,6 @@ import store_0982.dummy_data.generate_dummy_obj.commerce.DummyProductGenerator;
 @Order(2)
 public class DummyObjectGenerateRunner implements ApplicationRunner {
 
-    private final ApplicationContext applicationContext;
     private final DummyProductGenerator dummyProductGenerator;
     private final DummyMemberGenerator dummyMemberGenerator;
     private final DummySellerGenerator dummySellerGenerator;
@@ -31,12 +30,8 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
     @Override
     public void run(org.springframework.boot.ApplicationArguments args) throws Exception {
         dummyProductGenerator.generateAndWriteCsv(productCount);
+        dummyGroupPurchaseGenerator.generateAndWriteCsv(groupPurchaseCount);
         dummyMemberGenerator.readIdAndWriteMember();
         dummySellerGenerator.readIdAndWriteSeller();
-        int exitCode = SpringApplication.exit(applicationContext, () -> 0);
-        System.exit(exitCode);
-        log.info("상품 더미데이터 생성 완료");
-        dummyGroupPurchaseGenerator.generateAndWriteCsv(groupPurchaseCount);
-        log.info("공동구매 더미데이터 생성 완료");
     }
 }
