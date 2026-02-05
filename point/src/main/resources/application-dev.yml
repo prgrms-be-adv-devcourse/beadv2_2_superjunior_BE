@@ -7,9 +7,10 @@ logging:
   level:
     store: debug
 
-token:
-  internal:
-    secret: "abcd"
-
 client:
   commerce: http://localhost:8087
+
+common:
+  logging:
+    service:
+      enabled: true

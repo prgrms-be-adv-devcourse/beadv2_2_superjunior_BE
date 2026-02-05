@@ -1,11 +1,11 @@
 package store._0982.common;
 
-public final class HeaderName {
-    public static final String ID = "X-Member-Id";
-    public static final String EMAIL = "X-Member-Email";
-    public static final String ROLE = "X-Member-Role";
-    public static final String TOKEN = "X-Internal-Token";
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-    private HeaderName() {
-    }
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class HeaderName {
+
+    public static final String ID = "X-Member-Id";
+    public static final String ROLE = "X-Member-Role";
 }
