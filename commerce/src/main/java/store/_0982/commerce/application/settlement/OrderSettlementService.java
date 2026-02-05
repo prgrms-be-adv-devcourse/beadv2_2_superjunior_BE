@@ -18,12 +18,13 @@ public class OrderSettlementService {
 
     @Transactional
     public void saveConfirmedOrderSettlement(Order order) {
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
+        OrderSettlement orderSettlement = OrderSettlement.createConfirmedOrderSettlement(
                 order.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
                 order.getPrice() * order.getQuantity(),
-                OrderSettlementStatus.COMPLETED);
+                0.2
+        );
 
         orderSettlementRepository.save(orderSettlement);
     }
@@ -40,7 +41,7 @@ public class OrderSettlementService {
     }
 
     private void saveCanceledOrderSettlementByBuyer(Order order, CanceledOrder canceledOrder) {
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
+        OrderSettlement orderSettlement = OrderSettlement.createCanceledOrderSettlement(
                 canceledOrder.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
@@ -51,7 +52,7 @@ public class OrderSettlementService {
     }
 
     private void saveCanceledOrderSettlementBySeller(Order order, CanceledOrder canceledOrder) {
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
+        OrderSettlement orderSettlement = OrderSettlement.createCanceledOrderSettlement(
                 canceledOrder.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
