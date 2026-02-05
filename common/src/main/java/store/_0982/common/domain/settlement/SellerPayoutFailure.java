@@ -16,11 +16,14 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "settlement_failure", schema = "settlement_schema")
-public class SettlementFailure {
+public class SellerPayoutFailure {
 
     @Id
     @Column(name = "failure_id", nullable = false)
     private UUID failureId;
+
+    @Column(name = "seller_payout_id", nullable = false)
+    private UUID sellerPayoutId;
 
     @Column(name = "seller_id", nullable = false)
     private UUID sellerId;
@@ -37,28 +40,24 @@ public class SettlementFailure {
     @Column(name = "retry_count", nullable = false)
     private Integer retryCount;
 
-    @Column(name = "settlement_id", nullable = false)
-    private UUID settlementId;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
-    public SettlementFailure(
+    public SellerPayoutFailure(
+            UUID sellerPayoutId,
             UUID sellerId,
             OffsetDateTime periodStart,
             OffsetDateTime periodEnd,
             String failureReason,
-            Integer retryCount,
-            UUID settlementId
+            Integer retryCount
     ) {
         this.failureId = UUID.randomUUID();
+        this.sellerPayoutId = sellerPayoutId;
         this.sellerId = sellerId;
         this.periodStart = periodStart;
         this.periodEnd = periodEnd;
         this.failureReason = failureReason;
         this.retryCount = retryCount;
-        this.settlementId = settlementId;
     }
-
 }
