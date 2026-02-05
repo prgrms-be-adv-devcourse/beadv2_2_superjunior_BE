@@ -34,7 +34,7 @@ public class GroupPurchase {
     @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "discounted_price", nullable = false)
