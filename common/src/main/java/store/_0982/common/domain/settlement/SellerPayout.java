@@ -18,10 +18,10 @@ import java.util.UUID;
 public class SellerPayout {
 
     @Id
-    @Column(name = "seller_payout_id", nullable = false)
+    @Column(name = "seller_payout_id", nullable = false, updatable = false)
     private UUID sellerPayoutId;
 
-    @Column(name = "seller_id", nullable = false)
+    @Column(name = "seller_id", nullable = false, updatable = false)
     private UUID sellerId;
 
     @Column(name = "period_start", nullable = false)
@@ -41,7 +41,7 @@ public class SellerPayout {
     private OffsetDateTime paidAt;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
@@ -99,7 +99,7 @@ public class SellerPayout {
         );
     }
 
-    public SellerPayout createSellerPayout(
+    public static SellerPayout createSellerPayout(
             UUID sellerId,
             OffsetDateTime periodStart,
             OffsetDateTime periodEnd,

@@ -15,17 +15,17 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "settlement_failure", schema = "settlement_schema")
+@Table(name = "seller_payout_failure", schema = "settlement_schema")
 public class SellerPayoutFailure {
 
     @Id
-    @Column(name = "failure_id", nullable = false)
+    @Column(name = "failure_id", nullable = false, updatable = false)
     private UUID failureId;
 
-    @Column(name = "seller_payout_id", nullable = false)
+    @Column(name = "seller_payout_id", nullable = false, updatable = false)
     private UUID sellerPayoutId;
 
-    @Column(name = "seller_id", nullable = false)
+    @Column(name = "seller_id", nullable = false, updatable = false)
     private UUID sellerId;
 
     @Column(name = "period_start", nullable = false)
@@ -41,10 +41,28 @@ public class SellerPayoutFailure {
     private Integer retryCount;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    public SellerPayoutFailure(
+    public static SellerPayoutFailure createSellerPayoutFailure(
+            UUID sellerPayoutId,
+            UUID sellerId,
+            OffsetDateTime periodStart,
+            OffsetDateTime periodEnd,
+            String failureReason,
+            Integer retryCount
+    ) {
+        return new SellerPayoutFailure(
+                sellerPayoutId,
+                sellerId,
+                periodStart,
+                periodEnd,
+                failureReason,
+                retryCount
+        );
+    }
+
+    private SellerPayoutFailure(
             UUID sellerPayoutId,
             UUID sellerId,
             OffsetDateTime periodStart,
