@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import store._0982.common.exception.CustomException;
 import store._0982.common.exception.EntityErrorCode;
-import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.security.SecureRandom;
 import java.time.LocalDate;
@@ -209,16 +208,5 @@ public class Order {
             throw new CustomException(EntityErrorCode.CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS);
         }
         this.status = OrderStatus.CONFIRMED;
-    }
-
-    public OrderCanceledEvent toEvent(String productName, String cancelReason, OrderCanceledEvent.PaymentMethod method, Long amount) {
-        return new OrderCanceledEvent(
-                this.memberId,
-                this.orderId,
-                productName,
-                cancelReason,
-                method,
-                amount
-        );
     }
 }
