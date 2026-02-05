@@ -14,6 +14,9 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.Product;
+import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
@@ -333,7 +336,7 @@ class GrouppurchaseIntegrationTest {
                 50, 100, "OPEN 공동구매", "설명",
                 5000L, now.minusDays(1), now.plusDays(7),
                 testMemberId, product.getProductId(), null);
-        groupPurchase.updateStatus(store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus.OPEN);
+        groupPurchase.updateStatus(GroupPurchaseStatus.OPEN);
         groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         // when & then

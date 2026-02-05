@@ -3,6 +3,7 @@ package store._0982.commerce.domain.order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
@@ -35,7 +36,7 @@ public interface OrderRepository {
 
     List<Order> findAllByMemberId(UUID memberId);
 
-    List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
+    //List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
 
     void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
 

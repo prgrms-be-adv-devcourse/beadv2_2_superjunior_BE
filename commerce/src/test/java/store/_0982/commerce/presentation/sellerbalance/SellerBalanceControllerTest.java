@@ -6,22 +6,22 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import store._0982.commerce.application.sellerbalance.SellerBalanceService;
-import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
-import store._0982.common.HeaderName;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import store._0982.common.dto.PageResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import store._0982.commerce.application.sellerbalance.SellerBalanceService;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
+import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
+import store._0982.common.HeaderName;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistoryStatus;
+import store._0982.common.dto.PageResponse;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

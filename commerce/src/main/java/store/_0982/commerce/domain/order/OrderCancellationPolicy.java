@@ -1,39 +1,56 @@
 package store._0982.commerce.domain.order;
 
-public class OrderCancellationPolicy {
+import store._0982.common.domain.order.Order;
 
-    private static final double CANCELLATION_FEE_RATE = 0.20;   // 20%
-    private static final long SHIPPING_FEE = 6000L;             // 택배비
+public interface OrderCancellationPolicy {
 
-    public static RefundAmount calculate(Order order, CancellationType type) {
-        long totalAmount = order.getPrice() * order.getQuantity();
+    /**
+     * 환불 금액 계산
+     *
+     * @param order 취소할 주문
+     * @return 환불 금액과 취소 수수료
+     */
+    RefundAmount calculate(Order order);
 
-        return switch (type) {
-            case BEFORE_GROUP_PURCHASE_SUCCESS ->
-                    new RefundAmount(totalAmount, 0L);
+    /**
+     * 정책 식별자 (버전 포함)
+     */
+    String getPolicyId();
 
-            case WITHIN_48_HOURS ->
-                    new RefundAmount(
-                            (long) (totalAmount * (1 - CANCELLATION_FEE_RATE)),
-                            (long) (totalAmount * CANCELLATION_FEE_RATE)
-                    );
+    /**
+     * 정책 타입 반환
+     */
+    PolicyType getPolicyType();
 
-            case AFTER_48_HOURS ->
-                    new RefundAmount(
-                            (long) (totalAmount * (1 - CANCELLATION_FEE_RATE)) - SHIPPING_FEE,
-                            (long) (totalAmount * CANCELLATION_FEE_RATE)
-                    );
-        };
+    /**
+     * 정책 스냅샷(JSON 등)을 생성한다.
+     */
+    default String buildSnapshot(RefundAmount refundAmount) {
+        return String.format(
+                "{\"policyType\":\"%s\",\"policyId\":\"%s\",\"cancellationFee\":%d,\"shippingFee\":%d,\"refundAmount\":%d}",
+                getPolicyType().name(),
+                getPolicyId(),
+                refundAmount.cancellationFee(),
+                refundAmount.shippingFee(),
+                refundAmount.refundAmount()
+        );
     }
 
-    public record RefundAmount(
-            Long refundAmount,          // 환불 금액
-            Long cancellationFee        // 취소 수수료
+    /**
+     * 환불 금액 정보
+     *
+     * @param refundAmount 고객에게 환불할 금액
+     * @param cancellationFee 취소 수수료 (판매자에게 전달)
+     */
+    record RefundAmount(
+            long refundAmount,
+            long cancellationFee,
+            long shippingFee
     ) {}
 
-    public enum CancellationType {
-        BEFORE_GROUP_PURCHASE_SUCCESS,  // 공구 성공 전
-        WITHIN_48_HOURS,                // 48시간 이내
-        AFTER_48_HOURS                  // 48시간 ~ 2주
+    enum PolicyType {
+        VOID,
+        REVERSAL,
+        REFUND
     }
 }

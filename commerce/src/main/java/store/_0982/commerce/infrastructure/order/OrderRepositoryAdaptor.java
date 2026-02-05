@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 
 import java.time.OffsetDateTime;
@@ -78,10 +78,10 @@ public class OrderRepositoryAdaptor implements OrderRepository {
         return orderJpaRepository.findAllByMemberId(memberId);
     }
 
-    @Override
-    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
-        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
-    }
+//    @Override
+//    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
+//        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
+//    }
 
     @Override
     public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {

@@ -16,13 +16,11 @@ public class OrderCanceledKafkaEventPublisher {
     private final KafkaTemplate<String, OrderCanceledEvent> orderCanceledKafkaTemplate;
 
     public void publish(OrderCancelProcessedEvent event) {
-        OrderCanceledEvent kafkaEvent = event.order().toEvent(
+        OrderCanceledEvent kafkaEvent = event.canceledOrder().toEvent(
                 event.productName(),
-                event.reason(),
                 OrderCanceledEvent.PaymentMethod.valueOf(
-                        event.order().getPaymentMethod().name()
-                ),
-                event.amount()
+                        event.canceledOrder().getPaymentMethod().name()
+                )
         );
         send(kafkaEvent.getEventId().toString(), kafkaEvent);
     }

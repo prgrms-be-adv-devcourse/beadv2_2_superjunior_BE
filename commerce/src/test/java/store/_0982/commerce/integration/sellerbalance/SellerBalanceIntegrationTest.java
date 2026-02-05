@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.sellerbalance.SellerBalance;
+import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
 
 import java.util.UUID;
 
@@ -71,28 +73,22 @@ class SellerBalanceIntegrationTest {
         UUID settlementId2 = UUID.randomUUID();
         UUID settlementId3 = UUID.randomUUID();
 
-        SellerBalanceHistory history1 = new SellerBalanceHistory(
+        SellerBalanceHistory history1 = SellerBalanceHistory.createCreditHistory(
                 testMemberId,
                 settlementId1,
-                null,
-                50000L,
-                SellerBalanceHistoryStatus.CREDIT
+                50000L
         );
 
-        SellerBalanceHistory history2 =  new SellerBalanceHistory(
+        SellerBalanceHistory history2 = SellerBalanceHistory.createDebitHistory(
                 testMemberId,
                 settlementId2,
-                null,
-                20000L,
-                SellerBalanceHistoryStatus.DEBIT
+                20000L
         );
 
-        SellerBalanceHistory history3 =new SellerBalanceHistory(
+        SellerBalanceHistory history3 = SellerBalanceHistory.createCreditHistory(
                 testMemberId,
                 settlementId3,
-                null,
-                30000L,
-                SellerBalanceHistoryStatus.CREDIT
+                30000L
         );
 
         sellerBalanceHistoryRepository.save(history1);
@@ -144,13 +140,21 @@ class SellerBalanceIntegrationTest {
     void getBalanceHistory_withPaging() throws Exception {
         // given
         for (int i = 0; i < 5; i++) {
-            SellerBalanceHistory history = new SellerBalanceHistory(
-                    testMemberId,
-                    UUID.randomUUID(),
-                    null,
-                    (i + 1) * 10000L,
-                    i % 2 == 0 ? SellerBalanceHistoryStatus.CREDIT : SellerBalanceHistoryStatus.DEBIT
-            );
+            SellerBalanceHistory history = null;
+            if (i / 2 == 0) {
+                history = SellerBalanceHistory.createCreditHistory(
+                        testMemberId,
+                        UUID.randomUUID(),
+                        (i + 1) * 10000L
+                );
+            }
+            else {
+                history = SellerBalanceHistory.createDebitHistory(
+                        testMemberId,
+                        UUID.randomUUID(),
+                        (i + 1) * 10000L
+                );
+            }
             sellerBalanceHistoryRepository.save(history);
         }
 
@@ -198,21 +202,17 @@ class SellerBalanceIntegrationTest {
         SellerBalance otherSellerBalance = new SellerBalance(otherMemberId);
         sellerBalanceRepository.save(otherSellerBalance);
 
-        SellerBalanceHistory otherHistory = new SellerBalanceHistory(
+        SellerBalanceHistory otherHistory = SellerBalanceHistory.createCreditHistory(
                 otherMemberId,
                 UUID.randomUUID(),
-                null,
-                100000L,
-                SellerBalanceHistoryStatus.CREDIT
+                100000L
         );
         sellerBalanceHistoryRepository.save(otherHistory);
 
-        SellerBalanceHistory myHistory = new SellerBalanceHistory(
+        SellerBalanceHistory myHistory = SellerBalanceHistory.createCreditHistory(
                 testMemberId,
                 UUID.randomUUID(),
-                null,
-                50000L,
-                SellerBalanceHistoryStatus.CREDIT
+                50000L
         );
         sellerBalanceHistoryRepository.save(myHistory);
 

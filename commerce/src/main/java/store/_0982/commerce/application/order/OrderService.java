@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
-import store._0982.commerce.domain.order.Order;
+import store._0982.common.domain.order.Order;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
@@ -20,6 +20,8 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
+    private final CanceledOrderService canceledOrderService;
+
     /**
      * 주문 생성
      *
@@ -81,7 +83,7 @@ public class OrderService {
      * @param command
      */
     public void cancelOrder(OrderCancelCommand command) {
-        orderCommandService.cancelOrder(command);
+        canceledOrderService.cancelOrder(command);
     }
 
     /**
@@ -98,7 +100,7 @@ public class OrderService {
      * 주문 취소 재시도 배치
      */
     public void retryCancelOrder() {
-        orderCommandService.retryCancelOrder();
+        canceledOrderService.retryCancelOrder();
     }
 
     /**
