@@ -15,7 +15,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-5
+        kubernetes.io/hostname: api-server
       containers:
         - name: member
           image: minbros/member:latest
