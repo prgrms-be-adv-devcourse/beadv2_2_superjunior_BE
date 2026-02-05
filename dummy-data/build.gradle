@@ -16,6 +16,7 @@ dependencies {
 
     //random data generation
     implementation 'org.jeasy:easy-random-core:5.0.0'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv'
 
     testImplementation 'org.springframework.security:spring-security-test'
 

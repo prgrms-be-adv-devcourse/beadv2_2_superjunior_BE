@@ -1,11 +1,16 @@
 package store_0982.dummy_data.generate_dummy_obj.member;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.common.auth.Role;
 import store._0982.member.domain.member.Member;
+import store_0982.dummy_data.generate_dummy_obj.member.dto.MemberRowCsv;
 import store_0982.dummy_data.util.Utils;
 
 import java.io.BufferedReader;
@@ -14,8 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -31,8 +34,11 @@ public class DummyMemberGenerator {
     public void readIdAndWriteMember() {
         Path idPool = Path.of(idPoolPath);
         Path output = Path.of(dummyPath);
-        List<String> excluded = new LinkedList<>();
-        excluded.add("addresses"); // avoid writing collection column
+        CsvMapper csvMapper = CsvMapper.builder()
+                .findAndAddModules()
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build();
+        CsvSchema schema = csvMapper.schemaFor(MemberRowCsv.class).withHeader();
         try {
             Files.createDirectories(output.getParent());
         } catch (IOException e) {
@@ -40,21 +46,21 @@ public class DummyMemberGenerator {
         }
 
         try (BufferedReader reader = Files.newBufferedReader(idPool);
-             BufferedWriter writer = Files.newBufferedWriter(output)) {
+             BufferedWriter writer = Files.newBufferedWriter(output);
+             SequenceWriter sequenceWriter = csvMapper.writer(schema).writeValues(writer)) {
             int generated = 0;
-            String headerLine = Utils.makeCsvHeaderString(Member.class, excluded);
-            writer.write(headerLine);
-
             String line;
             while (generated < count && (line = reader.readLine()) != null) {
-                UUID memberId = UUID.fromString(line.trim());
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                UUID memberId = UUID.fromString(trimmed);
                 Member dummyMember = createDummyMember(memberId);
-                String row = Utils.makeCsvRowString(dummyMember, excluded);
-                writer.write(row);
+                sequenceWriter.write(MemberRowCsv.from(dummyMember));
                 generated++;
             }
-            writer.flush();
-        } catch (IOException | IllegalAccessException e) {
+        } catch (IOException e) {
             throw new IllegalStateException("Failed to generate dummy members", e);
         }
     }

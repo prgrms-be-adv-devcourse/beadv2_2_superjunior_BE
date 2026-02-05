@@ -15,11 +15,12 @@ public class Utils {
         }
     }
 
+    @Deprecated
     public static <T> String makeCsvHeaderString(Class<T> clazz, List<String> excluded) {
         String camelCase =  String.join("," ,Stream.of(clazz.getDeclaredFields()).sorted((f1, f2) -> f1.getName().compareTo(f2.getName())).map( f -> "\"" + f.getName() + "\"" ).filter(name -> !excluded.contains(name)).toList()) + "\n";
         return toSnakeCase(camelCase);
     }
-
+    @Deprecated
     private static String toSnakeCase(String camelCase) {
         StringBuilder sb = new StringBuilder();
         for (char c : camelCase.toCharArray()) {
@@ -32,6 +33,7 @@ public class Utils {
         return sb.toString();
     }
 
+    @Deprecated
     public static <T> String makeCsvRowString(T entity, List<String> excluded) throws IllegalAccessException {
         List<Field> fields = Stream.of(entity.getClass().getDeclaredFields())
                 .filter(f -> !excluded.contains(f.getName()))
@@ -49,6 +51,5 @@ public class Utils {
         row.append('\n');
         return row.toString();
     }
-
 
 }
