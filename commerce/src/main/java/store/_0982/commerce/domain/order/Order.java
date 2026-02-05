@@ -88,6 +88,11 @@ public class Order {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    public void requestCanceledAt() {
+        this.status = OrderStatus.CANCELLED;
+        this.canceledAt = OffsetDateTime.now();
+    }
+
     private Order(
             int quantity,
             Long price,
@@ -137,7 +142,6 @@ public class Order {
                 idempotencyKey
         );
     }
-
 
     // 결제 완료
     public void completePayment(PaymentMethod paymentMethod) {
