@@ -27,6 +27,12 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
+    // Testcontainers
+    testImplementation 'org.testcontainers:testcontainers'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+
     //ND4J 벡터 계산 라이브러리
     implementation 'org.nd4j:nd4j-native-platform:1.0.0-beta7'
 
