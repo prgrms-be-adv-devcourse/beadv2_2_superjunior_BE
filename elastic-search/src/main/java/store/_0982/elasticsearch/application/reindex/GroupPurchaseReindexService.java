@@ -3,6 +3,7 @@ package store._0982.elasticsearch.application.reindex;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupPurchaseReindexService {
@@ -129,17 +131,22 @@ public class GroupPurchaseReindexService {
         int batchSize = properties.getBatchSize();
         long offset = 0;
         long total = 0;
+        long batch = 0;
 
         while (true) {
             List<GroupPurchaseReindexRow> rows = fetcher.fetch(batchSize, offset);
             if (rows.isEmpty()) {
                 break;
             }
+            batch++;
             List<String> failedIds = bulkIndex(indexName, rows);
             if (!failedIds.isEmpty()) {
                 failedIds = retryFailedRows(indexName, failedIds);
             }
-            total += rows.size() - failedIds.size();
+            long succeeded = rows.size() - failedIds.size();
+            total += succeeded;
+            log.info("Reindex batch={} offset={} size={} succeeded={} failed={} total={}",
+                    batch, offset, rows.size(), succeeded, failedIds.size(), total);
             offset += batchSize;
         }
         return total;

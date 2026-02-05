@@ -10,6 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class GroupPurchaseReindexProperties {
     private boolean enabled = false;    //수동 runner 재색인 true면 서버 재배포 시 재색인
     private String alias = "group-purchase";
-    private int batchSize = 500;
+    private int batchSize = 2000;
     private boolean switchAlias = true;
 }
