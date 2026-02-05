@@ -2,6 +2,7 @@ package store_0982.dummy_data.generate_dummy_obj.member;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SequenceWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.jeasy.random.EasyRandom;
@@ -38,7 +39,9 @@ public class DummySellerGenerator {
                 .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                 .build();
         CsvSchema schema = csvMapper.schemaFor(SellerRowCsv.class).withHeader();
-
+        //Timstamp 에러 해결
+        csvMapper.findAndRegisterModules();
+        csvMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         try {
             Files.createDirectories(output.getParent());
         } catch (IOException e) {
