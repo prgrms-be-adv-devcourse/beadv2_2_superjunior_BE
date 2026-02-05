@@ -82,7 +82,7 @@ public class OrderCommandService {
         Order order = Order.create(
                 command.quantity(),
                 groupPurchase.getDiscountedPrice(),
-                ((long) command.quantity() * groupPurchase.getCurrentQuantity()),
+                ((long) command.quantity() * groupPurchase.getDiscountedPrice()),
                 memberId,
                 command.address(),
                 command.addressDetail(),
@@ -160,7 +160,7 @@ public class OrderCommandService {
             Order order = Order.create(
                     cart.getQuantity(),
                     groupPurchase.getDiscountedPrice(),
-                    ((long) cart.getQuantity() * groupPurchase.getCurrentQuantity()),
+                    ((long) cart.getQuantity() * groupPurchase.getDiscountedPrice()),
                     memberId,
                     command.address(),
                     command.addressDetail(),
