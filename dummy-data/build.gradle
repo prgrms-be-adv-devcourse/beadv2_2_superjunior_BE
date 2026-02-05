@@ -13,11 +13,10 @@ dependencies {
     implementation(project(path: ':member', configuration: 'domainElements'))
     implementation(project(path: ':commerce', configuration: 'domainElements'))
     implementation(project(path: ':point', configuration: 'domainElements'))
+    
+    //random data generation
     implementation 'org.jeasy:easy-random-core:5.0.0'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv'
-
-    //Easy Random
-    implementation 'org.jeasy:easy-random-core:5.0.0'
 
     testImplementation 'org.springframework.security:spring-security-test'
 
