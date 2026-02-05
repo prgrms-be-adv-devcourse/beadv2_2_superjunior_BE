@@ -11,17 +11,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.common.HeaderName;
-import store._0982.common.auth.RequireRole;
-import store._0982.common.auth.Role;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.dto.ResponseDto;
 import store._0982.commerce.application.order.OrderService;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.order.dto.OrderRegisterInfo;
+import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.commerce.presentation.order.dto.OrderCartRegisterRequest;
 import store._0982.commerce.presentation.order.dto.OrderRegisterRequest;
+import store._0982.common.HeaderName;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
 
 import java.util.List;
 import java.util.UUID;
@@ -57,7 +57,6 @@ public class OrderController {
 
     @Operation(summary = "주문 조회", description = "주문을 조회합니다.")
     @GetMapping("/{orderId}")
-    @RequireRole({Role.CONSUMER, Role.SELLER, Role.ADMIN})
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<OrderDetailInfo> getOrderById(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
@@ -69,7 +68,6 @@ public class OrderController {
 
     @Operation(summary = "주문 목록 조회(구매자)", description = "주문 목록(구매자)을 조회합니다.")
     @GetMapping("/consumer")
-    @RequireRole({Role.CONSUMER, Role.SELLER})
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<PageResponse<OrderInfo>> getOrdersConsumer(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
@@ -87,7 +85,6 @@ public class OrderController {
     // TODO : 판매자 공동 구매별 주문 요약 -> 클릭 시 공동 구매별 주문 목록 조회 -> 목록 클릭 시 주문 상세 조회 필요(BFF)
     @Operation(summary = "주문 목록 조회(판매자)", description = "주문 목록(판매자)을 조회합니다.")
     @GetMapping("/seller")
-    @RequireRole({Role.SELLER})
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<PageResponse<OrderInfo>> getOrdersSeller(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
@@ -102,4 +99,34 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(판매자)가 완료 되었습니다.");
     }
 
+    @PostMapping("/cancel/{orderId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> cancelOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId,
+            @RequestBody OrderCancelRequest orderCancelRequest
+            ) {
+        orderService.cancelOrder(orderCancelRequest.toCommand(memberId, orderId));
+        return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
+    }
+
+    @GetMapping("/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderCancelInfo>> getCanceledOrders(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            Pageable pageable
+    ) {
+        PageResponse<OrderCancelInfo> response = orderService.getCanceledOrders(memberId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, response, "주문 취소 목록을 조회했습니다.");
+    }
+
+    @PatchMapping("/{orderId}/purchase-confirmed")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> confirmPurchase(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ){
+        orderService.confirmPurchase(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
+    }
 }

@@ -2,6 +2,7 @@ package store._0982.commerce.domain.product;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.common.domain.product.Product;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +16,11 @@ public interface ProductRepository {
 
     void delete(Product product);
 
-    Page<Product> findAll(Pageable pageable);
-
     Product saveAndFlush(Product product);
 
-    List<Product> findAllByProductIdIn(List<UUID> productIds);
-
     Page<Product> findBySellerId(UUID sellerId, Pageable pageable);
+
+    Optional<Product> findByIdempotencyKey(String idempotencyKey);
+
+    List<Product> findByProductIdIn(List<UUID> productIds);
 }

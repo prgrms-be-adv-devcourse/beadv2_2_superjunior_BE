@@ -3,6 +3,21 @@ spring:
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
-token:
-  internal:
-    secret: ${TOKEN_INTERNAL_SECRET}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+commerce-service:
+  url: ${COMMERCE_SERVICE_URL}
+
+point-service:
+  url: ${POINT_SERVICE_URL}
+
+cookie:
+  same-site: None
+  secure: true
+
+app:
+  oauth2:
+    frontend-redirect-url: https://0982.vercel.app

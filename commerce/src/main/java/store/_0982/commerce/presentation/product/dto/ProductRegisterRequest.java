@@ -1,8 +1,10 @@
 package store._0982.commerce.presentation.product.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import store._0982.commerce.application.product.dto.ProductRegisterCommand;
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.util.UUID;
 
@@ -22,10 +24,15 @@ public record ProductRegisterRequest(
         @Positive
         int stock,
 
-        String originalUrl
+        String originalUrl,
+
+        String imageUrl,
+
+        @NotBlank
+        String idempotencyKey
 ) {
 
     public ProductRegisterCommand toCommand(UUID sellerId) {
-        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, sellerId);
+        return new ProductRegisterCommand(name, price, category, description, stock, originalUrl, imageUrl, idempotencyKey, sellerId);
     }
 }

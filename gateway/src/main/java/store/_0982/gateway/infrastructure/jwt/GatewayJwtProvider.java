@@ -5,9 +5,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import store._0982.gateway.domain.Member;
+import store._0982.gateway.domain.Role;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.UUID;
 
 /**
  * member 서비스의 JwtProvider 와 동일한 시크릿 키를 사용하여
@@ -29,5 +32,9 @@ public class GatewayJwtProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-}
 
+    public static Member toMember(Claims claims) {
+        return Member.of(UUID.fromString(claims.getSubject()), Role.valueOf(claims.get("role", String.class)));
+
+    }
+}

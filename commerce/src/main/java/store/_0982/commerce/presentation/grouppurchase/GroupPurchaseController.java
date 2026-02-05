@@ -8,19 +8,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import store._0982.common.HeaderName;
-import store._0982.common.auth.RequireRole;
-import store._0982.common.auth.Role;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.dto.ResponseDto;
-import store._0982.common.log.ControllerLog;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
-
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseRegisterRequest;
 import store._0982.commerce.presentation.grouppurchase.dto.GroupPurchaseUpdateRequest;
+import store._0982.common.HeaderName;
+import store._0982.common.dto.PageResponse;
+import store._0982.common.dto.ResponseDto;
+import store._0982.common.log.ControllerLog;
 
 import java.util.UUID;
 
@@ -35,7 +32,6 @@ public class GroupPurchaseController {
     @Operation(summary="공동 구매 생성", description = "공동 구매를 생성합니다.")
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    @RequireRole({Role.SELLER, Role.ADMIN})
     public ResponseDto<GroupPurchaseInfo> createGroupPurchase(
             @RequestHeader(HeaderName.ID) UUID memberId,
             @Valid @RequestBody GroupPurchaseRegisterRequest request
@@ -86,7 +82,6 @@ public class GroupPurchaseController {
     @Operation(summary = "공동구매 수정", description = "공동구매 정보를 수정한다.")
     @PatchMapping("/{purchaseId}")
     @ResponseStatus(HttpStatus.OK)
-    @RequireRole({Role.SELLER, Role.ADMIN})
     public ResponseDto<GroupPurchaseInfo> updateGroupPurchase(
             @PathVariable UUID purchaseId,
             @RequestHeader(HeaderName.ID) UUID memberId,

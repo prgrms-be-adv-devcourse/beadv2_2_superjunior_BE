@@ -1,0 +1,17 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+frontend:
+  url: http://localhost:3000

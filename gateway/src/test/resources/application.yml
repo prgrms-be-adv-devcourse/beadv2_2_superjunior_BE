@@ -1,0 +1,6 @@
+jwt:
+  secret: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-test-jwt-secret-key-123456"
+
+token:
+  internal:
+    secret: "this-is-a-long-internal-token-secret-123456"

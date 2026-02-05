@@ -11,6 +11,7 @@ public record GroupPurchaseUpdateCommand(
         Long discountedPrice,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
-        UUID productId
+        UUID productId,
+        String imageUrl
 ) {
 }

@@ -2,7 +2,10 @@ package store._0982.commerce.domain.order;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
+import store._0982.common.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,5 +29,19 @@ public interface OrderRepository {
 
     List<Order> findByGroupPurchaseIdAndDeletedAtIsNull(UUID groupPurchaseId);
 
-    List<Order> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, OrderStatus status);
+    boolean existsByIdempotencyKey(String idempotenceKey);
+
+    Optional<Order> findByIdempotenceKey(String idempotenceKey);
+
+    List<Order> findAllByMemberId(UUID memberId);
+
+    List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime now);
+
+    void bulkMarkGroupPurchaseFail(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    void bulkMarkGroupPurchaseSuccess(@Param("groupPurchaseId") UUID groupPurchaseId);
+
+    List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, List<OrderStatus> orderStatuses);
+
+    Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable);
 }

@@ -1,16 +1,18 @@
 package store._0982.member.presentation.member;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.common.HeaderName;
-import store._0982.common.auth.RequireRole;
-import store._0982.common.auth.Role;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
+import store._0982.member.application.member.AuthService;
+import store._0982.member.application.member.MemberFacade;
 import store._0982.member.application.member.MemberService;
 import store._0982.member.application.member.SellerService;
 import store._0982.member.application.member.dto.*;
@@ -27,12 +29,15 @@ import java.util.UUID;
 public class MemberController {
     private final MemberService memberService;
     private final SellerService sellerService;
+    private final AuthService authService;
+
+    private final MemberFacade memberFacade;
 
     @Operation(summary = "회원가입", description = "신규 회원을 등록합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<MemberSignUpInfo> createMember(@Valid @RequestBody MemberSignUpRequest memberSignUpRequest) {
-        MemberSignUpInfo memberSignUpInfo = memberService.createMember(memberSignUpRequest.toCommand());
+        MemberSignUpInfo memberSignUpInfo = memberFacade.createMember(memberSignUpRequest.toCommand());
         return new ResponseDto<>(HttpStatus.CREATED, memberSignUpInfo, "회원가입이 완료되었습니다.");
     }
 
@@ -64,15 +69,15 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, memberService.updateProfile(command), "프로필 정보가 변경되었습니다.");
     }
 
-    @Operation(summary = "이름 중복 체크", description = "회원의 이름이 사용가능한지 확인합니다.")
-    @GetMapping("/name/{name}")
-    public ResponseDto<String> checkNameDuplication(@PathVariable("name") String name) {
-        memberService.checkNameDuplication(name);
-        return new ResponseDto<>(HttpStatus.OK, name, "사용가능한 이름입니다.");
-    }
+//    @Operation(summary = "이름 중복 체크", description = "회원의 이름이 사용가능한지 확인합니다.")
+//    @GetMapping("/name/{name}")
+//    public ResponseDto<String> checkNameDuplication(@PathVariable("name") String name) {
+//        memberService.checkNameDuplication(name);
+//        return new ResponseDto<>(HttpStatus.OK, name, "사용가능한 이름입니다.");
+//    }
 
-    @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")        //TODO: Post로 변경 (이메일 url에서 숨김 + 토큰 CREATED)
-    @GetMapping("/email/{email}")
+    @Operation(summary = "이메일 인증 메일 전송", description = "입력한 이메일 주소로 인증 메일을 전송합니다.")
+    @PostMapping("/email/{email}")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseDto<String> sendVerificationEmail(@PathVariable("email") String email) {
         memberService.sendVerificationEmail(email);
@@ -80,20 +85,20 @@ public class MemberController {
     }
 
     @Operation(summary = "이메일 인증", description = "인증 메일에 포함된 토큰으로 이메일 인증을 완료합니다.")
-    @GetMapping("/email/verification/{token}")
-    public ResponseDto<String> verifyEmail(@PathVariable("token") String token) {
-        memberService.verifyEmail(token);
+    @PostMapping("/email/verification")
+    public ResponseDto<String> verifyEmail(@RequestBody EmailVerificationRequest emailVerificationRequest) {
+        memberService.verifyEmail(emailVerificationRequest.toCommand());
         return new ResponseDto<>(HttpStatus.OK, null, "이메일 인증이 완료되었습니다.");
     }
 
     //아래는 Seller 관련 endpoint
     @Operation(summary = "판매자 등록", description = "회원이 판매자로 등록합니다.")
     @PostMapping("/seller")
-    @RequireRole(Role.CONSUMER)
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseDto<SellerRegisterInfo> registerSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
-        SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
-        return new ResponseDto<>(HttpStatus.CREATED, sellerService.registerSeller(command), "판매자 등록이 완료되었습니다.");
+    public ResponseDto<SellerRegisterInfo> registerSeller(HttpServletRequest request, HttpServletResponse response, @RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
+        SellerRegisterInfo sellerRegisterInfo = memberFacade.registerSeller(sellerRegisterRequest.toCommand(memberId));
+//        authService.refreshAccessTokenCookie(request, response); // /api/seller에서는 refresh 토큰이 오지 않음.
+        return new ResponseDto<>(HttpStatus.CREATED, sellerRegisterInfo, "판매자 등록이 완료되었습니다.");
     }
 
     @Operation(summary = "판매자 정보 조회", description = "판매자 정보를 조회합니다.")
@@ -105,7 +110,6 @@ public class MemberController {
 
     @Operation(summary = "판매자 정보 수정", description = "판매자 정보를 수정합니다.")
     @PutMapping("/seller")
-    @RequireRole(Role.SELLER)
     public ResponseDto<SellerRegisterInfo> updateSeller(@RequestHeader(value = HeaderName.ID) UUID memberId, @Valid @RequestBody SellerRegisterRequest sellerRegisterRequest) {
         SellerRegisterCommand command = sellerRegisterRequest.toCommand(memberId);
         return new ResponseDto<>(HttpStatus.OK, sellerService.updateSeller(command), "판매자 정보 수정이 완료되었습니다.");
@@ -134,13 +138,17 @@ public class MemberController {
         return new ResponseDto<>(HttpStatus.OK, null, "주소 삭제가 완료되었습니다.");
     }
 
+    @GetMapping("/role")
+    public ResponseDto<RoleInfo> getRole(@RequestHeader(value = HeaderName.ID) UUID memberId){
+        return new ResponseDto<>(HttpStatus.OK, memberService.getRoleOfMember(memberId), "사용자 역할 정보");
+    }
+
     @Operation(summary = "헤더 확인", description = "게이트웨이에서 전달된 회원 헤더 정보를 확인합니다.")
     @GetMapping("/header-check")
     public ResponseDto<Map<String, String>> checkHeader(@RequestHeader(value = HeaderName.ID, required = false) String memberId, @RequestHeader(value = HeaderName.EMAIL, required = false) String email, @RequestHeader(value = HeaderName.ROLE, required = false) String role) {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(HeaderName.ID, memberId);
-        headers.put(HeaderName.EMAIL, email);
         headers.put(HeaderName.ROLE, role);
 
         return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");

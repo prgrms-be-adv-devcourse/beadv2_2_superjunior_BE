@@ -1,6 +1,6 @@
 package store._0982.point.presentation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,17 +10,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.common.HeaderName;
-import store._0982.point.application.PointService;
-import store._0982.point.application.dto.PointInfo;
-import store._0982.point.presentation.dto.PointDeductRequest;
-import store._0982.point.presentation.dto.PointReturnRequest;
+import store._0982.point.application.dto.point.PointBalanceInfo;
+import store._0982.point.application.point.PointPaymentService;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,66 +29,63 @@ class InternalPointControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PointService pointService;
+    private PointPaymentService pointPaymentService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private UUID memberId;
+
+    @BeforeEach
+    void setUp() {
+        memberId = UUID.randomUUID();
+    }
 
     @TestConfiguration
     static class TestConfig {
         @Bean
-        public PointService memberPointService() {
-            return mock(PointService.class);
+        public PointPaymentService pointPaymentService() {
+            return mock(PointPaymentService.class);
         }
     }
 
     @Test
-    @DisplayName("내부 API로 포인트를 차감한다")
-    void use() throws Exception {
+    @DisplayName("회원 가입 시 포인트 잔액을 초기화한다")
+    void initializeBalance() throws Exception {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        UUID idempotencyKey = UUID.randomUUID();
-        PointDeductRequest request = new PointDeductRequest(idempotencyKey, orderId, 5000);
-        PointInfo info = new PointInfo(memberId, 5000, 0, OffsetDateTime.now());
+        PointBalanceInfo balanceInfo = new PointBalanceInfo(
+                memberId,
+                0,
+                0,
+                OffsetDateTime.now()
+        );
 
-        when(pointService.deductPoints(eq(memberId), any())).thenReturn(info);
+        when(pointPaymentService.initializeBalance(memberId)).thenReturn(balanceInfo);
 
         // when & then
-        mockMvc.perform(post("/internal/points/deduct")
+        mockMvc.perform(post("/internal/points")
                         .header(HeaderName.ID, memberId.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.message").value("포인트 차감 완료"))
-                .andExpect(jsonPath("$.data.pointBalance").value(5000));
+                .andExpect(jsonPath("$.data.memberId").value(memberId.toString()))
+                .andExpect(jsonPath("$.data.paidPoint").value(0))
+                .andExpect(jsonPath("$.data.bonusPoint").value(0));
 
-        verify(pointService).deductPoints(eq(memberId), any());
+        verify(pointPaymentService).initializeBalance(memberId);
     }
 
     @Test
-    @DisplayName("내부 API로 포인트를 반환한다")
-    void returnPoints() throws Exception {
+    @DisplayName("회원 가입 실패 시 포인트 잔액 초기화를 롤백한다")
+    void rollbackBalance() throws Exception {
         // given
-        UUID memberId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        UUID idempotencyKey = UUID.randomUUID();
-        PointReturnRequest request = new PointReturnRequest(idempotencyKey, orderId, 5000);
-        PointInfo info = new PointInfo(memberId, 15000, 0, OffsetDateTime.now());
-
-        when(pointService.returnPoints(eq(memberId), any())).thenReturn(info);
+        doNothing().when(pointPaymentService).rollbackBalance(memberId);
 
         // when & then
-        mockMvc.perform(post("/internal/points/return")
+        mockMvc.perform(delete("/internal/points")
                         .header(HeaderName.ID, memberId.toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.message").value("포인트 반환 완료"))
-                .andExpect(jsonPath("$.data.pointBalance").value(15000));
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data").isEmpty());
 
-        verify(pointService).returnPoints(eq(memberId), any());
+        verify(pointPaymentService).rollbackBalance(memberId);
     }
 }

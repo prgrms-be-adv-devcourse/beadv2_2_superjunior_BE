@@ -1,6 +1,6 @@
 package store._0982.commerce.application.product.dto;
 
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.ProductCategory;
 
 public record ProductUpdateCommand(
         String name,
@@ -8,6 +8,7 @@ public record ProductUpdateCommand(
         ProductCategory category,
         String description,
         int stock,
-        String originalLink
+        String originalLink,
+        String imageUrl
 ) {
 }

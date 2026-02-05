@@ -2,6 +2,8 @@ package store._0982.commerce.domain.grouppurchase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,14 +22,14 @@ public interface GroupPurchaseRepository {
     void delete(GroupPurchase groupPurchase);
 
     GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
-  
-    List<GroupPurchase> findByStatusAndSettledAtIsNull(GroupPurchaseStatus status);
 
     List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
 
     int openReadyGroupPurchases(OffsetDateTime now);
 
     boolean existsByProductId(UUID productId);
+
+    boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
 
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 

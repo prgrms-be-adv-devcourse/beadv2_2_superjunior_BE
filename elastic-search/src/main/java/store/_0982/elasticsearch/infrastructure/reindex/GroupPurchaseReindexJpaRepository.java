@@ -21,11 +21,14 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
-                p.seller_id as sellerId
+                p.seller_id as sellerId,
+                pv.vector as productVector
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
+            left join product_schema.product_vector pv on pv.product_id = p.product_id
             order by gp.group_purchase_id
             limit :limit offset :offset
             """, nativeQuery = true)
@@ -44,11 +47,14 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
-                p.seller_id as sellerId
+                p.seller_id as sellerId,
+                pv.vector as productVector
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
+            left join product_schema.product_vector pv on pv.product_id = p.product_id
             where coalesce(gp.updated_at, gp.created_at) >= :since
             order by gp.group_purchase_id
             limit :limit offset :offset
@@ -69,11 +75,14 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 gp.discounted_price as discountedPrice,
                 gp.current_quantity as currentQuantity,
                 coalesce(gp.updated_at, gp.created_at) as updatedAt,
+                p.product_id as productId,
                 p.category as category,
                 p.price as price,
-                p.seller_id as sellerId
+                p.seller_id as sellerId,
+                pv.vector as productVector
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
+            left join product_schema.product_vector pv on pv.product_id = p.product_id
             where gp.group_purchase_id in (:ids)
             """, nativeQuery = true)
     List<GroupPurchaseReindexProjection> findRowsByIds(@Param("ids") List<UUID> ids);

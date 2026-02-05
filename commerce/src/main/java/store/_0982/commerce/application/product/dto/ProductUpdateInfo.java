@@ -1,7 +1,7 @@
 package store._0982.commerce.application.product.dto;
 
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.Product;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.util.UUID;
 
@@ -13,6 +13,7 @@ public record ProductUpdateInfo(
         String description,
         int stock,
         String originalLink,
+        String imageUrl,
         UUID sellerId
 ) {
     public static ProductUpdateInfo from(Product product){
@@ -24,6 +25,7 @@ public record ProductUpdateInfo(
                 product.getDescription(),
                 product.getStock(),
                 product.getOriginalUrl(),
+                product.getImageUrl(),
                 product.getSellerId()
         );
     }

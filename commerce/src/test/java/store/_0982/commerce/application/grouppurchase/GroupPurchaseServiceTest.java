@@ -1,13 +1,14 @@
 package store._0982.commerce.application.grouppurchase;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -15,26 +16,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import store._0982.commerce.application.grouppurchase.dto.*;
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
 import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.common.dto.PageResponse;
-import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
+import store._0982.common.dto.PageResponse;
 import store._0982.common.dto.ResponseDto;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.KafkaTopics;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -55,6 +54,9 @@ class GroupPurchaseServiceTest {
 
     @Mock
     ResponseDto<ProfileInfo> responseDto;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private GroupPurchaseService groupPurchaseService;
@@ -436,7 +438,7 @@ class GroupPurchaseServiceTest {
             GroupPurchase groupPurchase = mock(GroupPurchase.class);
             when(groupPurchase.getStatus()).thenReturn(GroupPurchaseStatus.SCHEDULED);
             when(groupPurchase.getSellerId()).thenReturn(memberId);
-            when(groupPurchase.toEvent(any(), any(), any())).thenReturn(mockEvent);
+            when(groupPurchase.toEvent(any(), any(), any(), any())).thenReturn(mockEvent);
 
             when(groupPurchaseRepository.findById(purchaseId))
                     .thenReturn(Optional.of(groupPurchase));
@@ -521,13 +523,15 @@ class GroupPurchaseServiceTest {
     void setUp() {
         memberId = UUID.randomUUID();
 
-        product = new Product(
+        product = Product.createProduct(
                 "테스트 상품",
                 20000L,
                 ProductCategory.BEAUTY,
                 "테스트 상품 설명",
                 100,
                 "상품 url",
+                null,
+                "test-key",
                 memberId
         );
 
@@ -539,7 +543,8 @@ class GroupPurchaseServiceTest {
                 12000L,
                 OffsetDateTime.now().plusDays(1),
                 OffsetDateTime.now().plusDays(7),
-                product.getProductId()
+                product.getProductId(),
+                null
         );
     }
 
@@ -559,8 +564,8 @@ class GroupPurchaseServiceTest {
                 registerCommand.startDate(),
                 registerCommand.endDate(),
                 memberId,
-                product.getProductId()
-
+                product.getProductId(),
+                registerCommand.imageUrl()
         );
         OffsetDateTime productNow = OffsetDateTime.now();
 
@@ -646,13 +651,13 @@ class GroupPurchaseServiceTest {
                 new GroupPurchaseRegisterCommand(
                         100,
                         10,
-
                         "수량 오류 테스트",
                         "수량 오류 테스트 설명",
                         10000L,
                         OffsetDateTime.now().plusDays(1),
                         OffsetDateTime.now().plusDays(7),
-                        product.getProductId()
+                        product.getProductId(),
+                        null
                 );
 
 
@@ -672,13 +677,13 @@ class GroupPurchaseServiceTest {
                 new GroupPurchaseRegisterCommand(
                         10,
                         100,
-
                         "수량 오류 테스트",
                         "수량 오류 테스트 설명",
                         10000L,
                         OffsetDateTime.now().plusDays(7),
                         OffsetDateTime.now().plusDays(1),
-                        product.getProductId()
+                        product.getProductId(),
+                        null
                 );
 
         assertThatThrownBy(() ->
@@ -948,9 +953,10 @@ class GroupPurchaseServiceTest {
         when(mockEvent.getId()).thenReturn(purchaseId);
 
         when(groupPurchase.toEvent(
-                anyString(),
+                any(GroupPurchaseEvent.Status.class),
                 eq(GroupPurchaseEvent.EventStatus.DELETE_GROUP_PURCHASE),
-                isNull()
+                any(),
+                any()
         )).thenReturn(mockEvent);
 
         // when
@@ -1038,7 +1044,8 @@ class GroupPurchaseServiceTest {
                 12000L,
                 OffsetDateTime.now().plusDays(1),
                 OffsetDateTime.now().plusDays(7),
-                productId
+                productId,
+                null
         );
 
         when(groupPurchaseRepository.saveAndFlush(groupPurchase))
@@ -1048,7 +1055,8 @@ class GroupPurchaseServiceTest {
         when(productRepository.findById(productId))
                 .thenReturn(Optional.of(product));
         when(product.getSellerId()).thenReturn(memberId);
-        when(product.toEvent()).thenReturn(null);
+        when(product.getCategory()).thenReturn(ProductCategory.BEAUTY);
+        when(product.toEvent(any(ProductCategory.class))).thenReturn(null);
 
         ResponseDto<ProfileInfo> response = mock(ResponseDto.class);
         when(memberClient.getMember(memberId)).thenReturn(response);
@@ -1056,7 +1064,7 @@ class GroupPurchaseServiceTest {
 
         GroupPurchaseEvent event = mock(GroupPurchaseEvent.class);
         when(event.getId()).thenReturn(productId);
-        when(groupPurchase.toEvent(anyString(), any(), any()))
+        when(groupPurchase.toEvent(any(), any(), any(), any()))
                 .thenReturn(event);
 
         // when
@@ -1072,7 +1080,8 @@ class GroupPurchaseServiceTest {
                 command.discountedPrice(),
                 command.startDate(),
                 command.endDate(),
-                command.productId()
+                command.productId(),
+                command.imageUrl()
         );
         verify(upsertKafkaTemplate).send(
                 eq(KafkaTopics.GROUP_PURCHASE_CHANGED),

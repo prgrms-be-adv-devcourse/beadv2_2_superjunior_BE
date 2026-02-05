@@ -23,10 +23,22 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: prod
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
-            - name: KAFKA_BOOTSTRAP_SERVERS
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: MEMBER_SERVICE_URL
+              value: http://member-service:8083
+            - name: COMMERCE_SERVICE_URL
+              value: http://commerce-service:8087
+            - name: POINT_SERVICE_URL
+              value: http://point-service:8086
+            - name: SEARCH_SERVICE_URL
+              value: http://search-service:8082
+            - name: AI_SERVICE_URL
+              value: http://ai-service:8088
           envFrom:
             - secretRef:
                 name: gateway-secret
@@ -53,9 +65,9 @@ spec:
             httpGet:
               path: /actuator/health
               port: 8000
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
+            initialDelaySeconds: 90
+            periodSeconds: 15
+            timeoutSeconds: 10
             failureThreshold: 3
 ---
 apiVersion: v1

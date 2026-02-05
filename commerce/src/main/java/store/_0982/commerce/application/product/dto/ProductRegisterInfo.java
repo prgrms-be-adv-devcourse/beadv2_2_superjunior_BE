@@ -1,7 +1,7 @@
 package store._0982.commerce.application.product.dto;
 
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductCategory;
+import store._0982.common.domain.product.Product;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -14,6 +14,7 @@ public record  ProductRegisterInfo(
         String description,
         int stock,
         String originalUrl,
+        String imageUrl,
         UUID sellerId,
         OffsetDateTime createdAt
 ) {
@@ -27,6 +28,7 @@ public record  ProductRegisterInfo(
                 product.getDescription(),
                 product.getStock(),
                 product.getOriginalUrl(),
+                product.getImageUrl(),
                 product.getSellerId(),
                 product.getCreatedAt());
     }

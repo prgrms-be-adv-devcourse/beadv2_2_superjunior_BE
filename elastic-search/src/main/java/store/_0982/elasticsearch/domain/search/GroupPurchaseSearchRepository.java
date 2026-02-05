@@ -5,4 +5,6 @@ import java.util.UUID;
 
 public interface GroupPurchaseSearchRepository {
     List<GroupPurchaseSearchRow> findAllByIds(List<UUID> groupPurchaseIds);
+
+    List<GroupPurchaseSimilaritySearchRow> findAllSimilarityByIds(List<UUID> groupPurchaseIds);
 }

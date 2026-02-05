@@ -1,0 +1,34 @@
+ALTER TABLE order_schema."order"
+ALTER COLUMN expired_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN paid_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN created_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN updated_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN deleted_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN returned_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE order_schema.seller_balance
+ALTER COLUMN created_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN updated_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE order_schema.seller_balance_history
+ALTER COLUMN created_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE order_schema.shopping_cart
+ALTER COLUMN created_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN updated_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE product_schema.group_purchase
+ALTER COLUMN start_date TYPE TIMESTAMPTZ,
+    ALTER COLUMN end_date TYPE TIMESTAMPTZ,
+    ALTER COLUMN created_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN updated_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN returned_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN succeeded_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE product_schema.product
+ALTER COLUMN created_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN updated_at TYPE TIMESTAMPTZ,
+    ALTER COLUMN deleted_at TYPE TIMESTAMPTZ;
+
+ALTER TABLE product_vector
+ALTER COLUMN updated_at TYPE TIMESTAMPTZ;

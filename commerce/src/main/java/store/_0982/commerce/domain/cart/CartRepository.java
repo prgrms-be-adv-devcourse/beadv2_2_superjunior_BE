@@ -18,9 +18,11 @@ public interface CartRepository {
 
     Page<Cart> findAllByMemberId(UUID memberId, Pageable pageable);
 
+    List<Cart> findAllByMemberId(UUID memberId);
+
     void flushCart(UUID memberId);
 
     List<Cart> findAllByCartIdIn(List<UUID> cartIds);
 
-    void deleteAll(List<Cart> carts);
+    void deleteAllById(List<UUID> carts);
 }

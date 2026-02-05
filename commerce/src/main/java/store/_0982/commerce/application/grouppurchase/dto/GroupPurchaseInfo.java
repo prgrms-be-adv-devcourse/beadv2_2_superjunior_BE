@@ -1,7 +1,7 @@
 package store._0982.commerce.application.grouppurchase.dto;
 
-import store._0982.commerce.domain.grouppurchase.GroupPurchase;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -14,6 +14,7 @@ public record GroupPurchaseInfo(
         String title,
         String description,
         GroupPurchaseStatus status,
+        String imageUrl,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
         UUID sellerId,
@@ -30,6 +31,7 @@ public record GroupPurchaseInfo(
                 groupPurchase.getTitle(),
                 groupPurchase.getDescription(),
                 groupPurchase.getStatus(),
+                groupPurchase.getImageUrl(),
                 groupPurchase.getStartDate(),
                 groupPurchase.getEndDate(),
                 groupPurchase.getSellerId(),

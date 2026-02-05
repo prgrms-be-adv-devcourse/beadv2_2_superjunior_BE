@@ -2,22 +2,25 @@ package store._0982.commerce.application.product;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.product.dto.*;
+import store._0982.commerce.application.product.event.ProductUpsertedEvent;
+import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.commerce.domain.product.ProductVectorRepository;
+import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.Product;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEvent;
 import store._0982.common.log.ServiceLog;
-import store._0982.commerce.exception.CustomErrorCode;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.product.Product;
-import store._0982.commerce.domain.product.ProductRepository;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -28,21 +31,29 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
-    private final KafkaTemplate<String, ProductEvent> kafkaTemplate;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ProductVectorRepository productVectorRepository;
 
     @ServiceLog
     @Transactional
     public ProductRegisterInfo createProduct(ProductRegisterCommand command) {
-        Product product = new Product(command.name(),
+        Optional<Product> existing = productRepository
+                .findByIdempotencyKey(command.idempotencyKey());
+
+        if (existing.isPresent()) {
+            return ProductRegisterInfo.from(existing.get());
+        }
+
+        Product product = Product.createProduct(command.name(),
                 command.price(), command.category(),
                 command.description(), command.stock(),
-                command.originalUrl(), command.sellerId());
+                command.originalUrl(), command.imageUrl(),
+                command.idempotencyKey(), command.sellerId());
 
-        Product savedProduct = productRepository.saveAndFlush(product);
+        Product savedProduct = productRepository.save(product);
 
-        //kafka
-        ProductEvent event = savedProduct.toEvent();
-        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED,event.getId().toString(), event);
+        // AI 모듈 kafka
+        eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductRegisterInfo.from(savedProduct);
     }
@@ -84,12 +95,11 @@ public class ProductService {
                 command.category(),
                 command.description(),
                 command.stock(),
-                command.originalLink());
+                command.originalLink(),
+                command.imageUrl());
 
-        //kafka
-        Product updatedProduct = productRepository.saveAndFlush(product);
-        ProductEvent event = updatedProduct.toEvent();
-        kafkaTemplate.send(KafkaTopics.PRODUCT_UPSERTED, event.getId().toString(), event);
+        // AI 모듈 kafka
+        eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductUpdateInfo.from(product);
     }
@@ -103,6 +113,11 @@ public class ProductService {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_PRODUCT_OWNER);
         }
 
+        List<GroupPurchaseStatus> groupPurchaseStatuses = List.of(GroupPurchaseStatus.SCHEDULED, GroupPurchaseStatus.OPEN);
+        if (groupPurchaseRepository.existsByProductIdAndStatusIn(productId, groupPurchaseStatuses)) {
+            throw new CustomException(CustomErrorCode.PRODUCT_ACTIVE_GROUP_PURCHASE_EXISTS);
+        }
+
         boolean isUsedInGroupPurchase = groupPurchaseRepository.existsByProductId(productId);
 
         if (isUsedInGroupPurchase) {
@@ -112,9 +127,15 @@ public class ProductService {
         } else {
             // hard delete
             productRepository.delete(findProduct);
+
+            // vector 제거
+            productVectorRepository.deleteById(findProduct.getProductId());
         }
-        //kafka
-        kafkaTemplate.send(KafkaTopics.PRODUCT_DELETED, findProduct.getProductId().toString(), findProduct.toEvent());
     }
 
+    public String findByProductName(UUID productId) {
+        Product findProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        return findProduct.getName();
+    }
 }

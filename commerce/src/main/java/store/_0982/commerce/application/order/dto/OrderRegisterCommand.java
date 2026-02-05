@@ -9,6 +9,7 @@ public record OrderRegisterCommand(
         String postalCode,
         String receiverName,
         UUID sellerId,
-        UUID groupPurchaseId
+        UUID groupPurchaseId,
+        String requestId
 ) {
 }

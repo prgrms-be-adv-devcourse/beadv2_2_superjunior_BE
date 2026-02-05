@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.product.Product;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.common.domain.product.Product;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +23,6 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     }
 
     @Override
-    public Page<Product> findAll(Pageable pageable) {
-        return null;
-    }
-
-    @Override
     public Product saveAndFlush(Product product) {
         return productJpaRepository.saveAndFlush(product);
     }
@@ -36,6 +31,17 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public Page<Product> findBySellerId(UUID sellerId, Pageable pageable) {
         return productJpaRepository.findBySellerId(sellerId,pageable);
     }
+
+    @Override
+    public Optional<Product> findByIdempotencyKey(String idempotencyKey) {
+        return productJpaRepository.findByIdempotencyKey(idempotencyKey);
+    }
+
+    @Override
+    public List<Product> findByProductIdIn(List<UUID> productIds) {
+        return productJpaRepository.findByProductIdIn(productIds);
+    }
+
     public Optional<Product> findById(UUID productId) {
         return productJpaRepository.findById(productId);
     }
@@ -44,10 +50,4 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public void delete(Product product) {
         productJpaRepository.delete(product);
     }
-
-    @Override
-    public List<Product> findAllByProductIdIn(List<UUID> productIds) {
-        return productJpaRepository.findAllByProductIdIn(productIds);
-    }
-
 }

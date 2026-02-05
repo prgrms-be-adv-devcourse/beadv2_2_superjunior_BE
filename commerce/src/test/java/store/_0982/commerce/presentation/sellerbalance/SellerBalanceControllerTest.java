@@ -22,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import store._0982.common.dto.PageResponse;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
-import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryStatus;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
