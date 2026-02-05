@@ -9,10 +9,10 @@ dummy-data:
     count: 100000
     path: docs/dummy-data/id-pools/member_id_pool.csv
   product-id-pool:
-    count: 200000
+    count: 1000000
     path: docs/dummy-data/id-pools/product_id_pool.csv
   group-purchase-id-pool:
-    count: 200000
+    count: 1000000
     path: docs/dummy-data/id-pools/group_purchase_id_pool.csv
   order-id-pool:
     count: 1000000
@@ -23,3 +23,7 @@ dummy-data:
     path: docs/dummy-data/dummy-datas/seller-dummy.csv
   product-dummy:
     path: docs/dummy-data/dummy-datas/product-dummy.csv
+  group-purchase-dummy:
+    path: docs/dummy-data/dummy-datas/group-purchase-dummy.csv
+  category:
+    pet-percent: 20
