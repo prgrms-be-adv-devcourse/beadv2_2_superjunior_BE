@@ -62,6 +62,7 @@ public class GroupPurchaseSearchQueryFactory {
                         return b;
                     }))
                     .withPageable(pageable)
+                    .withTrackTotalHits(true)
                     .build();
         }
 
@@ -142,6 +143,7 @@ public class GroupPurchaseSearchQueryFactory {
                     return b;
                 }))
                 .withPageable(pageable)
+                .withTrackTotalHits(true)
                 .build();
     }
 }

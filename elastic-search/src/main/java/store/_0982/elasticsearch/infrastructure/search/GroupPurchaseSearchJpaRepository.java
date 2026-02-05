@@ -65,4 +65,70 @@ public interface GroupPurchaseSearchJpaRepository extends Repository<GroupPurcha
             where gp.group_purchase_id in (:ids)
             """, nativeQuery = true)
     List<GroupPurchaseSimilaritySearchProjection> findAllSimilarityByIds(@Param("ids") List<UUID> ids);
+
+    @Query(value = """
+            select
+                gp.group_purchase_id as groupPurchaseId,
+                gp.min_quantity as minQuantity,
+                gp.max_quantity as maxQuantity,
+                gp.title as title,
+                gp.description as description,
+                gp.image_url as imageUrl,
+                gp.discounted_price as discountedPrice,
+                gp.status as status,
+                gp.start_date as startDate,
+                gp.end_date as endDate,
+                gp.created_at as createdAt,
+                gp.updated_at as updatedAt,
+                gp.current_quantity as currentQuantity,
+                p.product_id as productId,
+                p.category as category,
+                p.price as price,
+                p.original_url as originalUrl,
+                p.seller_id as sellerId
+            from product_schema.group_purchase gp
+            join product_schema.product p on p.product_id = gp.product_id
+            where (
+                :keyword is null
+                or :keyword = ''
+                or gp.title ilike concat('%', :keyword, '%')
+                or gp.description ilike concat('%', :keyword, '%')
+                or gp.title ilike concat(:keyword, '%')
+            )
+            and (:status is null or :status = '' or gp.status = :status)
+            and (:category is null or :category = '' or p.category = :category)
+            and (:sellerId is null or p.seller_id = :sellerId)
+            order by gp.created_at desc
+            limit :limit offset :offset
+            """, nativeQuery = true)
+    List<GroupPurchaseSearchProjection> searchByCondition(
+            @Param("keyword") String keyword,
+            @Param("status") String status,
+            @Param("category") String category,
+            @Param("sellerId") UUID sellerId,
+            @Param("limit") int limit,
+            @Param("offset") long offset
+    );
+
+    @Query(value = """
+            select count(*)
+            from product_schema.group_purchase gp
+            join product_schema.product p on p.product_id = gp.product_id
+            where (
+                :keyword is null
+                or :keyword = ''
+                or gp.title ilike concat('%', :keyword, '%')
+                or gp.description ilike concat('%', :keyword, '%')
+                or gp.title ilike concat(:keyword, '%')
+            )
+            and (:status is null or :status = '' or gp.status = :status)
+            and (:category is null or :category = '' or p.category = :category)
+            and (:sellerId is null or p.seller_id = :sellerId)
+            """, nativeQuery = true)
+    long countByCondition(
+            @Param("keyword") String keyword,
+            @Param("status") String status,
+            @Param("category") String category,
+            @Param("sellerId") UUID sellerId
+    );
 }
