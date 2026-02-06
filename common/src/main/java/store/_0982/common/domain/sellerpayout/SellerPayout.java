@@ -1,4 +1,4 @@
-package store._0982.common.domain.settlement;
+package store._0982.common.domain.sellerpayout;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
