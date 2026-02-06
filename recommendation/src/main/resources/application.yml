@@ -9,11 +9,11 @@ spring:
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
     hikari:
-      connection-init-sql: SET search_path TO ai_schema, public
+      connection-init-sql: SET search_path TO recommendation_schema, public
 
   flyway:
     enabled: true
-    default-schema: ai_schema
+    default-schema: recommendation_schema
     schemas:
       - ai_schema
     create-schemas: true
@@ -37,6 +37,10 @@ spring:
         options:
           model: gpt-5.2
           temperature: 0.0
+
+logging:
+  level:
+    org.apache.kafka: warn
 
 server:
   port: 8088
