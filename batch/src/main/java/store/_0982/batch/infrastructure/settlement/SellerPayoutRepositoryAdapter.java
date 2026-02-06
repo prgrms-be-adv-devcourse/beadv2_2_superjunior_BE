@@ -2,8 +2,8 @@ package store._0982.batch.infrastructure.settlement;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.domain.settlement.SettlementRepository;
-import store._0982.common.domain.settlement.Settlement;
+import store._0982.batch.domain.settlement.SellerPayoutRepository;
+import store._0982.common.domain.settlement.SellerPayout;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,22 +11,22 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Repository
-public class SettlementRepositoryAdapter implements SettlementRepository {
+public class SellerPayoutRepositoryAdapter implements SellerPayoutRepository {
 
-    private final SettlementJpaRepository settlementJpaRepository;
+    private final SellerPayoutJpaRepository settlementJpaRepository;
 
     @Override
-    public Settlement save(Settlement settlement) {
+    public SellerPayout save(SellerPayout settlement) {
         return settlementJpaRepository.save(settlement);
     }
 
     @Override
-    public void saveAll(List<Settlement> settlements) {
+    public void saveAll(List<SellerPayout> settlements) {
         settlementJpaRepository.saveAll(settlements);
     }
 
     @Override
-    public Optional<Settlement> findById(UUID settlementId) {
+    public Optional<SellerPayout> findById(UUID settlementId) {
         return settlementJpaRepository.findById(settlementId);
     }
 }

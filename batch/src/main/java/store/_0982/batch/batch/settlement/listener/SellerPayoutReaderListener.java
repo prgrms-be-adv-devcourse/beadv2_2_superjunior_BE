@@ -16,11 +16,11 @@ import store._0982.common.log.BatchLogMetadataFormat;
 @Slf4j
 @StepScope
 @Component
-public class SettlementWithdrawalReaderListener implements ItemReadListener<SellerBalance> {
+public class SellerPayoutReaderListener implements ItemReadListener<SellerBalance> {
 
     private final StepExecution stepExecution;
 
-    public SettlementWithdrawalReaderListener(
+    public SellerPayoutReaderListener(
             @Value("#{stepExecution}") StepExecution stepExecution
     ){
         this.stepExecution = stepExecution;
@@ -31,13 +31,12 @@ public class SettlementWithdrawalReaderListener implements ItemReadListener<Sell
         String jobName = stepExecution.getJobExecution().getJobInstance().getJobName();
         String stepName = stepExecution.getStepName();
 
-
         log.error(
                 BatchLogMessageFormat.itemReaderFailed(jobName, stepName),
                 BatchLogMetadataFormat.itemReaderFailed(
                         jobName,
                         stepName,
-                        "monthlySettlementReader",
+                        "sellerPayoutReader",
                         ex.getClass().getSimpleName(),
                         ex.getMessage()
                 )

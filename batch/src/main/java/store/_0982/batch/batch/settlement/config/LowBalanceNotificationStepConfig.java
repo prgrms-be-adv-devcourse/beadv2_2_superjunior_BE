@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.batch.batch.settlement.listener.LowBalanceNotificationReaderListener;
-import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
-import store._0982.batch.batch.settlement.policy.SettlementPolicy;
+import store._0982.batch.batch.settlement.listener.SellerPayoutStepListener;
+import store._0982.batch.batch.settlement.policy.SellerPayoutPolicy;
 import store._0982.batch.batch.settlement.processor.LowBalanceNotificationProcessor;
 import store._0982.batch.batch.settlement.writer.LowBalanceNotificationWriter;
 import store._0982.common.domain.sellerbalance.SellerBalance;
-import store._0982.common.domain.settlement.Settlement;
+import store._0982.common.domain.settlement.SellerPayout;
 
 import java.util.Map;
 
@@ -37,14 +37,14 @@ public class LowBalanceNotificationStepConfig {
     private final LowBalanceNotificationProcessor lowBalanceNotificationProcessor;
     private final LowBalanceNotificationWriter lowBalanceNotificationWriter;
 
-    private final SettlementWithdrawalStepListener stepListener;
+    private final SellerPayoutStepListener stepListener;
     private final LowBalanceNotificationReaderListener lowBalanceNotificationReaderListener;
 
     @Bean
     public Step lowBalanceNotificationStep(
             JpaPagingItemReader<SellerBalance> lowBalanceNotificationReader) {
         return new StepBuilder("lowBalanceNotificationStep", jobRepository)
-                .<SellerBalance, Settlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
+                .<SellerBalance, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
                 .reader(lowBalanceNotificationReader)
                 .processor(lowBalanceNotificationProcessor)
                 .writer(lowBalanceNotificationWriter)
@@ -59,7 +59,7 @@ public class LowBalanceNotificationStepConfig {
         return new JpaPagingItemReaderBuilder<SellerBalance>()
                 .name("lowBalanceNotificationReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(SettlementPolicy.CHUNK_UNIT)
+                .pageSize(SellerPayoutPolicy.CHUNK_UNIT)
                 .queryString("""
                           SELECT s
                           FROM SellerBalance s
@@ -68,7 +68,7 @@ public class LowBalanceNotificationStepConfig {
                           ORDER BY s.balanceId ASC
                           """)
                 .parameterValues(Map.of(
-                        "amount", SettlementPolicy.MINIMUM_TRANSFER_AMOUNT
+                        "amount", SellerPayoutPolicy.MINIMUM_TRANSFER_AMOUNT
                 ))
                 .build();
     }

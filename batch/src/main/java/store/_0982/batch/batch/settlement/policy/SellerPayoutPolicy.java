@@ -2,7 +2,7 @@ package store._0982.batch.batch.settlement.policy;
 
 import java.time.ZoneId;
 
-public class SettlementPolicy {
+public class SellerPayoutPolicy {
 
     public static final int CHUNK_UNIT = 10;
 
@@ -23,6 +23,6 @@ public class SettlementPolicy {
         return settlementBalance - serviceFee;
     }
 
-    private SettlementPolicy() {}
+    private SellerPayoutPolicy() {}
 
 }

@@ -62,11 +62,11 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
 
             long totalAmount = 0L;
             for (OrderSettlement orderSettlement : settlements) {
-                totalAmount += orderSettlement.getTotalAmount();
+                totalAmount += orderSettlement.getSettlementAmount();
                 histories.add(SellerBalanceHistory.createCreditHistory(
                         orderSettlement.getSellerId(),
                         orderSettlement.getOrderSettlementId(),
-                        orderSettlement.getTotalAmount()
+                        orderSettlement.getSettlementAmount()
                 ));
                 settlementIds.add(orderSettlement.getOrderSettlementId());
             }

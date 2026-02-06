@@ -15,7 +15,7 @@ import java.time.Duration;
  */
 @Slf4j
 @Component
-public class SettlementWithdrawalJobListener implements JobExecutionListener {
+public class SellerPayoutJobListener implements JobExecutionListener {
 
     @Override
     public void beforeJob(JobExecution jobExecution) {

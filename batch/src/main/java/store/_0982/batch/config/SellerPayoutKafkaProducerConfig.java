@@ -8,26 +8,26 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import store._0982.common.kafka.KafkaCommonConfigs;
 import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.SettlementDoneEvent;
+import store._0982.common.kafka.dto.SellerPayoutDoneEvent;
 
 @Configuration
-public class SettlementKafkaProducerConfig {
+public class SellerPayoutKafkaProducerConfig {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, SettlementDoneEvent> settlementProducerFactory() {
+    public ProducerFactory<String, SellerPayoutDoneEvent> settlementProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, SettlementDoneEvent> settlementKafkaTemplate() {
+    public KafkaTemplate<String, SellerPayoutDoneEvent> settlementKafkaTemplate() {
         return KafkaCommonConfigs.defaultKafkaTemplate(settlementProducerFactory());
     }
 
     @Bean
     public NewTopic settlementDoneTopic() {
-        return KafkaCommonConfigs.createTopic(KafkaTopics.SETTLEMENT_DONE);
+        return KafkaCommonConfigs.createTopic(KafkaTopics.SELLER_PAYOUT_DONE);
     }
 }

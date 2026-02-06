@@ -8,11 +8,14 @@ import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.domain.settlement.SellerPayout;
 
 @Component
-public class LowBalanceNotificationProcessor implements ItemProcessor<SellerBalance, SellerPayout> {
+public class SellerPayoutProcessor implements ItemProcessor<SellerBalance, SellerPayout> {
 
     @Override
     public SellerPayout process(SellerBalance sellerBalance) {
         Long currentBalance = sellerBalance.getSettlementBalance();
+
+        long serviceFee = SellerPayoutPolicy.calculateServiceFee(currentBalance);
+        long transferAmount = SellerPayoutPolicy.calculateTransferAmount(currentBalance);
 
         SellerPayoutPeriod period = SellerPayoutPeriod.ofLastMonth(SellerPayoutPolicy.KOREA_ZONE);
 

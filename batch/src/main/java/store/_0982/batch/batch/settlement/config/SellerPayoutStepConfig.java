@@ -13,13 +13,13 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import store._0982.batch.batch.settlement.listener.SettlementWithdrawalReaderListener;
-import store._0982.batch.batch.settlement.listener.SettlementWithdrawalStepListener;
-import store._0982.batch.batch.settlement.policy.SettlementPolicy;
-import store._0982.batch.batch.settlement.processor.SettlementWithdrawalProcessor;
-import store._0982.batch.batch.settlement.writer.SettlementWithdrawalWriter;
+import store._0982.batch.batch.settlement.listener.SellerPayoutReaderListener;
+import store._0982.batch.batch.settlement.listener.SellerPayoutStepListener;
+import store._0982.batch.batch.settlement.policy.SellerPayoutPolicy;
+import store._0982.batch.batch.settlement.processor.SellerPayoutProcessor;
+import store._0982.batch.batch.settlement.writer.SellerPayoutWriter;
 import store._0982.common.domain.sellerbalance.SellerBalance;
-import store._0982.common.domain.settlement.Settlement;
+import store._0982.common.domain.settlement.SellerPayout;
 import store._0982.common.exception.CustomException;
 
 import java.util.Map;
@@ -32,28 +32,28 @@ import java.util.Map;
  */
 @RequiredArgsConstructor
 @Configuration
-public class SettlementWithdrawalStepConfig {
+public class SellerPayoutStepConfig {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
     private final EntityManagerFactory entityManagerFactory;
 
-    private final SettlementWithdrawalProcessor settlementWithdrawalProcessor;
-    private final SettlementWithdrawalWriter settlementWithdrawalWriter;
+    private final SellerPayoutProcessor sellerPayoutProcessor;
+    private final SellerPayoutWriter sellerPayoutWriter;
 
-    private final SettlementWithdrawalStepListener stepListener;
-    private final SettlementWithdrawalReaderListener settlementWithdrawalReaderListener;
+    private final SellerPayoutStepListener stepListener;
+    private final SellerPayoutReaderListener sellerPayoutReaderListener;
 
     @Bean
-    public Step settlementWithdrawalStep(
-            JpaPagingItemReader<SellerBalance> settlementWithdrawalReader) {
-        return new StepBuilder("settlementWithdrawalStep", jobRepository)
-                .<SellerBalance, Settlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
-                .reader(settlementWithdrawalReader)
-                .processor(settlementWithdrawalProcessor)
-                .writer(settlementWithdrawalWriter)
+    public Step sellerPayoutStep(
+            JpaPagingItemReader<SellerBalance> sellerPayoutReader) {
+        return new StepBuilder("sellerPayoutStep", jobRepository)
+                .<SellerBalance, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
+                .reader(sellerPayoutReader)
+                .processor(sellerPayoutProcessor)
+                .writer(sellerPayoutWriter)
                 .listener(stepListener)
-                .listener(settlementWithdrawalReaderListener)
+                .listener(sellerPayoutReaderListener)
                 // 재시도 정책
                 .faultTolerant()
                 .retry(RetryableException.class)
@@ -65,11 +65,11 @@ public class SettlementWithdrawalStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SellerBalance> settlementWithdrawalReader() {
+    public JpaPagingItemReader<SellerBalance> sellerPayoutReader() {
         return new JpaPagingItemReaderBuilder<SellerBalance>()
-                .name("settlementWithdrawalReader")
+                .name("sellerPayoutReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(SettlementPolicy.CHUNK_UNIT)
+                .pageSize(SellerPayoutPolicy.CHUNK_UNIT)
                 .queryString("""
                           SELECT s
                           FROM SellerBalance s
@@ -77,7 +77,7 @@ public class SettlementWithdrawalStepConfig {
                           ORDER BY s.balanceId ASC
                           """)
                 .parameterValues(Map.of(
-                        "amount", SettlementPolicy.MINIMUM_TRANSFER_AMOUNT
+                        "amount", SellerPayoutPolicy.MINIMUM_TRANSFER_AMOUNT
                 ))
                 .build();
     }
