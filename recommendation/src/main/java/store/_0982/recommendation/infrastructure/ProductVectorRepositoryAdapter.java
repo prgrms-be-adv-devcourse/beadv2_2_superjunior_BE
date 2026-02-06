@@ -14,11 +14,6 @@ public class ProductVectorRepositoryAdapter implements ProductVectorRepository {
     private final ProductVectorJpaRepository vectorRepository;
 
     @Override
-    public void deleteById(UUID productId) {
-        vectorRepository.deleteById(productId);
-    }
-
-    @Override
     public void save(ProductVector productVector) {
         vectorRepository.save(productVector);
     }
