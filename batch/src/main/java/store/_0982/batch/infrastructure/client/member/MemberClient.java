@@ -6,7 +6,7 @@ import store._0982.batch.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
 import store._0982.common.HeaderName;
-import store._0982.common.domain.settlement.SellerPayout;
+import store._0982.common.domain.sellerpayout.SellerPayout;
 import store._0982.common.dto.ResponseDto;
 
 import java.util.Collections;
