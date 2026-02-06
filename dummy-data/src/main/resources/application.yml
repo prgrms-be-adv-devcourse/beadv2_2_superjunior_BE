@@ -25,5 +25,9 @@ dummy-data:
     path: docs/dummy-data/dummy-datas/product-dummy.csv
   group-purchase-dummy:
     path: docs/dummy-data/dummy-datas/group-purchase-dummy.csv
+  order-dummy:
+    path: docs/dummy-data/dummy-datas/order-dummy.csv
+  order:
+    group-purchase-count: 100000
   category:
     pet-percent: 20
