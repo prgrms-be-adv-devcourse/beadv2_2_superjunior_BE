@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
+public class SettlementWriter implements ItemWriter<OrderSettlement> {
 
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
@@ -55,7 +55,7 @@ public class SellerBalanceWriter implements ItemWriter<OrderSettlement> {
             SellerBalance sellerBalance = sellerBalanceMap.get(sellerId);
             if (sellerBalance == null) {
                 // TODO : 모니터링 필요
-                log.warn("[WARN] [sellerBalanceJob] seller balance not found. create new balance. sellerId={}", sellerId);
+                log.warn("[WARN] [settlementJob] seller balance not found. create new balance. sellerId={}", sellerId);
                 sellerBalance = new SellerBalance(sellerId);
                 sellerBalanceMap.put(sellerId, sellerBalance);
             }

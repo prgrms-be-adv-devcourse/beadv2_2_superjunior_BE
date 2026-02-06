@@ -7,22 +7,22 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import store._0982.batch.batch.settlement.listener.SellerBalanceJobListener;
+import store._0982.batch.batch.settlement.listener.SettlementJobListener;
 
 @RequiredArgsConstructor
 @Configuration
-public class SellerBalanceJobConfig {
+public class SettlementJobConfig {
 
     private final JobRepository jobRepository;
-    private final Step sellerBalanceStep;
-    private final SellerBalanceJobListener sellerBalanceJobListener;
+    private final Step settlementStep;
+    private final SettlementJobListener settlementJobListener;
 
     @Bean
-    public Job sellerBalanceJob() {
-        return new JobBuilder("sellerBalanceJob", jobRepository)
+    public Job settlementJob() {
+        return new JobBuilder("settlementJob", jobRepository)
                 .incrementer(new DailyIncrementer())
-                .start(sellerBalanceStep)
-                .listener(sellerBalanceJobListener)
+                .start(settlementStep)
+                .listener(settlementJobListener)
                 .build();
     }
 }

@@ -16,7 +16,7 @@ import java.time.Duration;
  */
 @Slf4j
 @Component
-public class SellerBalanceStepListener implements StepExecutionListener {
+public class SettlementStepListener implements StepExecutionListener {
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
