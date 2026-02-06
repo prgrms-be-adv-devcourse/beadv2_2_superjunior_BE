@@ -33,10 +33,10 @@ public class SettlementStepConfig {
 
     @Bean
     public Step settlementStep(
-            JpaPagingItemReader<OrderSettlement> sellerBalanceReader) {
+            JpaPagingItemReader<OrderSettlement> settlementReader) {
         return new StepBuilder("settlementStep", jobRepository)
                 .<OrderSettlement, OrderSettlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
-                .reader(sellerBalanceReader)
+                .reader(settlementReader)
                 .writer(settlementWriter)
                 .listener(settlementWriterListener)
                 .listener(settlementStepListener)
@@ -50,7 +50,7 @@ public class SettlementStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<OrderSettlement> sellerBalanceReader() {
+    public JpaPagingItemReader<OrderSettlement> settlementReader() {
         return new JpaPagingItemReaderBuilder<OrderSettlement>()
                 .name("settlementReader")
                 .entityManagerFactory(entityManagerFactory)
