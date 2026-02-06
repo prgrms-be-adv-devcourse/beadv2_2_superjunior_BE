@@ -61,17 +61,17 @@ spring:
               filters:
                 - RewritePath=/v3/api-docs/search, /v3/api-docs
 
-            - id: ai-api
-              uri: ${AI_SERVICE_URL:http://localhost:8088}
+            - id: recommendation-api
+              uri: ${RECOMMENDATION_SERVICE_URL:http://localhost:8088}
               predicates:
-                - Path=/api/ai/**
+                - Path=/api/recommendation/**
 
-            - id: ai-docs
-              uri: ${AI_SERVICE_URL:http://localhost:8088}
+            - id: recommendation-docs
+              uri: ${RECOMMENDATION_SERVICE_URL:http://localhost:8088}
               predicates:
-                - Path=/v3/api-docs/ai
+                - Path=/v3/api-docs/recommendation
               filters:
-                - RewritePath=/v3/api-docs/ai, /v3/api-docs
+                - RewritePath=/v3/api-docs/recommendation, /v3/api-docs
 
             - id: webhook
               uri: ${POINT_SERVICE_URL:http://localhost:8086}
@@ -105,8 +105,8 @@ springdoc:
         url: /v3/api-docs/search
       - name: point-service
         url: /v3/api-docs/point
-      - name: ai-service
-        url: /v3/api-docs/ai
+      - name: recommendation-service
+        url: /v3/api-docs/recommendation
 
 server:
   port: 8000

@@ -7,8 +7,8 @@ import store._0982.batch.batch.ai.reader.PersonalVectorInfoReader.MemberVectorsI
 import store._0982.batch.domain.ai.PersonalVector;
 import store._0982.batch.domain.ai.ProductVector;
 import store._0982.batch.domain.ai.VectorUtil;
-import store._0982.batch.infrastructure.client.ai.AiFeignClient;
-import store._0982.batch.infrastructure.client.ai.dto.InterestSummaryRequest;
+import store._0982.batch.infrastructure.client.recommendation.RecommendationFeignClient;
+import store._0982.batch.infrastructure.client.recommendation.dto.InterestSummaryRequest;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PersonalVectorProcessor implements ItemProcessor<MemberVectorsInput, PersonalVector> {
 
-    private final AiFeignClient aiClient;
+    private final RecommendationFeignClient aiClient;
 
     @Override
     public PersonalVector process(MemberVectorsInput item) {

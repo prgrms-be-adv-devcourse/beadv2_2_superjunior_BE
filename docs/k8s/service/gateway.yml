@@ -37,8 +37,8 @@ spec:
               value: http://point-service:8086
             - name: SEARCH_SERVICE_URL
               value: http://search-service:8082
-            - name: AI_SERVICE_URL
-              value: http://ai-service:8088
+            - name: RECOMMENDATION_SERVICE_URL
+              value: http://recommendation-service:8088
           envFrom:
             - secretRef:
                 name: gateway-secret
