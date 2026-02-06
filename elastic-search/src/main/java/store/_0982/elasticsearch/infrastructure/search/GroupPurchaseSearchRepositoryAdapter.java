@@ -31,6 +31,26 @@ public class GroupPurchaseSearchRepositoryAdapter implements GroupPurchaseSearch
                 .toList();
     }
 
+    @Override
+    public List<GroupPurchaseSearchRow> searchByCondition(
+            String keyword,
+            String status,
+            String category,
+            java.util.UUID sellerId,
+            int limit,
+            long offset
+    ) {
+        return repository.searchByCondition(keyword, status, category, sellerId, limit, offset)
+                .stream()
+                .map(this::toRow)
+                .toList();
+    }
+
+    @Override
+    public long countByCondition(String keyword, String status, String category, java.util.UUID sellerId) {
+        return repository.countByCondition(keyword, status, category, sellerId);
+    }
+
     private GroupPurchaseSearchRow toRow(GroupPurchaseSearchProjection projection) {
         return new GroupPurchaseSearchRow(
                 projection.getGroupPurchaseId(),

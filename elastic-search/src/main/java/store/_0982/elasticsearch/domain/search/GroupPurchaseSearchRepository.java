@@ -7,4 +7,15 @@ public interface GroupPurchaseSearchRepository {
     List<GroupPurchaseSearchRow> findAllByIds(List<UUID> groupPurchaseIds);
 
     List<GroupPurchaseSimilaritySearchRow> findAllSimilarityByIds(List<UUID> groupPurchaseIds);
+
+    List<GroupPurchaseSearchRow> searchByCondition(
+            String keyword,
+            String status,
+            String category,
+            UUID sellerId,
+            int limit,
+            long offset
+    );
+
+    long countByCondition(String keyword, String status, String category, UUID sellerId);
 }

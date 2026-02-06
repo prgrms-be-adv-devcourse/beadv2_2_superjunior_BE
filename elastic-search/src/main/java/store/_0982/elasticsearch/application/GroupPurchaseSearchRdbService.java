@@ -7,9 +7,8 @@ import org.springframework.stereotype.Service;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
+import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRepository;
 import store._0982.elasticsearch.domain.search.GroupPurchaseSearchRow;
-import store._0982.elasticsearch.infrastructure.search.GroupPurchaseSearchJpaRepository;
-import store._0982.elasticsearch.infrastructure.search.GroupPurchaseSearchProjection;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GroupPurchaseSearchRdbService {
 
-    private final GroupPurchaseSearchJpaRepository repository;
+    private final GroupPurchaseSearchRepository repository;
 
     @ServiceLog
     public PageResponse<GroupPurchaseSearchInfo> searchByKeyword(
@@ -31,7 +30,7 @@ public class GroupPurchaseSearchRdbService {
         String safeStatus = status == null || status.isBlank() ? null : status;
         String safeCategory = category == null || category.isBlank() ? null : category;
         long total = repository.countByCondition(safeKeyword, safeStatus, safeCategory, sellerId);
-        List<GroupPurchaseSearchProjection> rows = repository.searchByCondition(
+        List<GroupPurchaseSearchRow> rows = repository.searchByCondition(
                 safeKeyword,
                 safeStatus,
                 safeCategory,
@@ -40,32 +39,8 @@ public class GroupPurchaseSearchRdbService {
                 pageable.getOffset()
         );
         List<GroupPurchaseSearchInfo> mapped = rows.stream()
-                .map(GroupPurchaseSearchRdbService::toInfo)
+                .map(GroupPurchaseSearchInfo::from)
                 .toList();
         return PageResponse.from(new PageImpl<>(mapped, pageable, total));
-    }
-
-    private static GroupPurchaseSearchInfo toInfo(GroupPurchaseSearchProjection row) {
-        GroupPurchaseSearchRow mapped = new GroupPurchaseSearchRow(
-                row.getGroupPurchaseId(),
-                row.getMinQuantity(),
-                row.getMaxQuantity(),
-                row.getTitle(),
-                row.getDescription(),
-                row.getImageUrl(),
-                row.getDiscountedPrice(),
-                row.getStatus(),
-                row.getStartDate(),
-                row.getEndDate(),
-                row.getCreatedAt(),
-                row.getUpdatedAt(),
-                row.getCurrentQuantity(),
-                row.getProductId(),
-                row.getCategory(),
-                row.getPrice(),
-                row.getOriginalUrl(),
-                row.getSellerId()
-        );
-        return GroupPurchaseSearchInfo.from(mapped);
     }
 }
