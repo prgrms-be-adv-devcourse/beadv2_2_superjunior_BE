@@ -17,6 +17,8 @@ spec:
         job-type: reindex
     spec:
       automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: batch-server
       restartPolicy: Never
       containers:
       - name: batch-job

@@ -25,6 +25,8 @@ spec:
             job-type: vector-refresh
         spec:
           restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: batch-server
           containers:
             - name: batch-job
               image: minbros/batch:latest
