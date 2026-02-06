@@ -132,4 +132,24 @@ public class OrderController {
         orderService.confirmPurchase(memberId, orderId);
         return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
     }
+
+    @PatchMapping("/cancel/{orderId}/approve")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<OrderCancelInfo> approvePendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ) {
+        OrderCancelInfo info = orderService.approvePendingOrder(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 승인했습니다.");
+    }
+
+    @PatchMapping("/cancel/{orderId}/reject")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<OrderCancelInfo> rejectPendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ) {
+        OrderCancelInfo info = orderService.rejectPendingOrder(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
+    }
 }

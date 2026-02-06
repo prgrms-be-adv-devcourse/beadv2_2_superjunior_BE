@@ -15,16 +15,14 @@ public record OrderCancelInfo(
         String reason,
         OffsetDateTime createdAt
 ) {
-    public static OrderCancelInfo toOrderCancelInfo(Order order) {
-        long price = order.getPrice() == null ? 0L : order.getPrice();
-        long totalAmount = price * order.getQuantity();
+    public static OrderCancelInfo toOrderCancelInfo(Order order, String detailReason) {
         return new OrderCancelInfo(
                 order.getOrderId(),
                 order.getStatus(),
                 order.getQuantity(),
                 order.getPrice(),
-                totalAmount,
-                null,
+                order.getPaidPrice(),
+                detailReason,
                 order.getCreatedAt()
         );
     }

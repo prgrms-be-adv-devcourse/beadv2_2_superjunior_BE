@@ -138,7 +138,7 @@ public class OrderQueryService {
         });
 
         Page<Order> canceledOrders = orderRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
-        Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
+        Page<OrderCancelInfo> cancelInfos = canceledOrders.map((Order order) -> OrderCancelInfo.toOrderCancelInfo(order, null));
         return PageResponse.from(cancelInfos);
     }
   

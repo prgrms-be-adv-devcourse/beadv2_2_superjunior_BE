@@ -6,7 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.order.PaymentMethod;
+import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;
@@ -80,7 +82,21 @@ public class CanceledOrder {
 
     public void markCompleted() {
         this.returnedAt = OffsetDateTime.now();
-        status = CancelStatus.COMPLETED;
+        this.status = CancelStatus.COMPLETED;
+    }
+
+    public void markApproved() {
+        if (this.status != CancelStatus.PENDING) {
+            throw new CustomException(CustomErrorCode.INVALID_CANCEL_STATUS);
+        }
+        this.status = CancelStatus.APPROVED;
+    }
+
+    public void markRejected() {
+        if (this.status != CancelStatus.PENDING) {
+            throw new CustomException(CustomErrorCode.INVALID_CANCEL_STATUS);
+        }
+        this.status = CancelStatus.REJECTED;
     }
 
     public static CanceledOrder createCanceledOrder(
@@ -92,6 +108,7 @@ public class CanceledOrder {
             long refundAmount,
             String policyId,
             String policySnapshot,
+            CancelStatus status,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -105,6 +122,7 @@ public class CanceledOrder {
                 refundAmount,
                 policyId,
                 policySnapshot,
+                status,
                 reason,
                 detailReason,
                 idempotencyKey,
@@ -120,6 +138,7 @@ public class CanceledOrder {
             long refundAmount,
             String policyId,
             String policySnapshot,
+            CancelStatus status,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -133,7 +152,7 @@ public class CanceledOrder {
         this.refundAmount = refundAmount;
         this.policyId = policyId;
         this.policySnapshot = policySnapshot;
-        this.status = CancelStatus.REQUESTED;
+        this.status = status;
         this.reason = reason;
         this.detailReason = detailReason;
         this.idempotencyKey = idempotencyKey;

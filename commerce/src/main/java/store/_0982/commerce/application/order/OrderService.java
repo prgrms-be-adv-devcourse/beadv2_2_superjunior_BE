@@ -159,4 +159,26 @@ public class OrderService {
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         return orderQueryService.getCanceledOrders(memberId, pageable);
     }
+
+    /**
+     * 주문 취소 승인
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo approvePendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.approvePendingOrder(memberId, orderId);
+    }
+
+    /**
+     * 주문 취소 거부
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo rejectPendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.rejectPendingOrder(memberId, orderId);
+    }
 }
