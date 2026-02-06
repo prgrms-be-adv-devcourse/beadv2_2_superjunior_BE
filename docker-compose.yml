@@ -99,9 +99,6 @@ services:
     container_name: fluent-bit
     ports:
       - "2020:2020"
-    environment:
-      KAFKA_BROKERS: kafka:9092
-      KAFKA_TOPIC: app-logs
     volumes:
       - ./docker/fluent-bit/config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
       - C:/logs:/var/log/app:ro
@@ -121,25 +118,25 @@ services:
     ]
     restart: unless-stopped
 
-#  kibana:
-#    image: kibana:8.18.8
-#    depends_on:
-#      elasticsearch:
-#        condition: service_healthy
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#      - NODE_OPTIONS=--max-old-space-size=256
-#      - KIBANA_DEFAULTAPPID=discover
-#      - TELEMETRY_ENABLED=false
-#      - NEWSFEED_ENABLED=false
-#      - XPACK_SECURITY_ENABLED=false
-#      - XPACK_REPORTING_ENABLED=false
-#      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=changemechangemechangemechangeme
-#    mem_limit: 1g
-#    ports:
-#      - "5601:5601"
-#    networks:
-#      - group-purchase-network
+  kibana:
+    image: kibana:8.18.8
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - NODE_OPTIONS=--max-old-space-size=2048
+      - KIBANA_DEFAULTAPPID=discover
+      - TELEMETRY_ENABLED=false
+      - NEWSFEED_ENABLED=false
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_REPORTING_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=changemechangemechangemechangeme
+    mem_limit: 1g
+    ports:
+      - "5601:5601"
+    networks:
+      - group-purchase-network
 
 
 volumes:

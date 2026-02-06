@@ -8,9 +8,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.HandlerMapping;
 import store._0982.common.HeaderName;
 
 import java.util.Objects;
@@ -37,15 +39,20 @@ public class LoggingAspect {
         String uri = request.getRequestURI();
         String method = request.getMethod();
         String memberId = request.getHeader(HeaderName.ID);
+        String endpointPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         log.atInfo().log(LogFormat.requestOf(method, uri, memberId));
 
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long endTime = System.currentTimeMillis() - startTime;
+        MDC.put("executionTime", String.valueOf(endTime));
+        MDC.put("method", method);
+        MDC.put("endpoint", endpointPattern);
 
         HttpServletResponse response = attributes.getResponse();
         HttpStatus status = HttpStatus.valueOf(Objects.requireNonNull(response).getStatus());
         log.atInfo().log(LogFormat.responseOf(status, method, uri, endTime, memberId));
+        MDC.clear();
         return result;
     }
 
