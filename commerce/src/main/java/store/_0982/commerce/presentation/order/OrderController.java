@@ -99,6 +99,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(판매자)가 완료 되었습니다.");
     }
 
+    @Operation(summary = "주문 취소", description = "주문을 취소합니다.")
     @PostMapping("/cancel/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Void> cancelOrder(
@@ -110,6 +111,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
     }
 
+    @Operation(summary = "주문 취소 내역 조회", description = "주문 취소 내역을 페이징하여 조회합니다.")
     @GetMapping("/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<PageResponse<OrderCancelInfo>> getCanceledOrders(
@@ -120,6 +122,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 취소 목록을 조회했습니다.");
     }
 
+    @Operation(summary = "구매 확정", description = "주문에 대한 구매 확정을 처리합니다.")
     @PatchMapping("/{orderId}/purchase-confirmed")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Void> confirmPurchase(
