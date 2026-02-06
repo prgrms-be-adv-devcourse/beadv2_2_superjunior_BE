@@ -104,16 +104,6 @@ spec:
               ephemeral-storage: 128Mi
               cpu: 100m
               memory: 64Mi
-          readinessProbe:
-            exec:
-              command:
-                - sh
-                - -c
-                - "redis-cli ping | grep PONG"
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
       volumes:
         - name: redis-config
           configMap:
