@@ -26,4 +26,12 @@ public class OrderCronController {
         orderService.retryCancelOrder();
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 재처리를 실행했습니다.");
     }
+
+    @PostMapping("/cancel/auto")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "주문 취소 승인 자동 트리거", description = "취소 요청 상태의 주문을 자동으로 승인해주는 배치 트리거 API입니다.")
+    public ResponseDto<Void> autoCancelOrder() {
+        orderService.autoCancelOrder();
+        return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 재처리를 실행했습니다.");
+    }
 }

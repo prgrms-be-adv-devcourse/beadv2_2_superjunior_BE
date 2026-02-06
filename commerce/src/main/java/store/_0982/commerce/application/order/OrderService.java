@@ -181,4 +181,11 @@ public class OrderService {
     public OrderCancelInfo rejectPendingOrder(UUID memberId, UUID orderId) {
         return canceledOrderService.rejectPendingOrder(memberId, orderId);
     }
+
+    /**
+     * 주문 취소 자동 승인
+     */
+    public void autoCancelOrder() {
+        canceledOrderService.autoCancelOrder();
+    }
 }

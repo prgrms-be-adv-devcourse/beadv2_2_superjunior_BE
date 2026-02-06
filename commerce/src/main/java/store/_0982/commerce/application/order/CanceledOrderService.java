@@ -244,6 +244,40 @@ public class CanceledOrderService {
         }
     }
 
+    public void autoCancelOrder() {
+        List<CancelStatus> pendingStatuses = List.of(
+                CancelStatus.PENDING
+        );
+
+        OffsetDateTime twoDaysAgo = OffsetDateTime.now().minusDays(2);
+        List<CanceledOrder> pendingOrders =
+                canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(pendingStatuses, twoDaysAgo);
+
+        if (pendingOrders.isEmpty()) {
+            return;
+        }
+
+        for (CanceledOrder canceledOrder : pendingOrders) {
+            Order order = orderRepository.findById(canceledOrder.getOrderId())
+                    .orElse(null);
+            if (order == null) {
+                continue;
+            }
+
+            OrderCancellationPolicy policy = resolvePolicy(canceledOrder);
+            if (policy == null) {
+                continue;
+            }
+
+            GroupPurchase groupPurchase = groupPurchaseService
+                    .findByGroupPurchase(order.getGroupPurchaseId());
+            String productName = productService.findByProductName(groupPurchase.getProductId());
+
+            canceledOrder.markApproved();
+            publishCancellationEvent(canceledOrder, productName);
+        }
+    }
+
     private OrderCancellationPolicy resolvePolicy(CanceledOrder canceledOrder) {
         String policyId = canceledOrder.getPolicyId();
         if (policyId != null) {
