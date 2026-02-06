@@ -20,21 +20,9 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: infra-server
       terminationGracePeriodSeconds: 120
-      initContainers:
-        - name: install-nori-plugin
-          image: elasticsearch:8.18.8
-          imagePullPolicy: IfNotPresent
-          command:
-            - sh
-            - -c
-            - |
-              /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-nori --batch
-          volumeMounts:
-            - name: plugins
-              mountPath: /usr/share/elasticsearch/plugins
       containers:
         - name: elasticsearch
-          image: elasticsearch:8.18.8
+          image: minbros/elasticsearch-nori:8.18.8
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9200
