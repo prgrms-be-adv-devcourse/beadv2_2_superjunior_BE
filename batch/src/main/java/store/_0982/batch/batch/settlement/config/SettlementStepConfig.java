@@ -14,7 +14,7 @@ import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
 import store._0982.batch.batch.settlement.listener.SettlementStepListener;
 import store._0982.batch.batch.settlement.listener.SettlementWriterListener;
-import store._0982.batch.batch.settlement.policy.SellerBalancePolicy;
+import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.writer.SettlementWriter;
 import store._0982.common.domain.settlement.OrderSettlement;
 import store._0982.common.exception.CustomException;
@@ -35,7 +35,7 @@ public class SettlementStepConfig {
     public Step settlementStep(
             JpaPagingItemReader<OrderSettlement> sellerBalanceReader) {
         return new StepBuilder("settlementStep", jobRepository)
-                .<OrderSettlement, OrderSettlement>chunk(SellerBalancePolicy.CHUNK_UNIT, transactionManager)
+                .<OrderSettlement, OrderSettlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
                 .reader(sellerBalanceReader)
                 .writer(settlementWriter)
                 .listener(settlementWriterListener)
@@ -54,7 +54,7 @@ public class SettlementStepConfig {
         return new JpaPagingItemReaderBuilder<OrderSettlement>()
                 .name("settlementReader")
                 .entityManagerFactory(entityManagerFactory)
-                .pageSize(SellerBalancePolicy.CHUNK_UNIT)
+                .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
                         SELECT os
                         FROM OrderSettlement os

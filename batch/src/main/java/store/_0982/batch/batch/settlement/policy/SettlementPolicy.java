@@ -1,8 +1,8 @@
 package store._0982.batch.batch.settlement.policy;
 
-public class SellerBalancePolicy {
+public class SettlementPolicy {
 
     public static final int CHUNK_UNIT = 100;
 
-    private SellerBalancePolicy() {}
+    private SettlementPolicy() {}
 }
