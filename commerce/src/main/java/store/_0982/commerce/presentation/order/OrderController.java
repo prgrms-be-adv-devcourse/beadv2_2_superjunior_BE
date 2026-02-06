@@ -133,6 +133,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
     }
 
+    @Operation(summary = "주문 취소 승인", description = "주문 취소 요청에 대해 승인 처리합니다.")
     @PatchMapping("/cancel/{orderId}/approve")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<OrderCancelInfo> approvePendingOrder(
@@ -143,6 +144,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 승인했습니다.");
     }
 
+    @Operation(summary = "주문 취소 거부", description = "주문 취소 요청에 대해 거부 처리합니다.")
     @PatchMapping("/cancel/{orderId}/reject")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<OrderCancelInfo> rejectPendingOrder(
@@ -153,6 +155,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
     }
 
+    @Operation(summary = "주문 취소 대기 내역 조회", description = "주문 취소 대기 내역을 페이징하여 조회합니다.")
     @GetMapping("/cancel/pending")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<PageResponse<OrderCancelInfo>> getPendingOrder(
@@ -160,6 +163,6 @@ public class OrderController {
             Pageable pageable
     ) {
         PageResponse<OrderCancelInfo> info = orderService.getPendingOrder(memberId, pageable);
-        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
+        return new ResponseDto<>(HttpStatus.OK, info, "주문 취소 대기 내역을 페이징하여 조회했습니다.");
     }
 }
