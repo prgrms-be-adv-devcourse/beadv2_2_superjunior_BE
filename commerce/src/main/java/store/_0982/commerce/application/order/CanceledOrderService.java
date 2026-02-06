@@ -7,6 +7,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
@@ -33,6 +34,7 @@ public class CanceledOrderService {
 
     private final ProductService productService;
     private final GroupPurchaseService groupPurchaseService;
+    private final GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     private final OrderRepository orderRepository;
     private final CanceledOrderRepository canceledOrderRepository;
@@ -77,7 +79,7 @@ public class CanceledOrderService {
         order.requestCanceledAt();
 
         if (command.reason().isBuyerFault()) {
-            groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
             if (groupPurchase.isInVoidPeriod()) {
                 RefundAmount refundAmount = voidOrderCancellationPolicy.calculate(order);

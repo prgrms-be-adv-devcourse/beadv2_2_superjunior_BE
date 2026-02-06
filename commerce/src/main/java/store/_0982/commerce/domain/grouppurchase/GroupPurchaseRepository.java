@@ -34,5 +34,9 @@ public interface GroupPurchaseRepository {
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
+    int increaseQuantity(UUID groupPurchaseId, int quantity);
+
+    int decreaseQuantity(UUID groupPurchaseId, int quantity);
 }
 
