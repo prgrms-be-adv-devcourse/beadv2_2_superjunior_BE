@@ -1,4 +1,4 @@
-package store._0982.common.domain.sellerpayout;
+package store._0982.common.domain.settlement;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
