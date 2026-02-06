@@ -38,5 +38,16 @@ spring:
           model: gpt-5.2
           temperature: 0.0
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
 server:
   port: 8088
