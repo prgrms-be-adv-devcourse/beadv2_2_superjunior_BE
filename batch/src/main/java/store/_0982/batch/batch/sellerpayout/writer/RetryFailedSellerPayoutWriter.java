@@ -52,7 +52,7 @@ public class RetryFailedSellerPayoutWriter implements ItemWriter<SellerPayout> {
                 }
 
                 sellerPayout.setAccountInfo(accountInfo.accountNumber(), accountInfo.bankCode());
-                bankTransferService.transfer(accountInfo, sellerPayout.getTotalAmount().longValue());
+                bankTransferService.transfer(accountInfo, sellerPayout.getTotalAmount());
                 sellerPayout.markAsCompleted();
                 sellerBalanceService.clearBalance(sellerPayout);
 

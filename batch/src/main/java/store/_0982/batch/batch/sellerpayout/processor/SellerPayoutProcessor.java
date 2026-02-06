@@ -14,9 +14,6 @@ public class SellerPayoutProcessor implements ItemProcessor<SellerBalance, Selle
     public SellerPayout process(SellerBalance sellerBalance) {
         Long currentBalance = sellerBalance.getSettlementBalance();
 
-        long serviceFee = SellerPayoutPolicy.calculateServiceFee(currentBalance);
-        long transferAmount = SellerPayoutPolicy.calculateTransferAmount(currentBalance);
-
         SellerPayoutPeriod period = SellerPayoutPeriod.ofLastMonth(SellerPayoutPolicy.KOREA_ZONE);
 
         return SellerPayout.createSellerPayout(

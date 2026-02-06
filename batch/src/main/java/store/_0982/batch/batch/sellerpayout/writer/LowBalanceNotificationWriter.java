@@ -15,21 +15,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LowBalanceNotificationWriter implements ItemWriter<SellerPayout> {
 
-    private final SellerPayoutRepository settlementRepository;
+    private final SellerPayoutRepository sellerPayoutRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void write(Chunk<? extends SellerPayout> chunk) {
-        List<SellerPayout> settlements = chunk.getItems().stream()
-                .map(settlement -> (SellerPayout) settlement)
+        List<SellerPayout> sellerPayouts = chunk.getItems().stream()
+                .map(sellerPayout -> (SellerPayout) sellerPayout)
                 .toList();
 
-        for (SellerPayout settlement : settlements) {
-            settlement.markAsDeferred();
+        for (SellerPayout sellerPayout : sellerPayouts) {
+            sellerPayout.markAsDeferred();
             eventPublisher.publishEvent(
-                    new SellerPayoutDeferredEvent(settlement)
+                    new SellerPayoutDeferredEvent(sellerPayout)
             );
         }
-        settlementRepository.saveAll(settlements);
+        sellerPayoutRepository.saveAll(sellerPayouts);
     }
 }
