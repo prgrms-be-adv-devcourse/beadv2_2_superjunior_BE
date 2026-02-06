@@ -21,4 +21,6 @@ public interface CanceledOrderRepository {
     Optional<CanceledOrder> findByOrderId(UUID orderId);
 
     Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable);
+
+    Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus cancelStatus, Pageable pageable);
 }

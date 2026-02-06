@@ -188,4 +188,15 @@ public class OrderService {
     public void autoCancelOrder() {
         canceledOrderService.autoCancelOrder();
     }
+
+    /**
+     * 주문 취소 대기 리스트 조회
+     *
+     * @param memberId
+     * @param pageable
+     * @return OrderCancelInfo 목록
+     */
+    public PageResponse<OrderCancelInfo> getPendingOrder(UUID memberId, Pageable pageable) {
+        return orderQueryService.getPendingOrder(memberId, pageable);
+    }
 }

@@ -30,6 +30,9 @@ public class CanceledOrder {
     @Column(name = "member_id", nullable = false, updatable = false)
     private UUID memberId;
 
+    @Column(name = "seller_id", nullable = false, updatable = false)
+    private UUID sellerId;
+
     @Column(name = "original_paid_amount", nullable = false)
     private Long originalPaidAmount;    // 취소 전 실제 결제액
 
@@ -102,6 +105,7 @@ public class CanceledOrder {
     public static CanceledOrder createCanceledOrder(
             UUID orderId,
             UUID memberId,
+            UUID sellerId,
             long originalPaidAmount,
             long cancelFeeAmount,
             long shippingFeeAmount,
@@ -116,6 +120,7 @@ public class CanceledOrder {
         return new CanceledOrder(
                 orderId,
                 memberId,
+                sellerId,
                 originalPaidAmount,
                 cancelFeeAmount,
                 shippingFeeAmount,
@@ -132,6 +137,7 @@ public class CanceledOrder {
     private CanceledOrder(
             UUID orderId,
             UUID memberId,
+            UUID sellerId,
             long originalPaidAmount,
             long cancelFeeAmount,
             long shippingFeeAmount,
@@ -146,6 +152,7 @@ public class CanceledOrder {
         this.canceledOrderId = UUID.randomUUID();
         this.orderId = orderId;
         this.memberId = memberId;
+        this.sellerId = sellerId;
         this.originalPaidAmount = originalPaidAmount;
         this.cancelFeeAmount = cancelFeeAmount;
         this.shippingFeeAmount = shippingFeeAmount;

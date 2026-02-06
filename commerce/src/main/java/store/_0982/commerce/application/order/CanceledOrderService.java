@@ -86,6 +86,7 @@ public class CanceledOrderService {
                 CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                         order.getOrderId(),
                         command.memberId(),
+                        order.getSellerId(),
                         order.getPaidPrice(),
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
@@ -108,6 +109,7 @@ public class CanceledOrderService {
                 CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                         order.getOrderId(),
                         command.memberId(),
+                        order.getSellerId(),
                         order.getPaidPrice(),
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
@@ -130,6 +132,7 @@ public class CanceledOrderService {
                 CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                         order.getOrderId(),
                         command.memberId(),
+                        order.getSellerId(),
                         order.getPaidPrice(),
                         refundAmount.cancellationFee(),
                         refundAmount.shippingFee(),
@@ -151,6 +154,7 @@ public class CanceledOrderService {
             CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                     order.getOrderId(),
                     command.memberId(),
+                    order.getSellerId(),
                     order.getPaidPrice(),
                     refundAmount.cancellationFee(),
                     refundAmount.shippingFee(),
@@ -197,10 +201,7 @@ public class CanceledOrderService {
         CanceledOrder findCanceledOrder = canceledOrderRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new CustomException(CustomErrorCode.CANCELED_ORDER_NOT_FOUND));
 
-        Order findOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
-
-        if (!findOrder.getSellerId().equals(memberId)) {
+        if (!findCanceledOrder.getSellerId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
         }
 
@@ -244,6 +245,8 @@ public class CanceledOrderService {
         }
     }
 
+    @ServiceLog
+    @Transactional
     public void autoCancelOrder() {
         List<CancelStatus> pendingStatuses = List.of(
                 CancelStatus.PENDING

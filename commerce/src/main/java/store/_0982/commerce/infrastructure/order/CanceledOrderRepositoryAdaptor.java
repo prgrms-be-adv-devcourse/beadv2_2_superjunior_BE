@@ -48,4 +48,9 @@ public class CanceledOrderRepositoryAdaptor implements CanceledOrderRepository {
     public Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable) {
         return canceledOrderJpaRepository.findAllByMemberId(memberId, pageable);
     }
+
+    @Override
+    public Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus cancelStatus, Pageable pageable) {
+        return canceledOrderJpaRepository.findAllBySellerIdAndStatus(sellerId, cancelStatus, pageable);
+    }
 }

@@ -152,4 +152,14 @@ public class OrderController {
         OrderCancelInfo info = orderService.rejectPendingOrder(memberId, orderId);
         return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
     }
+
+    @GetMapping("/cancel/pending")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderCancelInfo>> getPendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            Pageable pageable
+    ) {
+        PageResponse<OrderCancelInfo> info = orderService.getPendingOrder(memberId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
+    }
 }

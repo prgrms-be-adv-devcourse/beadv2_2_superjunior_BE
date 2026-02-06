@@ -13,6 +13,7 @@ import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.commerce.domain.order.CancelStatus;
 import store._0982.commerce.domain.order.CanceledOrder;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.OrderRepository;
@@ -136,6 +137,12 @@ public class OrderQueryService {
 
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         Page<CanceledOrder> canceledOrders = canceledOrderRepository.findAllByMemberId(memberId, pageable);
+        Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
+        return PageResponse.from(cancelInfos);
+    }
+
+    public PageResponse<OrderCancelInfo> getPendingOrder(UUID sellerId, Pageable pageable) {
+        Page<CanceledOrder> canceledOrders = canceledOrderRepository.findAllBySellerIdAndStatus(sellerId, CancelStatus.PENDING, pageable);
         Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
         return PageResponse.from(cancelInfos);
     }

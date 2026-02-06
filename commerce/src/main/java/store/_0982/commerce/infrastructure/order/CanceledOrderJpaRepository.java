@@ -23,4 +23,6 @@ public interface CanceledOrderJpaRepository extends JpaRepository<CanceledOrder,
     Optional<CanceledOrder> findByOrderId(UUID orderId);
 
     Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable);
+
+    Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus status, Pageable pageable);
 }
