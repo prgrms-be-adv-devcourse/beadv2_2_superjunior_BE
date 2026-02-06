@@ -17,17 +17,17 @@ public class SellerPayoutKafkaProducerConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, SellerPayoutDoneEvent> settlementProducerFactory() {
+    public ProducerFactory<String, SellerPayoutDoneEvent> sellerPayoutProducerFactory() {
         return KafkaCommonConfigs.defaultProducerFactory(bootstrapServers);
     }
 
     @Bean
-    public KafkaTemplate<String, SellerPayoutDoneEvent> settlementKafkaTemplate() {
-        return KafkaCommonConfigs.defaultKafkaTemplate(settlementProducerFactory());
+    public KafkaTemplate<String, SellerPayoutDoneEvent> sellerPayoutKafkaTemplate() {
+        return KafkaCommonConfigs.defaultKafkaTemplate(sellerPayoutProducerFactory());
     }
 
     @Bean
-    public NewTopic settlementDoneTopic() {
+    public NewTopic sellerPayoutDoneTopic() {
         return KafkaCommonConfigs.createTopic(KafkaTopics.SELLER_PAYOUT_DONE);
     }
 }
