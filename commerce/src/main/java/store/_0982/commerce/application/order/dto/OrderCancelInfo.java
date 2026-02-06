@@ -1,29 +1,34 @@
 package store._0982.commerce.application.order.dto;
 
-import store._0982.common.domain.order.Order;
-import store._0982.common.domain.order.OrderStatus;
+import store._0982.commerce.domain.order.CancelReason;
+import store._0982.commerce.domain.order.CancelStatus;
+import store._0982.commerce.domain.order.CanceledOrder;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record OrderCancelInfo(
         UUID orderId,
-        OrderStatus status,
-        int quantity,
-        Long price,
-        Long totalAmount,
-        String reason,
+        CancelStatus status,
+        long originalPaidAmount,
+        long cancelFeeAmount,
+        long shippingFeeAmount,
+        long refundAmount,
+        CancelReason reason,
+        String detailReason,
         OffsetDateTime createdAt
 ) {
-    public static OrderCancelInfo toOrderCancelInfo(Order order, String detailReason) {
+    public static OrderCancelInfo toOrderCancelInfo(CanceledOrder canceledOrder) {
         return new OrderCancelInfo(
-                order.getOrderId(),
-                order.getStatus(),
-                order.getQuantity(),
-                order.getPrice(),
-                order.getPaidPrice(),
-                detailReason,
-                order.getCreatedAt()
+                canceledOrder.getOrderId(),
+                canceledOrder.getStatus(),
+                canceledOrder.getOriginalPaidAmount(),
+                canceledOrder.getCancelFeeAmount(),
+                canceledOrder.getShippingFeeAmount(),
+                canceledOrder.getRefundAmount(),
+                canceledOrder.getReason(),
+                canceledOrder.getDetailReason(),
+                canceledOrder.getCreatedAt()
         );
     }
 }

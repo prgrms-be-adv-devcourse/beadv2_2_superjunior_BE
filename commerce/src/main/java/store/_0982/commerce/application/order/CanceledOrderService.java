@@ -189,7 +189,7 @@ public class CanceledOrderService {
         findCanceledOrder.markApproved();
         publishCancellationEvent(findCanceledOrder, productName);
 
-        return OrderCancelInfo.toOrderCancelInfo(findOrder, findCanceledOrder.getDetailReason());
+        return OrderCancelInfo.toOrderCancelInfo(findCanceledOrder);
     }
 
     @Transactional
@@ -205,7 +205,7 @@ public class CanceledOrderService {
         }
 
         findCanceledOrder.markRejected();
-        return OrderCancelInfo.toOrderCancelInfo(findOrder, findCanceledOrder.getDetailReason());
+        return OrderCancelInfo.toOrderCancelInfo(findCanceledOrder);
     }
 
     @ServiceLog
