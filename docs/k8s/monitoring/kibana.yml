@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         app: kibana
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5601"
+        prometheus.io/path: "/api/status"
     spec:
       automountServiceAccountToken: false
       nodeSelector:

@@ -15,6 +15,9 @@ spec:
     metadata:
       labels:
         app: elasticsearch
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9114"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
@@ -69,6 +72,31 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
             failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /_cluster/health
+              port: 9200
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+        - name: elasticsearch-exporter
+          image: prometheuscommunity/elasticsearch-exporter:v1.7.0
+          args:
+            - --es.uri=http://localhost:9200
+            - --es.all
+          ports:
+            - containerPort: 9114
+              name: metrics
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
           readinessProbe:
             httpGet:
               path: /_cluster/health
