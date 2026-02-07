@@ -10,7 +10,7 @@ import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
-import store._0982.elasticsearch.infrastructure.client.recommendation.ProductVectorInfo;
+import store._0982.elasticsearch.infrastructure.client.recommendation.dto.ProductVectorInfo;
 import store._0982.elasticsearch.infrastructure.client.recommendation.RecommendationVectorClient;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
 
