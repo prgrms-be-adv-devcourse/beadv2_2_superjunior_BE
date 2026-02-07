@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import store._0982.recommendation.application.dto.*;
 import store._0982.recommendation.domain.PersonalVector;
 import store._0982.recommendation.domain.PersonalVectorRepository;
+import store._0982.recommendation.domain.ProductVector;
+import store._0982.recommendation.domain.ProductVectorRepository;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +21,7 @@ public class RecommendationService {
     private final SearchQueryPort searchQueryPort;
     private final PersonalVectorRepository personalVectorRepository;
     private final PromptService promptService ;
+    private final ProductVectorRepository productVectorRepository;
 
     public RecommandInfo getRecommendations(UUID memberId, String keyword, String category) {
         PersonalVector personalVector = personalVectorRepository.findById(memberId).orElse(null);
@@ -44,5 +47,11 @@ public class RecommendationService {
             }
         }
         return resultInfos;
+    }
+
+    public float[] getProductVector(UUID productId) {
+        return productVectorRepository.findById(productId)
+                .map(ProductVector::getVector)
+                .orElse(null);
     }
 }
