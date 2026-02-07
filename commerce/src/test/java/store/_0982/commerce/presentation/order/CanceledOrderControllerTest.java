@@ -10,16 +10,20 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.order.OrderService;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
-import store._0982.common.domain.order.CancelReason;
 import store._0982.common.HeaderName;
+import store._0982.common.domain.order.CancelReason;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.dto.PageResponse;
 
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -111,5 +115,45 @@ class CanceledOrderControllerTest {
                 .andExpect(jsonPath("$.message").value("적절하지 않은 요청 값이 존재합니다."));
 
         verify(orderService, times(0)).cancelOrder(any());
+    }
+
+    @Test
+    @DisplayName("주문 취소 내역을 조회한다.")
+    void getCanceledOrders_success() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        PageResponse<OrderCancelInfo> response = new PageResponse<>(
+                List.of(
+                        new OrderCancelInfo(
+                                UUID.randomUUID(),
+                                CancelStatus.REQUESTED,
+                                10_000L,
+                                1_000L,
+                                0L,
+                                9_000L,
+                                CancelReason.CHANGE_OF_MIND,
+                                "사유",
+                                OffsetDateTime.now()
+                        )
+                ),
+                1,
+                1L,
+                true,
+                true,
+                20,
+                1
+        );
+        when(orderService.getCanceledOrders(eq(memberId), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/orders/cancel")
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("주문 취소 목록을 조회했습니다."))
+                .andExpect(jsonPath("$.data.content[0].orderId").exists());
+
+        verify(orderService, times(1)).getCanceledOrders(eq(memberId), any());
     }
 }
