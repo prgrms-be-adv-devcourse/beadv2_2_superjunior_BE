@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.order.event.OrderCreateProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.application.settlement.OrderSettlementService;
@@ -29,6 +30,7 @@ public class OrderPaymentProcessorService {
 
     private final OrderSettlementService orderSettlementService;
     private final ProductService productService;
+    private final GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -37,11 +39,14 @@ public class OrderPaymentProcessorService {
         Order order = orderRepository.findById(event.getOrderId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
         switch(event.getStatus()){
             case PAYMENT_COMPLETED -> {
+                if(order.getStatus() != OrderStatus.PENDING) return;
                 order.completePayment(PaymentMethod.PG);
-                GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+
                 String productName = productService.findByProductName(groupPurchase.getProductId());
                 eventPublisher.publishEvent(new OrderCreateProcessedEvent(
                         order,
@@ -49,8 +54,12 @@ public class OrderPaymentProcessorService {
                 ));
             }
             case PAYMENT_FAILED -> {
-                // TODO: 재시도 로직을 한다면 바로 상태 변경 X
-                //order.markFailed();
+                if(order.getStatus() != OrderStatus.PENDING) return;
+                order.markFailed();
+                groupPurchaseQuantityService.decreaseQuantity(
+                        groupPurchase.getGroupPurchaseId(),
+                        order.getQuantity()
+                );
             }
             case REFUNDED -> {
                 if (order.getStatus() == OrderStatus.CANCELLED) {
