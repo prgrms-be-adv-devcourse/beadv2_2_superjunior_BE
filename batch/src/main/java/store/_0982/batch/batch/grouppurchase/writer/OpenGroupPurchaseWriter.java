@@ -6,34 +6,33 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultProjection;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseChunkUpdateEvent;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class OpenGroupPurchaseWriter implements ItemWriter<GroupPurchaseResultWithProductInfo> {
+public class OpenGroupPurchaseWriter implements ItemWriter<GroupPurchaseResultProjection> {
 
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    public void write(@NonNull Chunk<? extends GroupPurchaseResultWithProductInfo> chunk){
-        List<GroupPurchase> toUpdate = chunk.getItems().stream()
-                        .map(GroupPurchaseResultWithProductInfo::groupPurchase)
-                        .collect(Collectors.toList());
-        if(!toUpdate.isEmpty()){
-            groupPurchaseRepository.saveAll(toUpdate);
+    public void write(@NonNull Chunk<? extends GroupPurchaseResultProjection> chunk) {
+        List<UUID> ids = chunk.getItems().stream()
+                .map(GroupPurchaseResultProjection::groupPurchaseId)
+                .toList();
+
+        if (!ids.isEmpty()) {
+            groupPurchaseRepository.bulkUpdateStatus(ids, GroupPurchaseStatus.OPEN);
         }
 
-        List<GroupPurchaseResultWithProductInfo> eventItems = new ArrayList<>(chunk.getItems());
         eventPublisher.publishEvent(
-                new GroupPurchaseChunkUpdateEvent(eventItems)
+                new GroupPurchaseChunkUpdateEvent(List.copyOf(chunk.getItems()))
         );
     }
 }
