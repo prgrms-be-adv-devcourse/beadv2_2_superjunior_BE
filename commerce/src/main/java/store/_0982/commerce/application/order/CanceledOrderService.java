@@ -16,6 +16,8 @@ import store._0982.commerce.domain.order.*;
 import store._0982.commerce.domain.order.OrderCancellationPolicy.RefundAmount;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
 import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.exception.CustomException;

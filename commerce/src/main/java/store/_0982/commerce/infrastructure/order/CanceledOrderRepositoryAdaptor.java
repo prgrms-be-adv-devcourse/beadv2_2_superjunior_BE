@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.order.CancelStatus;
-import store._0982.commerce.domain.order.CanceledOrder;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 
 import java.time.OffsetDateTime;

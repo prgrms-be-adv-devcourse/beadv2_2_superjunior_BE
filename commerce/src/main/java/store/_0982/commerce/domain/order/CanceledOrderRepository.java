@@ -1,7 +1,7 @@
 package store._0982.commerce.domain.order;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,8 +19,4 @@ public interface CanceledOrderRepository {
     List<CanceledOrder> findAllByStatusInAndCanceledAtBefore(List<CancelStatus> pendingStatuses, OffsetDateTime minutesAgo);
 
     Optional<CanceledOrder> findByOrderId(UUID orderId);
-
-    Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable);
-
-    Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus cancelStatus, Pageable pageable);
 }
