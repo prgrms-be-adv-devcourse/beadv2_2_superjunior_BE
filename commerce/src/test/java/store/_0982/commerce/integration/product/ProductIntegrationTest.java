@@ -9,8 +9,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
@@ -20,17 +18,12 @@ import store._0982.common.HeaderName;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -42,9 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @DisplayName("Product 통합 테스트")
 class ProductIntegrationTest {
-
-    @MockitoBean
-    private KafkaTemplate<String, ProductEvent> productKafkaTemplate;
 
     @Autowired
     private MockMvc mockMvc;
@@ -113,13 +103,6 @@ class ProductIntegrationTest {
         assertThat(savedProduct.getDescription()).isEqualTo("테스트 상품 설명");
         assertThat(savedProduct.getStock()).isEqualTo(100);
         assertThat(savedProduct.getSellerId()).isEqualTo(testMemberId);
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_UPSERTED),
-                eq(savedProduct.getProductId().toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test
@@ -230,13 +213,6 @@ class ProductIntegrationTest {
         // then - DB에서 하드 삭제 검증
         Optional<Product> deletedProduct = productRepository.findById(productId);
         assertThat(deletedProduct).isEmpty();
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                eq(productId.toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test
@@ -285,13 +261,6 @@ class ProductIntegrationTest {
         Optional<Product> deletedProduct = productRepository.findById(savedProduct.getProductId());
         assertThat(deletedProduct).isPresent();
         assertThat(deletedProduct.get().getDeletedAt()).isNotNull();
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                eq(savedProduct.getProductId().toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test

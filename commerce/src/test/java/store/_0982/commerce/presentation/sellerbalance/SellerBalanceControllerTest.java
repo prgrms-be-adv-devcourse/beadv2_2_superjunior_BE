@@ -156,6 +156,7 @@ class SellerBalanceControllerTest {
                     new SellerBalanceHistoryInfo(
                             UUID.randomUUID(),
                             memberId,
+                            null,
                             settlementId1,
                             50000L,
                             SellerBalanceHistoryStatus.CREDIT,
@@ -164,6 +165,7 @@ class SellerBalanceControllerTest {
                     new SellerBalanceHistoryInfo(
                             UUID.randomUUID(),
                             memberId,
+                            null,
                             settlementId2,
                             20000L,
                             SellerBalanceHistoryStatus.DEBIT,
@@ -252,6 +254,7 @@ class SellerBalanceControllerTest {
                     new SellerBalanceHistoryInfo(
                             UUID.randomUUID(),
                             memberId,
+                            null,
                             UUID.randomUUID(),
                             30000L,
                             SellerBalanceHistoryStatus.CREDIT,

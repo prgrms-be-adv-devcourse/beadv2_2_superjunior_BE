@@ -97,10 +97,10 @@ class SellerBalanceServiceTest {
             Pageable pageable = PageRequest.of(0, 20);
 
             SellerBalanceHistory history1 = createHistory(
-                    historyId1, memberId, settlementId1, 50000L, SellerBalanceHistoryStatus.CREDIT
+                    historyId1, memberId, null, settlementId1, 50000L, SellerBalanceHistoryStatus.CREDIT
             );
             SellerBalanceHistory history2 = createHistory(
-                    historyId2, memberId, settlementId2, 20000L, SellerBalanceHistoryStatus.DEBIT
+                    historyId2, memberId, null, settlementId2, 20000L, SellerBalanceHistoryStatus.DEBIT
             );
 
             Page<SellerBalanceHistory> page = new PageImpl<>(
@@ -163,7 +163,7 @@ class SellerBalanceServiceTest {
             Pageable pageable = PageRequest.of(1, 10);
 
             SellerBalanceHistory history = createHistory(
-                    UUID.randomUUID(), memberId, UUID.randomUUID(),
+                    UUID.randomUUID(), memberId, null, UUID.randomUUID(),
                     30000L, SellerBalanceHistoryStatus.CREDIT
             );
 
@@ -192,6 +192,7 @@ class SellerBalanceServiceTest {
     private SellerBalanceHistory createHistory(
             UUID historyId,
             UUID memberId,
+            UUID sellerPayoutId,
             UUID settlementId,
             Long amount,
             SellerBalanceHistoryStatus status
@@ -200,7 +201,8 @@ class SellerBalanceServiceTest {
         SellerBalanceHistory history = mock(SellerBalanceHistory.class);
         when(history.getHistoryId()).thenReturn(historyId);
         when(history.getMemberId()).thenReturn(memberId);
-        when(history.getSettlementId()).thenReturn(settlementId);
+        when(history.getSellerPayoutId()).thenReturn(sellerPayoutId);
+        when(history.getOrderSettlementId()).thenReturn(settlementId);
         when(history.getAmount()).thenReturn(amount);
         when(history.getStatus()).thenReturn(status);
         when(history.getCreatedAt()).thenReturn(OffsetDateTime.now());
