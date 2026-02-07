@@ -16,7 +16,6 @@ import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.order.CancelReason;
 import store._0982.common.domain.order.CancelStatus;
-import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 
@@ -196,7 +195,7 @@ class CanceledOrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("주문 취소 대기 내역을 페이징하여 조회했습니다."))
-                .andExpect(jsonPath("$.data.content[0].status").value(OrderStatus.PENDING.name()))
+                .andExpect(jsonPath("$.data.content[0].status").value(CancelStatus.PENDING.name()))
                 .andExpect(jsonPath("$.data.content[0].orderId").exists());
 
         verify(orderService, times(1)).getPendingOrder(eq(memberId), any());
@@ -281,7 +280,7 @@ class CanceledOrderControllerTest {
     }
 
     @Test
-    @DisplayName("주문 취소 승인 시 권한이 없으면 403을 반환한다.")
+    @DisplayName("주문 취소 거부 시 권한이 없으면 403을 반환한다.")
     void rejectOrder_forbidden() throws Exception {
         UUID memberId = UUID.randomUUID();
         UUID orderId = UUID.randomUUID();
