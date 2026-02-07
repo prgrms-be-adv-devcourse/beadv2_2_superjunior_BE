@@ -1,0 +1,37 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  application:
+    name: batch-test
+
+  flyway:
+    enabled: true
+    default-schema: batch_schema
+    schemas: batch_schema
+    create-schemas: true
+
+  datasource:
+    hikari:
+      maximum-pool-size: 30
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: batch_schema
+        hbm2ddl:
+          create_namespaces: true
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+
+logging:
+  level:
+    root: warn
+    org.apache.kafka.test.TestUtils: off
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
