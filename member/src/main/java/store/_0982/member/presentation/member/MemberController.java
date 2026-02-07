@@ -18,8 +18,6 @@ import store._0982.member.application.member.SellerService;
 import store._0982.member.application.member.dto.*;
 import store._0982.member.presentation.member.dto.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -141,17 +139,6 @@ public class MemberController {
     @GetMapping("/role")
     public ResponseDto<RoleInfo> getRole(@RequestHeader(value = HeaderName.ID) UUID memberId){
         return new ResponseDto<>(HttpStatus.OK, memberService.getRoleOfMember(memberId), "사용자 역할 정보");
-    }
-
-    @Operation(summary = "헤더 확인", description = "게이트웨이에서 전달된 회원 헤더 정보를 확인합니다.")
-    @GetMapping("/header-check")
-    public ResponseDto<Map<String, String>> checkHeader(@RequestHeader(value = HeaderName.ID, required = false) String memberId, @RequestHeader(value = HeaderName.EMAIL, required = false) String email, @RequestHeader(value = HeaderName.ROLE, required = false) String role) {
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(HeaderName.ID, memberId);
-        headers.put(HeaderName.ROLE, role);
-
-        return new ResponseDto<>(HttpStatus.OK, headers, "정상 헤더 출력");
     }
 
 }

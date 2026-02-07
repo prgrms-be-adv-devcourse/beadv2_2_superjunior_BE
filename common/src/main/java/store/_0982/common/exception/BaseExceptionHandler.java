@@ -36,9 +36,9 @@ public abstract class BaseExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         HttpStatus httpStatus = errorCode.getHttpStatus();
         if (errorCode instanceof DefaultErrorCode) {
-            log.error(LogFormat.errorOf(httpStatus, e.getMessage()));
+            log.error(LogFormat.error(httpStatus, e.getMessage()));
         } else {
-            log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+            log.error(LogFormat.error(httpStatus, e.getMessage()), e);
         }
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
@@ -59,9 +59,7 @@ public abstract class BaseExceptionHandler {
     public ResponseEntity<ResponseDto<String>> handleMissingHeaderException(MissingRequestHeaderException e) {
         CustomException ex = switch (e.getHeaderName()) {
             case HeaderName.ID -> new CustomException(DefaultErrorCode.NO_LOGIN_INFO);
-            case HeaderName.EMAIL -> new CustomException(DefaultErrorCode.NO_EMAIL_INFO);
             case HeaderName.ROLE -> new CustomException(DefaultErrorCode.NO_ROLE_INFO);
-            case HeaderName.TOKEN -> new CustomException(DefaultErrorCode.NO_TOKEN_INFO);
             default -> new CustomException(DefaultErrorCode.REQUEST_HEADER_IS_NULL);
         };
         return handleCustomException(ex);
@@ -77,28 +75,28 @@ public abstract class BaseExceptionHandler {
     @ExceptionHandler(SecurityException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseDto<String> handleSecurityException(SecurityException e) {
-        log.error(LogFormat.errorOf(HttpStatus.FORBIDDEN, e.getMessage()), e);
+        log.error(LogFormat.error(HttpStatus.FORBIDDEN, e.getMessage()), e);
         return new ResponseDto<>(HttpStatus.FORBIDDEN, null, e.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.error(LogFormat.errorOf(HttpStatus.NOT_FOUND, e.getMessage()), e);
+        log.error(LogFormat.error(HttpStatus.NOT_FOUND, e.getMessage()), e);
         return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.error(LogFormat.errorOf(HttpStatus.NOT_FOUND, e.getMessage()), e);
+        log.error(LogFormat.error(HttpStatus.NOT_FOUND, e.getMessage()), e);
         return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<String> handleException(Exception e) {
-        log.error(LogFormat.errorOf(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), e);
+        log.error(LogFormat.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), e);
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
 }

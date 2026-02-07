@@ -74,7 +74,7 @@ public class TossPaymentService {
         } catch (ResourceAccessException e) {
             throw new CustomException(CustomErrorCode.PAYMENT_API_TIMEOUT);
         } catch (Exception e) {
-            log.error(LogFormat.errorOf(HttpStatus.BAD_GATEWAY, e.getMessage()), e);
+            log.error(LogFormat.error(HttpStatus.BAD_GATEWAY, e.getMessage()), e);
             throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
         }
     }

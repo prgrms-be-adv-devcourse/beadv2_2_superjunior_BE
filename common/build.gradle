@@ -9,6 +9,8 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 }
 
 bootJar {

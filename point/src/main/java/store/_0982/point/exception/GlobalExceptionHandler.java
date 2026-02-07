@@ -20,14 +20,14 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
     @ExceptionHandler(NegligibleWebhookException.class)
     public ResponseEntity<ResponseDto<Void>> handleNegligibleWebhookException(NegligibleWebhookException e) {
         // 상태 코드는 BAD_REQUEST가 어울릴 것 같아서 이걸로 지정함
-        log.error(LogFormat.errorOf(HttpStatus.BAD_REQUEST, e.getMessage()), e);
+        log.error(LogFormat.error(HttpStatus.BAD_REQUEST, e.getMessage()), e);
         return ResponseEntity.ok(new ResponseDto<>(HttpStatus.OK, null, "무시된 웹훅 이벤트입니다."));
     }
 
     @ExceptionHandler(PaymentClientException.class)
     public ResponseEntity<ResponseDto<Void>> handlePaymentClientException(PaymentClientException e) {
         HttpStatus httpStatus = e.getStatus();
-        log.error(LogFormat.errorOf(httpStatus, e.getMessage()), e);
+        log.error(LogFormat.error(httpStatus, e.getMessage()), e);
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
