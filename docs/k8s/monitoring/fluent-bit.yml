@@ -94,7 +94,7 @@ data:
         Host elasticsearch-service.default.svc.cluster.local
         Port 9200
         Logstash_Format On
-        Logstash_Prefix k8s-logs
+        Logstash_Prefix logs
         Logstash_DateFormat %Y.%m.%d
         Type _doc
         Retry_Limit 3

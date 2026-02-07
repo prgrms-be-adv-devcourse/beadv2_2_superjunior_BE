@@ -19,6 +19,23 @@ data:
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
+            
+      - job_name: 'kubernetes-nodes-cadvisor'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
@@ -171,7 +188,7 @@ kind: ServiceAccount
 metadata:
   name: prometheus
   namespace: monitoring
-automountServiceAccountToken: false
+automountServiceAccountToken: true
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
