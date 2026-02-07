@@ -9,13 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.domain.order.*;
 import store._0982.commerce.domain.order.OrderCancellationPolicy.RefundAmount;
-import store._0982.commerce.domain.order.policy.RefundOrderCancellationPolicy;
-import store._0982.commerce.domain.order.policy.ReversalOrderCancellationPolicy;
-import store._0982.commerce.domain.order.policy.VoidOrderCancellationPolicy;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.CancelStatus;
@@ -27,6 +25,7 @@ import store._0982.common.log.ServiceLog;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -40,9 +39,8 @@ public class CanceledOrderService {
     private final CanceledOrderRepository canceledOrderRepository;
 
     private final ApplicationEventPublisher eventPublisher;
-    private final VoidOrderCancellationPolicy voidOrderCancellationPolicy;
-    private final ReversalOrderCancellationPolicy reversalOrderCancellationPolicy;
-    private final RefundOrderCancellationPolicy refundOrderCancellationPolicy;
+
+    private final OrderCancellationPolicyResolver orderCancellationPolicyResolver;
 
     @Retryable(
             retryFor = OptimisticLockingFailureException.class,
@@ -76,95 +74,75 @@ public class CanceledOrderService {
                 .findByGroupPurchase(order.getGroupPurchaseId());
 
         String productName = productService.findByProductName(groupPurchase.getProductId());
+
+        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
         order.requestCanceledAt();
+        OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolve(groupPurchase, order, command.reason());
+        RefundAmount refundAmount = policy.calculate(order);
+
+        CancelStatus status = command.reason().isBuyerFault()
+                ? CancelStatus.REQUESTED
+                : CancelStatus.PENDING;
+
+        CanceledOrder canceledOrder = null;
+
+//        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+//                order.getOrderId(),
+//                command.memberId(),
+//                order.getSellerId(),
+//                order.getPaidPrice(),
+//                refundAmount.cancellationFee(),
+//                refundAmount.shippingFee(),
+//                refundAmount.refundAmount(),
+//                policy.getPolicyId(),
+//                policy.buildSnapshot(refundAmount),
+//                status,
+//                command.reason(),
+//                command.detailReason(),
+//                command.idempotencyKey(),
+//                order.getPaymentMethod()
+//        );
+        canceledOrderRepository.save(canceledOrder);
 
         if (command.reason().isBuyerFault()) {
-            groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-
-            if (groupPurchase.isInVoidPeriod()) {
-                RefundAmount refundAmount = voidOrderCancellationPolicy.calculate(order);
-                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
-                        order.getOrderId(),
-                        command.memberId(),
-                        order.getPaidPrice(),
-                        refundAmount.cancellationFee(),
-                        refundAmount.shippingFee(),
-                        refundAmount.refundAmount(),
-                        voidOrderCancellationPolicy.getPolicyId(),
-                        voidOrderCancellationPolicy.buildSnapshot(refundAmount),
-                        command.reason(),
-                        command.detailReason(),
-                        command.idempotencyKey(),
-                        order.getPaymentMethod()
-                );
-                canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(canceledOrder, productName);
-                return;
-            }
-
-            if (groupPurchase.isInReversedPeriod(order.getCanceledAt())) {
-                RefundAmount refundAmount = reversalOrderCancellationPolicy.calculate(order);
-                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
-                        order.getOrderId(),
-                        command.memberId(),
-                        order.getPaidPrice(),
-                        refundAmount.cancellationFee(),
-                        refundAmount.shippingFee(),
-                        refundAmount.refundAmount(),
-                        reversalOrderCancellationPolicy.getPolicyId(),
-                        reversalOrderCancellationPolicy.buildSnapshot(refundAmount),
-                        command.reason(),
-                        command.detailReason(),
-                        command.idempotencyKey(),
-                        order.getPaymentMethod()
-                );
-                canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(canceledOrder, productName);
-                return;
-            }
-
-            if (groupPurchase.isInReturnedPeriod(order.getCanceledAt())) {
-                RefundAmount refundAmount = refundOrderCancellationPolicy.calculate(order);
-                CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
-                        order.getOrderId(),
-                        command.memberId(),
-                        order.getPaidPrice(),
-                        refundAmount.cancellationFee(),
-                        refundAmount.shippingFee(),
-                        refundAmount.refundAmount(),
-                        refundOrderCancellationPolicy.getPolicyId(),
-                        refundOrderCancellationPolicy.buildSnapshot(refundAmount),
-                        command.reason(),
-                        command.detailReason(),
-                        command.idempotencyKey(),
-                        order.getPaymentMethod()
-                );
-                canceledOrderRepository.save(canceledOrder);
-                publishCancellationEvent(canceledOrder, productName);
-                return;
-            }
-        } else if (command.reason().isSellerFault()) {
-            RefundAmount refundAmount = voidOrderCancellationPolicy.calculate(order);
-            CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
-                    order.getOrderId(),
-                    command.memberId(),
-                    order.getPaidPrice(),
-                    refundAmount.cancellationFee(),
-                    refundAmount.shippingFee(),
-                    refundAmount.refundAmount(),
-                    voidOrderCancellationPolicy.getPolicyId(),
-                    voidOrderCancellationPolicy.buildSnapshot(refundAmount),
-                    command.reason(),
-                    command.detailReason(),
-                    command.idempotencyKey(),
-                    order.getPaymentMethod()
-            );
-            canceledOrderRepository.save(canceledOrder);
             publishCancellationEvent(canceledOrder, productName);
-            return;
+        }
+    }
+
+    @Transactional
+    public OrderCancelInfo approvePendingOrder(UUID memberId, UUID orderId) {
+        CanceledOrder findCanceledOrder = canceledOrderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CANCELED_ORDER_NOT_FOUND));
+
+        Order findOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
+
+        if (!findOrder.getSellerId().equals(memberId)) {
+            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
         }
 
-        throw new CustomException(CustomErrorCode.ORDER_CANCELLATION_NOT_ALLOWED);
+        GroupPurchase groupPurchase = groupPurchaseService
+                .findByGroupPurchase(findOrder.getGroupPurchaseId());
+        String productName = productService.findByProductName(groupPurchase.getProductId());
+
+//        findCanceledOrder.markApproved();
+        publishCancellationEvent(findCanceledOrder, productName);
+
+        return OrderCancelInfo.toOrderCancelInfo(findCanceledOrder);
+    }
+
+    @Transactional
+    public OrderCancelInfo rejectPendingOrder(UUID memberId, UUID orderId) {
+        CanceledOrder findCanceledOrder = canceledOrderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.CANCELED_ORDER_NOT_FOUND));
+
+//        if (!findCanceledOrder.getSellerId().equals(memberId)) {
+//            throw new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+//        }
+//
+//        findCanceledOrder.markRejected();
+        return OrderCancelInfo.toOrderCancelInfo(findCanceledOrder);
     }
 
     @ServiceLog
@@ -190,7 +168,7 @@ public class CanceledOrderService {
                 continue;
             }
 
-            OrderCancellationPolicy policy = resolvePolicy(canceledOrder);
+            OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolveByPolicyId(canceledOrder.getPolicyId());
             if (policy == null) {
                 continue;
             }
@@ -203,20 +181,40 @@ public class CanceledOrderService {
         }
     }
 
-    private OrderCancellationPolicy resolvePolicy(CanceledOrder canceledOrder) {
-        String policyId = canceledOrder.getPolicyId();
-        if (policyId != null) {
-            if (policyId.equals(voidOrderCancellationPolicy.getPolicyId())) {
-                return voidOrderCancellationPolicy;
-            }
-            if (policyId.equals(reversalOrderCancellationPolicy.getPolicyId())) {
-                return reversalOrderCancellationPolicy;
-            }
-            if (policyId.equals(refundOrderCancellationPolicy.getPolicyId())) {
-                return refundOrderCancellationPolicy;
-            }
+    @ServiceLog
+    @Transactional
+    public void autoCancelOrder() {
+        List<CancelStatus> pendingStatuses = List.of(
+                CancelStatus.PENDING
+        );
+
+        OffsetDateTime twoDaysAgo = OffsetDateTime.now().minusDays(2);
+        List<CanceledOrder> pendingOrders =
+                canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(pendingStatuses, twoDaysAgo);
+
+        if (pendingOrders.isEmpty()) {
+            return;
         }
-        return null;
+
+        for (CanceledOrder canceledOrder : pendingOrders) {
+            Order order = orderRepository.findById(canceledOrder.getOrderId())
+                    .orElse(null);
+            if (order == null) {
+                continue;
+            }
+
+            OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolveByPolicyId(canceledOrder.getPolicyId());
+            if (policy == null) {
+                continue;
+            }
+
+            GroupPurchase groupPurchase = groupPurchaseService
+                    .findByGroupPurchase(order.getGroupPurchaseId());
+            String productName = productService.findByProductName(groupPurchase.getProductId());
+
+//            canceledOrder.markApproved();
+            publishCancellationEvent(canceledOrder, productName);
+        }
     }
 
     private void publishCancellationEvent(CanceledOrder canceledOrder, String productName) {

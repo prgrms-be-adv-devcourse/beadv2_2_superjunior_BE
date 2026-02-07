@@ -1,6 +1,8 @@
 package store._0982.commerce.infrastructure.order;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import store._0982.common.domain.order.CancelStatus;
 import store._0982.common.domain.order.CanceledOrder;
@@ -40,5 +42,15 @@ public class CanceledOrderRepositoryAdaptor implements CanceledOrderRepository {
     @Override
     public Optional<CanceledOrder> findByOrderId(UUID orderId) {
         return canceledOrderJpaRepository.findByOrderId(orderId);
+    }
+
+    @Override
+    public Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable) {
+        return canceledOrderJpaRepository.findAllByMemberId(memberId, pageable);
+    }
+
+    @Override
+    public Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus cancelStatus, Pageable pageable) {
+        return canceledOrderJpaRepository.findAllBySellerIdAndStatus(sellerId, cancelStatus, pageable);
     }
 }
