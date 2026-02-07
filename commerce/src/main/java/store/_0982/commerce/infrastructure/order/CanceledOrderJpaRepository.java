@@ -1,5 +1,7 @@
 package store._0982.commerce.infrastructure.order;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store._0982.commerce.domain.order.CancelStatus;
 import store._0982.commerce.domain.order.CanceledOrder;
@@ -19,4 +21,8 @@ public interface CanceledOrderJpaRepository extends JpaRepository<CanceledOrder,
     List<CanceledOrder> findAllByStatusInAndCanceledAtBefore(Collection<CancelStatus> statuses, OffsetDateTime canceledAtBefore);
 
     Optional<CanceledOrder> findByOrderId(UUID orderId);
+
+    Page<CanceledOrder> findAllByMemberId(UUID memberId, Pageable pageable);
+
+    Page<CanceledOrder> findAllBySellerIdAndStatus(UUID sellerId, CancelStatus status, Pageable pageable);
 }

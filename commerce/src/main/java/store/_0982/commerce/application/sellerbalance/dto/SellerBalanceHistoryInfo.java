@@ -9,7 +9,8 @@ import java.util.UUID;
 public record SellerBalanceHistoryInfo(
         UUID sellerBalanceHistoryId,
         UUID memberId,
-        UUID settlementId,
+        UUID sellerPayoutId,
+        UUID orderSettlementId,
         Long amount,
         SellerBalanceHistoryStatus status,
         OffsetDateTime createdAt
@@ -18,7 +19,8 @@ public record SellerBalanceHistoryInfo(
         return new SellerBalanceHistoryInfo(
                 history.getHistoryId(),
                 history.getMemberId(),
-                history.getSettlementId(),
+                history.getSellerPayoutId(),
+                history.getOrderSettlementId(),
                 history.getAmount(),
                 history.getStatus(),
                 history.getCreatedAt()
