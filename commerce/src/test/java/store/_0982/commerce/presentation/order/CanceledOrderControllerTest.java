@@ -11,20 +11,23 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.order.OrderService;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
+import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.presentation.order.dto.OrderCancelRequest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.order.CancelReason;
 import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.dto.PageResponse;
+import store._0982.common.exception.CustomException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -106,7 +109,7 @@ class CanceledOrderControllerTest {
 
         mockMvc.perform(
                         post("/api/orders/cancel/{orderId}",  "invalid")
-                                .header(HeaderName.ID, UUID.randomUUID())
+                                .header(HeaderName.ID, UUID.randomUUID().toString())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request))
                 )
@@ -155,5 +158,143 @@ class CanceledOrderControllerTest {
                 .andExpect(jsonPath("$.data.content[0].orderId").exists());
 
         verify(orderService, times(1)).getCanceledOrders(eq(memberId), any());
+    }
+
+    @Test
+    @DisplayName("주문 취소 대기 내역 리스트 조회한다.")
+    void getPendingOrders_success() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        PageResponse<OrderCancelInfo> response = new PageResponse<>(
+                List.of(
+                        new OrderCancelInfo(
+                                UUID.randomUUID(),
+                                CancelStatus.PENDING,
+                                10_000L,
+                                0L,
+                                0L,
+                                10_000L,
+                                CancelReason.CHANGE_OF_MIND,
+                                "사유",
+                                OffsetDateTime.now()
+                        )
+                ),
+                1,
+                1L,
+                true,
+                true,
+                20,
+                1
+        );
+
+        when(orderService.getPendingOrder(eq(memberId), any()))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get("/api/orders/cancel/pending")
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.message").value("주문 취소 대기 내역을 페이징하여 조회했습니다."))
+                .andExpect(jsonPath("$.data.content[0].status").value(OrderStatus.PENDING.name()))
+                .andExpect(jsonPath("$.data.content[0].orderId").exists());
+
+        verify(orderService, times(1)).getPendingOrder(eq(memberId), any());
+    }
+
+    @Test
+    @DisplayName("주문 취소 승인을 처리한다.")
+    void approveOrder_success() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        OrderCancelInfo info = new OrderCancelInfo(
+                orderId,
+                CancelStatus.APPROVED,
+                10_000L,
+                1_000L,
+                0L,
+                9_000L,
+                CancelReason.CHANGE_OF_MIND,
+                "사유",
+                OffsetDateTime.now()
+        );
+        when(orderService.approvePendingOrder(memberId, orderId))
+                .thenReturn(info);
+
+        mockMvc.perform(
+                        patch("/api/orders/cancel/{orderId}/approve", orderId)
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.status").value(CancelStatus.APPROVED.name()));
+
+        verify(orderService).approvePendingOrder(memberId, orderId);
+    }
+
+    @Test
+    @DisplayName("주문 취소 승인 시 권한이 없으면 403을 반환한다.")
+    void approveOrder_forbidden() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        when(orderService.approvePendingOrder(memberId, orderId))
+                .thenThrow(new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED));
+
+        mockMvc.perform(
+                        patch("/api/orders/cancel/{orderId}/approve", orderId)
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+
+        verify(orderService).approvePendingOrder(memberId, orderId);
+    }
+
+    @Test
+    @DisplayName("주문 취소 거부를 처리한다.")
+    void rejectOrder_success() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        OrderCancelInfo info = new OrderCancelInfo(
+                orderId,
+                CancelStatus.REJECTED,
+                10_000L,
+                1_000L,
+                0L,
+                9_000L,
+                CancelReason.CHANGE_OF_MIND,
+                "사유",
+                OffsetDateTime.now()
+        );
+        when(orderService.rejectPendingOrder(memberId, orderId))
+                .thenReturn(info);
+
+        mockMvc.perform(
+                        patch("/api/orders/cancel/{orderId}/reject", orderId)
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.status").value(CancelStatus.REJECTED.name()));
+
+        verify(orderService).rejectPendingOrder(memberId, orderId);
+    }
+
+    @Test
+    @DisplayName("주문 취소 승인 시 권한이 없으면 403을 반환한다.")
+    void rejectOrder_forbidden() throws Exception {
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        when(orderService.rejectPendingOrder(memberId, orderId))
+                .thenThrow(new CustomException(CustomErrorCode.NON_SELLER_ACCESS_DENIED));
+
+        mockMvc.perform(
+                        patch("/api/orders/cancel/{orderId}/reject", orderId)
+                                .header(HeaderName.ID, memberId.toString())
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
+
+        verify(orderService).rejectPendingOrder(memberId, orderId);
     }
 }
