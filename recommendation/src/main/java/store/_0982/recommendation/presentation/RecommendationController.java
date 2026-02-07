@@ -14,7 +14,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/ai")
-public class AiController {
+public class RecommendationController {
     private final RecommendationService recommendationService;
 
     @ResponseStatus(HttpStatus.OK)
