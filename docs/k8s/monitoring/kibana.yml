@@ -35,6 +35,8 @@ spec:
           env:
             - name: ELASTICSEARCH_HOSTS
               value: "http://elasticsearch-service.default.svc.cluster.local:9200"
+            - name: ENTERPRISESEARCH_ENABLED
+              value: "false"
             - name: SERVER_NAME
               value: "kibana"
             - name: SERVER_HOST
