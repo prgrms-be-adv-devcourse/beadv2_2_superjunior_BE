@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: prometheus-config
+  namespace: monitoring
   labels:
     app: prometheus
 data:
@@ -62,6 +63,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: prometheus
+  namespace: monitoring
   labels:
     app: prometheus
 spec:
@@ -149,6 +151,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prometheus-service
+  namespace: monitoring
   labels:
     app: prometheus
 spec:
@@ -167,7 +170,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus
-  namespace: default
+  namespace: monitoring
 automountServiceAccountToken: false
 
 ---
@@ -204,4 +207,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: prometheus
-    namespace: default
+    namespace: monitoring
