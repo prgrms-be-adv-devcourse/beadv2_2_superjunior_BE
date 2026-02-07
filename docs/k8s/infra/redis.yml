@@ -31,6 +31,9 @@ spec:
     metadata:
       labels:
         app: redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
@@ -87,6 +90,20 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.58.0
+          ports:
+            - containerPort: 9121
+              name: metrics
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
       volumes:
         - name: redis-config
           configMap:

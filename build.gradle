@@ -39,6 +39,7 @@ subprojects {
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
         implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+        runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
         implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 
         implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -57,3 +58,5 @@ subprojects {
         useJUnitPlatform()
     }
 }
+
+// 병렬 테스트

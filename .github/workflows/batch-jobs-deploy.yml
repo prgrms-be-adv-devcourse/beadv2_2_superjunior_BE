@@ -21,6 +21,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip deploy]')"
 
     steps:
     - name: 코드 체크아웃
@@ -54,6 +55,7 @@ jobs:
     - name: Jib로 Docker 이미지 빌드 및 Push
       run: |
         ./gradlew :batch:jib \
+          -Djib.from.platforms=linux/amd64,linux/arm64 \
           -Djib.to.image=${{ env.DOCKER_IMAGE }} \
           -Djib.to.tags=${{ steps.version.outputs.tag }} \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \

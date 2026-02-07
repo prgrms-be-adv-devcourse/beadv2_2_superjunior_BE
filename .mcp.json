@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "tosspayments-integration-guide": {
-      "command": "cmd",
-      "args": ["/c", "npx", "-y", "@tosspayments/integration-guide-mcp@latest"]
+      "command": "npx",
+      "args": ["-y", "@tosspayments/integration-guide-mcp@latest"]
     }
   }
 }

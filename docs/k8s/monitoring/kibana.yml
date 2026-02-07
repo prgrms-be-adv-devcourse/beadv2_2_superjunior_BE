@@ -1,0 +1,132 @@
+#file: noinspection SpellCheckingInspection
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+spec:
+  serviceName: "kibana-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5601"
+        prometheus.io/path: "/api/status"
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: monitoring-server
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:8.18.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5601
+              name: http
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch-service:9200"
+            - name: SERVER_NAME
+              value: "kibana"
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: XPACK_SECURITY_ENABLED
+              value: "false"
+          envFrom:
+            - secretRef:
+                name: kibana-secret
+          resources:
+            requests:
+              ephemeral-storage: "1Gi"
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              ephemeral-storage: "2Gi"
+              memory: "1Gi"
+              cpu: "500m"
+          volumeMounts:
+            - name: kibana-storage
+              mountPath: /usr/share/kibana/data
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "sleep 10"
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: 5601
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: 5601
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+  volumeClaimTemplates:
+    - metadata:
+        name: kibana-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 10Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+  labels:
+    app: kibana
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5601
+      targetPort: 5601
+      protocol: TCP
+      name: http
+  selector:
+    app: kibana
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-https-redirect@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+    - host: kibana.0982.store
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kibana-service
+                port:
+                  number: 5601
+  tls:
+    - hosts:
+        - kibana.0982.store
+      secretName: kibana-tls

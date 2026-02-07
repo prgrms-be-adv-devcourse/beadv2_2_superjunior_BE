@@ -16,6 +16,9 @@ spec:
     metadata:
       labels:
         app: kafka
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9308"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
@@ -81,6 +84,28 @@ spec:
             periodSeconds: 15
             timeoutSeconds: 10
             failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+        - name: kafka-exporter
+          image: danielqsj/kafka-exporter:v1.7.0
+          args: ["--kafka.server=localhost:9092"]
+          ports:
+            - containerPort: 9308
+              name: metrics
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
           readinessProbe:
             tcpSocket:
               port: 9092

@@ -15,7 +15,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-5
+        kubernetes.io/hostname: api-server
       containers:
         - name: member
           image: minbros/member:latest
@@ -41,8 +41,8 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "384Mi"
-              ephemeral-storage: "768Mi"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
             limits:
               cpu: "500m"
               memory: "768Mi"
