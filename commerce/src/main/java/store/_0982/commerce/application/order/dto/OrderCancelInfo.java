@@ -1,8 +1,8 @@
 package store._0982.commerce.application.order.dto;
 
-import store._0982.commerce.domain.order.CancelReason;
-import store._0982.commerce.domain.order.CancelStatus;
-import store._0982.commerce.domain.order.CanceledOrder;
+import store._0982.common.domain.order.CancelReason;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

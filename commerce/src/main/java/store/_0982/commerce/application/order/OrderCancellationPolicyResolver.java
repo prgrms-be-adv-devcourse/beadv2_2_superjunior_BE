@@ -1,7 +1,7 @@
 package store._0982.commerce.application.order;
 
 import org.springframework.stereotype.Component;
-import store._0982.commerce.domain.order.CancelReason;
+import store._0982.common.domain.order.CancelReason;
 import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.policy.RefundOrderCancellationPolicy;
 import store._0982.commerce.domain.order.policy.ReversalOrderCancellationPolicy;
