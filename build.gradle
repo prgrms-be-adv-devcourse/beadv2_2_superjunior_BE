@@ -58,3 +58,5 @@ subprojects {
         useJUnitPlatform()
     }
 }
+
+// 병렬 테스트

@@ -130,7 +130,7 @@ jobs:
 
   # Point 배포
   deploy-point:
-    needs: [ detect-changes, deploy-member ]
+    needs: [ detect-changes, deploy-gateway ]
     if: always() && needs.detect-changes.outputs.point == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -150,7 +150,7 @@ jobs:
 
   # Commerce 배포
   deploy-commerce:
-    needs: [ detect-changes, deploy-point ]
+    needs: [ detect-changes, deploy-gateway ]
     if: always() && needs.detect-changes.outputs.commerce == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -170,7 +170,7 @@ jobs:
 
   # Search 배포
   deploy-search:
-    needs: [ detect-changes, deploy-commerce ]
+    needs: [ detect-changes, deploy-gateway ]
     if: always() && needs.detect-changes.outputs.search == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -191,7 +191,7 @@ jobs:
 
   # AI 배포
   deploy-ai:
-    needs: [ detect-changes, deploy-search ]
+    needs: [ detect-changes, deploy-gateway ]
     if: always() && needs.detect-changes.outputs.ai == 'true'
     runs-on: ubuntu-latest
     steps:
