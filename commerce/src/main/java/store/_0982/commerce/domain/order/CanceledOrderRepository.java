@@ -1,5 +1,8 @@
 package store._0982.commerce.domain.order;
 
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
