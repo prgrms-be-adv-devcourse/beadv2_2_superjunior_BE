@@ -14,3 +14,6 @@ spring:
 token:
   internal:
     secret: ${TOKEN_INTERNAL_SECRET}
+
+client:
+  recommendation: ${CLIENT_RECOMMENDATION}
