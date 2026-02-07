@@ -11,8 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import store._0982.commerce.application.sellerbalance.dto.SellerBalanceCommand;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
+import store._0982.commerce.application.sellerbalance.dto.SellerBalanceThumbnailInfo;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.domain.sellerbalance.SellerBalance;
@@ -41,6 +43,27 @@ class SellerBalanceServiceTest {
 
     @InjectMocks
     private SellerBalanceService sellerBalanceService;
+
+    @Nested
+    @DisplayName("balance 생성 Service")
+    class CreateBalanceTest {
+
+        @Test
+        @DisplayName("판매자 balance를 생성한다")
+        void createSellerBalance_success() {
+            // given
+            UUID sellerId = UUID.randomUUID();
+
+            // when
+            SellerBalanceThumbnailInfo result = sellerBalanceService.createSellerBalance(
+                    new SellerBalanceCommand(sellerId));
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.sellerId()).isEqualTo(sellerId);
+            verify(sellerBalanceRepository).save(any(SellerBalance.class));
+        }
+    }
 
     @Nested
     @DisplayName("balance 조회 Service")
