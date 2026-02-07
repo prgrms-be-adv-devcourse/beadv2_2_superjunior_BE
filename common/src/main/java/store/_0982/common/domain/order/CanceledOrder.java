@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.order;
+package store._0982.common.domain.order;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import store._0982.common.domain.order.PaymentMethod;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;

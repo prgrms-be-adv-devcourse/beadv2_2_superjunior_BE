@@ -1,4 +1,4 @@
-package store._0982.commerce.domain.order;
+package store._0982.common.domain.order;
 
 import java.util.EnumSet;
 

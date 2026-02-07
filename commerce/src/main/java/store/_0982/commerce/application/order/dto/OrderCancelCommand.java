@@ -1,6 +1,6 @@
 package store._0982.commerce.application.order.dto;
 
-import store._0982.commerce.domain.order.CancelReason;
+import store._0982.common.domain.order.CancelReason;
 
 import java.util.UUID;
 

@@ -3,7 +3,7 @@ package store._0982.commerce.presentation.order.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
-import store._0982.commerce.domain.order.CancelReason;
+import store._0982.common.domain.order.CancelReason;
 
 import java.util.UUID;
 
