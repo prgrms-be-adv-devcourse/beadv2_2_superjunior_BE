@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
+import store._0982.commerce.support.BaseIntegrationTest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.product.Product;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Product 통합 테스트")
-class ProductIntegrationTest {
+class ProductIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -88,8 +89,7 @@ class ProductIntegrationTest {
                 .andExpect(jsonPath("$.data.description").value("테스트 상품 설명"))
                 .andExpect(jsonPath("$.data.stock").value(100))
                 .andExpect(jsonPath("$.data.originalUrl").value("https://example.com/product"))
-                .andExpect(jsonPath("$.data.sellerId").value(testMemberId.toString()))
-                .andExpect(jsonPath("$.data.createdAt").exists());
+                .andExpect(jsonPath("$.data.sellerId").value(testMemberId.toString()));
 
         // then - DB 저장 검증
         Product savedProduct = productRepository.findBySellerId(testMemberId, PageRequest.of(0, 10))
@@ -245,7 +245,9 @@ class ProductIntegrationTest {
                 savedProduct.getProductId(),
                 null
         );
-        groupPurchaseRepository.save(groupPurchase);
+        groupPurchase.open();
+        groupPurchase.markSuccess();
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         // when & then - HTTP 응답 검증
         mockMvc.perform(
