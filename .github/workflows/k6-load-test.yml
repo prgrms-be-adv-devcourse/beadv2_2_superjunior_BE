@@ -5,7 +5,8 @@ on:
     branches:
       - feature/ci-cd
     paths:
-      - 'docs/script/k6/**'
+      - 'docs/script/k6/common/**'
+      - 'docs/script/k6/scenarios/ci-test.js'
       - '.github/workflows/k6-load-test.yml'
 
   workflow_dispatch:
@@ -13,10 +14,7 @@ on:
       test_scenario:
         description: 'Test scenario to run'
         required: true
-        type: choice
-        options:
-          - ci-test            # CI/CD 테스트 (test.k6.io)
-          - load-test          # 통합 테스트
+        type: string
         default: 'ci-test'
       virtual_users:
         description: 'Number of virtual users'

@@ -1,6 +1,6 @@
 // noinspection JSUnresolvedReference
 
-import {htmlReport} from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
+import {htmlReport} from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/2.4.0/dist/bundle.js';
 
 /**
  * k6 테스트 결과를 HTML 리포트와 텍스트 요약으로 생성
