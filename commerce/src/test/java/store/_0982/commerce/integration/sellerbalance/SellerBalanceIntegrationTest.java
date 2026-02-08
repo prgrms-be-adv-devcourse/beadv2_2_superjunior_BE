@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
+import store._0982.commerce.support.BaseIntegrationTest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("SellerBalance 통합 테스트")
-class SellerBalanceIntegrationTest {
+class SellerBalanceIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
