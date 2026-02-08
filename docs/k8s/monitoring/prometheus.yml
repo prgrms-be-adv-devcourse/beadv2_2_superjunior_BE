@@ -93,6 +93,8 @@ spec:
     metadata:
       labels:
         app: prometheus
+      annotations:
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: true
       serviceAccountName: prometheus

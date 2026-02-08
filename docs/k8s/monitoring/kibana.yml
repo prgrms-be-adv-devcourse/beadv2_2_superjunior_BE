@@ -20,6 +20,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "5601"
         prometheus.io/path: "/api/status"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:

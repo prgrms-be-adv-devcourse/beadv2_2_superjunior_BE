@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: group-purchase-reindex-job
   labels:
-    app: batch-service
+    app: batch
     component: job
     job-type: reindex
 spec:
@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        app: batch-service
+        app: batch
         job-type: reindex
     spec:
       automountServiceAccountToken: false

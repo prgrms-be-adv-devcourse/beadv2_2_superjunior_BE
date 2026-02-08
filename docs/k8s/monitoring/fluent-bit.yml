@@ -80,15 +80,9 @@ data:
         Add_prefix k8s_
 
     [FILTER]
-        Name grep
-        Match kube.*
-        Regex k8s_pod_name ^(gateway-|member-|commerce-|point-|ai-|kafka-|search-|redis-)
-
-    [FILTER]
-        Name modify
-        Match kube.*
-        Add cluster_name 0909-k8s-cluster
-        Add environment production
+        Name    grep
+        Match   kube.*
+        Exclude k8s_namespace_name ^(kube-system|monitoring|cert-manager)$
 
     [FILTER]
         Name grep
@@ -159,7 +153,11 @@ spec:
       labels:
         app: fluent-bit
         version: v3.2.2
+      annotations:
+        fluentbit.io/exclude: "true"
     spec:
+      nodeSelector:
+        logging: "enabled"
       serviceAccountName: fluent-bit
       terminationGracePeriodSeconds: 10
       # hostNetwork를 사용하여 노드 레벨 로그 수집

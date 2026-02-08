@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: group-purchase-cronjob
   labels:
-    app: batch-service
+    app: batch
     component: cronjob
     job-type: group-purchase
 spec:
@@ -21,7 +21,7 @@ spec:
       template:
         metadata:
           labels:
-            app: batch-service
+            app: batch
             job-type: group-purchase
         spec:
           restartPolicy: OnFailure

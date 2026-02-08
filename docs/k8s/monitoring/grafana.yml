@@ -40,6 +40,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "3000"
         prometheus.io/path: "/metrics"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
