@@ -62,6 +62,9 @@ public class GroupPurchase {
     @Column(name = "current_quantity", nullable = false)
     private int currentQuantity = 0;
 
+    @Column(name = "like_count")
+    private int likeCount = 0;
+
     @Column(name = "returned_at")
     private OffsetDateTime returnedAt;
 
