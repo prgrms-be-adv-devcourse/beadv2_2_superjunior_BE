@@ -691,4 +691,184 @@ class CanceledOrderServiceTest {
         assertThat(event.canceledOrder()).isEqualTo(validCanceledOrder);
         assertThat(event.productName()).isEqualTo("product-name");
     }
+
+    @Test
+    @DisplayName("자동 취소 조회는 PENDING 상태와 2일 이전을 기준으로 수행한다")
+    void autoCancelOrder_filtersStatusAndTime() {
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of());
+
+        ArgumentCaptor<List<CancelStatus>> statusCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<OffsetDateTime> timeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+
+        canceledOrderService.autoCancelOrder();
+
+        verify(canceledOrderRepository)
+                .findAllByStatusInAndCanceledAtBefore(statusCaptor.capture(), timeCaptor.capture());
+
+        assertThat(statusCaptor.getValue()).containsExactly(CancelStatus.PENDING);
+        long days = Duration.between(timeCaptor.getValue(), OffsetDateTime.now()).toDays();
+        assertThat(days).isGreaterThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("자동 취소 대상이 없으면 작업을 종료한다")
+    void autoCancelOrder_noPendingOrders() {
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of());
+
+        canceledOrderService.autoCancelOrder();
+
+        verify(orderRepository, never()).findById(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("자동 취소 재시도 시 주문을 찾을 수 없으면 건너뛴다")
+    void autoCancelOrder_skipWhenOrderMissing() {
+        UUID orderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                12_000L,
+                0L,
+                0L,
+                12_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        );
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        canceledOrderService.autoCancelOrder();
+
+        verify(orderRepository).findById(orderId);
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("자동 취소 재시도 시 정책을 찾을 수 없으면 건너뛴다")
+    void autoCancelOrder_skipWhenPolicyMissing() {
+        UUID orderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                18_000L,
+                0L,
+                0L,
+                18_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        );
+
+        Order order = mock(Order.class);
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderCancellationPolicyResolver.resolveByPolicyId("policy")).thenReturn(null);
+
+        canceledOrderService.autoCancelOrder();
+
+        verify(orderRepository).findById(orderId);
+        verify(orderCancellationPolicyResolver).resolveByPolicyId("policy");
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("자동 취소 대상은 승인 처리 후 이벤트를 발행한다")
+    void autoCancelOrder_publishEventForValidOrders() {
+        UUID validOrderId = UUID.randomUUID();
+        UUID invalidOrderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+        UUID groupPurchaseId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        CanceledOrder validCanceledOrder = CanceledOrder.createCanceledOrder(
+                validOrderId,
+                memberId,
+                sellerId,
+                22_000L,
+                1_000L,
+                0L,
+                21_000L,
+                "policy-valid",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.CHANGE_OF_MIND,
+                "reason",
+                "idem-valid",
+                PaymentMethod.POINT
+        );
+
+        CanceledOrder skippedCanceledOrder = CanceledOrder.createCanceledOrder(
+                invalidOrderId,
+                memberId,
+                sellerId,
+                30_000L,
+                1_000L,
+                0L,
+                29_000L,
+                "policy-valid",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-skip",
+                PaymentMethod.PG
+        );
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(validCanceledOrder, skippedCanceledOrder));
+
+        Order validOrder = mock(Order.class);
+        when(orderRepository.findById(validOrderId)).thenReturn(Optional.of(validOrder));
+        when(orderRepository.findById(invalidOrderId)).thenReturn(Optional.empty());
+        when(validOrder.getGroupPurchaseId()).thenReturn(groupPurchaseId);
+
+        OrderCancellationPolicy policy = mock(OrderCancellationPolicy.class);
+        when(orderCancellationPolicyResolver.resolveByPolicyId("policy-valid")).thenReturn(policy);
+
+        GroupPurchase groupPurchase = mock(GroupPurchase.class);
+        when(groupPurchase.getProductId()).thenReturn(productId);
+        when(groupPurchaseService.findByGroupPurchase(groupPurchaseId)).thenReturn(groupPurchase);
+
+        when(productService.findByProductName(productId)).thenReturn("product-name");
+
+        ArgumentCaptor<OrderCancelProcessedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCancelProcessedEvent.class);
+
+        canceledOrderService.autoCancelOrder();
+
+        verify(orderRepository).findById(validOrderId);
+        verify(orderRepository).findById(invalidOrderId);
+        verify(groupPurchaseService).findByGroupPurchase(groupPurchaseId);
+        verify(productService).findByProductName(productId);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        OrderCancelProcessedEvent event = eventCaptor.getValue();
+        assertThat(event.canceledOrder()).isEqualTo(validCanceledOrder);
+        assertThat(event.productName()).isEqualTo("product-name");
+        assertThat(validCanceledOrder.getStatus()).isEqualTo(CancelStatus.APPROVED);
+    }
 }
