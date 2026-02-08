@@ -173,7 +173,7 @@ jobs:
               echo "completed=true" >> $GITHUB_OUTPUT
               break
             fi
-            [ $((i % 6)) -eq 0 ] && echo "⏱️  Running... ($((i * 10 / 60)) min)"
+            [ $((i % 6)) -eq 0 ] && echo "⏱️ Running... ($((i * 10 / 60)) min)"
             sleep 10
           done
 

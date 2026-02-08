@@ -19,7 +19,7 @@ export const options = {
     },
 };
 
-const BASE_URL = __ENV.TARGET_URL || 'https://test.k6.io';
+const BASE_URL = 'https://test.k6.io';
 
 export default function () {
     // 1. 메인 페이지 조회
