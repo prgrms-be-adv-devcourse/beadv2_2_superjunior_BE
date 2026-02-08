@@ -69,4 +69,22 @@ class InternalSellerBalanceControllerTest {
         verify(sellerBalanceService, times(1))
                 .createSellerBalance(any());
     }
+
+    @Test
+    @DisplayName("sellerId 가 없으면 400 Bad Request 를 반환한다.")
+    void createSellerBalance_missingSellerId() throws Exception {
+        SellerBalanceRequest request = new SellerBalanceRequest(null);
+
+        mockMvc.perform(
+                        post("/internal/balances")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("SellerId 값이 없습니다."));
+
+        verify(sellerBalanceService, times(0))
+                .createSellerBalance(any());
+    }
 }
