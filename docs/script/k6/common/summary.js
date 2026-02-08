@@ -10,8 +10,10 @@ import { textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js'
  * @returns {Object} 파일 경로를 키로, 내용을 값으로 하는 객체
  */
 export function handleSummary(data) {
+    const reportPath = __ENV.REPORT_FILE
+
     return {
-        'result.html': htmlReport(data),
+        [reportPath]: htmlReport(data),
         stdout: textSummary(data, { indent: ' ', enableColors: true }),
     }
 }

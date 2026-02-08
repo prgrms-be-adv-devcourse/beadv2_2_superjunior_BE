@@ -191,11 +191,7 @@ jobs:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
           mkdir -p results
-          aws s3 cp "s3://${S3_BUCKET}/k6-results/" results/ \
-            --recursive --exclude "*" --include "*${TIMESTAMP}*" \
-            --region "$AWS_REGION"
-          aws s3 cp "s3://${S3_BUCKET}/k6-reports/" results/ \
-            --recursive --exclude "*" --include "*${TIMESTAMP}*" \
+          aws s3 sync "s3://${S3_BUCKET}/k6-results/${TIMESTAMP}" results/ \
             --region "$AWS_REGION"
           echo "✅ Downloaded results to artifact"
 
