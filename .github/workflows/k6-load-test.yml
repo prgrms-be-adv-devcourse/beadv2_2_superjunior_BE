@@ -165,7 +165,7 @@ jobs:
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          COMPLETE_MARKER="s3://${S3_BUCKET}/k6-results/complete-${TIMESTAMP}"
+          COMPLETE_MARKER="s3://${S3_BUCKET}/k6-results/${TIMESTAMP}/complete-${TIMESTAMP}"
           echo "⏳ Waiting for test completion..."
 
           for i in {1..720}; do
