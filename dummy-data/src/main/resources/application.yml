@@ -27,6 +27,10 @@ dummy-data:
     path: docs/dummy-data/dummy-datas/group-purchase-dummy.csv
   order-dummy:
     path: docs/dummy-data/dummy-datas/order-dummy.csv
+  product-vector-dummy:
+    path: docs/dummy-data/dummy-datas/product-vector-dummy.csv
+  product-vector:
+    model-version: dummy-v1
   order:
     group-purchase-count: 100000
   category:
