@@ -15,18 +15,16 @@ import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.OrderCancellationPolicy;
-import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.order.OrderCancellationPolicy.RefundAmount;
-import store._0982.common.domain.grouppurchase.GroupPurchase;
-import store._0982.common.domain.order.CancelReason;
-import store._0982.common.domain.order.CancelStatus;
-import store._0982.common.domain.order.CanceledOrder;
-import store._0982.common.domain.order.Order;
-import store._0982.common.domain.order.OrderStatus;
-import store._0982.common.domain.order.PaymentMethod;
+import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.exception.CustomErrorCode;
+import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.order.*;
 import store._0982.common.exception.CustomException;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -504,5 +502,193 @@ class CanceledOrderServiceTest {
         assertThatThrownBy(() -> canceledOrderService.rejectPendingOrder(sellerId, orderId))
                 .isInstanceOf(CustomException.class)
                 .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+    }
+
+    @Test
+    @DisplayName("재시도 조회는 REQUESTED/APPROVED 상태와 15분 이전을 기준으로 수행한다")
+    void retryCancelOrder_filtersStatusesAndTime() {
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of());
+
+        ArgumentCaptor<List<CancelStatus>> statusCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<OffsetDateTime> timeCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
+
+        canceledOrderService.retryCancelOrder();
+
+        verify(canceledOrderRepository)
+                .findAllByStatusInAndCanceledAtBefore(statusCaptor.capture(), timeCaptor.capture());
+
+        assertThat(statusCaptor.getValue())
+                .containsExactlyInAnyOrder(CancelStatus.REQUESTED, CancelStatus.APPROVED);
+
+        long minutes = Duration.between(timeCaptor.getValue(), OffsetDateTime.now()).toMinutes();
+        assertThat(minutes).isGreaterThanOrEqualTo(15);
+    }
+
+    @Test
+    @DisplayName("재시도 대상이 없으면 이벤트를 발행하지 않는다")
+    void retryCancelOrder_noPendingOrders() {
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of());
+
+        canceledOrderService.retryCancelOrder();
+
+        verify(orderRepository, never()).findById(any());
+        verify(eventPublisher, never()).publishEvent(any());
+        verifyNoInteractions(orderCancellationPolicyResolver, groupPurchaseService, productService);
+    }
+
+    @Test
+    @DisplayName("주문을 찾을 수 없으면 해당 취소 건을 건너뛴다")
+    void retryCancelOrder_skipWhenOrderMissing() {
+        UUID orderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                10_000L,
+                0L,
+                0L,
+                10_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.REQUESTED,
+                CancelReason.CHANGE_OF_MIND,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        );
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        canceledOrderService.retryCancelOrder();
+
+        verify(orderRepository).findById(orderId);
+        verify(orderCancellationPolicyResolver, never()).resolveByPolicyId(anyString());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("정책을 찾지 못하면 이벤트를 발행하지 않는다")
+    void retryCancelOrder_skipWhenPolicyMissing() {
+        UUID orderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                15_000L,
+                0L,
+                0L,
+                15_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.APPROVED,
+                CancelReason.CHANGE_OF_MIND,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        );
+
+        Order order = mock(Order.class);
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(orderCancellationPolicyResolver.resolveByPolicyId("policy")).thenReturn(null);
+
+        canceledOrderService.retryCancelOrder();
+
+        verify(orderRepository).findById(orderId);
+        verify(orderCancellationPolicyResolver).resolveByPolicyId("policy");
+        verify(groupPurchaseService, never()).findByGroupPurchase(any());
+        verify(productService, never()).findByProductName(any());
+        verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("유효한 취소 건은 재시도 작업에서 이벤트를 발행한다")
+    void retryCancelOrder_publishEventForValidOrders() {
+        UUID validOrderId = UUID.randomUUID();
+        UUID invalidOrderId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+        UUID groupPurchaseId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        CanceledOrder validCanceledOrder = CanceledOrder.createCanceledOrder(
+                validOrderId,
+                memberId,
+                sellerId,
+                20_000L,
+                0L,
+                0L,
+                20_000L,
+                "policy-valid",
+                "snapshot",
+                CancelStatus.REQUESTED,
+                CancelReason.CHANGE_OF_MIND,
+                "reason",
+                "idem-valid",
+                PaymentMethod.PG
+        );
+
+        CanceledOrder skippedCanceledOrder = CanceledOrder.createCanceledOrder(
+                invalidOrderId,
+                memberId,
+                sellerId,
+                25_000L,
+                0L,
+                0L,
+                25_000L,
+                "policy-skip",
+                "snapshot",
+                CancelStatus.APPROVED,
+                CancelReason.CHANGE_OF_MIND,
+                "reason",
+                "idem-skip",
+                PaymentMethod.PG
+        );
+
+        when(canceledOrderRepository.findAllByStatusInAndCanceledAtBefore(anyList(), any()))
+                .thenReturn(List.of(validCanceledOrder, skippedCanceledOrder));
+
+        Order validOrder = mock(Order.class);
+        when(orderRepository.findById(validOrderId)).thenReturn(Optional.of(validOrder));
+        when(orderRepository.findById(invalidOrderId)).thenReturn(Optional.empty());
+        when(validOrder.getGroupPurchaseId()).thenReturn(groupPurchaseId);
+
+        OrderCancellationPolicy policy = mock(OrderCancellationPolicy.class);
+        when(orderCancellationPolicyResolver.resolveByPolicyId("policy-valid")).thenReturn(policy);
+
+        GroupPurchase groupPurchase = mock(GroupPurchase.class);
+        when(groupPurchase.getProductId()).thenReturn(productId);
+        when(groupPurchaseService.findByGroupPurchase(groupPurchaseId)).thenReturn(groupPurchase);
+
+        when(productService.findByProductName(productId)).thenReturn("product-name");
+
+        ArgumentCaptor<OrderCancelProcessedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCancelProcessedEvent.class);
+
+        // when
+        canceledOrderService.retryCancelOrder();
+
+        // then
+        verify(orderRepository).findById(validOrderId);
+        verify(orderRepository).findById(invalidOrderId);
+        verify(orderCancellationPolicyResolver).resolveByPolicyId("policy-valid");
+        verify(groupPurchaseService).findByGroupPurchase(groupPurchaseId);
+        verify(productService).findByProductName(productId);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+
+        OrderCancelProcessedEvent event = eventCaptor.getValue();
+        assertThat(event.canceledOrder()).isEqualTo(validCanceledOrder);
+        assertThat(event.productName()).isEqualTo("product-name");
     }
 }
