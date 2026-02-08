@@ -1,4 +1,4 @@
-package store._0982.batch.batch.ai.config;
+package store._0982.batch.batch.recommendation.config;
 
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
