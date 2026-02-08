@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         default_schema: product_schema
@@ -29,6 +29,13 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
 
+  ai:
+    openai:
+      api-key: test
+      embedding:
+        options:
+          model: text-embedding-3-small
+
 gateway:
   host: http://localhost:8000
 
@@ -41,3 +48,12 @@ client:
 
 kafka:
   bootstrap-servers: localhost:9092
+
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    s3:
+      region: ap-northeast-2
+      bucket: test-bucket
