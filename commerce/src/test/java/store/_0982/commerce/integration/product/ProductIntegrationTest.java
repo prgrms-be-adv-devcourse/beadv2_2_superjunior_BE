@@ -306,4 +306,47 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @DisplayName("진행 중인 공동구매에 사용 중인 상품은 삭제할 수 없다")
+    void deleteProduct_activeGroupPurchase_conflict() throws Exception {
+        // given
+        Product product = Product.createProduct(
+                "진행중인 상품",
+                20000L,
+                ProductCategory.BEAUTY,
+                "공구 중",
+                50,
+                "https://example.com/product",
+                null,
+                "test-key-active",
+                testMemberId
+        );
+        Product savedProduct = productRepository.saveAndFlush(product);
+
+        GroupPurchase groupPurchase = new GroupPurchase(
+                10,
+                20,
+                "진행중 공구",
+                "공동구매 설명",
+                15000L,
+                OffsetDateTime.now().minusDays(1),
+                OffsetDateTime.now().plusDays(5),
+                testMemberId,
+                savedProduct.getProductId(),
+                null
+        );
+        groupPurchase.open();
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/products/" + savedProduct.getProductId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("진행 중이거나 예정된 공동구매가 존재합니다."));
+    }
 }
