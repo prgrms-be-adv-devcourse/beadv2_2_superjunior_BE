@@ -102,4 +102,14 @@ public class GroupPurchaseController {
         groupPurchaseLikeService.likeGroupPurchase(memberId, purchaseId);
         return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 찜 되었습니다.");
     }
+
+    @Operation(summary = "공동구매 찜 해제", description = "공동구매 찜을 해제한다")
+    @DeleteMapping("/{purchaseId}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> unlikeGroupPurchase(
+            @PathVariable UUID purchaseId,
+            @RequestHeader(HeaderName.ID) UUID memberId) {
+        groupPurchaseLikeService.unlikeGroupPurchase(memberId, purchaseId);
+        return new ResponseDto<>(HttpStatus.OK, null, "공동구매 찜이 해제되었습니다.");
+    }
 }

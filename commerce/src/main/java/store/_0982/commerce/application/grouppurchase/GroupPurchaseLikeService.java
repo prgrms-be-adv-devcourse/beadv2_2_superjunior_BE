@@ -35,4 +35,13 @@ public class GroupPurchaseLikeService {
 
         groupPurchaseRepository.increaseLikeCount(groupPurchase.getGroupPurchaseId());
     }
+
+    @Transactional
+    public void unlikeGroupPurchase(UUID memberId, UUID purchaseId) {
+        GroupPurchaseLike like = groupPurchaseLikeRepository.findByMemberIdAndGroupPurchaseId(memberId,purchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.LIKE_NOT_FOUND));
+
+        groupPurchaseLikeRepository.delete(like);
+        groupPurchaseRepository.decreaseLikeCount(purchaseId);
+    }
 }
