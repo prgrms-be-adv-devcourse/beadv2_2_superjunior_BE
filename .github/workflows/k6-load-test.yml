@@ -164,7 +164,7 @@ jobs:
               \"ImageId\": \"${K6_AMI_ID}\",
               \"InstanceType\": \"${INSTANCE_TYPE}\",
               \"KeyName\": \"${{ secrets.AWS_KEY_NAME }}\",
-              \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceProfile\"},
+              \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceRole\"},
               \"SecurityGroupIds\": [\"${{ secrets.AWS_K6_TEST_SECURITY_GROUP_ID }}\"],
               \"UserData\": \"$(cat user-data-encoded.txt)\",
               \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 20, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}]
