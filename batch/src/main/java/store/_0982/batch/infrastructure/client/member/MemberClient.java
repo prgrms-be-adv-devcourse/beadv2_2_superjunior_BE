@@ -45,6 +45,7 @@ public interface MemberClient {
                 .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
     }
 
+    @Deprecated
     @GetMapping("/internal/members/member-ids")
     ResponseDto<List<UUID>> getMemberIds(@RequestParam int currentPage, @RequestParam int pageSize);
 
