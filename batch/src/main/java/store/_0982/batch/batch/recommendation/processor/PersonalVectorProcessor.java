@@ -80,7 +80,7 @@ public class PersonalVectorProcessor implements ItemProcessor<MemberVectorsInput
             }
 
             float[] averageVector = VectorUtil.getAverageVector(vectors);
-            results.add(PersonalVector.create(memberId, averageVector, null));
+            results.add(PersonalVector.create(memberId, averageVector));
         }
 
         return results;
