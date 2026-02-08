@@ -40,7 +40,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET: 0909-store-bucket
-  K6_AMI_ID: ami-0ca92bf7c402bea7e
+  K6_AMI_ID: ami-0f25f7d9fdb785648
   TARGET_URL: https://0982.store
   TEST_SCENARIO: ${{ github.event.inputs.test_scenario || 'ci-test' }}
   VIRTUAL_USERS: ${{ github.event.inputs.virtual_users || '10' }}
