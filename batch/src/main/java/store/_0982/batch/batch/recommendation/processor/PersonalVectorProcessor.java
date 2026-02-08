@@ -28,7 +28,7 @@ public class PersonalVectorProcessor implements ItemProcessor<MemberVectorsInput
             select
                 pv.product_id as productId,
                 pv.vector as productVector
-            from product_schema.product_vector pv
+            from recommendation_schema.product_vector pv
             where pv.product_id in (:productIds)
             """;
 
