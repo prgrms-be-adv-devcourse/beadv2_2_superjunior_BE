@@ -38,5 +38,9 @@ public interface GroupPurchaseRepository {
     int increaseQuantity(UUID groupPurchaseId, int quantity);
 
     int decreaseQuantity(UUID groupPurchaseId, int quantity);
+
+    void increaseLikeCount(UUID id);
+
+    void decreaseLikeCount(UUID id);
 }
 

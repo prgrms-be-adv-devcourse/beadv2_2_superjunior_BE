@@ -53,4 +53,20 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
         AND g.currentQuantity >= :quantity
     """)
     int decreaseQuantity(@Param("id") UUID id, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.likeCount = g.likeCount + 1
+        WHERE g.groupPurchaseId = :id
+    """)
+    void increaseLikeCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.likeCount = g.likeCount - 1
+        WHERE g.groupPurchaseId = :id
+    """)
+    void decreaseLikeCount(@Param("id") UUID id);
 }

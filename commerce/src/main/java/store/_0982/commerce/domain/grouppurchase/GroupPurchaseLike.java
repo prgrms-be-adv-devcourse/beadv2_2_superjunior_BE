@@ -30,7 +30,7 @@ public class GroupPurchaseLike {
     private OffsetDateTime createdAt;
 
     public GroupPurchaseLike(UUID memberId, UUID groupPurchaseId) {
-        this.groupPurchaseId = UUID.randomUUID();
+        this.groupPurchaseLikeId = UUID.randomUUID();
         this.memberId = memberId;
         this.groupPurchaseId = groupPurchaseId;
     }

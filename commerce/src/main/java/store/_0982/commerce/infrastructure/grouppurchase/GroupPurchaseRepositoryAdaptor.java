@@ -90,4 +90,14 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public int decreaseQuantity(UUID groupPurchaseId, int quantity) {
         return groupPurchaseJpaRepository.decreaseQuantity(groupPurchaseId, quantity);
     }
+
+    @Override
+    public void increaseLikeCount(UUID id) {
+        groupPurchaseJpaRepository.increaseLikeCount(id);
+    }
+
+    @Override
+    public void decreaseLikeCount(UUID id) {
+        groupPurchaseJpaRepository.decreaseLikeCount(id);
+    }
 }
