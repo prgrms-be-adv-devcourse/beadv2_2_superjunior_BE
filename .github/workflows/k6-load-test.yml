@@ -1,0 +1,244 @@
+name: K6 Load Test (AWS Spot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_scenario:
+        description: 'Test scenario to run'
+        required: true
+        type: choice
+        options:
+          - ci-test            # CI/CD 테스트 (test.k6.io)
+          - load-test          # 통합 테스트
+        default: 'ci-test'
+      virtual_users:
+        description: 'Number of virtual users'
+        required: true
+        default: '100'
+        type: string
+      duration:
+        description: 'Test duration (e.g., 5m, 10m, 1h)'
+        required: true
+        default: '5m'
+        type: string
+      instance_type:
+        description: 'EC2 instance type'
+        required: false
+        default: 'c6g.xlarge'
+        type: choice
+        options:
+          - c6g.large      # 2 vCPU, 4GB  - ~400 VUs
+          - c6g.xlarge     # 4 vCPU, 8GB  - ~800 VUs
+          - c6g.2xlarge    # 8 vCPU, 16GB - ~1500 VUs
+          - c6g.4xlarge    # 16 vCPU, 32GB - ~3000 VUs
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET: 0909-store-bucket
+  K6_AMI_ID: ami-0ca92bf7c402bea7e
+  TARGET_URL: https://0982.store
+  TEST_SCENARIO: ${{ github.event.inputs.test_scenario || 'load-test' }}
+  VIRTUAL_USERS: ${{ github.event.inputs.virtual_users || '100' }}
+  DURATION: ${{ github.event.inputs.duration || '5m' }}
+  INSTANCE_TYPE: ${{ github.event.inputs.instance_type || 'c6g.xlarge' }}
+
+permissions:
+  id-token: write   # OIDC 토큰 발급용
+  contents: read
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180  # 3시간
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsK6Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 타임스탬프 생성
+      - name: Generate timestamp
+        id: timestamp
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "📅 Test ID: $TIMESTAMP"
+
+      # k6 테스트 스크립트를 S3에 업로드
+      - name: Upload test scripts to S3
+        id: upload
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+          SCENARIO: ${{ env.TEST_SCENARIO }}
+        run: |
+          SCRIPT_FILE="tests/k6/scenarios/${SCENARIO}.js"
+
+          if [ ! -f "$SCRIPT_FILE" ]; then
+            echo "❌ Script not found: $SCRIPT_FILE"
+            exit 1
+          fi
+
+          aws s3 cp "$SCRIPT_FILE" \
+            "s3://${S3_BUCKET}/scripts/${TIMESTAMP}/test.js" \
+            --region "$AWS_REGION"
+
+          echo "script_s3_path=s3://${S3_BUCKET}/scripts/${TIMESTAMP}/test.js" >> $GITHUB_OUTPUT
+          echo "✅ Uploaded: $SCRIPT_FILE"
+
+      # User Data 스크립트 생성
+      - name: Create user data script
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+          SCRIPT_S3_PATH: ${{ steps.upload.outputs.script_s3_path }}
+        run: |
+          cat > user-data.sh << EOF
+          #!/bin/bash
+          set -e
+          exec > >(tee /var/log/k6-test.log) 2>&1
+
+          # 환경변수 설정
+          export TIMESTAMP="${TIMESTAMP}"
+          export S3_BUCKET="${S3_BUCKET}"
+          export AWS_REGION="${AWS_REGION}"
+          export VUS="${VIRTUAL_USERS}"
+          export DURATION="${DURATION}"
+          export TARGET_URL="${TARGET_URL}"
+          export K6_TIMESTAMP="${TIMESTAMP}"
+
+          echo "K6 Load Test - ${TIMESTAMP}"
+          echo "VUs: \$VUS, Duration: \$DURATION"
+
+          # 헬퍼 스크립트 실행
+          k6-run "${SCRIPT_S3_PATH}" || EXIT_CODE=\$?
+
+          # 메타데이터 생성
+          cat > /tmp/metadata.json << METADATA
+          {
+            "timestamp": "\$TIMESTAMP",
+            "scenario": "${TEST_SCENARIO}",
+            "vus": \$VUS,
+            "duration": "\$DURATION",
+            "target_url": "\$TARGET_URL",
+            "instance_type": "\$(ec2-metadata --instance-type | cut -d ' ' -f 2)",
+            "instance_id": "\$(ec2-metadata --instance-id | cut -d ' ' -f 2)",
+            "exit_code": \${EXIT_CODE:-0},
+            "github_run_id": "${{ github.run_id }}",
+            "completed_at": "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          METADATA
+
+          # S3에 업로드 (헬퍼 스크립트와 같은 위치)
+          aws s3 cp /tmp/metadata.json s3://\${S3_BUCKET}/k6-results/metadata-\${TIMESTAMP}.json --region \${AWS_REGION}
+          aws s3 cp /var/log/k6-test.log s3://\${S3_BUCKET}/k6-results/test-\${TIMESTAMP}.log --region \${AWS_REGION}
+          echo "SUCCESS" | aws s3 cp - s3://\${S3_BUCKET}/k6-results/complete-\${TIMESTAMP} --region \${AWS_REGION}
+
+          # 인스턴스 종료
+          INSTANCE_ID=\$(ec2-metadata --instance-id | cut -d ' ' -f 2)
+          aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \${AWS_REGION}
+          EOF
+
+          base64 -w 0 user-data.sh > user-data-encoded.txt
+
+      # Spot Instance 시작
+      - name: Launch Spot Instance
+        id: launch
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          echo "🚀 Launching $INSTANCE_TYPE..."
+
+          SPOT_REQUEST=$(aws ec2 request-spot-instances \
+            --spot-price "0.20" --instance-count 1 --type one-time \
+            --launch-specification "{
+              \"ImageId\": \"${K6_AMI_ID}\",
+              \"InstanceType\": \"${INSTANCE_TYPE}\",
+              \"KeyName\": \"${{ secrets.AWS_KEY_NAME }}\",
+              \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceProfile\"},
+              \"SecurityGroupIds\": [\"${{ secrets.AWS_SECURITY_GROUP_ID }}\"],
+              \"UserData\": \"$(cat user-data-encoded.txt)\",
+              \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 20, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}],
+              \"TagSpecifications\": [{\"ResourceType\": \"instance\", \"Tags\": [{\"Key\": \"Name\", \"Value\": \"k6-${TIMESTAMP}\"}, {\"Key\": \"Project\", \"Value\": \"0909\"}]}]
+            }" \
+            --region "$AWS_REGION" \
+            --query 'SpotInstanceRequests[0].SpotInstanceRequestId' \
+            --output text)
+
+          echo "spot_request_id=$SPOT_REQUEST" >> $GITHUB_OUTPUT
+
+          # Spot fulfilled 대기
+          for i in {1..60}; do
+            STATUS=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids "$SPOT_REQUEST" --region "$AWS_REGION" --query 'SpotInstanceRequests[0].State' --output text)
+            [ "$STATUS" == "active" ] && break
+            [ "$STATUS" == "failed" -o "$STATUS" == "cancelled" ] && echo "❌ Spot failed" && exit 1
+            sleep 5
+          done
+
+          INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids "$SPOT_REQUEST" --region "$AWS_REGION" --query 'SpotInstanceRequests[0].InstanceId' --output text)
+          echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+
+          aws ec2 wait instance-running --instance-ids "$INSTANCE_ID" --region "$AWS_REGION"
+          echo "✅ Test started: $INSTANCE_ID"
+
+      # 테스트 완료 대기
+      - name: Wait for test completion
+        id: wait
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          COMPLETE_MARKER="s3://${S3_BUCKET}/k6-results/complete-${TIMESTAMP}"
+          echo "⏳ Waiting for test completion..."
+
+          for i in {1..720}; do
+            if aws s3 ls "$COMPLETE_MARKER" --region "$AWS_REGION" > /dev/null 2>&1; then
+              echo "✅ Test completed!"
+              echo "completed=true" >> $GITHUB_OUTPUT
+              break
+            fi
+            [ $((i % 6)) -eq 0 ] && echo "⏱️  Running... ($((i * 10 / 60)) min)"
+            sleep 10
+          done
+
+          if [ "$i" -eq 720 ]; then
+            echo "❌ Timeout after 2 hours"
+            echo "completed=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      # 결과 다운로드 (Artifact용)
+      - name: Download results
+        if: steps.wait.outputs.completed == 'true'
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          mkdir -p results
+          aws s3 cp "s3://${S3_BUCKET}/k6-results/" results/ \
+            --recursive --exclude "*" --include "*${TIMESTAMP}*" \
+            --region "$AWS_REGION"
+          aws s3 cp "s3://${S3_BUCKET}/k6-reports/" results/ \
+            --recursive --exclude "*" --include "*${TIMESTAMP}*" \
+            --region "$AWS_REGION"
+          echo "✅ Downloaded results to artifact"
+
+      # 결과를 아티팩트로 저장
+      - name: Upload results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results-${{ steps.timestamp.outputs.timestamp }}
+          path: results/
+          retention-days: 30
+
+      # 정리
+      - name: Cleanup
+        if: always()
+        env:
+          SPOT_REQUEST_ID: ${{ steps.launch.outputs.spot_request_id }}
+          INSTANCE_ID: ${{ steps.launch.outputs.instance_id }}
+          COMPLETED: ${{ steps.wait.outputs.completed }}
+        run: |
+          [ -n "$SPOT_REQUEST_ID" ] && aws ec2 cancel-spot-instance-requests --spot-instance-request-ids "$SPOT_REQUEST_ID" --region "$AWS_REGION" 2>/dev/null || true
+          [ "$COMPLETED" != "true" ] && [ -n "$INSTANCE_ID" ] && aws ec2 terminate-instances --instance-ids "$INSTANCE_ID" --region "$AWS_REGION" 2>/dev/null || true
