@@ -26,7 +26,7 @@ public class PointChargeService {
     private final PointTransactionRepository pointTransactionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @ServiceLog
+    @ServiceLog(slowThresholdMs = 10000)
     @RetryableTransactional
     public PointBalanceInfo chargePoints(UUID memberId, PointChargeCommand command) {
         PointBalance balance = findPointBalance(memberId);

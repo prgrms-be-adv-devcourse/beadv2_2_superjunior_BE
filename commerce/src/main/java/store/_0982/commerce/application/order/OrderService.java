@@ -159,4 +159,44 @@ public class OrderService {
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         return orderQueryService.getCanceledOrders(memberId, pageable);
     }
+
+    /**
+     * 주문 취소 승인
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo approvePendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.approvePendingOrder(memberId, orderId);
+    }
+
+    /**
+     * 주문 취소 거부
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo rejectPendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.rejectPendingOrder(memberId, orderId);
+    }
+
+    /**
+     * 주문 취소 자동 승인
+     */
+    public void autoCancelOrder() {
+        canceledOrderService.autoCancelOrder();
+    }
+
+    /**
+     * 주문 취소 대기 리스트 조회
+     *
+     * @param memberId
+     * @param pageable
+     * @return OrderCancelInfo 목록
+     */
+    public PageResponse<OrderCancelInfo> getPendingOrder(UUID memberId, Pageable pageable) {
+        return orderQueryService.getPendingOrder(memberId, pageable);
+    }
 }

@@ -13,6 +13,9 @@ import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
+import store._0982.common.domain.order.CancelStatus;
+import store._0982.common.domain.order.CanceledOrder;
+import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.domain.product.ProductVector;
@@ -39,9 +42,11 @@ import static java.util.stream.Collectors.toMap;
 public class OrderQueryService {
 
     private final OrderRepository orderRepository;
+    private final CanceledOrderRepository canceledOrderRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ProductRepository productRepository;
     private final ProductVectorJpaRepository productVectorRepository;
+
     private final GroupPurchaseService groupPurchaseService;
 
 
@@ -131,13 +136,13 @@ public class OrderQueryService {
 
 
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
-        List<OrderStatus> statuses = List.of(new OrderStatus[]{
-//                OrderStatus.CANCELLED, OrderStatus.CANCEL_REQUESTED,
-//                OrderStatus.REVERSED, OrderStatus.REVERSE_REQUESTED,
-//                OrderStatus.REFUNDED, OrderStatus.REFUND_REQUESTED
-        });
+        Page<CanceledOrder> canceledOrders = canceledOrderRepository.findAllByMemberId(memberId, pageable);
+        Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
+        return PageResponse.from(cancelInfos);
+    }
 
-        Page<Order> canceledOrders = orderRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
+    public PageResponse<OrderCancelInfo> getPendingOrder(UUID sellerId, Pageable pageable) {
+        Page<CanceledOrder> canceledOrders = canceledOrderRepository.findAllBySellerIdAndStatus(sellerId, CancelStatus.PENDING, pageable);
         Page<OrderCancelInfo> cancelInfos = canceledOrders.map(OrderCancelInfo::toOrderCancelInfo);
         return PageResponse.from(cancelInfos);
     }
