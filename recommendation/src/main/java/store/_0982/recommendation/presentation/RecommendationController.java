@@ -13,12 +13,12 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/ai")
-public class AiController {
+@RequestMapping("/api/recommendations")
+public class RecommendationController {
     private final RecommendationService recommendationService;
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/recommendations")
+    @GetMapping
     @ControllerLog
     public ResponseDto<RecommandInfo> getRecommendations(
             @RequestHeader(value = HeaderName.ID) UUID memberId,

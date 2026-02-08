@@ -1,4 +1,4 @@
-package store._0982.batch.domain.ai;
+package store._0982.batch.domain.recommendation;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "personal_vector", schema = "ai_schema")
+@Table(name = "personal_vector", schema = "recommendation_schema")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class PersonalVector {

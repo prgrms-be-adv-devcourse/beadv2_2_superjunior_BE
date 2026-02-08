@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.recommendation.reader.PersonalVectorInfoReader.MemberVectorsInput;
-import store._0982.batch.domain.ai.PersonalVector;
+import store._0982.batch.domain.recommendation.PersonalVector;
 
 import java.util.*;
 

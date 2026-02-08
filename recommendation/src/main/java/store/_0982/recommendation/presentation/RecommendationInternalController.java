@@ -9,11 +9,11 @@ import store._0982.recommendation.presentation.dto.InterestSummaryRequest;
 
 @RestController
 @RequiredArgsConstructor
-public class AiInternalController {
+public class RecommendationInternalController {
 
     private final PromptService promptService;
 
-    @PostMapping("/internal/ai/interest-summary")
+    @PostMapping("/internal/recommendations/interest-summary")
     public String summarizeInterest(@RequestBody InterestSummaryRequest request){
         return promptService.summarizeInterest(request.descriptions());
     }

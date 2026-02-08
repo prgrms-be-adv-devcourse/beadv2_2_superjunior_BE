@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
-import store._0982.batch.domain.ai.PersonalVector;
-import store._0982.batch.domain.ai.PersonalVectorRepository;
+import store._0982.batch.domain.recommendation.PersonalVector;
+import store._0982.batch.domain.recommendation.PersonalVectorRepository;
 
 import java.util.ArrayList;
 import java.util.List;
