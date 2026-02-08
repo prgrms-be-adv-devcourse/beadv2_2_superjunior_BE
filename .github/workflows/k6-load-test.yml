@@ -159,7 +159,7 @@ jobs:
           echo "🚀 Launching $INSTANCE_TYPE..."
 
           SPOT_REQUEST=$(aws ec2 request-spot-instances \
-            --spot-price "0.20" --instance-count 1 --type one-time \
+            --instance-count 1 --type one-time \
             --launch-specification "{
               \"ImageId\": \"${K6_AMI_ID}\",
               \"InstanceType\": \"${INSTANCE_TYPE}\",
@@ -167,7 +167,7 @@ jobs:
               \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceProfile\"},
               \"SecurityGroupIds\": [\"${{ secrets.AWS_K6_TEST_SECURITY_GROUP_ID }}\"],
               \"UserData\": \"$(cat user-data-encoded.txt)\",
-              \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 20, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}],
+              \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 20, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}]
             }" \
             --region "$AWS_REGION" \
             --query 'SpotInstanceRequests[0].SpotInstanceRequestId' \
