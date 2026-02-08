@@ -77,7 +77,7 @@ public class CanceledOrderService {
 
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
-        groupPurchaseService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+        groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
 
         order.requestCanceledAt();
         OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolve(groupPurchase, order, command.reason());
