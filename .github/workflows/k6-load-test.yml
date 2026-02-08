@@ -1,6 +1,13 @@
 name: K6 Load Test (AWS Spot)
 
 on:
+  push:
+    branches:
+      - feature/ci-cd
+    paths:
+      - 'docs/script/k6/**'
+      - '.github/workflows/k6-load-test.yml'
+
   workflow_dispatch:
     inputs:
       test_scenario:
@@ -24,7 +31,7 @@ on:
       instance_type:
         description: 'EC2 instance type'
         required: false
-        default: 'c6g.xlarge'
+        default: 'c6g.large'
         type: choice
         options:
           - c6g.large      # 2 vCPU, 4GB  - ~400 VUs
@@ -36,10 +43,10 @@ env:
   S3_BUCKET: 0909-store-bucket
   K6_AMI_ID: ami-0ca92bf7c402bea7e
   TARGET_URL: https://0982.store
-  TEST_SCENARIO: ${{ github.event.inputs.test_scenario || 'load-test' }}
-  VIRTUAL_USERS: ${{ github.event.inputs.virtual_users || '100' }}
-  DURATION: ${{ github.event.inputs.duration || '5m' }}
-  INSTANCE_TYPE: ${{ github.event.inputs.instance_type || 'c6g.xlarge' }}
+  TEST_SCENARIO: ${{ github.event.inputs.test_scenario || 'ci-test' }}
+  VIRTUAL_USERS: ${{ github.event.inputs.virtual_users || '10' }}
+  DURATION: ${{ github.event.inputs.duration || '2m' }}
+  INSTANCE_TYPE: ${{ github.event.inputs.instance_type || 'c6g.large' }}
 
 permissions:
   id-token: write   # OIDC 토큰 발급용
