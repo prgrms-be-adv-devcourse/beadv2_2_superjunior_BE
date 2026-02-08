@@ -15,7 +15,7 @@ spring:
     enabled: true
     default-schema: recommendation_schema
     schemas:
-      - ai_schema
+      - recommendation_schema
     create-schemas: true
 
   jpa:
