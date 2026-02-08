@@ -82,7 +82,7 @@ jobs:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
           SCENARIO: ${{ env.TEST_SCENARIO }}
         run: |
-          SCRIPT_FILE="tests/k6/scenarios/${SCENARIO}.js"
+          SCRIPT_FILE="docs/script/k6/scenarios/${SCENARIO}.js"
 
           if [ ! -f "$SCRIPT_FILE" ]; then
             echo "❌ Script not found: $SCRIPT_FILE"
