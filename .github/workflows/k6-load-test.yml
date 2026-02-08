@@ -44,7 +44,7 @@ env:
   TARGET_URL: https://0982.store
   TEST_SCENARIO: ${{ github.event.inputs.test_scenario || 'ci-test' }}
   VIRTUAL_USERS: ${{ github.event.inputs.virtual_users || '10' }}
-  DURATION: ${{ github.event.inputs.duration || '2m' }}
+  DURATION: ${{ github.event.inputs.duration || '1m' }}
   INSTANCE_TYPE: ${{ github.event.inputs.instance_type || 'c6g.large' }}
 
 permissions:
