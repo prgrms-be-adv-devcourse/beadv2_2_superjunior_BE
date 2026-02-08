@@ -30,6 +30,8 @@ public class GroupPurchaseSearchService {
         if (groupPurchases.isEmpty()) {
             return List.of();
         }
+        Map<UUID, GroupPurchase> groupPurchaseMap = groupPurchases.stream()
+                .collect(Collectors.toMap(GroupPurchase::getGroupPurchaseId, Function.identity()));
         List<UUID> productIds = groupPurchases.stream()
                 .map(GroupPurchase::getProductId)
                 .distinct()
@@ -37,8 +39,12 @@ public class GroupPurchaseSearchService {
         Map<UUID, Product> productMap = productRepository.findByProductIdIn(productIds).stream()
                 .collect(Collectors.toMap(Product::getProductId, Function.identity()));
 
-        List<GroupPurchaseSearchRow> rows = new ArrayList<>(groupPurchases.size());
-        for (GroupPurchase groupPurchase : groupPurchases) {
+        List<GroupPurchaseSearchRow> rows = new ArrayList<>(purchaseIds.size());
+        for (UUID purchaseId : purchaseIds) {
+            GroupPurchase groupPurchase = groupPurchaseMap.get(purchaseId);
+            if (groupPurchase == null) {
+                continue;
+            }
             Product product = productMap.get(groupPurchase.getProductId());
             if (product == null) {
                 continue;
