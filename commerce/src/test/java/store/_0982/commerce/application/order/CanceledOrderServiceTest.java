@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
+import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
@@ -305,5 +306,117 @@ class CanceledOrderServiceTest {
         assertThat(saved.getReason()).isEqualTo(CancelReason.PRODUCT_DEFECT);
 
         verify(eventPublisher, never()).publishEvent(any());
+    }
+
+    @Test
+    @DisplayName("판매자가 보낸 승인 요청은 상태를 APPROVED 로 변경하고 이벤트를 발행한다")
+    void approvePendingOrder_success() {
+        // given
+        UUID memberId = UUID.randomUUID();
+        UUID sellerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        UUID groupPurchaseId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = spy(CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                50_000L,
+                0L,
+                0L,
+                50_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        ));
+
+        Order order = mock(Order.class);
+        when(order.getSellerId()).thenReturn(sellerId);
+        when(order.getGroupPurchaseId()).thenReturn(groupPurchaseId);
+
+        GroupPurchase groupPurchase = mock(GroupPurchase.class);
+        when(groupPurchase.getProductId()).thenReturn(productId);
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(groupPurchaseService.findByGroupPurchase(groupPurchaseId)).thenReturn(groupPurchase);
+        when(productService.findByProductName(productId)).thenReturn("product-name");
+
+        ArgumentCaptor<OrderCancelProcessedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCancelProcessedEvent.class);
+
+        // when
+        OrderCancelInfo info = canceledOrderService.approvePendingOrder(sellerId, orderId);
+
+        // then
+        verify(canceledOrder).markApproved();
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        OrderCancelProcessedEvent event = eventCaptor.getValue();
+        assertThat(event.canceledOrder()).isEqualTo(canceledOrder);
+        assertThat(event.productName()).isEqualTo("product-name");
+
+        assertThat(info.orderId()).isEqualTo(orderId);
+        assertThat(info.status()).isEqualTo(CancelStatus.APPROVED);
+        assertThat(info.refundAmount()).isEqualTo(50_000L);
+    }
+
+    @Test
+    @DisplayName("취소 요청이 없으면 CANCELED_ORDER_NOT_FOUND 예외를 던진다")
+    void approvePendingOrder_throwsWhenCanceledOrderMissing() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> canceledOrderService.approvePendingOrder(sellerId, orderId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.CANCELED_ORDER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("주문이 없으면 ORDER_NOT_FOUND 예외를 던진다")
+    void approvePendingOrder_throwsWhenOrderMissing() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        CanceledOrder canceledOrder = mock(CanceledOrder.class);
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> canceledOrderService.approvePendingOrder(sellerId, orderId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.ORDER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("판매자가 아닌 사용자가 승인하면 NON_SELLER_ACCESS_DENIED 예외를 던진다")
+    void approvePendingOrder_throwsWhenSellerMismatch() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID otherSellerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = mock(CanceledOrder.class);
+        Order order = mock(Order.class);
+        when(order.getSellerId()).thenReturn(otherSellerId);
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.of(canceledOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+        // when & then
+        assertThatThrownBy(() -> canceledOrderService.approvePendingOrder(sellerId, orderId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+
+        verify(order, never()).getGroupPurchaseId();
+        verifyNoInteractions(groupPurchaseService, productService, eventPublisher);
     }
 }
