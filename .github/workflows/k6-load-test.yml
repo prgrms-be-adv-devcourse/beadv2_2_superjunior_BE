@@ -75,7 +75,7 @@ jobs:
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
           echo "📅 Test ID: $TIMESTAMP"
 
-      # k6 테스트 스크립트를 S3에 업로드
+      # k6 테스트 스크립트를 S3에 업로드 (필요한 파일만)
       - name: Upload test scripts to S3
         id: upload
         env:
@@ -89,69 +89,37 @@ jobs:
             exit 1
           fi
 
-          aws s3 cp "$SCRIPT_FILE" \
-            "s3://${S3_BUCKET}/scripts/${TIMESTAMP}/test.js" \
+          # common 디렉토리 업로드 (공통 모듈)
+          aws s3 sync docs/script/k6/common/ \
+            "s3://${S3_BUCKET}/scripts/${TIMESTAMP}/common/" \
             --region "$AWS_REGION"
 
-          echo "script_s3_path=s3://${S3_BUCKET}/scripts/${TIMESTAMP}/test.js" >> $GITHUB_OUTPUT
-          echo "✅ Uploaded: $SCRIPT_FILE"
+          # 선택된 시나리오만 업로드
+          aws s3 cp "$SCRIPT_FILE" \
+            "s3://${S3_BUCKET}/scripts/${TIMESTAMP}/scenarios/${SCENARIO}.js" \
+            --region "$AWS_REGION"
 
-      # User Data 스크립트 생성
-      - name: Create user data script
+          echo "script_s3_path=s3://${S3_BUCKET}/scripts/${TIMESTAMP}/scenarios/${SCENARIO}.js" >> $GITHUB_OUTPUT
+          echo "✅ Uploaded: common/ + scenarios/${SCENARIO}.js"
+
+      # User Data 스크립트 준비 (외부 템플릿 사용)
+      - name: Prepare user data script
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
-          SCRIPT_S3_PATH: ${{ steps.upload.outputs.script_s3_path }}
         run: |
-          cat > user-data.sh << EOF
-          #!/bin/bash
-          set -e
-          exec > >(tee /var/log/k6-test.log) 2>&1
-
-          # 환경변수 설정
-          export TIMESTAMP="${TIMESTAMP}"
-          export S3_BUCKET="${S3_BUCKET}"
-          export AWS_REGION="${AWS_REGION}"
-          export VUS="${VIRTUAL_USERS}"
-          export DURATION="${DURATION}"
-          export TARGET_URL="${TARGET_URL}"
-          export K6_TIMESTAMP="${TIMESTAMP}"
-
-          echo "K6 Load Test - ${TIMESTAMP}"
-          echo "VUs: \$VUS, Duration: \$DURATION"
-
-          # 헬퍼 스크립트 실행
-          /opt/k6/run-test.sh "${SCRIPT_S3_PATH}" || EXIT_CODE=\$?
-
-          # 메타데이터 조회 (IMDS 사용)
-          INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-          INSTANCE_TYPE=\$(curl -s http://169.254.169.254/latest/meta-data/instance-type)
-
-          # 메타데이터 생성
-          cat > /tmp/metadata.json << METADATA
-          {
-            "timestamp": "\$TIMESTAMP",
-            "scenario": "${TEST_SCENARIO}",
-            "vus": \$VUS,
-            "duration": "\$DURATION",
-            "target_url": "\$TARGET_URL",
-            "instance_type": "\$INSTANCE_TYPE",
-            "instance_id": "\$INSTANCE_ID",
-            "exit_code": \${EXIT_CODE:-0},
-            "github_run_id": "${{ github.run_id }}",
-            "completed_at": "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-          METADATA
-
-          # S3에 업로드 (헬퍼 스크립트와 같은 위치)
-          aws s3 cp /tmp/metadata.json s3://\${S3_BUCKET}/k6-results/metadata-\${TIMESTAMP}.json --region \${AWS_REGION}
-          aws s3 cp /var/log/k6-test.log s3://\${S3_BUCKET}/k6-results/test-\${TIMESTAMP}.log --region \${AWS_REGION}
-          echo "SUCCESS" | aws s3 cp - s3://\${S3_BUCKET}/k6-results/complete-\${TIMESTAMP} --region \${AWS_REGION}
-
-          # 인스턴스 종료
-          aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \${AWS_REGION}
-          EOF
+          sed -e "s|__TIMESTAMP__|${TIMESTAMP}|g" \
+              -e "s|__S3_BUCKET__|${S3_BUCKET}|g" \
+              -e "s|__AWS_REGION__|${AWS_REGION}|g" \
+              -e "s|__VIRTUAL_USERS__|${VIRTUAL_USERS}|g" \
+              -e "s|__DURATION__|${DURATION}|g" \
+              -e "s|__TARGET_URL__|${TARGET_URL}|g" \
+              -e "s|__INSTANCE_TYPE__|${INSTANCE_TYPE}|g" \
+              -e "s|__TEST_SCENARIO__|${TEST_SCENARIO}|g" \
+              -e "s|__GITHUB_RUN_ID__|${{ github.run_id }}|g" \
+              .github/workflows/templates/user-data.sh > user-data.sh
 
           base64 -w 0 user-data.sh > user-data-encoded.txt
+          echo "✅ User data script prepared"
 
       # Spot Instance 시작
       - name: Launch Spot Instance
