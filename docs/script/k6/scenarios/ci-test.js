@@ -3,6 +3,8 @@
 import http from 'k6/http';
 import {check, sleep} from 'k6';
 
+export {handleSummary} from '../common/summary'
+
 // CI/CD 테스트용 간단한 설정
 export const options = {
     stages: [

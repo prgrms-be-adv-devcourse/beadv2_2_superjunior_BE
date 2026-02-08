@@ -9,7 +9,7 @@ import { textSummary } from 'https://jslib.k6.io/k6-summary/0.1.0/index.js'
  * @param {Object} data - k6 summary data
  * @returns {Object} 파일 경로를 키로, 내용을 값으로 하는 객체
  */
-export function generateSummary(data) {
+export function handleSummary(data) {
     return {
         'result.html': htmlReport(data),
         stdout: textSummary(data, { indent: ' ', enableColors: true }),
