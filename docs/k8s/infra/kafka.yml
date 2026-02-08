@@ -19,6 +19,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9308"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:

@@ -7,6 +7,7 @@
 **/.DS_Store
 **/bin
 **/htmlReport
+**/node_modules
 
 # Docker 관련
 docker/postgres/init/*.sql
@@ -16,6 +17,7 @@ docker/postgres/init/*.log
 .env
 **/env.*
 **/.env*
+docs/env
 
 # 로그 파일
 *.log

@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: retry-settlement-cronjob
   labels:
-    app: batch-service
+    app: batch
     component: cronjob
     job-type: retry-settlement
 spec:
@@ -21,7 +21,7 @@ spec:
       template:
         metadata:
           labels:
-            app: batch-service
+            app: batch
             job-type: retry-settlement
         spec:
           restartPolicy: OnFailure

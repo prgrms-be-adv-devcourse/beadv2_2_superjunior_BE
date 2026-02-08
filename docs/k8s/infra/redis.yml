@@ -34,6 +34,7 @@ spec:
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9121"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
@@ -95,6 +96,22 @@ spec:
           ports:
             - containerPort: 9121
               name: metrics
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9121
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9121
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
           resources:
             limits:
               ephemeral-storage: 256Mi

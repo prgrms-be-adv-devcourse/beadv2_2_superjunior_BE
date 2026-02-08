@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: kibana
+  namespace: monitoring
   labels:
     app: kibana
 spec:
@@ -19,6 +20,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "5601"
         prometheus.io/path: "/api/status"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
@@ -33,7 +35,9 @@ spec:
               name: http
           env:
             - name: ELASTICSEARCH_HOSTS
-              value: "http://elasticsearch-service:9200"
+              value: "http://elasticsearch-service.default.svc.cluster.local:9200"
+            - name: ENTERPRISESEARCH_ENABLED
+              value: "false"
             - name: SERVER_NAME
               value: "kibana"
             - name: SERVER_HOST
@@ -94,6 +98,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kibana-service
+  namespace: monitoring
   labels:
     app: kibana
 spec:
@@ -111,6 +116,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: kibana-ingress
+  namespace: monitoring
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: default-https-redirect@kubernetescrd
     cert-manager.io/cluster-issuer: letsencrypt
