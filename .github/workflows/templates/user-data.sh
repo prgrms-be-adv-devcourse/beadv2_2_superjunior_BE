@@ -35,7 +35,7 @@ aws s3 sync "s3://${S3_BUCKET}/scripts/${TIMESTAMP}/" /tmp/k6-scripts/ --region 
 # k6 실행
 EXIT_CODE=0
 cd /tmp/k6-scripts
-K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT="${REPORT_FILE}" k6 run "scenarios/${TEST_SCENARIO}.js" \
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT="${GRAPH_FILE}" k6 run "scenarios/${TEST_SCENARIO}.js" \
   --out json="${RESULT_FILE}" \
   --summary-export="${SUMMARY_FILE}" \
   || EXIT_CODE=$?

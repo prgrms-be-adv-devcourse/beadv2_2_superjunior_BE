@@ -191,7 +191,8 @@ jobs:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
           mkdir -p results
-          aws s3 sync "s3://${S3_BUCKET}/k6-results/${TIMESTAMP}" results/ \
+          aws s3 sync "s3://${S3_BUCKET}/k6-results/${TIMESTAMP}/" results/ \
+            --exclude "*complete*" \
             --region "$AWS_REGION"
           echo "✅ Downloaded results to artifact"
 
