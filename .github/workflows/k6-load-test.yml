@@ -122,6 +122,10 @@ jobs:
           # 헬퍼 스크립트 실행
           k6-run "${SCRIPT_S3_PATH}" || EXIT_CODE=\$?
 
+          # 메타데이터 조회 (IMDS 사용)
+          INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+          INSTANCE_TYPE=\$(curl -s http://169.254.169.254/latest/meta-data/instance-type)
+
           # 메타데이터 생성
           cat > /tmp/metadata.json << METADATA
           {
@@ -130,8 +134,8 @@ jobs:
             "vus": \$VUS,
             "duration": "\$DURATION",
             "target_url": "\$TARGET_URL",
-            "instance_type": "\$(ec2-metadata --instance-type | cut -d ' ' -f 2)",
-            "instance_id": "\$(ec2-metadata --instance-id | cut -d ' ' -f 2)",
+            "instance_type": "\$INSTANCE_TYPE",
+            "instance_id": "\$INSTANCE_ID",
             "exit_code": \${EXIT_CODE:-0},
             "github_run_id": "${{ github.run_id }}",
             "completed_at": "\$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -144,7 +148,6 @@ jobs:
           echo "SUCCESS" | aws s3 cp - s3://\${S3_BUCKET}/k6-results/complete-\${TIMESTAMP} --region \${AWS_REGION}
 
           # 인스턴스 종료
-          INSTANCE_ID=\$(ec2-metadata --instance-id | cut -d ' ' -f 2)
           aws ec2 terminate-instances --instance-ids \$INSTANCE_ID --region \${AWS_REGION}
           EOF
 
