@@ -165,7 +165,7 @@ jobs:
               \"InstanceType\": \"${INSTANCE_TYPE}\",
               \"KeyName\": \"${{ secrets.AWS_KEY_NAME }}\",
               \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceProfile\"},
-              \"SecurityGroupIds\": [\"${{ secrets.AWS_SECURITY_GROUP_ID }}\"],
+              \"SecurityGroupIds\": [\"${{ secrets.AWS_K6_TEST_SECURITY_GROUP_ID }}\"],
               \"UserData\": \"$(cat user-data-encoded.txt)\",
               \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 20, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}],
               \"TagSpecifications\": [{\"ResourceType\": \"instance\", \"Tags\": [{\"Key\": \"Name\", \"Value\": \"k6-${TIMESTAMP}\"}, {\"Key\": \"Project\", \"Value\": \"0909\"}]}]
