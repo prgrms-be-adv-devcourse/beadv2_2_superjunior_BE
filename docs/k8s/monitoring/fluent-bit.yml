@@ -73,10 +73,17 @@ data:
         Labels On
 
     [FILTER]
+        Name nest
+        Match kube.*
+        Operation lift
+        Nested_under kubernetes
+        Add_prefix k8s_
+
+    [FILTER]
         Name grep
         Match kube.*
-        Regex kubernetes.pod_name ^(gateway-|member-|commerce-|point-|ai-|kafka-|search-|redis-)
-    
+        Regex k8s_pod_name ^(gateway-|member-|commerce-|point-|ai-|kafka-|search-|redis-)
+
     [FILTER]
         Name modify
         Match kube.*
