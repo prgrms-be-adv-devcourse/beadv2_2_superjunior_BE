@@ -419,4 +419,90 @@ class CanceledOrderServiceTest {
         verify(order, never()).getGroupPurchaseId();
         verifyNoInteractions(groupPurchaseService, productService, eventPublisher);
     }
+
+    @Test
+    @DisplayName("판매자가 거부하면 상태를 REJECTED 로 변경한다")
+    void rejectPendingOrder_success() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = spy(CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                sellerId,
+                30_000L,
+                0L,
+                0L,
+                30_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-key",
+                PaymentMethod.POINT
+        ));
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.of(canceledOrder));
+
+        // when
+        OrderCancelInfo info = canceledOrderService.rejectPendingOrder(sellerId, orderId);
+
+        // then
+        verify(canceledOrder).markRejected();
+        assertThat(info.orderId()).isEqualTo(orderId);
+        assertThat(info.status()).isEqualTo(CancelStatus.REJECTED);
+        assertThat(info.refundAmount()).isEqualTo(30_000L);
+    }
+
+    @Test
+    @DisplayName("거부 대상 취소 요청이 없으면 예외를 던진다")
+    void rejectPendingOrder_throwsWhenCanceledOrderMissing() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> canceledOrderService.rejectPendingOrder(sellerId, orderId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.CANCELED_ORDER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("판매자가 아니면 거부할 수 없다")
+    void rejectPendingOrder_throwsWhenSellerMismatch() {
+        // given
+        UUID sellerId = UUID.randomUUID();
+        UUID otherSellerId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+
+        CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
+                orderId,
+                memberId,
+                otherSellerId,
+                30_000L,
+                0L,
+                0L,
+                30_000L,
+                "policy",
+                "snapshot",
+                CancelStatus.PENDING,
+                CancelReason.PRODUCT_DEFECT,
+                "reason",
+                "idem-key",
+                PaymentMethod.PG
+        );
+
+        when(canceledOrderRepository.findByOrderId(orderId)).thenReturn(Optional.of(canceledOrder));
+
+        // when & then
+        assertThatThrownBy(() -> canceledOrderService.rejectPendingOrder(sellerId, orderId))
+                .isInstanceOf(CustomException.class)
+                .hasFieldOrPropertyWithValue("errorCode", CustomErrorCode.NON_SELLER_ACCESS_DENIED);
+    }
 }
