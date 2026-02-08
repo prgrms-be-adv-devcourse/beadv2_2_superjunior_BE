@@ -8,6 +8,7 @@ on:
       - 'docs/script/k6/common/**'
       - 'docs/script/k6/scenarios/ci-test.js'
       - '.github/workflows/k6-load-test.yml'
+      - '.github/workflows/templates/user-data.sh'
 
   workflow_dispatch:
     inputs:
