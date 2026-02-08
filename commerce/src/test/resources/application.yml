@@ -1,12 +1,26 @@
 spring:
+  application:
+    name: commerce-test
+
+  flyway:
+    enabled: true
+    default-schema: product_schema
+    schemas:
+      - product_schema
+      - order_schema
+    create-schemas: true
+
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
     properties:
       hibernate:
+        default_schema: product_schema
+        hbm2ddl:
+          create_namespaces: true
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+    open-in-view: false
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -27,7 +41,3 @@ client:
 
 kafka:
   bootstrap-servers: localhost:9092
-
-eureka:
-  client:
-    enabled: false
