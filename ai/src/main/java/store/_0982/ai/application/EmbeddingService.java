@@ -60,4 +60,27 @@ public class EmbeddingService {
         return builder.toString();
     }
 
+    public float[] embedText(String text) {
+        String input = text
+                .replaceAll("[ \\t]+", " ")
+                .replaceAll("\\n+", "\n")
+                .trim();
+
+        if (input.length() > MAX_INPUT_LENGTH) {
+            String truncated = input.substring(0, MAX_INPUT_LENGTH);
+            int cut = Math.max(
+                    truncated.lastIndexOf(' '),
+                    Math.max(truncated.lastIndexOf('\n'), truncated.lastIndexOf('\t'))
+            );
+            if (cut > 0) {
+                truncated = truncated.substring(0, cut);
+            }
+            input = truncated
+                    .replaceAll("[^\\p{IsAlphabetic}\\p{IsHangul}\\d\\)\\]%~+/-]+$", "")
+                    .trim();
+        }
+
+        return embeddingModel.embed(input);
+    }
+
 }
