@@ -18,9 +18,9 @@ import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
-import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.PaymentMethod;
+import store._0982.common.domain.order.PaymentMethod;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.OrderCsvRow;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.GroupPurchaseCsvRow;
 import store_0982.dummy_data.util.Utils;
@@ -104,6 +104,7 @@ public class DummyOrderGenerator {
             for (int i = 0; i < orderCount; i++) {
                 Order order = easyRandom.nextObject(Order.class);
                 Utils.setField(order, "orderId", orderIds.get(i));
+                Utils.setField(order, "orderNumber", Order.generateOrderNumber());
                 int quantity = randomQuantity();
                 Utils.setField(order, "quantity", quantity);
                 Utils.setField(order, "status", OrderStatus.PENDING);
@@ -111,7 +112,9 @@ public class DummyOrderGenerator {
                 int slot = i % 10;
                 int gpIdx = (memberIdx * 10 + slot) % groupPurchaseRows.size();
                 GroupPurchaseCsvRow groupPurchaseRow = groupPurchaseRows.get(gpIdx);
-                Utils.setField(order, "price", groupPurchaseRow.discountedPrice() * quantity);
+                long price = groupPurchaseRow.discountedPrice() * quantity;
+                Utils.setField(order, "price", price);
+                Utils.setField(order, "paidPrice", price);
                 int shiftedMemberIdx = (memberIdx + 1) % memberIds.size();
                 Utils.setField(order, "memberId", memberIds.get(shiftedMemberIdx));
                 Utils.setField(order, "address", pick(ADDRESSES));
@@ -126,12 +129,10 @@ public class DummyOrderGenerator {
                 OffsetDateTime updatedAt = randomUpdatedAt(createdAt);
                 Utils.setField(order, "expiredAt", createdAt.plusMinutes(ThreadLocalRandom.current().nextInt(10, 121)));
                 Utils.setField(order, "paidAt", null);
+                Utils.setField(order, "canceledAt", null);
                 Utils.setField(order, "createdAt", createdAt);
                 Utils.setField(order, "updatedAt", updatedAt);
                 Utils.setField(order, "deletedAt", null);
-                Utils.setField(order, "returnedAt", null);
-                Utils.setField(order, "cancelRequestedAt", null);
-                Utils.setField(order, "cancelledAt", null);
 
                 sequenceWriter.write(toCsvRow(order));
             }
@@ -169,8 +170,10 @@ public class DummyOrderGenerator {
     private OrderCsvRow toCsvRow(Order order) {
         return new OrderCsvRow(
                 order.getOrderId(),
+                order.getOrderNumber(),
                 order.getQuantity(),
                 order.getPrice(),
+                order.getPaidPrice(),
                 order.getStatus(),
                 order.getMemberId(),
                 order.getAddress(),
@@ -183,12 +186,10 @@ public class DummyOrderGenerator {
                 order.getPaymentMethod(),
                 order.getExpiredAt(),
                 order.getPaidAt(),
+                order.getCanceledAt(),
                 order.getCreatedAt(),
                 order.getUpdatedAt(),
-                order.getDeletedAt(),
-                order.getReturnedAt(),
-                order.getCancelRequestedAt(),
-                order.getCancelledAt()
+                order.getDeletedAt()
         );
     }
 

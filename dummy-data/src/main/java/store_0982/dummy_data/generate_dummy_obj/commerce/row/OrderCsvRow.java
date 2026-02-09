@@ -5,12 +5,14 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import store._0982.common.domain.order.OrderStatus;
-import store._0982.commerce.domain.order.PaymentMethod;
+import store._0982.common.domain.order.PaymentMethod;
 
 @JsonPropertyOrder({
         "orderId",
+        "orderNumber",
         "quantity",
         "price",
+        "paidPrice",
         "status",
         "memberId",
         "address",
@@ -23,17 +25,17 @@ import store._0982.commerce.domain.order.PaymentMethod;
         "paymentMethod",
         "expiredAt",
         "paidAt",
+        "canceledAt",
         "createdAt",
         "updatedAt",
-        "deletedAt",
-        "returnedAt",
-        "cancelRequestedAt",
-        "cancelledAt"
+        "deletedAt"
 })
 public record OrderCsvRow(
         UUID orderId,
+        String orderNumber,
         int quantity,
         Long price,
+        Long paidPrice,
         OrderStatus status,
         UUID memberId,
         String address,
@@ -46,11 +48,9 @@ public record OrderCsvRow(
         PaymentMethod paymentMethod,
         OffsetDateTime expiredAt,
         OffsetDateTime paidAt,
+        OffsetDateTime canceledAt,
         OffsetDateTime createdAt,
         OffsetDateTime updatedAt,
-        OffsetDateTime deletedAt,
-        OffsetDateTime returnedAt,
-        OffsetDateTime cancelRequestedAt,
-        OffsetDateTime cancelledAt
+        OffsetDateTime deletedAt
 ) {
 }

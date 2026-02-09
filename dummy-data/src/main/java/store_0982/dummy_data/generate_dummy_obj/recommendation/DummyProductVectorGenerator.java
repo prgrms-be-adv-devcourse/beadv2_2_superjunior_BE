@@ -7,8 +7,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import store._0982.commerce.domain.product.ProductVector;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
-import store._0982.recommendation.domain.product.ProductVector;
 import store_0982.dummy_data.generate_dummy_obj.recommendation.row.ProductVectorCsvRow;
 import store_0982.dummy_data.util.Utils;
 
