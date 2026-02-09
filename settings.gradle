@@ -1,4 +1,4 @@
-rootProject.name = 'group-purchase'
+rootProject.name = 'beadv2_2_superjunior_BE'
 
 include 'common'
 include 'gateway'
