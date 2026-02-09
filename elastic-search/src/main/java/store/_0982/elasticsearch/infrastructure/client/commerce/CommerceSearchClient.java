@@ -14,6 +14,6 @@ import store._0982.elasticsearch.infrastructure.client.commerce.dto.GroupPurchas
 )
 public interface CommerceSearchClient {
 
-    @PostMapping("/internal/purchasees/search")
+    @PostMapping("/internal/purchases/search")
     List<GroupPurchaseSearchRow> findByIds(@RequestBody GroupPurchaseIdsRequest request);
 }
