@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import store._0982.common.exception.CustomException;
+import store._0982.common.exception.EntityErrorCode;
 import store._0982.common.kafka.dto.OrderCanceledEvent;
 
 import java.time.OffsetDateTime;
@@ -26,6 +28,9 @@ public class CanceledOrder {
 
     @Column(name = "member_id", nullable = false, updatable = false)
     private UUID memberId;
+
+    @Column(name = "seller_id", nullable = false, updatable = false)
+    private UUID sellerId;
 
     @Column(name = "original_paid_amount", nullable = false)
     private Long originalPaidAmount;    // 취소 전 실제 결제액
@@ -79,18 +84,34 @@ public class CanceledOrder {
 
     public void markCompleted() {
         this.returnedAt = OffsetDateTime.now();
-        status = CancelStatus.COMPLETED;
+        this.status = CancelStatus.COMPLETED;
+    }
+
+    public void markApproved() {
+        if (this.status != CancelStatus.PENDING) {
+            throw new CustomException(EntityErrorCode.INVALID_CANCEL_STATUS);
+        }
+        this.status = CancelStatus.APPROVED;
+    }
+
+    public void markRejected() {
+        if (this.status != CancelStatus.PENDING) {
+            throw new CustomException(EntityErrorCode.INVALID_CANCEL_STATUS);
+        }
+        this.status = CancelStatus.REJECTED;
     }
 
     public static CanceledOrder createCanceledOrder(
             UUID orderId,
             UUID memberId,
+            UUID sellerId,
             long originalPaidAmount,
             long cancelFeeAmount,
             long shippingFeeAmount,
             long refundAmount,
             String policyId,
             String policySnapshot,
+            CancelStatus status,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -98,12 +119,14 @@ public class CanceledOrder {
         return new CanceledOrder(
                 orderId,
                 memberId,
+                sellerId,
                 originalPaidAmount,
                 cancelFeeAmount,
                 shippingFeeAmount,
                 refundAmount,
                 policyId,
                 policySnapshot,
+                status,
                 reason,
                 detailReason,
                 idempotencyKey,
@@ -113,12 +136,14 @@ public class CanceledOrder {
     private CanceledOrder(
             UUID orderId,
             UUID memberId,
+            UUID sellerId,
             long originalPaidAmount,
             long cancelFeeAmount,
             long shippingFeeAmount,
             long refundAmount,
             String policyId,
             String policySnapshot,
+            CancelStatus status,
             CancelReason reason,
             String detailReason,
             String idempotencyKey,
@@ -126,13 +151,14 @@ public class CanceledOrder {
         this.canceledOrderId = UUID.randomUUID();
         this.orderId = orderId;
         this.memberId = memberId;
+        this.sellerId = sellerId;
         this.originalPaidAmount = originalPaidAmount;
         this.cancelFeeAmount = cancelFeeAmount;
         this.shippingFeeAmount = shippingFeeAmount;
         this.refundAmount = refundAmount;
         this.policyId = policyId;
         this.policySnapshot = policySnapshot;
-        this.status = CancelStatus.REQUESTED;
+        this.status = status;
         this.reason = reason;
         this.detailReason = detailReason;
         this.idempotencyKey = idempotencyKey;

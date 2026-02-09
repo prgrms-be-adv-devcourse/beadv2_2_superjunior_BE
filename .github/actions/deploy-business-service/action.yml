@@ -64,6 +64,7 @@ runs:
           MODULE="${{ inputs.service-name }}"
         fi
         ./gradlew :${MODULE}:jib \
+          -Djib.from.platforms=linux/amd64,linux/arm64 \
           -Djib.to.image=${{ inputs.dockerhub-username }}/${{ inputs.service-name }} \
           -Djib.to.tags=${{ steps.version.outputs.tag }} \
           -Djib.to.auth.username=${{ inputs.dockerhub-username }} \
