@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 import org.postgresql.util.PGobject;
 import store._0982.common.domain.vector.ProductVector;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,10 +25,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @StepScope
 @Slf4j
-public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorInfoReader.MemberVectorsInput>> {
+public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorInfoReader.MemberVectorInput>> {
 
     @Value("${vector.batch.size}")
-    private static int pageSize;
+    private int pageSize;
 
     private static final String MEMBER_IDS_SQL = """
             select distinct member_id
@@ -56,9 +54,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
             """;
 
     private static final String PRODUCT_VECTORS_SQL = """
-            select
-                pv.product_id as productId,
-                pv.vector as productVector
+            select *
             from recommendation_schema.product_vector pv
             where pv.product_id in (:productIds)
             """;
@@ -69,7 +65,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
     private long offset = 0L;
 
     @Override
-    public List<MemberVectorsInput> read() {
+    public List<MemberVectorInput> read() {
         List<UUID> memberIds = jdbcTemplate.query(
                 MEMBER_IDS_SQL,
                 (rs, rowNum) -> rs.getObject("member_id", UUID.class),
@@ -91,7 +87,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
         );
         if (orderRows.isEmpty()) {
             return memberIds.stream()
-                    .map(memberId -> new MemberVectorsInput(memberId, List.of()))
+                    .map(memberId -> new MemberVectorInput(memberId, List.of()))
                     .toList();
         }
 
@@ -108,7 +104,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
         }
         if (groupPurchaseIds.isEmpty()) {
             return memberIds.stream()
-                    .map(memberId -> new MemberVectorsInput(memberId, List.of()))
+                    .map(memberId -> new MemberVectorInput(memberId, List.of()))
                     .toList();
         }
 
@@ -122,7 +118,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
         );
         if (groupPurchaseRows.isEmpty()) {
             return memberIds.stream()
-                    .map(memberId -> new MemberVectorsInput(memberId, List.of()))
+                    .map(memberId -> new MemberVectorInput(memberId, List.of()))
                     .toList();
         }
 
@@ -152,7 +148,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
 
         Map<UUID, ProductVector> productIdToVector = fetchProductVectors(productIds);
         return memberIds.stream()
-                .map(memberId -> new MemberVectorsInput(
+                .map(memberId -> new MemberVectorInput(
                         memberId,
                         buildMemberVectors(memberToProductIds.get(memberId), productIdToVector)
                 ))
@@ -185,10 +181,10 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
                 PRODUCT_VECTORS_SQL,
                 new MapSqlParameterSource("productIds", productIds),
                 rs -> {
-                    UUID productId = rs.getObject("productId", UUID.class);
-                    float[] vector = parseVector(rs.getObject("productVector"));
+                    UUID productId = rs.getObject("product_id", UUID.class);
+                    float[] vector = parseVector(rs.getObject("vector"));
                     if (productId != null && vector != null) {
-                        vectors.put(productId, createProductVector(productId, vector));
+                        vectors.put(productId, new ProductVector(productId, vector, null));
                     }
                 }
         );
@@ -232,31 +228,7 @@ public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorI
         return vector;
     }
 
-    private static ProductVector createProductVector(UUID productId, float[] vector) {
-        try {
-            Constructor<ProductVector> ctor = ProductVector.class.getDeclaredConstructor();
-            ctor.setAccessible(true);
-            ProductVector productVector = ctor.newInstance();
-            setField(productVector, "productId", productId);
-            setField(productVector, "vector", vector);
-            if (vector != null) {
-                setField(productVector, "dimensionSize", vector.length);
-            }
-            return productVector;
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to build ProductVector instance.", e);
-        }
-    }
-
-    @SuppressWarnings("java:S3011")
-    private static void setField(ProductVector target, String fieldName, Object value)
-            throws ReflectiveOperationException {
-        Field field = ProductVector.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
-
-    public record MemberVectorsInput(
+    public record MemberVectorInput(
             UUID memberId,
             List<ProductVector> productVectors
     ) {
