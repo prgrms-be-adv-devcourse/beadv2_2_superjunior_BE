@@ -56,6 +56,9 @@ VALUES
 ('GET', '^/api/orders/seller$', 'SELLER'),
 ('GET', '/api/orders/cancel$', 'CONSUMER, SELLER'),
 ('POST', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
+('PATCH', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/approve$', 'SELLER'),
+('PATCH', '^/api/orders/cancel/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/reject$', 'SELLER'),
+('GET', '^/api/orders/cancel/pending$', 'SELLER'),
 -- Payments
 ('GET', '^/api/payments$', 'CONSUMER,SELLER'),
 ('GET', '^/api/payments/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$', 'CONSUMER,SELLER'),
@@ -87,6 +90,8 @@ VALUES
 ('POST', '^/api/purchases/images/presigned-url$', 'SELLER'),
 ('POST', '^/api/purchases/images$', 'SELLER'),
 ('DELETE', '^/api/purchases/images$', 'SELLER'),
+('POST', '^/api/purchases/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/likes$', 'CONSUMER,SELLER'),
+('DELETE', '^/api/purchases/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/likes$', 'CONSUMER,SELLER'),
 -- Searches
 ('GET', '^/api/searches/purchase/search$', 'GUEST, CONSUMER, SELLER'),
 ('GET', '^/api/searches/purchase/mine$', 'SELLER'),
