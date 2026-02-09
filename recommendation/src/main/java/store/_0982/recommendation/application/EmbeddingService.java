@@ -7,7 +7,6 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
 import store._0982.recommendation.domain.ProductVector;
 import store._0982.recommendation.domain.ProductVectorRepository;
@@ -51,8 +50,7 @@ public class EmbeddingService {
 
         log.info("{} \n 벡터화", input);
         float[] embedding = embeddingModel.embed(input);
-        ProductEmbeddingCompletedEvent completedEvent = new ProductEmbeddingCompletedEvent(event.getProductId(), embedding);
-        ProductVector productVector = new ProductVector(completedEvent, currentModelVersion);
+        ProductVector productVector = new ProductVector(event.getProductId(), embedding, currentModelVersion);
         vectorRepository.save(productVector);
     }
 
