@@ -82,7 +82,7 @@ jobs:
           fi
           
           # Search
-          if echo "$CHANGED_FILES" | grep -qE '^(search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
             echo "search=true" >> $GITHUB_OUTPUT
           else
             echo "search=false" >> $GITHUB_OUTPUT
