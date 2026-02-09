@@ -2,7 +2,7 @@ package store._0982.recommendation.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.recommendation.domain.ProductVector;
+import store._0982.common.domain.vector.ProductVector;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
 import java.util.Optional;

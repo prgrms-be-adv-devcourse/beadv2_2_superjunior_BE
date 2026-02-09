@@ -4,10 +4,10 @@ spring:
     name: recommendation
 
   datasource:
-    url: ${PRODUCT_DATABASE_URL}
+    url: ${RECOMMENDATION_DATABASE_URL}
     driver-class-name: org.postgresql.Driver
-    username: ${PRODUCT_DATABASE_USERNAME}
-    password: ${PRODUCT_DATABASE_PASSWORD}
+    username: ${RECOMMENDATION_DATABASE_USERNAME}
+    password: ${RECOMMENDATION_DATABASE_PASSWORD}
     hikari:
       connection-init-sql: SET search_path TO recommendation_schema, public
 

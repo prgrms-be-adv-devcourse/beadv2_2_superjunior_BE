@@ -18,7 +18,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "product_vector", schema = "product_schema")
+@Table(name = "product_vector", schema = "recommendation_schema")
 public class ProductVector {
 
     @Id
@@ -39,10 +39,10 @@ public class ProductVector {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    public ProductVector(ProductEmbeddingCompletedEvent completeEvent, String modelVersion) {
-        this.productId = completeEvent.getProductId();
-        this.vector = completeEvent.getVector();
-        this.modelVersion = modelVersion;
-        this.dimensionSize = completeEvent.getVector() == null ? 0 : completeEvent.getVector().length;
+    public ProductVector(UUID productId, float[] embedding, String currentModelVersion) {
+        this.productId = productId;
+        this.vector = embedding;
+        this.modelVersion = currentModelVersion;
+        this.dimensionSize = embedding == null ? 0 : embedding.length;
     }
 }
