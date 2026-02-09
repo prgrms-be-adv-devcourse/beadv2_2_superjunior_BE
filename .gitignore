@@ -8,6 +8,7 @@
 **/bin
 **/htmlReport
 **/node_modules
+**/secret
 
 # Docker 관련
 docker/postgres/init/*.sql

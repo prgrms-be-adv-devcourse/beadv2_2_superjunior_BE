@@ -8,7 +8,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 @EntityScan(basePackages = {
         "store._0982.recommendation",
-        "store._0982.common.domain"
+        "store._0982.common.domain.vector"
 })
 @SpringBootApplication
 public class RecommendationApplication {
