@@ -19,6 +19,8 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리가 유효하지 않습니다."),
     INVALID_STOCK(HttpStatus.BAD_REQUEST, "재고가 유효하지 않습니다."),
     INVALID_CANCEL_STATUS(HttpStatus.BAD_REQUEST, "취소 요청 상태가 아닙니다."),
+    ALREADY_LIKED(HttpStatus.BAD_REQUEST, "이미 찜한 상태입니다."),
+    LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "찜한 상태가 아닙니다."),
 
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),

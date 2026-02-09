@@ -21,15 +21,15 @@ import java.util.UUID;
 public class ParticipateService {
 
     private final ProductRepository productRepository;
-    private final GroupPurchaseRetryService groupPurchaseRetryService;
+    private final GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
-    public void participate(UUID groupPurchaseId, int quantity, String sellerName, String requestId) {
+    public void participate(UUID groupPurchaseId, int quantity) {
         // 공동 구매 조회
-        GroupPurchase groupPurchase = groupPurchaseRetryService.participateWithRetry(groupPurchaseId, quantity);
+        GroupPurchase groupPurchase = groupPurchaseQuantityService.increaseQuantity(groupPurchaseId, quantity);
 
         // Kafka 이벤트 발행
         Product product = productRepository.findById(groupPurchase.getProductId())

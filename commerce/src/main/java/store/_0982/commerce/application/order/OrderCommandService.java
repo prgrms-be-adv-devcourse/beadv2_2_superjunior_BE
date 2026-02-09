@@ -67,7 +67,7 @@ public class OrderCommandService {
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
         // 참여
-        participateService.participate(groupPurchase.getGroupPurchaseId(), command.quantity(), memberName, command.requestId());
+        participateService.participate(groupPurchase.getGroupPurchaseId(), command.quantity());
 
         // order 생성
         Order order = Order.create(
@@ -146,7 +146,7 @@ public class OrderCommandService {
             String orderRequestId = command.requestId() + "-" + cart.getCartId();
 
 
-            participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity(), memberName, orderRequestId);
+            participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity());
 
             Order order = Order.create(
                     cart.getQuantity(),

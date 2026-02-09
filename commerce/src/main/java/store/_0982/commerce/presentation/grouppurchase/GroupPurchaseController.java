@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseLikeService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
@@ -28,6 +29,7 @@ import java.util.UUID;
 public class GroupPurchaseController {
 
     private final GroupPurchaseService purchaseService;
+    private final GroupPurchaseLikeService groupPurchaseLikeService;
 
     @Operation(summary="공동 구매 생성", description = "공동 구매를 생성합니다.")
     @PostMapping()
@@ -90,4 +92,24 @@ public class GroupPurchaseController {
         return new ResponseDto<>(HttpStatus.OK, response, "공동구매 정보가 수정되었습니다.");
     }
 
+
+    @Operation(summary = "공동구매 찜", description = "공동구매를 찜한다")
+    @PostMapping("/{purchaseId}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> likeGroupPurchase(
+            @PathVariable UUID purchaseId,
+            @RequestHeader(HeaderName.ID) UUID memberId) {
+        groupPurchaseLikeService.likeGroupPurchase(memberId, purchaseId);
+        return new ResponseDto<>(HttpStatus.OK, null, "공동구매가 찜 되었습니다.");
+    }
+
+    @Operation(summary = "공동구매 찜 해제", description = "공동구매 찜을 해제한다")
+    @DeleteMapping("/{purchaseId}/likes")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<Void> unlikeGroupPurchase(
+            @PathVariable UUID purchaseId,
+            @RequestHeader(HeaderName.ID) UUID memberId) {
+        groupPurchaseLikeService.unlikeGroupPurchase(memberId, purchaseId);
+        return new ResponseDto<>(HttpStatus.OK, null, "공동구매 찜이 해제되었습니다.");
+    }
 }
