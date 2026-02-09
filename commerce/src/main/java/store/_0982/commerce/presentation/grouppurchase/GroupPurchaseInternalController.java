@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/internal/purchasees")
+@RequestMapping("/internal/purchases")
 public class GroupPurchaseInternalController {
 
     private final GroupPurchaseSearchService groupPurchaseSearchService;
