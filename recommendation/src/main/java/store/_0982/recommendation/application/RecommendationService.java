@@ -2,10 +2,10 @@ package store._0982.recommendation.application;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import store._0982.common.domain.vector.PersonalVector;
+import store._0982.common.domain.vector.ProductVector;
 import store._0982.recommendation.application.dto.*;
-import store._0982.recommendation.domain.PersonalVector;
 import store._0982.recommendation.domain.PersonalVectorRepository;
-import store._0982.recommendation.domain.ProductVector;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
 import java.util.LinkedList;

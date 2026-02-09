@@ -7,8 +7,8 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.common.domain.vector.ProductVector;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
-import store._0982.recommendation.domain.ProductVector;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
 @Service
