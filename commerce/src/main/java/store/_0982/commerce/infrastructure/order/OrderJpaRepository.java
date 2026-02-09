@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,8 +28,6 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findByIdempotencyKey(String idempotenceKey);
 
     List<Order> findAllByMemberId(UUID memberId);
-
-    //List<Order> findAllByStatusInAndCancelRequestedAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo);
 
     @Modifying(clearAutomatically = true)
     @Query("""
@@ -59,13 +56,4 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
             AND o.deletedAt IS NULL
     """)
     List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, @Param("statuses") List<OrderStatus> statuses);
-
-    @Query("""
-        SELECT o
-        FROM Order o
-        WHERE o.status IN :statuses
-            AND o.memberId = :memberId
-            AND o.deletedAt IS NULL
-    """)
-    Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable);
 }

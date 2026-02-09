@@ -6,48 +6,54 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultWithProductInfo;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseResultProjection;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseChunkFailedEvent;
 import store._0982.batch.batch.grouppurchase.event.GroupPurchaseChunkUpdateEvent;
 import store._0982.batch.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UpdateStatusClosedGroupPurchaseWriter implements ItemWriter<GroupPurchaseResultWithProductInfo> {
+public class UpdateStatusClosedGroupPurchaseWriter implements ItemWriter<GroupPurchaseResultProjection> {
+
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ApplicationEventPublisher eventPublisher;
+
     @Override
-    public void write(Chunk<? extends GroupPurchaseResultWithProductInfo> chunk) throws Exception {
-        List<GroupPurchase> toUpdate = new ArrayList<>();
-        List<GroupPurchase> failedGroupPurchases = new ArrayList<>();
+    public void write(Chunk<? extends GroupPurchaseResultProjection> chunk) {
+        List<GroupPurchaseResultProjection> items = new ArrayList<>(chunk.getItems());
 
-        for(GroupPurchaseResultWithProductInfo result : chunk.getItems()){
-            GroupPurchase groupPurchase = result.groupPurchase();
-            if(result.success()){
-                groupPurchase.markSuccess();
-            }
-            else{
-                groupPurchase.markFailed();
-                failedGroupPurchases.add(groupPurchase);
-            }
+        List<GroupPurchaseResultProjection> successItems = items.stream()
+                .filter(GroupPurchaseResultProjection::success)
+                .toList();
 
-            toUpdate.add(groupPurchase);
-        }
-        groupPurchaseRepository.saveAll(toUpdate);
+        List<GroupPurchaseResultProjection> failedItems = items.stream()
+                .filter(item -> !item.success())
+                .toList();
 
-        if(!failedGroupPurchases.isEmpty()){
-            eventPublisher.publishEvent(
-                    new GroupPurchaseChunkFailedEvent(failedGroupPurchases));
+        if (!successItems.isEmpty()) {
+            List<UUID> successIds = successItems.stream()
+                    .map(GroupPurchaseResultProjection::groupPurchaseId)
+                    .toList();
+            groupPurchaseRepository.bulkUpdateStatusWithSucceededAt(successIds, GroupPurchaseStatus.SUCCESS);
         }
 
-        List<GroupPurchaseResultWithProductInfo> eventItems = new ArrayList<>(chunk.getItems());
-        eventPublisher.publishEvent(
-                new GroupPurchaseChunkUpdateEvent(eventItems)
-        );
+
+        if (!failedItems.isEmpty()) {
+            List<UUID> failedIds = failedItems.stream()
+                    .map(GroupPurchaseResultProjection::groupPurchaseId)
+                    .toList();
+            groupPurchaseRepository.bulkUpdateStatus(failedIds, GroupPurchaseStatus.FAILED);
+
+            eventPublisher.publishEvent(new GroupPurchaseChunkFailedEvent(failedItems));
+        }
+
+        eventPublisher.publishEvent(new GroupPurchaseChunkUpdateEvent(items));
+
     }
 }

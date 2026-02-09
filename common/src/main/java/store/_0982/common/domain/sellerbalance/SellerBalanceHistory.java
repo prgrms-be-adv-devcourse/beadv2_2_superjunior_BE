@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import store._0982.common.domain.sellerbalance.SellerBalanceHistoryStatus;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -23,8 +22,8 @@ public class SellerBalanceHistory {
     @Column(name = "member_id", nullable = false)
     private UUID memberId;
 
-    @Column(name = "settlement_id")
-    private UUID settlementId;
+    @Column(name = "seller_payout_id")
+    private UUID sellerPayoutId;
 
     @Column(name = "order_settlement_id", unique = true)
     private UUID orderSettlementId;
@@ -56,12 +55,12 @@ public class SellerBalanceHistory {
 
     public static SellerBalanceHistory createDebitHistory(
             UUID sellerId,
-            UUID settlementId,
+            UUID sellerPayoutId,
             Long amount
     ) {
         return new SellerBalanceHistory(
                 sellerId,
-                settlementId,
+                sellerPayoutId,
                 null,
                 amount,
                 SellerBalanceHistoryStatus.DEBIT
@@ -70,14 +69,14 @@ public class SellerBalanceHistory {
 
     private SellerBalanceHistory(
             UUID memberId,
-            UUID settlementId,
+            UUID sellerPayoutId,
             UUID orderSettlementId,
             Long amount,
             SellerBalanceHistoryStatus status
     ) {
         this.historyId = UUID.randomUUID();
         this.memberId = memberId;
-        this.settlementId = settlementId;
+        this.sellerPayoutId = sellerPayoutId;
         this.orderSettlementId = orderSettlementId;
         this.amount = amount;
         this.status = status;

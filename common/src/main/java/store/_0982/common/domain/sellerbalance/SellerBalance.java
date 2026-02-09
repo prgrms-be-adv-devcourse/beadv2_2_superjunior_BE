@@ -22,7 +22,7 @@ import java.util.UUID;
 public class SellerBalance {
 
     @Id
-    @Column(name = "balance_id", nullable = false)
+    @Column(name = "balance_id", nullable = false, updatable = false)
     private UUID balanceId;
 
     @Column(name = "member_id", nullable = false, unique = true)
@@ -32,7 +32,7 @@ public class SellerBalance {
     private Long settlementBalance;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
