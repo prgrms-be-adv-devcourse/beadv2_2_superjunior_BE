@@ -55,7 +55,7 @@ kafka:
 reindex:
   group-purchase:
     alias: group-purchase
-    batch-size: 500
+    batch-size: 1000
     switch-alias: true
 
 logging:

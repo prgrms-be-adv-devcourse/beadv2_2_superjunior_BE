@@ -11,7 +11,7 @@ import store._0982.batch.batch.recommendation.processor.PersonalVectorProcessor;
 import store._0982.batch.batch.recommendation.reader.PersonalVectorInfoReader;
 import store._0982.batch.batch.recommendation.reader.PersonalVectorInfoReader.MemberVectorsInput;
 import store._0982.batch.batch.recommendation.writer.PersonalVectorWriter;
-import store._0982.batch.domain.recommendation.PersonalVector;
+import store._0982.common.domain.vector.PersonalVector;
 
 import java.util.List;
 

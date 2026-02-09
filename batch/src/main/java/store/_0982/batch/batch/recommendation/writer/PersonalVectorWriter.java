@@ -5,8 +5,8 @@ import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.batch.domain.recommendation.PersonalVector;
 import store._0982.batch.domain.recommendation.PersonalVectorRepository;
+import store._0982.common.domain.vector.PersonalVector;
 
 import java.util.ArrayList;
 import java.util.List;
