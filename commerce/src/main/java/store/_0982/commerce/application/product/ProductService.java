@@ -11,7 +11,6 @@ import store._0982.commerce.application.product.dto.*;
 import store._0982.commerce.application.product.event.ProductUpsertedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.domain.product.ProductVectorRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.domain.product.Product;
@@ -32,7 +31,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final ProductVectorRepository productVectorRepository;
 
     @ServiceLog
     @Transactional
@@ -127,9 +125,6 @@ public class ProductService {
         } else {
             // hard delete
             productRepository.delete(findProduct);
-
-            // vector 제거
-            productVectorRepository.deleteById(findProduct.getProductId());
         }
     }
 
