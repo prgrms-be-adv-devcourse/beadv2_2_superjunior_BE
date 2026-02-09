@@ -19,10 +19,18 @@ import java.util.List;
 public class GroupPurchaseInternalController {
 
     private final GroupPurchaseSearchService groupPurchaseSearchService;
+    private final GroupPurchasePerformanceService groupPurchasePerformanceService;
 
     @PostMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public List<GroupPurchaseSearchRow> findByIds(@RequestBody GroupPurchaseIdsRequest request) {
         return groupPurchaseSearchService.findSearchRowsByIds(request.ids());
+    }
+
+    @PostMapping("/performance")
+    public List<GroupPurchasePerformanceInfo> getPerformance(
+            @RequestBody List<UUID> groupPurchaseIds
+    ){
+        return groupPurchasePerformanceService.getPerformance(groupPurchaseIds);
     }
 }
