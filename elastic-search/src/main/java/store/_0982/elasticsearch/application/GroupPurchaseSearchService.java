@@ -20,6 +20,8 @@ import store._0982.elasticsearch.domain.search.GroupPurchaseSimilaritySearchRow;
 import store._0982.elasticsearch.exception.CustomErrorCode;
 import store._0982.elasticsearch.exception.ElasticsearchExceptionTranslator;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
+import store._0982.elasticsearch.infrastructure.client.commerce.CommerceSearchClient;
+import store._0982.elasticsearch.infrastructure.client.commerce.dto.GroupPurchaseIdsRequest;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchWithEmbeddingQueryFactory;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSimilarityQueryFactory;
@@ -43,6 +45,7 @@ public class GroupPurchaseSearchService {
     private final ElasticsearchExceptionTranslator exceptionTranslator;
     private final ElasticsearchExecutor elasticsearchExecutor;
     private final GroupPurchaseSearchRepository groupPurchaseSearchRepository;
+    private final CommerceSearchClient commerceSearchClient;
 
     private static final long[] SEARCH_RETRY_DELAYS_MS = {200L, 500L};
 
@@ -97,7 +100,10 @@ public class GroupPurchaseSearchService {
                 .map(hit -> UUID.fromString(hit.getId()))
                 .toList();
 
-        List<GroupPurchaseSearchRow> rows = groupPurchaseSearchRepository.findAllByIds(ids);
+        List<GroupPurchaseSearchRow> rows = commerceSearchClient.findByIds(new GroupPurchaseIdsRequest(ids));
+        if (rows == null || rows.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, hits.getTotalHits());
+        }
         Map<UUID, GroupPurchaseSearchRow> rowMap = rows.stream()
                 .collect(Collectors.toMap(GroupPurchaseSearchRow::groupPurchaseId, Function.identity()));
 

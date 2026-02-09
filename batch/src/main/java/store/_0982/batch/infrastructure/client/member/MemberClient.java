@@ -6,7 +6,7 @@ import store._0982.batch.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountInfo;
 import store._0982.batch.infrastructure.client.member.dto.SellerAccountListRequest;
 import store._0982.common.HeaderName;
-import store._0982.common.domain.settlement.Settlement;
+import store._0982.common.domain.sellerpayout.SellerPayout;
 import store._0982.common.dto.ResponseDto;
 
 import java.util.Collections;
@@ -28,9 +28,9 @@ public interface MemberClient {
     @GetMapping("/internal/members/profile")
     ResponseDto<ProfileInfo> getMember(@RequestHeader(value = HeaderName.ID) UUID memberId);
 
-    default Map<UUID, SellerAccountInfo> fetchAccounts(List<Settlement> settlements) {
-        List<UUID> sellerIds = settlements.stream()
-                .map(Settlement::getSellerId)
+    default Map<UUID, SellerAccountInfo> fetchAccounts(List<SellerPayout> sellerPayouts) {
+        List<UUID> sellerIds = sellerPayouts.stream()
+                .map(SellerPayout::getSellerId)
                 .toList();
 
         SellerAccountListRequest request = new SellerAccountListRequest(sellerIds);
@@ -45,6 +45,7 @@ public interface MemberClient {
                 .collect(Collectors.toMap(SellerAccountInfo::sellerId, Function.identity()));
     }
 
+    @Deprecated
     @GetMapping("/internal/members/member-ids")
     ResponseDto<List<UUID>> getMemberIds(@RequestParam int currentPage, @RequestParam int pageSize);
 

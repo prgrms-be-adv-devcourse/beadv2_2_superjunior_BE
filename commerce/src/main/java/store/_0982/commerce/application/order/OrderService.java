@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.order.dto.*;
 import store._0982.commerce.application.product.dto.OrderVectorInfo;
-import store._0982.commerce.domain.order.Order;
+import store._0982.common.domain.order.Order;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
@@ -20,6 +20,8 @@ public class OrderService {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
+    private final CanceledOrderService canceledOrderService;
+
     /**
      * 주문 생성
      *
@@ -81,7 +83,7 @@ public class OrderService {
      * @param command
      */
     public void cancelOrder(OrderCancelCommand command) {
-        orderCommandService.cancelOrder(command);
+        canceledOrderService.cancelOrder(command);
     }
 
     /**
@@ -98,7 +100,7 @@ public class OrderService {
      * 주문 취소 재시도 배치
      */
     public void retryCancelOrder() {
-        orderCommandService.retryCancelOrder();
+        canceledOrderService.retryCancelOrder();
     }
 
     /**
@@ -156,5 +158,45 @@ public class OrderService {
      */
     public PageResponse<OrderCancelInfo> getCanceledOrders(UUID memberId, Pageable pageable) {
         return orderQueryService.getCanceledOrders(memberId, pageable);
+    }
+
+    /**
+     * 주문 취소 승인
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo approvePendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.approvePendingOrder(memberId, orderId);
+    }
+
+    /**
+     * 주문 취소 거부
+     *
+     * @param memberId
+     * @param orderId
+     * @return OrderCancelInfo
+     */
+    public OrderCancelInfo rejectPendingOrder(UUID memberId, UUID orderId) {
+        return canceledOrderService.rejectPendingOrder(memberId, orderId);
+    }
+
+    /**
+     * 주문 취소 자동 승인
+     */
+    public void autoCancelOrder() {
+        canceledOrderService.autoCancelOrder();
+    }
+
+    /**
+     * 주문 취소 대기 리스트 조회
+     *
+     * @param memberId
+     * @param pageable
+     * @return OrderCancelInfo 목록
+     */
+    public PageResponse<OrderCancelInfo> getPendingOrder(UUID memberId, Pageable pageable) {
+        return orderQueryService.getPendingOrder(memberId, pageable);
     }
 }

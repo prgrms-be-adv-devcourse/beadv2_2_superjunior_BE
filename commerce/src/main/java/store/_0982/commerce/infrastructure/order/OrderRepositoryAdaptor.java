@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import store._0982.commerce.domain.order.Order;
 import store._0982.commerce.domain.order.OrderRepository;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,11 +78,6 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAllByStatusInAndCancelRequestAtBefore(List<OrderStatus> pendingStatuses, OffsetDateTime minutesAgo) {
-        return orderJpaRepository.findAllByStatusInAndCancelRequestedAtBefore(pendingStatuses, minutesAgo);
-    }
-
-    @Override
     public void bulkMarkGroupPurchaseFail(UUID groupPurchaseId) {
         orderJpaRepository.bulkMarkGroupPurchaseFail(groupPurchaseId);
     }
@@ -97,11 +91,4 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, List<OrderStatus> orderStatuses) {
         return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, orderStatuses);
     }
-
-    @Override
-    public Page<Order> findAllByMemberIdAndStatusIn(UUID memberId, List<OrderStatus> statuses, Pageable pageable) {
-        return orderJpaRepository.findAllByMemberIdAndStatusIn(memberId, statuses, pageable);
-    }
-
-
 }

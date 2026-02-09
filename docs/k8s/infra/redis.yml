@@ -5,11 +5,14 @@ metadata:
   name: redis-config
 data:
   redis.conf: |
-    appendonly yes
-    appendfilename "appendonly.aof"
-    appendfsync everysec
-    maxmemory 128mb
+    # 영속성 비활성화 (캐싱 용)
+    save ""
+    appendonly no
+    
+    maxmemory 384mb
     maxmemory-policy allkeys-lru
+    
+    stop-writes-on-bgsave-error yes
 
 ---
 apiVersion: apps/v1
@@ -28,10 +31,14 @@ spec:
     metadata:
       labels:
         app: redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-244
+        kubernetes.io/hostname: monitoring-server
       terminationGracePeriodSeconds: 30
       containers:
         - name: redis
@@ -50,13 +57,13 @@ spec:
               mountPath: /etc/redis
           resources:
             requests:
-              ephemeral-storage: "256Mi"
-              memory: "128Mi"
-              cpu: "50m"
-            limits:
               ephemeral-storage: "512Mi"
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "384Mi"
+              cpu: "100m"
+            limits:
+              ephemeral-storage: "1Gi"
+              memory: "512Mi"
+              cpu: "500m"
           lifecycle:
             preStop:
               exec:
@@ -67,8 +74,9 @@ spec:
           livenessProbe:
             exec:
               command:
-                - redis-cli
-                - ping
+                - sh
+                - -c
+                - "redis-cli ping | grep PONG"
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -76,12 +84,43 @@ spec:
           readinessProbe:
             exec:
               command:
-                - redis-cli
-                - ping
+                - sh
+                - -c
+                - "redis-cli ping | grep PONG"
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.58.0
+          ports:
+            - containerPort: 9121
+              name: metrics
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9121
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: 9121
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
       volumes:
         - name: redis-config
           configMap:

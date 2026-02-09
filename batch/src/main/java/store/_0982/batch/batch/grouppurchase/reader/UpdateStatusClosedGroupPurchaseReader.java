@@ -3,12 +3,12 @@ package store._0982.batch.batch.grouppurchase.reader;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.database.JpaPagingItemReader;
-import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
+import org.springframework.batch.item.database.JpaCursorItemReader;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct;
+import store._0982.batch.batch.grouppurchase.dto.GroupPurchaseProjection;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
@@ -23,18 +23,20 @@ public class UpdateStatusClosedGroupPurchaseReader {
 
     private final EntityManagerFactory entityManagerFactory;
 
-
     @Bean
     @StepScope
-    public JpaPagingItemReader<GroupPurchaseWithProduct> updateStatusClosedGroupPurchase(
+    public JpaCursorItemReader<GroupPurchaseProjection> updateStatusClosedGroupPurchase(
             @Value("#{jobParameters['now']}") String now
     ) {
         OffsetDateTime parsedNow = OffsetDateTime.parse(now);
-        return new JpaPagingItemReaderBuilder<GroupPurchaseWithProduct>()
+        return new JpaCursorItemReaderBuilder<GroupPurchaseProjection>()
                 .name("updateStatusClosedGroupPurchaseReader")
                 .entityManagerFactory(entityManagerFactory)
                 .queryString(
-                        "SELECT new store._0982.batch.batch.grouppurchase.dto.GroupPurchaseWithProduct(g,p) " +
+                        "SELECT new store._0982.batch.batch.grouppurchase.dto.GroupPurchaseProjection(" +
+                        "g.groupPurchaseId, g.status, g.currentQuantity, g.minQuantity, " +
+                        "g.sellerId, g.productId, g.title, g.description, g.discountedPrice, " +
+                        "g.endDate, g.updatedAt, p.price, p.category) " +
                         "FROM GroupPurchase g, Product p " +
                         "WHERE p.productId = g.productId " +
                         "AND g.status = :status " +
@@ -44,7 +46,6 @@ public class UpdateStatusClosedGroupPurchaseReader {
                         "status", GroupPurchaseStatus.OPEN,
                         "now", parsedNow
                 ))
-                .pageSize(20)
                 .build();
     }
 }

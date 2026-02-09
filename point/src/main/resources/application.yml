@@ -44,6 +44,10 @@ management:
       export:
         enabled: false
 
+logging:
+  level:
+    org.apache.kafka: warn
+
 toss:
   secret-key: ${TOSS_SECRET_KEY}
 

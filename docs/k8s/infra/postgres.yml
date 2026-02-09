@@ -15,10 +15,14 @@ spec:
     metadata:
       labels:
         app: postgres
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-244
+        kubernetes.io/hostname: infra-server
       terminationGracePeriodSeconds: 60
       containers:
         - name: postgres
@@ -31,12 +35,12 @@ spec:
                 name: postgres-secret
           resources:
             requests:
-              ephemeral-storage: "1Gi"
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
               ephemeral-storage: "2Gi"
               memory: "1Gi"
+              cpu: "500m"
+            limits:
+              ephemeral-storage: "3Gi"
+              memory: "1.5Gi"
               cpu: "1000m"
           volumeMounts:
             - name: postgres-storage
@@ -49,6 +53,23 @@ spec:
                   - sh
                   - -c
                   - "pg_ctl stop -D /var/lib/postgresql/data/postgres -m fast"
+        - name: postgres-exporter
+          image: prometheuscommunity/postgres-exporter:v0.15.0
+          env:
+            - name: DATA_SOURCE_NAME
+              value: "postgresql://postgres:password@localhost:5432/postgres?sslmode=disable"
+          ports:
+            - containerPort: 9187
+              name: metrics
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
@@ -58,7 +79,7 @@ spec:
         storageClassName: local-path
         resources:
           requests:
-            storage: 10Gi
+            storage: 20Gi
 
 ---
 apiVersion: v1

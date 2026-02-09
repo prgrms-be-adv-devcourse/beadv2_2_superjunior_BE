@@ -16,10 +16,14 @@ spec:
     metadata:
       labels:
         app: kafka
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9308"
+        fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-244
+        kubernetes.io/hostname: infra-server
       terminationGracePeriodSeconds: 30
       containers:
         - name: kafka
@@ -54,16 +58,16 @@ spec:
             - name: CLUSTER_ID
               value: "MkU3OEVBNTcwNTJENDM2Qk"
             - name: KAFKA_HEAP_OPTS
-              value: "-Xms256m -Xmx256m"
+              value: "-Xms512m -Xmx768m"
           resources:
             requests:
-              ephemeral-storage: "500Mi"
-              memory: "256Mi"
-              cpu: "100m"
-            limits:
               ephemeral-storage: "1Gi"
-              memory: "512Mi"
+              memory: "1Gi"
               cpu: "500m"
+            limits:
+              ephemeral-storage: "3Gi"
+              memory: "2Gi"
+              cpu: "1000m"
           volumeMounts:
             - name: kafka-storage
               mountPath: /var/lib/kafka/data
@@ -77,10 +81,32 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 9092
-            initialDelaySeconds: 90
+            initialDelaySeconds: 120
             periodSeconds: 15
             timeoutSeconds: 10
             failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+        - name: kafka-exporter
+          image: danielqsj/kafka-exporter:v1.7.0
+          args: ["--kafka.server=localhost:9092"]
+          ports:
+            - containerPort: 9308
+              name: metrics
+          resources:
+            limits:
+              ephemeral-storage: 256Mi
+              cpu: 200m
+              memory: 128Mi
+            requests:
+              ephemeral-storage: 128Mi
+              cpu: 100m
+              memory: 64Mi
           readinessProbe:
             tcpSocket:
               port: 9092

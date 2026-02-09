@@ -3,11 +3,11 @@ package store._0982.commerce.application.settlement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.domain.order.Order;
-import store._0982.commerce.domain.order.OrderCancellationPolicy;
+import store._0982.common.domain.order.CanceledOrder;
 import store._0982.commerce.domain.settlement.OrderSettlementRepository;
-import store._0982.common.domain.order.OrderStatus;
+import store._0982.common.domain.order.Order;
 import store._0982.common.domain.settlement.OrderSettlement;
+import store._0982.common.domain.settlement.OrderSettlementStatus;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -18,42 +18,47 @@ public class OrderSettlementService {
 
     @Transactional
     public void saveConfirmedOrderSettlement(Order order) {
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
+        OrderSettlement orderSettlement = OrderSettlement.createConfirmedOrderSettlement(
                 order.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
                 order.getPrice() * order.getQuantity(),
-                order.getStatus());
+                0.2
+        );
 
         orderSettlementRepository.save(orderSettlement);
     }
 
     @Transactional
-    public void saveCanceledOrderSettlement(Order order) {
-        OrderCancellationPolicy.CancellationType type = mapCancellationType(order.getStatus());
-        if (type == null) {
+    public void saveCanceledOrderSettlement(Order order, CanceledOrder canceledOrder) {
+        if (canceledOrder.getReason().isSellerFault()) {
+            saveCanceledOrderSettlementBySeller(order, canceledOrder);
             return;
         }
+        if (canceledOrder.getReason().isBuyerFault()) {
+            saveCanceledOrderSettlementByBuyer(order, canceledOrder);
+        }
+    }
 
-        OrderCancellationPolicy.RefundAmount result = OrderCancellationPolicy.calculate(order, type);
-        long cancellationFee = result.cancellationFee();
-
-        OrderSettlement orderSettlement = OrderSettlement.createOrderSettlement(
-                order.getOrderId(),
+    private void saveCanceledOrderSettlementByBuyer(Order order, CanceledOrder canceledOrder) {
+        OrderSettlement orderSettlement = OrderSettlement.createCanceledOrderSettlement(
+                canceledOrder.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
-                cancellationFee,
-                order.getStatus()
+                canceledOrder.getCancelFeeAmount(),
+                OrderSettlementStatus.BUYER_CANCEL
         );
         orderSettlementRepository.save(orderSettlement);
     }
 
-    private OrderCancellationPolicy.CancellationType mapCancellationType(OrderStatus status) {
-        return switch (status) {
-            case CANCELLED -> OrderCancellationPolicy.CancellationType.BEFORE_GROUP_PURCHASE_SUCCESS;
-            case REVERSED -> OrderCancellationPolicy.CancellationType.WITHIN_48_HOURS;
-            case REFUNDED -> OrderCancellationPolicy.CancellationType.AFTER_48_HOURS;
-            default -> null;
-        };
+    private void saveCanceledOrderSettlementBySeller(Order order, CanceledOrder canceledOrder) {
+        OrderSettlement orderSettlement = OrderSettlement.createCanceledOrderSettlement(
+                canceledOrder.getOrderId(),
+                order.getSellerId(),
+                order.getGroupPurchaseId(),
+                canceledOrder.getShippingFeeAmount() * (-1),
+                OrderSettlementStatus.SELLER_CANCEL
+        );
+        orderSettlementRepository.save(orderSettlement);
     }
 }

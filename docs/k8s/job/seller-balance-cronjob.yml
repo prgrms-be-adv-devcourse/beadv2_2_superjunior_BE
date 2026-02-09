@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: seller-balance-cronjob
   labels:
-    app: batch-service
+    app: batch
     component: cronjob
     job-type: seller-balance
 spec:
@@ -21,10 +21,12 @@ spec:
       template:
         metadata:
           labels:
-            app: batch-service
+            app: batch
             job-type: seller-balance
         spec:
           restartPolicy: OnFailure
+          nodeSelector:
+            kubernetes.io/hostname: batch-server
           containers:
           - name: batch-job
             image: minbros/batch:latest

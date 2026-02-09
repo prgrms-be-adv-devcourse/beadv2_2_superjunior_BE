@@ -99,6 +99,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 목록 조회(판매자)가 완료 되었습니다.");
     }
 
+    @Operation(summary = "주문 취소", description = "주문을 취소합니다.")
     @PostMapping("/cancel/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Void> cancelOrder(
@@ -110,6 +111,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 되었습니다.");
     }
 
+    @Operation(summary = "주문 취소 내역 조회", description = "주문 취소 내역을 페이징하여 조회합니다.")
     @GetMapping("/cancel")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<PageResponse<OrderCancelInfo>> getCanceledOrders(
@@ -120,6 +122,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.OK, response, "주문 취소 목록을 조회했습니다.");
     }
 
+    @Operation(summary = "구매 확정", description = "주문에 대한 구매 확정을 처리합니다.")
     @PatchMapping("/{orderId}/purchase-confirmed")
     @ResponseStatus(HttpStatus.OK)
     public ResponseDto<Void> confirmPurchase(
@@ -128,5 +131,38 @@ public class OrderController {
     ){
         orderService.confirmPurchase(memberId, orderId);
         return new ResponseDto<>(HttpStatus.OK, null, "구매 확정되었습니다.");
+    }
+
+    @Operation(summary = "주문 취소 승인", description = "주문 취소 요청에 대해 승인 처리합니다.")
+    @PatchMapping("/cancel/{orderId}/approve")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<OrderCancelInfo> approvePendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ) {
+        OrderCancelInfo info = orderService.approvePendingOrder(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 승인했습니다.");
+    }
+
+    @Operation(summary = "주문 취소 거부", description = "주문 취소 요청에 대해 거부 처리합니다.")
+    @PatchMapping("/cancel/{orderId}/reject")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<OrderCancelInfo> rejectPendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            @PathVariable UUID orderId
+    ) {
+        OrderCancelInfo info = orderService.rejectPendingOrder(memberId, orderId);
+        return new ResponseDto<>(HttpStatus.OK, info, "판매자가 주문 취소 거부했습니다.");
+    }
+
+    @Operation(summary = "주문 취소 대기 내역 조회", description = "주문 취소 대기 내역을 페이징하여 조회합니다.")
+    @GetMapping("/cancel/pending")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseDto<PageResponse<OrderCancelInfo>> getPendingOrder(
+            @RequestHeader(value = HeaderName.ID) UUID memberId,
+            Pageable pageable
+    ) {
+        PageResponse<OrderCancelInfo> info = orderService.getPendingOrder(memberId, pageable);
+        return new ResponseDto<>(HttpStatus.OK, info, "주문 취소 대기 내역을 페이징하여 조회했습니다.");
     }
 }

@@ -13,6 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings({"unused", "java:S107"})
+@Deprecated(forRemoval = true)
 public class SettlementDoneEvent extends BaseEvent {
     private UUID id;
     private UUID sellerId;
