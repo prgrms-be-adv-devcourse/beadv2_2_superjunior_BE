@@ -39,10 +39,10 @@ public class ProductVector {
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
 
-    public ProductVector(ProductEmbeddingCompletedEvent completeEvent, String modelVersion) {
-        this.productId = completeEvent.getProductId();
-        this.vector = completeEvent.getVector();
+    public ProductVector(UUID productId, float[] vector, String modelVersion) {
+        this.productId = productId;
+        this.vector = vector;
         this.modelVersion = modelVersion;
-        this.dimensionSize = completeEvent.getVector() == null ? 0 : completeEvent.getVector().length;
+        this.dimensionSize = vector == null ? 0 : vector.length;
     }
 }
