@@ -125,7 +125,7 @@ class GroupPurchaseSearchServiceTest {
     void searchGroupPurchaseDocument_success() {
         // given
         String keyword = "아이폰";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         UUID memberId = UUID.randomUUID();
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
@@ -175,7 +175,7 @@ class GroupPurchaseSearchServiceTest {
                         null
                 );
 
-        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         when(operations.search(query, GroupPurchaseDocument.class))
@@ -184,7 +184,7 @@ class GroupPurchaseSearchServiceTest {
         // when
         PageResponse<GroupPurchaseDocumentInfo> response =
                 service.searchGroupPurchaseDocument(
-                        keyword, status, memberId, category, pageable
+                        keyword, statuses, memberId, category, pageable
                 );
 
         // then
@@ -194,7 +194,7 @@ class GroupPurchaseSearchServiceTest {
         assertThat(response.content().get(0).productDocumentEmbedded().getCategory()).isEqualTo("DIGITAL");
 
         verify(queryFactory)
-                .createSearchQuery(keyword, status, memberId.toString(), category, pageable);
+                .createSearchQuery(keyword, statuses, memberId.toString(), category, pageable);
         verify(operations)
                 .search(query, GroupPurchaseDocument.class);
     }
@@ -204,7 +204,7 @@ class GroupPurchaseSearchServiceTest {
     void searchAllGroupPurchaseDocument_success() {
         // given
         String keyword = "아이폰";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -253,7 +253,7 @@ class GroupPurchaseSearchServiceTest {
                         null
                 );
 
-        when(queryFactory.createSearchQuery(keyword, status, null, category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, null, category, pageable))
                 .thenReturn(query);
 
         when(operations.search(query, GroupPurchaseDocument.class))
@@ -262,7 +262,7 @@ class GroupPurchaseSearchServiceTest {
         // when
         PageResponse<GroupPurchaseDocumentInfo> response =
                 service.searchAllGroupPurchaseDocument(
-                        keyword, status, category, pageable
+                        keyword, statuses, category, pageable
                 );
 
         // then
@@ -271,7 +271,7 @@ class GroupPurchaseSearchServiceTest {
         assertThat(response.content().get(0).productDocumentEmbedded().getCategory()).isEqualTo("DIGITAL");
 
         verify(queryFactory)
-                .createSearchQuery(keyword, status, null, category, pageable);
+                .createSearchQuery(keyword, statuses, null, category, pageable);
         verify(operations)
                 .search(query, GroupPurchaseDocument.class);
     }
@@ -281,20 +281,20 @@ class GroupPurchaseSearchServiceTest {
     void search_group_purchase_document_SERVICE_UNAVAILABLE() {
         // given
         String keyword = "keyword";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         UUID memberId = UUID.randomUUID();
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
 
         NativeQuery query = mock(NativeQuery.class);
-        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         when(operations.search(query, GroupPurchaseDocument.class))
                 .thenThrow(new DataAccessResourceFailureException("ES down"));
 
         // when & then
-        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, statuses, memberId, category, pageable))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);
@@ -305,20 +305,20 @@ class GroupPurchaseSearchServiceTest {
     void search_group_purchase_document_INTERNAL_SERVER_ERROR() {
         // given
         String keyword = "keyword";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         UUID memberId = UUID.randomUUID();
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
 
         NativeQuery query = mock(NativeQuery.class);
-        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         when(operations.search(query, GroupPurchaseDocument.class))
                 .thenThrow(new RuntimeException("boom"));
 
         // when & then
-        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, statuses, memberId, category, pageable))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(CustomErrorCode.INTERNAL_SERVER_ERROR);
@@ -328,13 +328,13 @@ class GroupPurchaseSearchServiceTest {
     void search_group_purchase_document_retries_on_SERVICE_UNAVAILABLE() {
         // given
         String keyword = "keyword";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         UUID memberId = UUID.randomUUID();
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
 
         NativeQuery query = mock(NativeQuery.class);
-        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         GroupPurchaseDocument document = GroupPurchaseDocument.builder()
@@ -386,7 +386,7 @@ class GroupPurchaseSearchServiceTest {
 
         // when
         PageResponse<GroupPurchaseDocumentInfo> response =
-                service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable);
+                service.searchGroupPurchaseDocument(keyword, statuses, memberId, category, pageable);
 
         // then
         assertThat(response.content()).hasSize(1);
@@ -397,13 +397,13 @@ class GroupPurchaseSearchServiceTest {
     void search_group_purchase_document_retry_exhausted_returns_service_unavailable() {
         // given
         String keyword = "keyword";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         UUID memberId = UUID.randomUUID();
         String category = "DIGITAL";
         Pageable pageable = PageRequest.of(0, 10);
 
         NativeQuery query = mock(NativeQuery.class);
-        when(queryFactory.createSearchQuery(keyword, status, memberId.toString(), category, pageable))
+        when(queryFactory.createSearchQuery(keyword, statuses, memberId.toString(), category, pageable))
                 .thenReturn(query);
 
         when(operations.search(query, GroupPurchaseDocument.class))
@@ -412,7 +412,7 @@ class GroupPurchaseSearchServiceTest {
                 .thenThrow(new DataAccessResourceFailureException("ES down"));
 
         // when & then
-        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, status, memberId, category, pageable))
+        assertThatThrownBy(() -> service.searchGroupPurchaseDocument(keyword, statuses, memberId, category, pageable))
                 .isInstanceOf(CustomException.class)
                 .extracting("errorCode")
                 .isEqualTo(CustomErrorCode.SERVICE_UNAVAILABLE);

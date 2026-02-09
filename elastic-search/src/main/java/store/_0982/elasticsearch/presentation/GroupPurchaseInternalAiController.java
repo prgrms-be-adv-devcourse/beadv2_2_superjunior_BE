@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSimilaritySearchInfo;
+import store._0982.elasticsearch.presentation.dto.GroupPurchaseAdvisorSearchRequest;
 import store._0982.elasticsearch.presentation.dto.GroupPurchaseInternalSearchRequest;
 
 import java.util.List;
@@ -32,7 +33,23 @@ public class GroupPurchaseInternalAiController {
     ) {
         return searchService.searchGroupPurchaseDocumentWithEmbedding(
                 request.keyword(),
-                "OPEN",
+                List.of("OPEN"),
+                request.category(),
+                request.vector(),
+                request.topK()
+        );
+    }
+
+    @Operation(summary = "공동구매 유사도 검색(advisor)")
+    @ResponseStatus(HttpStatus.OK)
+    @ControllerLog
+    @PostMapping("/advisor")
+    public List<GroupPurchaseSimilaritySearchInfo> searchForAdvisor(
+            @RequestBody GroupPurchaseAdvisorSearchRequest request
+    ){
+        return searchService.searchGroupPurchaseDocumentWithEmbedding(
+                request.keyword(),
+                request.statuses(),
                 request.category(),
                 request.vector(),
                 request.topK()

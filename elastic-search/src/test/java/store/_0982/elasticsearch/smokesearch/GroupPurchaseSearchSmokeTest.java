@@ -21,6 +21,7 @@ import store._0982.elasticsearch.domain.GroupPurchaseDocument;
 import store._0982.elasticsearch.domain.ProductDocumentEmbedded;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -188,7 +189,7 @@ class GroupPurchaseSearchSmokeTest {
         PageResponse<GroupPurchaseDocumentInfo> result =
                 service.searchGroupPurchaseDocument(
                         KEYWORD,
-                        STATUS,
+                        List.of(STATUS),
                         UUID.fromString(SELLER_ID),
                         CATEGORY,
                         PageRequest.of(0, 10)
