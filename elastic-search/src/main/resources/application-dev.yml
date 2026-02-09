@@ -14,3 +14,7 @@ spring:
 token:
   internal:
     secret: "abcd"
+
+client:
+  recommendation: http://localhost:8088
+  commerce: http://localhost:8087
