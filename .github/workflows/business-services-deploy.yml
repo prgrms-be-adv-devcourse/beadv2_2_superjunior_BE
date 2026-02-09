@@ -200,10 +200,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Search 배포
+      - name: Recommendation 배포
         uses: ./.github/actions/deploy-business-service
         with:
           service-name: ai
+          module-name: recommendation
           manifest-path: docs/k8s/service/ai.yml
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
