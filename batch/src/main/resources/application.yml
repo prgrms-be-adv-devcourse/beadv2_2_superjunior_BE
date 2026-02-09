@@ -58,6 +58,11 @@ reindex:
     batch-size: 500
     switch-alias: true
 
+vector:
+  batch:
+    size: 1000
+
+
 logging:
   level:
     # Spring Batch 프레임워크의 중복 로그 최소화
