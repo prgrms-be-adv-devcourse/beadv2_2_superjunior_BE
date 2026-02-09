@@ -1,7 +1,7 @@
 package store_0982.dummy_data.generate_dummy_obj.recommendation.row;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import store._0982.commerce.domain.product.ProductVector;
+import store._0982.common.domain.vector.ProductVector;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

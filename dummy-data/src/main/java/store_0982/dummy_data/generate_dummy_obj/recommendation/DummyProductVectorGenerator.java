@@ -7,7 +7,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import store._0982.commerce.domain.product.ProductVector;
+import store._0982.common.domain.vector.ProductVector;
 import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store_0982.dummy_data.generate_dummy_obj.recommendation.row.ProductVectorCsvRow;
 import store_0982.dummy_data.util.Utils;
@@ -77,8 +77,7 @@ public class DummyProductVectorGenerator {
     }
 
     private ProductVector createProductVector(UUID productId, float[] vector) {
-        ProductEmbeddingCompletedEvent event = new ProductEmbeddingCompletedEvent(Clock.systemUTC(), productId, vector);
-        ProductVector productVector = new ProductVector(event, modelVersion);
+        ProductVector productVector = new ProductVector(productId, vector, modelVersion);
         Utils.setField(productVector, "updatedAt", OffsetDateTime.now());
         return productVector;
     }
