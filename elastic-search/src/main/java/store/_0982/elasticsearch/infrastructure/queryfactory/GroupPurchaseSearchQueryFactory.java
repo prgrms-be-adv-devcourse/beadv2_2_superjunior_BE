@@ -1,10 +1,13 @@
 package store._0982.elasticsearch.infrastructure.queryfactory;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -12,7 +15,7 @@ public class GroupPurchaseSearchQueryFactory {
 
     public NativeQuery createSearchQuery(
             String keyword,
-            String status,
+            List<String> statuses,
             String memberId,
             String category,
             Pageable pageable
@@ -28,10 +31,12 @@ public class GroupPurchaseSearchQueryFactory {
                         b.must(m -> m.matchAll(mm -> mm));
 
                         // status 선택 필터
-                        if (status != null && !status.isBlank()) {
-                            b.filter(f -> f.term(t -> t
+                        if (statuses != null && !statuses.isEmpty()) {
+                            b.filter(f -> f.terms(t -> t
                                     .field("status")
-                                    .value(status)
+                                    .terms(tq -> tq.value(
+                                            statuses.stream().map(FieldValue::of).toList()
+                                    ))
                             ));
                         }
                         // category 선택
@@ -106,10 +111,12 @@ public class GroupPurchaseSearchQueryFactory {
                     ));
 
                     // 5. status 필터 (선택)
-                    if (status != null && !status.isBlank()) {
-                        b.filter(f -> f.term(t -> t
+                    if (statuses != null && !statuses.isEmpty()) {
+                        b.filter(f -> f.terms(t -> t
                                 .field("status")
-                                .value(status)
+                                .terms(tq -> tq.value(
+                                        statuses.stream().map(FieldValue::of).toList()
+                                ))
                         ));
                     }
                     // category 선택

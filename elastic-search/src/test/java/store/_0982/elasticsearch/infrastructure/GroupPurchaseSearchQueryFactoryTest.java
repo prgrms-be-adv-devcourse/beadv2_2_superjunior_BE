@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import store._0982.elasticsearch.infrastructure.queryfactory.GroupPurchaseSearchQueryFactory;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -21,14 +22,14 @@ class GroupPurchaseSearchQueryFactoryTest {
     void create_matchAllQuery_success() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         String category = "HOME";
         String memberId = UUID.randomUUID().toString();
 
         // when
         NativeQuery query = factory.createSearchQuery(
                 null,
-                status,
+                statuses,
                 memberId,
                 category,
                 pageable
@@ -40,7 +41,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         assertThat(q)
                 .contains("match_all")
                 .contains("status")
-                .contains(status)
+                .contains("OPEN")
                 .contains("productDocumentEmbedded.category")
                 .contains(category)
                 .contains("productDocumentEmbedded.sellerId")
@@ -55,13 +56,13 @@ class GroupPurchaseSearchQueryFactoryTest {
     void create_keywordQuery_success() {
         // given
         String keyword = "테스트";
-        String status = "CLOSED";
+        List<String> statuses = List.of("CLOSED");
         Pageable pageable = PageRequest.of(1, 5);
 
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
-                status,
+                statuses,
                 null,
                 null,
                 pageable
@@ -76,7 +77,7 @@ class GroupPurchaseSearchQueryFactoryTest {
                 .contains("fuzziness")
                 .contains("match")
                 .contains("status")
-                .contains(status)
+                .contains("CLOSED")
                 .contains("minimum_should_match");
 
         assertThat(query.getPageable().getPageSize()).isEqualTo(5);
@@ -93,7 +94,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
-                "",
+                List.of(),
                 null,
                 null,
                 pageable
@@ -116,7 +117,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 null,
-                "OPEN",
+                List.of("OPEN"),
                 null,
                 "",
                 pageable
@@ -135,7 +136,7 @@ class GroupPurchaseSearchQueryFactoryTest {
     void create_keywordWithCategoryAndSeller_success() {
         // given
         String keyword = "키워드";
-        String status = "OPEN";
+        List<String> statuses = List.of("OPEN");
         String memberId = UUID.randomUUID().toString();
         String category = "ELECTRONICS";
         Pageable pageable = PageRequest.of(0, 8);
@@ -143,7 +144,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 keyword,
-                status,
+                statuses,
                 memberId,
                 category,
                 pageable
@@ -159,7 +160,7 @@ class GroupPurchaseSearchQueryFactoryTest {
                 .contains("productDocumentEmbedded.sellerId")
                 .contains(memberId)
                 .contains("status")
-                .contains(status)
+                .contains("OPEN")
                 .contains("minimum_should_match");
 
         assertThat(query.getPageable().getPageSize()).isEqualTo(8);
@@ -175,7 +176,7 @@ class GroupPurchaseSearchQueryFactoryTest {
         // when
         NativeQuery query = factory.createSearchQuery(
                 "",
-                "",
+                List.of(),
                 "",
                 "",
                 pageable

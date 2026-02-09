@@ -18,6 +18,7 @@ import store._0982.common.log.ControllerLog;
 import store._0982.elasticsearch.application.GroupPurchaseSearchService;
 import store._0982.elasticsearch.application.dto.GroupPurchaseSearchInfo;
 
+import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Group Purchase Search", description = "공동구매 검색 API")
@@ -39,9 +40,10 @@ public class GroupPurchaseSearchController {
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
+        List<String> statuses = (status == null || status.isBlank()) ? null : List.of(status);
         PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(
                 keyword,
-                status,
+                statuses,
                 sellerId,
                 category,
                 pageable
@@ -61,9 +63,10 @@ public class GroupPurchaseSearchController {
             @RequestParam(defaultValue = "") String category,
             Pageable pageable
     ) {
+        List<String> statuses = (status == null || status.isBlank()) ? null : List.of(status);
         PageResponse<GroupPurchaseSearchInfo> result = groupPurchaseSearchService.searchGroupPurchaseDocument(
                 keyword,
-                status,
+                statuses,
                 sellerId,
                 category,
                 pageable

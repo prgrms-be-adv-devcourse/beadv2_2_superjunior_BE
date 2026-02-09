@@ -52,14 +52,14 @@ public class GroupPurchaseSearchService {
     @ServiceLog
     public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchaseDocument(
             String keyword,
-            String status,
+            List<String> statuses,
             UUID memberId,
             String category,
             Pageable pageable
     ) {
         String sellerId = memberId != null ? memberId.toString() : null;
         return elasticsearchExecutor.execute(() -> {
-            NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, status, sellerId, category, pageable);
+            NativeQuery query = groupPurchaseSearchQueryFactory.createSearchQuery(keyword, statuses, sellerId, category, pageable);
 
             SearchHits<GroupPurchaseDocument> hits = searchWithRetry(query);
             Page<GroupPurchaseSearchInfo> mappedPage = toSearchResultPage(hits, pageable);
@@ -160,7 +160,7 @@ public class GroupPurchaseSearchService {
     @ServiceLog
     public List<GroupPurchaseSimilaritySearchInfo> searchGroupPurchaseDocumentWithEmbedding(
             String keyword,
-            String status,
+            List<String> statuses,
             String category,
             float[] vector,
             int topK
@@ -177,7 +177,7 @@ public class GroupPurchaseSearchService {
             Pageable candidatePageable = PageRequest.of(0, candidateSize);
             NativeQuery candidateQuery = groupPurchaseSearchQueryFactory.createSearchQuery(
                     keyword,
-                    status,
+                    statuses,
                     null,
                     category,
                     candidatePageable
