@@ -16,16 +16,12 @@ import store._0982.common.log.ServiceLog;
 public class ProductEventListener {
 
     private final EmbeddingService embeddingService;
-    private final ProductEmbeddingCompleteProducer completeProducer;
 
     @RetryableTopic
     @ServiceLog
     @KafkaListener(topics = KafkaTopics.PRODUCT_UPSERTED, groupId = "ai-service-group", containerFactory = "productEmbeddingEventKafkaListenerFactory")
     public void vectorize(ProductUpsertedEvent event) {
         // 벡터화
-        ProductEmbeddingCompletedEvent completeEvent = embeddingService.vectorize(event);
-        // 재전송
-        completeProducer.returnVector(completeEvent);
-        log.info("재전송 완료");
+        embeddingService.vectorize(event);
     }
 }
