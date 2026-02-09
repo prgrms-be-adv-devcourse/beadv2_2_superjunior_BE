@@ -3,7 +3,7 @@ package store._0982.batch.infrastructure.recommendation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import store._0982.batch.domain.recommendation.PersonalVectorRepository;
-import store._0982.batch.domain.recommendation.PersonalVector;
+import store._0982.common.domain.vector.PersonalVector;
 
 @Repository
 @RequiredArgsConstructor
