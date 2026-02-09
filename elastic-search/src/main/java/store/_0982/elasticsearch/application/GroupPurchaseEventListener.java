@@ -10,8 +10,9 @@ import store._0982.common.log.ServiceLog;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentCommand;
 import store._0982.elasticsearch.application.dto.GroupPurchaseDocumentInfo;
 import store._0982.elasticsearch.exception.ElasticsearchExecutor;
+import store._0982.elasticsearch.infrastructure.client.recommendation.dto.ProductVectorInfo;
+import store._0982.elasticsearch.infrastructure.client.recommendation.RecommendationVectorClient;
 import store._0982.elasticsearch.infrastructure.GroupPurchaseRepository;
-import store._0982.elasticsearch.infrastructure.product.ProductVectorRepository;
 
 
 @Service
@@ -19,7 +20,7 @@ import store._0982.elasticsearch.infrastructure.product.ProductVectorRepository;
 public class GroupPurchaseEventListener {
     private final GroupPurchaseRepository groupPurchaseRepository;
     private final ElasticsearchExecutor elasticsearchExecutor;
-    private final ProductVectorRepository productVectorRepository;
+    private final RecommendationVectorClient recommendationVectorClient;
 
     @RetryableTopic
     @ServiceLog
@@ -31,7 +32,10 @@ public class GroupPurchaseEventListener {
         }
         float[] productVector = null;
         if (event.getProductId() != null) {
-            productVector = productVectorRepository.findVectorByProductId(event.getProductId());
+            ProductVectorInfo info = recommendationVectorClient.getProductVector(event.getProductId()).data();
+            if (info != null) {
+                productVector = info.vector();
+            }
         }
         saveGroupPurchaseDocument(GroupPurchaseDocumentCommand.from(event, productVector));
     }
