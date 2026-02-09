@@ -39,7 +39,7 @@ public class ProductEmbeddingService {
     private final CartService cartService;
     private final GroupPurchaseService groupPurchaseService;
 
-    @Value("${spring.ai.openai.embedding.options.model}")
+    @Value("${spring.ai.openai.embedding.options.model:text-embedding-3-small}")
     private String currentModelVersion;
 
     @ServiceLog
