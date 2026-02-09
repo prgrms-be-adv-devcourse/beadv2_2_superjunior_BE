@@ -41,7 +41,7 @@ public class OrderPaymentProcessorService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.ORDER_NOT_FOUND));
 
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         switch(event.getStatus()){
             case PAYMENT_COMPLETED -> {
@@ -82,7 +82,7 @@ public class OrderPaymentProcessorService {
             case USED -> {
                 order.completePayment(PaymentMethod.POINT);
                 GroupPurchase groupPurchase = groupPurchaseRepository.findById(order.getGroupPurchaseId())
-                        .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                        .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
                 String productName = productService.findByProductName(groupPurchase.getProductId());
                 eventPublisher.publishEvent(new OrderCreateProcessedEvent(
                         order,

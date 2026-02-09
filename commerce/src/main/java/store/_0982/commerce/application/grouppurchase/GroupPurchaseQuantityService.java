@@ -24,7 +24,7 @@ public class GroupPurchaseQuantityService {
         }
 
         return groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
     }
 
     @Transactional

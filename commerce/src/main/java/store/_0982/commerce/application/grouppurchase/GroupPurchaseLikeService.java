@@ -23,7 +23,7 @@ public class GroupPurchaseLikeService {
     @Transactional
     public void likeGroupPurchase(UUID memberId, UUID purchaseId) {
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         if(groupPurchaseLikeRepository.existsByMemberIdAndGroupPurchaseId(memberId, groupPurchase.getGroupPurchaseId())){
             throw new CustomException(CustomErrorCode.ALREADY_LIKED);

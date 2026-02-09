@@ -88,7 +88,7 @@ public class GroupPurchaseService {
 
     public GroupPurchaseDetailInfo getGroupPurchaseById(UUID purchaseId) {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         Product findProduct = productRepository.findById(findGroupPurchase.getProductId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
@@ -135,7 +135,7 @@ public class GroupPurchaseService {
     public GroupPurchaseInfo updateGroupPurchase(UUID memberId, UUID purchaseId, GroupPurchaseUpdateCommand command) {
 
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         if (!findGroupPurchase.getSellerId().equals(memberId)) {
             throw new CustomException(CustomErrorCode.FORBIDDEN_NOT_GROUP_PURCHASE_OWNER);
@@ -177,7 +177,7 @@ public class GroupPurchaseService {
     @Transactional
     public void deleteGroupPurchase(UUID purchaseId, UUID memberId) {
         GroupPurchase findGroupPurchase = groupPurchaseRepository.findById(purchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         if (findGroupPurchase.getStatus() != GroupPurchaseStatus.SCHEDULED) {
             throw new CustomException(CustomErrorCode.INVALID_OPEN_PURCHASE_UPDATE);
@@ -195,7 +195,7 @@ public class GroupPurchaseService {
 
     public GroupPurchase getAvailableForOrder(UUID groupPurchaseId){
         GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
 
         validateAvailable(groupPurchase);
 
@@ -206,7 +206,7 @@ public class GroupPurchaseService {
         List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(new ArrayList<>(groupPurchaseIds));
 
         if(groupPurchases.size() != groupPurchaseIds.size()){
-            throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+            throw new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND);
         }
 
         groupPurchases.forEach(this::validateAvailable);
@@ -232,6 +232,6 @@ public class GroupPurchaseService {
 
     public GroupPurchase findByGroupPurchase(UUID groupPurchaseId) {
         return groupPurchaseRepository.findById(groupPurchaseId)
-                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
     }
 }

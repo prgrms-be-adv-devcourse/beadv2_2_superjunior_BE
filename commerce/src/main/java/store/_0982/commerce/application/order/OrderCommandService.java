@@ -15,14 +15,12 @@ import store._0982.commerce.application.order.dto.OrderRegisterInfo;
 import store._0982.commerce.application.order.event.OrderCartCompletedEvent;
 import store._0982.commerce.application.settlement.OrderSettlementService;
 import store._0982.commerce.domain.cart.Cart;
-import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
 import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.Order;
-import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
@@ -140,7 +138,7 @@ public class OrderCommandService {
             GroupPurchase groupPurchase = purchaseMap.get(cart.getGroupPurchaseId());
 
             if(groupPurchase == null){
-                throw new CustomException(CustomErrorCode.GROUPPURCHASE_NOT_FOUND);
+                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND);
             }
 
             String orderRequestId = command.requestId() + "-" + cart.getCartId();
