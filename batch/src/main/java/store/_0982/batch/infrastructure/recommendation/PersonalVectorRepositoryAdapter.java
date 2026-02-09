@@ -1,9 +1,9 @@
-package store._0982.batch.infrastructure.ai;
+package store._0982.batch.infrastructure.recommendation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import store._0982.batch.domain.ai.PersonalVectorRepository;
-import store._0982.batch.domain.ai.PersonalVector;
+import store._0982.batch.domain.recommendation.PersonalVectorRepository;
+import store._0982.batch.domain.recommendation.PersonalVector;
 
 @Repository
 @RequiredArgsConstructor

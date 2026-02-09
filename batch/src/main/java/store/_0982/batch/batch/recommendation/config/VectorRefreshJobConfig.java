@@ -1,4 +1,4 @@
-package store._0982.batch.batch.ai.config;
+package store._0982.batch.batch.recommendation.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;

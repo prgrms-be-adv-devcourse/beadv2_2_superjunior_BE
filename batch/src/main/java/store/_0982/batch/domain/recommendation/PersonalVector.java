@@ -1,4 +1,4 @@
-package store._0982.batch.domain.ai;
+package store._0982.batch.domain.recommendation;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "personal_vector", schema = "ai_schema")
+@Table(name = "personal_vector", schema = "recommendation_schema")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class PersonalVector {
@@ -32,17 +32,13 @@ public class PersonalVector {
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
-    @Column(name = "interest_summary")
-    private String interestSummary;
-
-    public PersonalVector(UUID memberId, float[] vector, String interestSummary) {
+    public PersonalVector(UUID memberId, float[] vector) {
         this.memberId = memberId;
         this.vector = vector;
-        this.interestSummary = interestSummary;
     }
 
-    public static  PersonalVector create(UUID memberId, float[] vector, String interestSummary) {
-        return new PersonalVector(memberId, vector, interestSummary);
+    public static  PersonalVector create(UUID memberId, float[] vector) {
+        return new PersonalVector(memberId, vector);
     }
 
     public void updateVector(float[] vector) {

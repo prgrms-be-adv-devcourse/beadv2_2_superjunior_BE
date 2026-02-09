@@ -1,4 +1,4 @@
-package store._0982.batch.domain.ai;
+package store._0982.batch.domain.recommendation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -22,10 +22,8 @@ import java.util.UUID;
 public class RecommendationInternalController {
 
     private final PromptService promptService;
-    private final RecommendationService recommendationService;
-    private final ProductVectorRepository productVectorRepository;
 
-    @PostMapping("/internal/ai/interest-summary")
+    @PostMapping("/internal/recommendations/interest-summary")
     public String summarizeInterest(@RequestBody InterestSummaryRequest request){
         return promptService.summarizeInterest(request.descriptions());
     }
