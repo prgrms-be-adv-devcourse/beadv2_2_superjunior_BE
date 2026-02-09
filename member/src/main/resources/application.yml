@@ -97,3 +97,7 @@ resilience4j:
       CommerceClient:
         max-attempts: 2
         wait-duration: 500ms
+
+logging:
+  level:
+    org.apache.kafka: warn

@@ -52,7 +52,7 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        // AI 모듈 kafka
+        // recommendation 모듈 kafka
         eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductRegisterInfo.from(savedProduct);
@@ -98,7 +98,7 @@ public class ProductService {
                 command.originalLink(),
                 command.imageUrl());
 
-        // AI 모듈 kafka
+        // recommendation 모듈 kafka
         eventPublisher.publishEvent(new ProductUpsertedEvent(product));
 
         return ProductUpdateInfo.from(product);
