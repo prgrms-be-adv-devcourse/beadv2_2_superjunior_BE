@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import store._0982.batch.batch.recommendation.reader.PersonalVectorInfoReader.MemberVectorsInput;
-import store._0982.batch.domain.recommendation.PersonalVector;
+import store._0982.common.domain.vector.PersonalVector;
 import store._0982.common.domain.vector.ProductVector;
 
 import java.util.ArrayList;
