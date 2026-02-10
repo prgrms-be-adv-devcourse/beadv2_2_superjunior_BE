@@ -56,7 +56,7 @@ public class OrderSettlementService {
                 canceledOrder.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
-                canceledOrder.getShippingFeeAmount() * (-1),
+                0L,
                 OrderSettlementStatus.SELLER_CANCEL
         );
         orderSettlementRepository.save(orderSettlement);
