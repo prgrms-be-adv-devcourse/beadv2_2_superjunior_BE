@@ -133,4 +133,9 @@ public class ProductService {
                 .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
         return findProduct.getName();
     }
+
+    public Page<ProductInfoForVector> findAllProductsForVector(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(ProductInfoForVector::from);
+    }
 }
