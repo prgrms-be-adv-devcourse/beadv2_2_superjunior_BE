@@ -3,15 +3,15 @@ package store._0982.commerce.application.grouppurchase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
+import store._0982.commerce.application.grouppurchase.dto.OpenGroupPurchaseInfo;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.domain.product.Product;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,5 +71,16 @@ public class GroupPurchaseSearchService {
             ));
         }
         return rows;
+    }
+
+    public List<OpenGroupPurchaseInfo> findOpenGroupPurchases(int limit, OffsetDateTime now){
+        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByStatusAndStartDateBefore(GroupPurchaseStatus.OPEN, now);
+
+        return groupPurchases.stream()
+                .filter(gp -> gp.getEndDate() != null && gp.getEndDate().isBefore(now))
+                .sorted(Comparator.comparing(GroupPurchase::getEndDate))
+                .limit(Math.max(0,limit))
+                .map(OpenGroupPurchaseInfo::from)
+                .toList();
     }
 }
