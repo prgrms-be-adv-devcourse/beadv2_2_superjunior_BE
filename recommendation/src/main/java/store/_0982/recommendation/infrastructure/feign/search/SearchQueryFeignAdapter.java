@@ -3,6 +3,7 @@ package store._0982.recommendation.infrastructure.feign.search;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import store._0982.recommendation.application.SearchQueryPort;
+import store._0982.recommendation.application.dto.AdvisorVectorSearchRequest;
 import store._0982.recommendation.application.dto.VectorSearchRequest;
 import store._0982.recommendation.application.dto.VectorSearchResponse;
 
@@ -18,5 +19,10 @@ public class SearchQueryFeignAdapter implements SearchQueryPort {
     @Override
     public List<VectorSearchResponse> getRecommandationCandidates(VectorSearchRequest vectorSearchRequest) {
         return searchFeignClient.getRecommandationCandidates(vectorSearchRequest);
+    }
+
+    @Override
+    public List<VectorSearchResponse> getAdvisorCandidates(AdvisorVectorSearchRequest vectorSearchRequest) {
+        return searchFeignClient.getAdvisorCandidates(vectorSearchRequest);
     }
 }
