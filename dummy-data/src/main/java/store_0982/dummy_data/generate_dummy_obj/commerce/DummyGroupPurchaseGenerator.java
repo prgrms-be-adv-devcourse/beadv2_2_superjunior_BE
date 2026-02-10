@@ -83,6 +83,7 @@ public class DummyGroupPurchaseGenerator {
                 Utils.setField(groupPurchase, "minQuantity", minQuantity);
                 Utils.setField(groupPurchase, "maxQuantity", maxQuantity);
                 Utils.setField(groupPurchase, "currentQuantity", 0);
+                Utils.setField(groupPurchase, "likeCount", 0);
 
                 Utils.setField(groupPurchase, "title", productRow.name() + " 공동구매");
                 Utils.setField(groupPurchase, "description", productRow.description());
@@ -140,6 +141,7 @@ public class DummyGroupPurchaseGenerator {
                 groupPurchase.getSellerId(),
                 groupPurchase.getProductId(),
                 groupPurchase.getCurrentQuantity(),
+                groupPurchase.getLikeCount(),
                 groupPurchase.getCreatedAt(),
                 groupPurchase.getUpdatedAt(),
                 groupPurchase.getSettledAt(),
