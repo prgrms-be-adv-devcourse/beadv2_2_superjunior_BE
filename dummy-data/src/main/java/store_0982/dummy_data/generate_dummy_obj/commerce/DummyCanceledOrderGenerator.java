@@ -30,18 +30,10 @@ public class DummyCanceledOrderGenerator {
     @Value("${dummy-data.canceled-order-dummy.path}")
     private String canceledOrderDummyPath;
 
-    @Value("${dummy-data.canceled-order-id-pool.path}")
-    private String canceledOrderIdPoolPath;
-
     public void generate() throws IOException {
         Path orderInput = Path.of(orderDummyPath);
         if (!Files.exists(orderInput)) {
             throw new IllegalStateException("Order dummy file not found: " + orderInput);
-        }
-
-        Path idPoolPath = Path.of(canceledOrderIdPoolPath);
-        if (!Files.exists(idPoolPath)) {
-            throw new IllegalStateException("Canceled order ID pool file not found: " + idPoolPath);
         }
 
         CsvMapper mapper = baseMapper();
@@ -54,23 +46,17 @@ public class DummyCanceledOrderGenerator {
         try (var orderReader = Files.newBufferedReader(orderInput);
              MappingIterator<OrderCsvRow> orderIterator =
                      mapper.readerFor(OrderCsvRow.class).with(orderSchema).readValues(orderReader);
-             var idReader = Files.newBufferedReader(idPoolPath);
-             var idStream = idReader.lines().map(String::trim).filter(line -> !line.isEmpty());
              var canceledWriter = Files.newBufferedWriter(output);
              SequenceWriter sequenceWriter = mapper.writer(canceledSchema).writeValues(canceledWriter)) {
 
             canceledWriter.write('\uFEFF');
-            var idIterator = idStream.iterator();
 
             while (orderIterator.hasNext()) {
                 OrderCsvRow order = orderIterator.next();
                 if (order.status() != OrderStatus.CANCELLED) {
                     continue;
                 }
-                if (!idIterator.hasNext()) {
-                    throw new IllegalStateException("Not enough canceled order IDs in pool");
-                }
-                UUID canceledOrderId = UUID.fromString(idIterator.next());
+                UUID canceledOrderId = UUID.randomUUID();
                 CancelReason reason = randomCancelReason();
                 CancelStatus status = randomStatus(reason);
                 CanceledOrderCsvRow row = toCanceledOrderRow(canceledOrderId, order, reason, status);
