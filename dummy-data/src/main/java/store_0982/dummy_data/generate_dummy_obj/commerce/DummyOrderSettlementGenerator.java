@@ -37,18 +37,10 @@ public class DummyOrderSettlementGenerator {
     @Value("${dummy-data.order-settlement-dummy.path}")
     private String orderSettlementDummyPath;
 
-    @Value("${dummy-data.order-settlement-id-pool.path}")
-    private String orderSettlementIdPoolPath;
-
     public void generate() throws IOException {
         Path orderInput = Path.of(orderDummyPath);
         if (!Files.exists(orderInput)) {
             throw new IllegalStateException("Order dummy file not found: " + orderInput);
-        }
-
-        Path settlementIdPoolPath = Path.of(orderSettlementIdPoolPath);
-        if (!Files.exists(settlementIdPoolPath)) {
-            throw new IllegalStateException("Settlement ID pool file not found: " + settlementIdPoolPath);
         }
 
         Map<UUID, CanceledOrderCsvRow> canceledOrderMap = readCanceledRows();
@@ -63,22 +55,16 @@ public class DummyOrderSettlementGenerator {
         try (var orderReader = Files.newBufferedReader(orderInput);
              MappingIterator<OrderCsvRow> orderIterator =
                      mapper.readerFor(OrderCsvRow.class).with(orderSchema).readValues(orderReader);
-             var idReader = Files.newBufferedReader(settlementIdPoolPath);
-             var idStream = idReader.lines().map(String::trim).filter(line -> !line.isEmpty());
              var settlementWriter = Files.newBufferedWriter(output);
              SequenceWriter sequenceWriter = mapper.writer(settlementSchema).writeValues(settlementWriter)) {
 
             settlementWriter.write('\uFEFF');
-            var idIterator = idStream.iterator();
 
             while (orderIterator.hasNext()) {
                 OrderCsvRow order = orderIterator.next();
 
                 if (order.status() == OrderStatus.CONFIRMED) {
-                    if (!idIterator.hasNext()) {
-                        throw new IllegalStateException("Not enough settlement IDs in pool");
-                    }
-                    UUID settlementId = UUID.fromString(idIterator.next());
+                    UUID settlementId = UUID.randomUUID();
                     OrderSettlementCsvRow row = createConfirmedSettlement(order, settlementId);
                     sequenceWriter.write(row);
                     continue;
@@ -89,10 +75,7 @@ public class DummyOrderSettlementGenerator {
                     if (canceledRow == null || canceledRow.status() != CancelStatus.COMPLETED) {
                         continue;
                     }
-                    if (!idIterator.hasNext()) {
-                        throw new IllegalStateException("Not enough settlement IDs in pool");
-                    }
-                    UUID settlementId = UUID.fromString(idIterator.next());
+                    UUID settlementId = UUID.randomUUID();
                     OrderSettlementCsvRow row = createCanceledSettlement(order, canceledRow, settlementId);
                     sequenceWriter.write(row);
                 }

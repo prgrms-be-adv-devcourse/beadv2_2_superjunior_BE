@@ -17,12 +17,6 @@ dummy-data:
   order-id-pool:
     count: 1000000
     path: docs/dummy-data/id-pools/order_id_pool.csv
-  canceled-order-id-pool:
-    count: 1000000
-    path: docs/dummy-data/id-pools/canceled_order_id_pool.csv
-  order-settlement-id-pool:
-    count: 1000000
-    path: docs/dummy-data/id-pools/order_settlement_id_pool.csv
   member-dummy:
     path: docs/dummy-data/dummy-datas/member-dummy.csv
   seller-dummy:

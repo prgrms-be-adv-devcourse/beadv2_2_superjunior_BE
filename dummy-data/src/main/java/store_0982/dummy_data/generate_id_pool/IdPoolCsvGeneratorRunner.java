@@ -6,11 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-import store_0982.dummy_data.generate_id_pool.canceledOrderIdPool.CanceledOrderIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.groupPurchaseIdPool.GroupPurchaseIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.memberIdPool.MemberIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.orderIdPool.OrderIdPoolCsvGenerator;
-import store_0982.dummy_data.generate_id_pool.orderSettlementIdPool.OrderSettlementIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.productIdPool.ProductIdPoolCsvGenerator;
 
 import java.nio.file.Files;
@@ -42,24 +40,12 @@ public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
     @Value("${dummy-data.order-id-pool.path}")
     private String orderOutputPath;
 
-    @Value("${dummy-data.canceled-order-id-pool.count}")
-    private int canceledOrderCount;
-    @Value("${dummy-data.canceled-order-id-pool.path}")
-    private String canceledOrderOutputPath;
-
-    @Value("${dummy-data.order-settlement-id-pool.count}")
-    private int orderSettlementCount;
-    @Value("${dummy-data.order-settlement-id-pool.path}")
-    private String orderSettlementOutputPath;
-
     @Override
     public void run(org.springframework.boot.ApplicationArguments args) throws Exception {
         generateIfMissing(memberOutputPath, memberCount, IdPoolType.MEMBER);
         generateIfMissing(productOutputPath, productCount, IdPoolType.PRODUCT);
         generateIfMissing(groupPurchaseOutputPath, groupPurchaseCount, IdPoolType.GROUP_PURCHASE);
         generateIfMissing(orderOutputPath, orderCount, IdPoolType.ORDER);
-        generateIfMissing(canceledOrderOutputPath, canceledOrderCount, IdPoolType.CANCELED_ORDER);
-        generateIfMissing(orderSettlementOutputPath, orderSettlementCount, IdPoolType.ORDER_SETTLEMENT);
         log.info("ID풀 생성 완료");
     }
 
@@ -78,10 +64,6 @@ public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
             GroupPurchaseIdPoolCsvGenerator.generate(output, count);
         } else if (type == IdPoolType.ORDER){
             OrderIdPoolCsvGenerator.generate(output, count);
-        } else if (type == IdPoolType.CANCELED_ORDER) {
-            CanceledOrderIdPoolCsvGenerator.generate(output, count);
-        } else if (type == IdPoolType.ORDER_SETTLEMENT) {
-            OrderSettlementIdPoolCsvGenerator.generate(output, count);
         }
     }
 
@@ -89,8 +71,6 @@ public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
         MEMBER,
         PRODUCT,
         GROUP_PURCHASE,
-        ORDER,
-        CANCELED_ORDER,
-        ORDER_SETTLEMENT
+        ORDER
     }
 }

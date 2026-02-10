@@ -91,13 +91,17 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
             log.info("[더미데이터 주문 데이터 생성 완료.]");
         }
 
-        log.info("[더미데이터] 취소 주문 더미 생성 시작.");
-        dummyCanceledOrderGenerator.generate();
-        log.info("[더미데이터] 취소 주문 더미 생성 완료.");
+        if (targets.contains(GeneratorType.CANCELED_ORDER)) {
+            log.info("[더미데이터 취소 주문 더미 생성 시작.]");
+            dummyCanceledOrderGenerator.generate();
+            log.info("[더미데이터 취소 주문 더미 생성 완료.]");
+        }
 
-        log.info("[더미데이터] 정산 더미 생성 시작.");
-        dummyOrderSettlementGenerator.generate();
-        log.info("[더미데이터] 정산 더미 생성 완료.");
+        if (targets.contains(GeneratorType.ORDER_SETTLEMENT)) {
+            log.info("[더미데이터 정산 더미 생성 시작.]");
+            dummyOrderSettlementGenerator.generate();
+            log.info("[더미데이터 정산 더미 생성 완료.]");
+        }
 
         log.info("더미데이터 생성 완료");
     }
@@ -108,7 +112,9 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
         GROUP_PURCHASE,
         MEMBER,
         SELLER,
-        ORDER
+        ORDER,
+        CANCELED_ORDER,
+        ORDER_SETTLEMENT
     }
 
     private java.util.EnumSet<GeneratorType> parseTargets(ApplicationArguments args) {
@@ -140,6 +146,8 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
                 case "member" -> set.add(GeneratorType.MEMBER);
                 case "seller" -> set.add(GeneratorType.SELLER);
                 case "order" -> set.add(GeneratorType.ORDER);
+                case "canceled-order" -> set.add(GeneratorType.CANCELED_ORDER);
+                case "order-settlement" -> set.add(GeneratorType.ORDER_SETTLEMENT);
                 default -> log.warn("Unknown generator target: {}", token);
             }
         }
