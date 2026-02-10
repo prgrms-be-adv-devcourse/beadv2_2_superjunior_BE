@@ -8,7 +8,6 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import store._0982.common.domain.vector.ProductVector;
-import store._0982.common.kafka.dto.ProductEmbeddingCompletedEvent;
 import store_0982.dummy_data.generate_dummy_obj.recommendation.row.ProductVectorCsvRow;
 import store_0982.dummy_data.util.Utils;
 
@@ -17,7 +16,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;

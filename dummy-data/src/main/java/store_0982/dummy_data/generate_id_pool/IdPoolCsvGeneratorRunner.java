@@ -1,18 +1,18 @@
 package store_0982.dummy_data.generate_id_pool;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import store_0982.dummy_data.generate_id_pool.groupPurchaseIdPool.GroupPurchaseIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.memberIdPool.MemberIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.orderIdPool.OrderIdPoolCsvGenerator;
 import store_0982.dummy_data.generate_id_pool.productIdPool.ProductIdPoolCsvGenerator;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Component
 @RequiredArgsConstructor
@@ -62,7 +62,7 @@ public class IdPoolCsvGeneratorRunner implements ApplicationRunner {
             ProductIdPoolCsvGenerator.generate(output, count);
         } else if (type == IdPoolType.GROUP_PURCHASE) {
             GroupPurchaseIdPoolCsvGenerator.generate(output, count);
-        } else {
+        } else if (type == IdPoolType.ORDER){
             OrderIdPoolCsvGenerator.generate(output, count);
         }
     }
