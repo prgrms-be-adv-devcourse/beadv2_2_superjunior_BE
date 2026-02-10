@@ -1,19 +1,10 @@
 package store_0982.dummy_data.generate_dummy_obj.commerce;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.fasterxml.jackson.databind.MappingIterator;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +12,17 @@ import org.springframework.stereotype.Component;
 import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 import store._0982.common.domain.order.PaymentMethod;
-import store_0982.dummy_data.generate_dummy_obj.commerce.row.OrderCsvRow;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.GroupPurchaseCsvRow;
+import store_0982.dummy_data.generate_dummy_obj.commerce.row.OrderCsvRow;
 import store_0982.dummy_data.util.Utils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class DummyOrderGenerator {
@@ -49,6 +48,9 @@ public class DummyOrderGenerator {
             "Choi",
             "Jung"
     };
+
+    private static final double CANCEL_RATE = 0.2;
+    private static final double CONFIRM_RATE = 0.8;
 
     @Value("${dummy-data.order-id-pool.path}")
     private String orderIdPoolPath;
@@ -78,28 +80,27 @@ public class DummyOrderGenerator {
             throw new IllegalStateException("Not enough member IDs for orders. required=" + requiredMembers
                     + ", actual=" + memberIds.size());
         }
-
-        List<GroupPurchaseCsvRow> groupPurchaseRows = readGroupPurchaseRows(
+        List<GroupPurchaseCsvRow> groupPurchaseRows = DummyGroupPurchaseReader.read(
                 Path.of(groupPurchaseDummyPath),
                 groupPurchaseOrderCount
         );
         if (groupPurchaseRows.size() < groupPurchaseOrderCount) {
-            throw new IllegalStateException("Not enough group purchase rows for orders. required="
-                    + groupPurchaseOrderCount + ", actual=" + groupPurchaseRows.size());
+            throw new IllegalStateException("Not enough group purchase rows. required=" + groupPurchaseOrderCount
+                    + ", actual=" + groupPurchaseRows.size());
         }
 
         EasyRandom easyRandom = new EasyRandom(new EasyRandomParameters());
-        Path output = Path.of(orderDummyPath);
-        Files.createDirectories(output.getParent());
-
         CsvMapper mapper = new CsvMapper();
         mapper.findAndRegisterModules();
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         CsvSchema schema = mapper.schemaFor(OrderCsvRow.class).withHeader();
 
+        Path output = Path.of(orderDummyPath);
+        Files.createDirectories(output.getParent());
+
         try (var writer = Files.newBufferedWriter(output);
-             var sequenceWriter = mapper.writer(schema).writeValues(writer)) {
+             SequenceWriter sequenceWriter = mapper.writer(schema).writeValues(writer)) {
             writer.write('\uFEFF');
             for (int i = 0; i < orderCount; i++) {
                 Order order = easyRandom.nextObject(Order.class);
@@ -107,16 +108,16 @@ public class DummyOrderGenerator {
                 Utils.setField(order, "orderNumber", Order.generateOrderNumber());
                 int quantity = randomQuantity();
                 Utils.setField(order, "quantity", quantity);
-                Utils.setField(order, "status", OrderStatus.PENDING);
+
                 int memberIdx = i / 10;
                 int slot = i % 10;
                 int gpIdx = (memberIdx * 10 + slot) % groupPurchaseRows.size();
                 GroupPurchaseCsvRow groupPurchaseRow = groupPurchaseRows.get(gpIdx);
                 long price = groupPurchaseRow.discountedPrice() * quantity;
+
                 Utils.setField(order, "price", price);
                 Utils.setField(order, "paidPrice", price);
-                int shiftedMemberIdx = (memberIdx + 1) % memberIds.size();
-                Utils.setField(order, "memberId", memberIds.get(shiftedMemberIdx));
+                Utils.setField(order, "memberId", memberIds.get(memberIdx));
                 Utils.setField(order, "address", pick(ADDRESSES));
                 Utils.setField(order, "addressDetail", pick(ADDRESS_DETAILS));
                 Utils.setField(order, "postalCode", randomPostalCode());
@@ -124,15 +125,32 @@ public class DummyOrderGenerator {
                 Utils.setField(order, "sellerId", groupPurchaseRow.sellerId());
                 Utils.setField(order, "groupPurchaseId", groupPurchaseRow.groupPurchaseId());
                 Utils.setField(order, "idempotencyKey", UUID.randomUUID().toString());
-                Utils.setField(order, "paymentMethod", randomPaymentMethod());
+
                 OffsetDateTime createdAt = randomCreatedAt();
                 OffsetDateTime updatedAt = randomUpdatedAt(createdAt);
-                Utils.setField(order, "expiredAt", createdAt.plusMinutes(ThreadLocalRandom.current().nextInt(10, 121)));
-                Utils.setField(order, "paidAt", null);
-                Utils.setField(order, "canceledAt", null);
                 Utils.setField(order, "createdAt", createdAt);
                 Utils.setField(order, "updatedAt", updatedAt);
                 Utils.setField(order, "deletedAt", null);
+                Utils.setField(order, "expiredAt", createdAt.plusMinutes(ThreadLocalRandom.current().nextInt(10, 121)));
+
+                OrderStatus status = randomFinalStatus();
+                Utils.setField(order, "status", status);
+                if (status == OrderStatus.PENDING) {
+                    Utils.setField(order, "paymentMethod", null);
+                    Utils.setField(order, "paidAt", null);
+                    Utils.setField(order, "canceledAt", null);
+                } else {
+                    PaymentMethod paymentMethod = randomPaymentMethod();
+                    Utils.setField(order, "paymentMethod", paymentMethod);
+                    OffsetDateTime paidAt = createdAt.plusMinutes(ThreadLocalRandom.current().nextInt(1, 60));
+                    Utils.setField(order, "paidAt", paidAt);
+                    if (status == OrderStatus.CANCELLED) {
+                        OffsetDateTime canceledAt = paidAt.plusMinutes(ThreadLocalRandom.current().nextInt(1, 60));
+                        Utils.setField(order, "canceledAt", canceledAt);
+                    } else {
+                        Utils.setField(order, "canceledAt", null);
+                    }
+                }
 
                 sequenceWriter.write(toCsvRow(order));
             }
@@ -148,23 +166,6 @@ public class DummyOrderGenerator {
                     .map(UUID::fromString)
                     .toList();
         }
-    }
-
-    private List<GroupPurchaseCsvRow> readGroupPurchaseRows(Path path, int count) throws IOException {
-        CsvMapper mapper = new CsvMapper();
-        mapper.findAndRegisterModules();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        CsvSchema schema = mapper.schemaFor(GroupPurchaseCsvRow.class).withHeader();
-        List<GroupPurchaseCsvRow> rows = new ArrayList<>(count);
-        try (var reader = Files.newBufferedReader(path);
-             MappingIterator<GroupPurchaseCsvRow> iterator =
-                     mapper.readerFor(GroupPurchaseCsvRow.class).with(schema).readValues(reader)) {
-            while (iterator.hasNext() && rows.size() < count) {
-                rows.add(iterator.next());
-            }
-        }
-        return rows;
     }
 
     private OrderCsvRow toCsvRow(Order order) {
@@ -208,6 +209,17 @@ public class DummyOrderGenerator {
         return createdAt.plusSeconds(secondsForward);
     }
 
+    private OrderStatus randomFinalStatus() {
+        double roll = ThreadLocalRandom.current().nextDouble();
+        if (roll < CANCEL_RATE) {
+            return OrderStatus.CANCELLED;
+        }
+        if (roll < CANCEL_RATE + CONFIRM_RATE) {
+            return OrderStatus.CONFIRMED;
+        }
+        return OrderStatus.PENDING;
+    }
+
     private PaymentMethod randomPaymentMethod() {
         return ThreadLocalRandom.current().nextBoolean() ? PaymentMethod.POINT : PaymentMethod.PG;
     }
@@ -219,5 +231,24 @@ public class DummyOrderGenerator {
 
     private String pick(String[] options) {
         return options[ThreadLocalRandom.current().nextInt(options.length)];
+    }
+
+    private static class DummyGroupPurchaseReader {
+        static List<GroupPurchaseCsvRow> read(Path path, int count) throws IOException {
+            CsvMapper mapper = new CsvMapper();
+            mapper.findAndRegisterModules();
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+            CsvSchema schema = mapper.schemaFor(GroupPurchaseCsvRow.class).withHeader();
+            try (var reader = Files.newBufferedReader(path);
+                 com.fasterxml.jackson.databind.MappingIterator<GroupPurchaseCsvRow> iterator =
+                         mapper.readerFor(GroupPurchaseCsvRow.class).with(schema).readValues(reader)) {
+                List<GroupPurchaseCsvRow> rows = new java.util.ArrayList<>(count);
+                while (iterator.hasNext() && rows.size() < count) {
+                    rows.add(iterator.next());
+                }
+                return rows;
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyGroupPurchaseGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyOrderGenerator;
+import store_0982.dummy_data.generate_dummy_obj.commerce.DummyCanceledOrderGenerator;
+import store_0982.dummy_data.generate_dummy_obj.commerce.DummyOrderSettlementGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyProductGenerator;
 import store_0982.dummy_data.generate_dummy_obj.member.DummyMemberGenerator;
 import store_0982.dummy_data.generate_dummy_obj.member.DummySellerGenerator;
@@ -25,6 +27,8 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
     private final DummySellerGenerator dummySellerGenerator;
     private final DummyGroupPurchaseGenerator dummyGroupPurchaseGenerator;
     private final DummyOrderGenerator dummyOrderGenerator;
+    private final DummyCanceledOrderGenerator dummyCanceledOrderGenerator;
+    private final DummyOrderSettlementGenerator dummyOrderSettlementGenerator;
 
     @Value("${dummy-data.product-id-pool.count}")
     private int productCount;
@@ -58,6 +62,14 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
         log.info("[더미데이터] 주문 더미 생성 시작. count={}", orderCount);
         dummyOrderGenerator.generateAndWriteCsv(orderCount);
         log.info("[더미데이터] 주문 더미 생성 완료.");
+
+        log.info("[더미데이터] 취소 주문 더미 생성 시작.");
+        dummyCanceledOrderGenerator.generate();
+        log.info("[더미데이터] 취소 주문 더미 생성 완료.");
+
+        log.info("[더미데이터] 정산 더미 생성 시작.");
+        dummyOrderSettlementGenerator.generate();
+        log.info("[더미데이터] 정산 더미 생성 완료.");
 
         log.info("더미데이터 생성 완료");
     }
