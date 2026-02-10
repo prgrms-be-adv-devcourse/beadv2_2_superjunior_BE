@@ -20,7 +20,7 @@ import java.util.*;
 @Slf4j
 public class PersonalVectorInfoReader implements ItemReader<List<PersonalVectorInfoReader.MemberVectorInput>> {
 
-    @Value("${vector.batch.size}")
+    @Value("${vector.list.size}")
     private int pageSize;
 
     private static final String MEMBER_IDS_SQL = """

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -26,10 +27,13 @@ public class VectorRefreshStepConfig {
     private final PersonalVectorProcessor personalVectorProcessor;
     private final PersonalVectorWriter personalVectorWriter;
 
+    @Value("${vector.chunk.size}")
+    private int chunkSize;
+
     @Bean
     public Step vectorRefreshStep() {
         return new StepBuilder("vectorRefreshStep", jobRepository)
-                .<List<MemberVectorInput>, List<PersonalVector>>chunk(10, transactionManager)
+                .<List<MemberVectorInput>, List<PersonalVector>>chunk(chunkSize, transactionManager)
                 .reader(personalVectorInfoReader)
                 .processor(personalVectorProcessor)
                 .writer(personalVectorWriter)
