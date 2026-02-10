@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class DummyOrderSettlementGenerator {
@@ -105,7 +104,7 @@ public class DummyOrderSettlementGenerator {
         long platformFee = Math.round(orderAmount * feeRate);
         long settlementAmount = orderAmount - platformFee;
         OffsetDateTime createdAt = order.createdAt() != null ? order.createdAt() : OffsetDateTime.now();
-        OffsetDateTime settledAt = createdAt.plusDays(ThreadLocalRandom.current().nextInt(1, 8));
+        OffsetDateTime settledAt = null;
 
         return new OrderSettlementCsvRow(
                 settlementId,
