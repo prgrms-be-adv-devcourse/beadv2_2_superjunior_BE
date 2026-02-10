@@ -1,0 +1,39 @@
+package store._0982.commerce.support;
+
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.lang.NonNull;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
+
+import java.util.Map;
+
+@SuppressWarnings("resource")
+public class PostgreSQLContainerInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    private static final DockerImageName PGVECTOR_IMAGE =
+            DockerImageName.parse("pgvector/pgvector:pg15")
+                    .asCompatibleSubstituteFor("postgres");
+
+    private static final PostgreSQLContainer<?> POSTGRESQL =
+            new PostgreSQLContainer<>(PGVECTOR_IMAGE)
+                    .withDatabaseName("commerce_test")
+                    .withUsername("test")
+                    .withPassword("test")
+                    .withCommand("postgres -c max_connections=200");
+
+    static {
+        POSTGRESQL.start();
+    }
+
+    @Override
+    public void initialize(@NonNull ConfigurableApplicationContext context) {
+        Map<String, String> properties = Map.of(
+                "spring.datasource.url", POSTGRESQL.getJdbcUrl(),
+                "spring.datasource.username", POSTGRESQL.getUsername(),
+                "spring.datasource.password", POSTGRESQL.getPassword()
+        );
+        TestPropertyValues.of(properties).applyTo(context);
+    }
+}

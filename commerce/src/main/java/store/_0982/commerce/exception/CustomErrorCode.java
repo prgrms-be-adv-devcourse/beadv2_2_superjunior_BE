@@ -10,7 +10,6 @@ import store._0982.common.exception.ErrorCode;
 public enum CustomErrorCode implements ErrorCode {
 
     // 400 Bad Request
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     INVALID_QUANTITY_RANGE(HttpStatus.BAD_REQUEST, "잘못된 수량입니다."),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "잘못된 날짜 범위입니다."),
     INVALID_OPEN_PURCHASE_UPDATE(HttpStatus.BAD_REQUEST, "공동 구매가 OPEN 상태입니다."),
@@ -18,11 +17,27 @@ public enum CustomErrorCode implements ErrorCode {
     INVALID_PRICE(HttpStatus.BAD_REQUEST, "가격이 유효하지 않습니다."),
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리가 유효하지 않습니다."),
     INVALID_STOCK(HttpStatus.BAD_REQUEST, "재고가 유효하지 않습니다."),
-    INVALID_CANCEL_STATUS(HttpStatus.BAD_REQUEST, "취소 요청 상태가 아닙니다."),
+    ALREADY_LIKED(HttpStatus.BAD_REQUEST, "이미 찜한 상태입니다."),
+    LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "찜한 상태가 아닙니다."),
+    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "잘못된 수량입니다."),
+    INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "잘못된 주소입니다."),
+    CANNOT_CANCEL_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태의 주문만 취소할 수 있습니다."),
+
+    POSTAL_CODE_IS_NULL(HttpStatus.BAD_REQUEST, "우편 주소가 없습니다."),
+    INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "잘못된 수신자 이름입니다."),
+    SELLER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "SellerId 값이 없습니다."),
+    GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
+    GROUP_PURCHASE_IS_NOT_OPEN(HttpStatus.BAD_REQUEST, "공동 구매가 시작하지 않았습니다."),
+    GROUP_PURCHASE_IS_END(HttpStatus.BAD_REQUEST, "종료된 공동 구매입니다."),
+    GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
+    DECREASE_QUANTITY_FAILED(HttpStatus.BAD_REQUEST, "공동구매 수량 감소에 실패했습니다."),
+    CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
+    ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 취소가 불가능한 상태입니다."),
+    GROUP_PURCHASE_IS_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "유효하지 않은 공동구매입니다."),
 
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
-    GROUPPURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다."),
+    GROUP_PURCHASE_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매를 찾을 수 없습니다."),
     CANCELED_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "취소된 주문을 찾을 수 없습니다."),
 
     // 403 Forbidden
@@ -30,42 +45,7 @@ public enum CustomErrorCode implements ErrorCode {
     FORBIDDEN_NOT_PRODUCT_OWNER(HttpStatus.FORBIDDEN, "본인이 등록한 상품이 아닙니다."),
     FORBIDDEN_NOT_GROUP_PURCHASE_OWNER(HttpStatus.FORBIDDEN, "본인이 등록한 공동구매만 삭제할 수 있습니다."),
 
-    // 500 Internal Server Error
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
-
-    // 503 Service Unavailable
-    SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "서비스를 사용할 수 없습니다."),
-
-
-    //400 Bad Request
-    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "잘못된 수량입니다."),
-    INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "잘못된 주소입니다."),
-    CANNOT_PAYMENT_COMPLETED_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 진행 중 상태 주문만 결제 완료 처리할 수 있습니다."),
-    CANNOT_PAYMENT_FAILED_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 진행 중 상태 주문만 결제 실패 처리할 수 있습니다."),
-    CANNOT_CANCEL_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태의 주문만 취소할 수 있습니다."),
-    CANNOT_REVERSE_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 취소할 수 있습니다."),
-    CANNOT_RETURN_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 반품할 수 있습니다."),
-    CANNOT_PURCHASE_CONFIRM_ORDER_INVALID_STATUS(HttpStatus.BAD_REQUEST, "공구 성공 상태의 주문만 구매 확정할 수 있습니다."),
-
-    POSTAL_CODE_IS_NULL(HttpStatus.BAD_REQUEST, "우편 주소가 없습니다."),
-    INVALID_RECEIVER_NAME(HttpStatus.BAD_REQUEST, "잘못된 수신자 이름입니다."),
-    SELLER_ID_IS_NULL(HttpStatus.BAD_REQUEST, "SellerId 값이 없습니다."),
-    GROUP_PURCHASE_ID_IS_NULL(HttpStatus.BAD_REQUEST, "GroupPurchaseId 값이 없습니다."),
-    INVALID_SETTLEMENT_AMOUNT(HttpStatus.BAD_REQUEST, "잘못된 정산 금액입니다."),
-    GROUP_PURCHASE_IS_NOT_OPEN(HttpStatus.BAD_REQUEST, "공동 구매가 시작하지 않았습니다."),
-    GROUP_PURCHASE_IS_END(HttpStatus.BAD_REQUEST, "종료된 공동 구매입니다."),
-    GROUP_PURCHASE_IS_REACHED(HttpStatus.BAD_REQUEST, "공동구매 참여 인원이 최대입니다."),
-    DECREASE_QUANTITY_FAILED(HttpStatus.BAD_REQUEST, "공동구매 수량 감소에 실패했습니다."),
-    ORDER_NOT_CANCELLABLE(HttpStatus.BAD_REQUEST, "취소할 수 없습니다. 공동 구매가 시작되었습니다."),
-    LACK_OF_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
-    CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
-    EXPIRED_ORDER(HttpStatus.BAD_REQUEST, "주문 시간이 만료됐습니다."),
-    DUPLICATE_ORDER(HttpStatus.BAD_REQUEST, "이미 처리 요청된 주문입니다."),
-    ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 취소가 불가능한 상태입니다."),
-    GROUP_PURCHASE_IS_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "유효하지 않은 공동구매입니다."),
-
     // 409 Conflict
-    CONCURRENT_PARTICIPATION_CONFLICT(HttpStatus.CONFLICT, "현재 참여자가 많습니다. 잠시 후 다시 시도해주세요."),
     PRODUCT_ACTIVE_GROUP_PURCHASE_EXISTS(HttpStatus.CONFLICT, "진행 중이거나 예정된 공동구매가 존재합니다."),
 
     // 403 Forbidden

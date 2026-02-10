@@ -30,4 +30,43 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
 
     boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.currentQuantity = g.currentQuantity + :quantity,
+            g.status = CASE 
+                WHEN g.currentQuantity + :quantity = g.maxQuantity THEN 'SUCCESS'
+                ELSE g.status
+            END 
+        WHERE g.groupPurchaseId = :id
+        AND g.status = 'OPEN'
+        AND g.currentQuantity + :quantity <= g.maxQuantity
+    """)
+    int increaseQuantity(@Param("id") UUID id, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.currentQuantity = g.currentQuantity - :quantity
+        WHERE g.groupPurchaseId = :id
+        AND g.currentQuantity >= :quantity
+    """)
+    int decreaseQuantity(@Param("id") UUID id, @Param("quantity") int quantity);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.likeCount = g.likeCount + 1
+        WHERE g.groupPurchaseId = :id
+    """)
+    void increaseLikeCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("""
+        UPDATE GroupPurchase g
+        SET g.likeCount = g.likeCount - 1
+        WHERE g.groupPurchaseId = :id
+    """)
+    void decreaseLikeCount(@Param("id") UUID id);
 }

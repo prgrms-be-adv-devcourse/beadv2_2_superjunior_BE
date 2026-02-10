@@ -11,8 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import store._0982.commerce.application.sellerbalance.dto.SellerBalanceCommand;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceHistoryInfo;
 import store._0982.commerce.application.sellerbalance.dto.SellerBalanceInfo;
+import store._0982.commerce.application.sellerbalance.dto.SellerBalanceThumbnailInfo;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.commerce.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.common.domain.sellerbalance.SellerBalance;
@@ -41,6 +43,27 @@ class SellerBalanceServiceTest {
 
     @InjectMocks
     private SellerBalanceService sellerBalanceService;
+
+    @Nested
+    @DisplayName("balance 생성 Service")
+    class CreateBalanceTest {
+
+        @Test
+        @DisplayName("판매자 balance를 생성한다")
+        void createSellerBalance_success() {
+            // given
+            UUID sellerId = UUID.randomUUID();
+
+            // when
+            SellerBalanceThumbnailInfo result = sellerBalanceService.createSellerBalance(
+                    new SellerBalanceCommand(sellerId));
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.sellerId()).isEqualTo(sellerId);
+            verify(sellerBalanceRepository).save(any(SellerBalance.class));
+        }
+    }
 
     @Nested
     @DisplayName("balance 조회 Service")
@@ -97,10 +120,10 @@ class SellerBalanceServiceTest {
             Pageable pageable = PageRequest.of(0, 20);
 
             SellerBalanceHistory history1 = createHistory(
-                    historyId1, memberId, settlementId1, 50000L, SellerBalanceHistoryStatus.CREDIT
+                    historyId1, memberId, null, settlementId1, 50000L, SellerBalanceHistoryStatus.CREDIT
             );
             SellerBalanceHistory history2 = createHistory(
-                    historyId2, memberId, settlementId2, 20000L, SellerBalanceHistoryStatus.DEBIT
+                    historyId2, memberId, null, settlementId2, 20000L, SellerBalanceHistoryStatus.DEBIT
             );
 
             Page<SellerBalanceHistory> page = new PageImpl<>(
@@ -163,7 +186,7 @@ class SellerBalanceServiceTest {
             Pageable pageable = PageRequest.of(1, 10);
 
             SellerBalanceHistory history = createHistory(
-                    UUID.randomUUID(), memberId, UUID.randomUUID(),
+                    UUID.randomUUID(), memberId, null, UUID.randomUUID(),
                     30000L, SellerBalanceHistoryStatus.CREDIT
             );
 
@@ -192,6 +215,7 @@ class SellerBalanceServiceTest {
     private SellerBalanceHistory createHistory(
             UUID historyId,
             UUID memberId,
+            UUID sellerPayoutId,
             UUID settlementId,
             Long amount,
             SellerBalanceHistoryStatus status
@@ -200,7 +224,8 @@ class SellerBalanceServiceTest {
         SellerBalanceHistory history = mock(SellerBalanceHistory.class);
         when(history.getHistoryId()).thenReturn(historyId);
         when(history.getMemberId()).thenReturn(memberId);
-        when(history.getSettlementId()).thenReturn(settlementId);
+        when(history.getSellerPayoutId()).thenReturn(sellerPayoutId);
+        when(history.getOrderSettlementId()).thenReturn(settlementId);
         when(history.getAmount()).thenReturn(amount);
         when(history.getStatus()).thenReturn(status);
         when(history.getCreatedAt()).thenReturn(OffsetDateTime.now());

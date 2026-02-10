@@ -80,4 +80,24 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     public List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds) {
         return groupPurchaseJpaRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
     }
+
+    @Override
+    public int increaseQuantity(UUID groupPurchaseId, int quantity) {
+        return groupPurchaseJpaRepository.increaseQuantity(groupPurchaseId, quantity);
+    }
+
+    @Override
+    public int decreaseQuantity(UUID groupPurchaseId, int quantity) {
+        return groupPurchaseJpaRepository.decreaseQuantity(groupPurchaseId, quantity);
+    }
+
+    @Override
+    public void increaseLikeCount(UUID id) {
+        groupPurchaseJpaRepository.increaseLikeCount(id);
+    }
+
+    @Override
+    public void decreaseLikeCount(UUID id) {
+        groupPurchaseJpaRepository.decreaseLikeCount(id);
+    }
 }
