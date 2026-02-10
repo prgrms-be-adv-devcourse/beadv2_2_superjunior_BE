@@ -54,7 +54,7 @@ public class GroupPurchaseDocument {
     @Field(type = FieldType.Nested)
     private ProductDocumentEmbedded productDocumentEmbedded;
 
-    public static GroupPurchaseDocument fromReindexRow(GroupPurchaseReindexRow row) {
+    public static GroupPurchaseDocument fromReindexRow(GroupPurchaseReindexRow row, float[] productVector) {
         return GroupPurchaseDocument.builder()
                 .groupPurchaseId(row.groupPurchaseId().toString())
                 .title(row.title())
@@ -65,7 +65,7 @@ public class GroupPurchaseDocument {
                 .endDate(toOffsetDateTime(row.endDate()))
                 .updatedAt(toOffsetDateTime(row.updatedAt()))
                 .discountRate(calculateDiscountRate(row.price(), row.discountedPrice()))
-                .productVector(row.productVector())
+                .productVector(productVector)
                 .productDocumentEmbedded(new ProductDocumentEmbedded(
                         toStringOrNull(row.productId()),
                         row.category(),
@@ -73,6 +73,10 @@ public class GroupPurchaseDocument {
                         row.sellerId().toString()
                 ))
                 .build();
+    }
+
+    public static GroupPurchaseDocument fromReindexRow(GroupPurchaseReindexRow row) {
+        return fromReindexRow(row, null);
     }
 
     private static OffsetDateTime toOffsetDateTime(Instant instant) {

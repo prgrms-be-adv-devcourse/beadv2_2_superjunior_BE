@@ -2,6 +2,7 @@
 dependencies {
     implementation project(':common')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
@@ -84,6 +85,7 @@ jacocoTestCoverageVerification {
 test {
     // 카프카 병렬 테스트 오류 방지
     maxParallelForks = 1
+
     // jacoco
     useJUnitPlatform()
     finalizedBy jacocoTestReport

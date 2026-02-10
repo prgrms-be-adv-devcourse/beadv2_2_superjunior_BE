@@ -1,0 +1,57 @@
+#file: noinspection SpellCheckingInspection
+spring:
+  application:
+    name: recommendation
+
+  datasource:
+    url: ${RECOMMENDATION_DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${RECOMMENDATION_DATABASE_USERNAME}
+    password: ${RECOMMENDATION_DATABASE_PASSWORD}
+    hikari:
+      connection-init-sql: SET search_path TO recommendation_schema, public
+
+  flyway:
+    enabled: true
+    default-schema: recommendation_schema
+    schemas:
+      - recommendation_schema
+    create-schemas: true
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+      chat:
+        options:
+          model: gpt-5.2
+          temperature: 0.0
+
+logging:
+  level:
+    org.apache.kafka: warn
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  otlp:
+    metrics:
+      export:
+        enabled: false
+
+server:
+  port: 8088

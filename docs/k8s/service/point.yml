@@ -15,7 +15,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-5
+        kubernetes.io/hostname: api-server
       containers:
         - name: point
           image: minbros/point:latest
@@ -33,11 +33,11 @@ spec:
           resources:
             requests:
               cpu: "200m"
-              memory: "384Mi"
-              ephemeral-storage: "786Mi"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
             limits:
               cpu: "500m"
-              memory: "786Mi"
+              memory: "768Mi"
               ephemeral-storage: "1.5Gi"
           ports:
             - containerPort: 8086
@@ -69,5 +69,3 @@ spec:
     - port: 8086
       targetPort: 8086
   type: ClusterIP
-
-# DDD

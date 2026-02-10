@@ -48,7 +48,7 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             scope:
-#              - openid
+              #              - openid
               - profile
               - email
             client-name: Google
@@ -60,6 +60,10 @@ server:
   port: 8083
 
 management:
+  health:
+    mail:
+      enabled: false
+
   endpoints:
     web:
       exposure:
@@ -93,3 +97,7 @@ resilience4j:
       CommerceClient:
         max-attempts: 2
         wait-duration: 500ms
+
+logging:
+  level:
+    org.apache.kafka: warn

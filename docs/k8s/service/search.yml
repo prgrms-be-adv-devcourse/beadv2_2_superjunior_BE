@@ -15,7 +15,7 @@ spec:
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: ip-10-0-0-244
+        kubernetes.io/hostname: api-server
       containers:
         - name: search
           image: minbros/search:latest
@@ -27,20 +27,22 @@ spec:
               value: "kafka-service:9092"
             - name: SPRING_ELASTICSEARCH_URIS
               value: http://elasticsearch-service:9200
-            - name: KAFKA_LOG_SEGMENT_BYTES
-              value: "67108864"  # 64MB (기본 1GB)
+            - name: CLIENT_RECOMMENDATION
+              value: http://ai-service:8088
+            - name: CLIENT_COMMERCE
+              value: http://commerce-service:8087
           envFrom:
             - secretRef:
                 name: search-secret
           resources:
             requests:
               cpu: "200m"
-              memory: "378Mi"
-              ephemeral-storage: "768Mi"
+              memory: "512Mi"
+              ephemeral-storage: "1Gi"
             limits:
               cpu: "500m"
               memory: "768Mi"
-              ephemeral-storage: "1Gi"
+              ephemeral-storage: "1.5Gi"
           ports:
             - containerPort: 8082
           readinessProbe:
@@ -73,5 +75,3 @@ spec:
       targetPort: 8082
       protocol: TCP
       name: http
-
-# DD

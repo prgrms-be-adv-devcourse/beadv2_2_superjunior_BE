@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import store._0982.commerce.application.product.dto.*;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.domain.product.ProductVectorRepository;
 import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.dto.PageResponse;
