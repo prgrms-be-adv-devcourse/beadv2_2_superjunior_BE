@@ -18,11 +18,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 @Component
 public class DummyCanceledOrderGenerator {
@@ -37,78 +34,57 @@ public class DummyCanceledOrderGenerator {
     private String canceledOrderIdPoolPath;
 
     public void generate() throws IOException {
-        List<OrderCsvRow> orders = readOrderRows();
-        List<UUID> canceledOrderIds = readIds(Path.of(canceledOrderIdPoolPath));
-        List<CanceledOrderCsvRow> rows = new ArrayList<>();
-        int canceledIndex = 0;
-
-        for (OrderCsvRow order : orders) {
-            if (order.status() != OrderStatus.CANCELLED) {
-                continue;
-            }
-            if (canceledIndex >= canceledOrderIds.size()) {
-                throw new IllegalStateException("Not enough canceled order IDs. required >= "
-                        + (rows.size() + 1) + ", actual=" + canceledOrderIds.size());
-            }
-            UUID canceledOrderId = canceledOrderIds.get(canceledIndex++);
-            CancelReason reason = randomCancelReason();
-            CancelStatus status = randomStatus(reason);
-            rows.add(toCanceledOrderRow(canceledOrderId, order, reason, status));
+        Path orderInput = Path.of(orderDummyPath);
+        if (!Files.exists(orderInput)) {
+            throw new IllegalStateException("Order dummy file not found: " + orderInput);
         }
 
-        writeRows(rows);
-    }
-
-    private List<OrderCsvRow> readOrderRows() throws IOException {
-        Path input = Path.of(orderDummyPath);
-        if (!Files.exists(input)) {
-            return List.of();
+        Path idPoolPath = Path.of(canceledOrderIdPoolPath);
+        if (!Files.exists(idPoolPath)) {
+            throw new IllegalStateException("Canceled order ID pool file not found: " + idPoolPath);
         }
-        CsvMapper mapper = new CsvMapper();
-        mapper.findAndRegisterModules();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        CsvSchema schema = mapper.schemaFor(OrderCsvRow.class).withHeader();
 
-        try (var reader = Files.newBufferedReader(input);
-             MappingIterator<OrderCsvRow> iterator =
-                     mapper.readerFor(OrderCsvRow.class).with(schema).readValues(reader)) {
-            List<OrderCsvRow> rows = new ArrayList<>();
-            iterator.forEachRemaining(rows::add);
-            return rows;
-        }
-    }
+        CsvMapper mapper = baseMapper();
+        CsvSchema orderSchema = mapper.schemaFor(OrderCsvRow.class).withHeader();
+        CsvSchema canceledSchema = mapper.schemaFor(CanceledOrderCsvRow.class).withHeader();
 
-    private List<UUID> readIds(Path path) throws IOException {
-        if (!Files.exists(path)) {
-            throw new IllegalStateException("Canceled order ID pool file not found: " + path);
-        }
-        try (var lines = Files.lines(path)) {
-            return lines
-                    .map(String::trim)
-                    .filter(line -> !line.isEmpty())
-                    .map(UUID::fromString)
-                    .collect(Collectors.toList());
-        }
-    }
-
-    private void writeRows(List<CanceledOrderCsvRow> rows) throws IOException {
         Path output = Path.of(canceledOrderDummyPath);
         Files.createDirectories(output.getParent());
 
+        try (var orderReader = Files.newBufferedReader(orderInput);
+             MappingIterator<OrderCsvRow> orderIterator =
+                     mapper.readerFor(OrderCsvRow.class).with(orderSchema).readValues(orderReader);
+             var idReader = Files.newBufferedReader(idPoolPath);
+             var idStream = idReader.lines().map(String::trim).filter(line -> !line.isEmpty());
+             var canceledWriter = Files.newBufferedWriter(output);
+             SequenceWriter sequenceWriter = mapper.writer(canceledSchema).writeValues(canceledWriter)) {
+
+            canceledWriter.write('\uFEFF');
+            var idIterator = idStream.iterator();
+
+            while (orderIterator.hasNext()) {
+                OrderCsvRow order = orderIterator.next();
+                if (order.status() != OrderStatus.CANCELLED) {
+                    continue;
+                }
+                if (!idIterator.hasNext()) {
+                    throw new IllegalStateException("Not enough canceled order IDs in pool");
+                }
+                UUID canceledOrderId = UUID.fromString(idIterator.next());
+                CancelReason reason = randomCancelReason();
+                CancelStatus status = randomStatus(reason);
+                CanceledOrderCsvRow row = toCanceledOrderRow(canceledOrderId, order, reason, status);
+                sequenceWriter.write(row);
+            }
+        }
+    }
+
+    private CsvMapper baseMapper() {
         CsvMapper mapper = new CsvMapper();
         mapper.findAndRegisterModules();
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-        CsvSchema schema = mapper.schemaFor(CanceledOrderCsvRow.class).withHeader();
-
-        try (var writer = Files.newBufferedWriter(output);
-             SequenceWriter sequenceWriter = mapper.writer(schema).writeValues(writer)) {
-            writer.write('\uFEFF');
-            for (CanceledOrderCsvRow row : rows) {
-                sequenceWriter.write(row);
-            }
-        }
+        return mapper;
     }
 
     private CancelReason randomCancelReason() {

@@ -19,9 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -43,27 +41,63 @@ public class DummyOrderSettlementGenerator {
     private String orderSettlementIdPoolPath;
 
     public void generate() throws IOException {
-        List<OrderCsvRow> orders = readOrderRows();
+        Path orderInput = Path.of(orderDummyPath);
+        if (!Files.exists(orderInput)) {
+            throw new IllegalStateException("Order dummy file not found: " + orderInput);
+        }
+
+        Path settlementIdPoolPath = Path.of(orderSettlementIdPoolPath);
+        if (!Files.exists(settlementIdPoolPath)) {
+            throw new IllegalStateException("Settlement ID pool file not found: " + settlementIdPoolPath);
+        }
+
         Map<UUID, CanceledOrderCsvRow> canceledOrderMap = readCanceledRows();
-        List<UUID> settlementIds = readIds(Path.of(orderSettlementIdPoolPath));
-        int settlementIndex = 0;
 
-        List<OrderSettlementCsvRow> settlements = new ArrayList<>();
-        for (OrderCsvRow order : orders) {
-            if (order.status() == OrderStatus.CONFIRMED) {
-                settlements.add(createConfirmedSettlement(order, settlementIds.get(settlementIndex++)));
-                continue;
-            }
-        if (order.status() == OrderStatus.CANCELLED) {
-            CanceledOrderCsvRow canceledRow = canceledOrderMap.get(order.orderId());
-            if (canceledRow == null || canceledRow.status() != CancelStatus.COMPLETED) {
-                continue;
-            }
-            settlements.add(createCanceledSettlement(order, canceledRow, settlementIds.get(settlementIndex++)));
-        }
-        }
+        CsvMapper mapper = baseMapper();
+        CsvSchema orderSchema = mapper.schemaFor(OrderCsvRow.class).withHeader();
+        CsvSchema settlementSchema = mapper.schemaFor(OrderSettlementCsvRow.class).withHeader();
 
-        writeSettlements(settlements);
+        Path output = Path.of(orderSettlementDummyPath);
+        Files.createDirectories(output.getParent());
+
+        try (var orderReader = Files.newBufferedReader(orderInput);
+             MappingIterator<OrderCsvRow> orderIterator =
+                     mapper.readerFor(OrderCsvRow.class).with(orderSchema).readValues(orderReader);
+             var idReader = Files.newBufferedReader(settlementIdPoolPath);
+             var idStream = idReader.lines().map(String::trim).filter(line -> !line.isEmpty());
+             var settlementWriter = Files.newBufferedWriter(output);
+             SequenceWriter sequenceWriter = mapper.writer(settlementSchema).writeValues(settlementWriter)) {
+
+            settlementWriter.write('\uFEFF');
+            var idIterator = idStream.iterator();
+
+            while (orderIterator.hasNext()) {
+                OrderCsvRow order = orderIterator.next();
+
+                if (order.status() == OrderStatus.CONFIRMED) {
+                    if (!idIterator.hasNext()) {
+                        throw new IllegalStateException("Not enough settlement IDs in pool");
+                    }
+                    UUID settlementId = UUID.fromString(idIterator.next());
+                    OrderSettlementCsvRow row = createConfirmedSettlement(order, settlementId);
+                    sequenceWriter.write(row);
+                    continue;
+                }
+
+                if (order.status() == OrderStatus.CANCELLED) {
+                    CanceledOrderCsvRow canceledRow = canceledOrderMap.get(order.orderId());
+                    if (canceledRow == null || canceledRow.status() != CancelStatus.COMPLETED) {
+                        continue;
+                    }
+                    if (!idIterator.hasNext()) {
+                        throw new IllegalStateException("Not enough settlement IDs in pool");
+                    }
+                    UUID settlementId = UUID.fromString(idIterator.next());
+                    OrderSettlementCsvRow row = createCanceledSettlement(order, canceledRow, settlementId);
+                    sequenceWriter.write(row);
+                }
+            }
+        }
     }
 
     private Map<UUID, CanceledOrderCsvRow> readCanceledRows() throws IOException {
@@ -79,50 +113,6 @@ public class DummyOrderSettlementGenerator {
             Map<UUID, CanceledOrderCsvRow> rows = new HashMap<>();
             iterator.forEachRemaining(row -> rows.put(row.orderId(), row));
             return rows;
-        }
-    }
-
-    private List<OrderCsvRow> readOrderRows() throws IOException {
-        Path input = Path.of(orderDummyPath);
-        if (!Files.exists(input)) {
-            return List.of();
-        }
-        CsvMapper mapper = baseMapper();
-        CsvSchema schema = mapper.schemaFor(OrderCsvRow.class).withHeader();
-        try (var reader = Files.newBufferedReader(input);
-             MappingIterator<OrderCsvRow> iterator =
-                     mapper.readerFor(OrderCsvRow.class).with(schema).readValues(reader)) {
-            List<OrderCsvRow> rows = new ArrayList<>();
-            iterator.forEachRemaining(rows::add);
-            return rows;
-        }
-    }
-
-    private List<UUID> readIds(Path path) throws IOException {
-        if (!Files.exists(path)) {
-            return List.of();
-        }
-        try (var lines = Files.lines(path)) {
-            return lines
-                    .map(String::trim)
-                    .filter(line -> !line.isEmpty())
-                    .map(UUID::fromString)
-                    .toList();
-        }
-    }
-
-    private void writeSettlements(List<OrderSettlementCsvRow> rows) throws IOException {
-        Path output = Path.of(orderSettlementDummyPath);
-        Files.createDirectories(output.getParent());
-        CsvMapper mapper = baseMapper();
-        CsvSchema schema = mapper.schemaFor(OrderSettlementCsvRow.class).withHeader();
-
-        try (var writer = Files.newBufferedWriter(output);
-             SequenceWriter sequenceWriter = mapper.writer(schema).writeValues(writer)) {
-            writer.write('\uFEFF');
-            for (OrderSettlementCsvRow row : rows) {
-                sequenceWriter.write(row);
-            }
         }
     }
 
