@@ -1,11 +1,9 @@
 package store._0982.recommendation.infrastructure.feign.commerce;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import store._0982.recommendation.infrastructure.feign.commerce.dto.GroupPurchasePerformanceInfo;
+import store._0982.recommendation.infrastructure.feign.commerce.dto.OpenGroupPurchaseInfo;
 import store._0982.recommendation.infrastructure.feign.commerce.dto.ProductDetailInfo;
 
 import java.util.List;
@@ -22,5 +20,10 @@ public interface CommerceFeignClient {
     @PostMapping("/internal/purchases/performance")
     List<GroupPurchasePerformanceInfo> getPerformance(
             @RequestBody List<UUID> groupPurchaseIds
+    );
+
+    @GetMapping("/internal/purchases/open")
+    List<OpenGroupPurchaseInfo> getOpenGroupPurchases(
+            @RequestParam(value = "limit", defaultValue = "200") int limit
     );
 }
