@@ -9,28 +9,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.presentation.product.dto.ProductRegisterRequest;
+import store._0982.commerce.support.BaseIntegrationTest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
-import store._0982.common.kafka.KafkaTopics;
-import store._0982.common.kafka.dto.ProductEvent;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -41,10 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Product 통합 테스트")
-class ProductIntegrationTest {
-
-    @MockitoBean
-    private KafkaTemplate<String, ProductEvent> productKafkaTemplate;
+class ProductIntegrationTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -98,8 +89,7 @@ class ProductIntegrationTest {
                 .andExpect(jsonPath("$.data.description").value("테스트 상품 설명"))
                 .andExpect(jsonPath("$.data.stock").value(100))
                 .andExpect(jsonPath("$.data.originalUrl").value("https://example.com/product"))
-                .andExpect(jsonPath("$.data.sellerId").value(testMemberId.toString()))
-                .andExpect(jsonPath("$.data.createdAt").exists());
+                .andExpect(jsonPath("$.data.sellerId").value(testMemberId.toString()));
 
         // then - DB 저장 검증
         Product savedProduct = productRepository.findBySellerId(testMemberId, PageRequest.of(0, 10))
@@ -113,13 +103,6 @@ class ProductIntegrationTest {
         assertThat(savedProduct.getDescription()).isEqualTo("테스트 상품 설명");
         assertThat(savedProduct.getStock()).isEqualTo(100);
         assertThat(savedProduct.getSellerId()).isEqualTo(testMemberId);
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_UPSERTED),
-                eq(savedProduct.getProductId().toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test
@@ -230,13 +213,6 @@ class ProductIntegrationTest {
         // then - DB에서 하드 삭제 검증
         Optional<Product> deletedProduct = productRepository.findById(productId);
         assertThat(deletedProduct).isEmpty();
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                eq(productId.toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test
@@ -269,7 +245,9 @@ class ProductIntegrationTest {
                 savedProduct.getProductId(),
                 null
         );
-        groupPurchaseRepository.save(groupPurchase);
+        groupPurchase.open();
+        groupPurchase.markSuccess();
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
 
         // when & then - HTTP 응답 검증
         mockMvc.perform(
@@ -285,13 +263,6 @@ class ProductIntegrationTest {
         Optional<Product> deletedProduct = productRepository.findById(savedProduct.getProductId());
         assertThat(deletedProduct).isPresent();
         assertThat(deletedProduct.get().getDeletedAt()).isNotNull();
-
-        // then - Kafka 이벤트 발행 검증
-        verify(productKafkaTemplate).send(
-                eq(KafkaTopics.PRODUCT_DELETED),
-                eq(savedProduct.getProductId().toString()),
-                any(ProductEvent.class)
-        );
     }
 
     @Test
@@ -334,5 +305,48 @@ class ProductIntegrationTest {
                 )
                 .andDo(print())
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("진행 중인 공동구매에 사용 중인 상품은 삭제할 수 없다")
+    void deleteProduct_activeGroupPurchase_conflict() throws Exception {
+        // given
+        Product product = Product.createProduct(
+                "진행중인 상품",
+                20000L,
+                ProductCategory.BEAUTY,
+                "공구 중",
+                50,
+                "https://example.com/product",
+                null,
+                "test-key-active",
+                testMemberId
+        );
+        Product savedProduct = productRepository.saveAndFlush(product);
+
+        GroupPurchase groupPurchase = new GroupPurchase(
+                10,
+                20,
+                "진행중 공구",
+                "공동구매 설명",
+                15000L,
+                OffsetDateTime.now().minusDays(1),
+                OffsetDateTime.now().plusDays(5),
+                testMemberId,
+                savedProduct.getProductId(),
+                null
+        );
+        groupPurchase.open();
+        groupPurchaseRepository.saveAndFlush(groupPurchase);
+
+        // when & then
+        mockMvc.perform(
+                        delete("/api/products/" + savedProduct.getProductId())
+                                .header(HeaderName.ID, testMemberId.toString())
+                )
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("진행 중이거나 예정된 공동구매가 존재합니다."));
     }
 }

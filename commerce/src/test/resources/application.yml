@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: commerce-test
+
+  flyway:
+    enabled: true
+    default-schema: product_schema
+    schemas:
+      - product_schema
+      - order_schema
+    create-schemas: true
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: product_schema
+        hbm2ddl:
+          create_namespaces: true
+        format_sql: true
+        show_sql: false
+    open-in-view: false
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+  ai:
+    openai:
+      api-key: test
+      embedding:
+        options:
+          model: text-embedding-3-small
+
+gateway:
+  host: http://localhost:8000
+
+token:
+  internal:
+    secret: test-secret-key
+
+client:
+  member: http://member-service:8083
+
+kafka:
+  bootstrap-servers: localhost:9092
+
+cloud:
+  aws:
+    credentials:
+      access-key: test
+      secret-key: test
+    s3:
+      region: ap-northeast-2
+      bucket: test-bucket

@@ -65,4 +65,5 @@ public interface GroupPurchaseSearchJpaRepository extends Repository<GroupPurcha
             where gp.group_purchase_id in (:ids)
             """, nativeQuery = true)
     List<GroupPurchaseSimilaritySearchProjection> findAllSimilarityByIds(@Param("ids") List<UUID> ids);
+
 }

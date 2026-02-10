@@ -22,7 +22,7 @@ public class OrderSettlementService {
                 order.getOrderId(),
                 order.getSellerId(),
                 order.getGroupPurchaseId(),
-                order.getPrice() * order.getQuantity(),
+                order.getPaidPrice(),
                 0.2
         );
 

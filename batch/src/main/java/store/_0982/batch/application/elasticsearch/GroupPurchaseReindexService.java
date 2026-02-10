@@ -17,6 +17,7 @@ import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
 import store._0982.batch.exception.CustomErrorCode;
+import store._0982.batch.infrastructure.recommendation.ProductVectorQueryRepository;
 import store._0982.common.exception.CustomException;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class GroupPurchaseReindexService {
     private final ElasticsearchOperations operations;
     private final ElasticsearchClient elasticsearchClient;
     private final GroupPurchaseReindexRepository reindexRepository;
+    private final ProductVectorQueryRepository productVectorQueryRepository;
 
     public void createIndexWithMapping(String indexName) {
         IndexOperations indexOps = operations.indexOps(IndexCoordinates.of(indexName));
@@ -73,9 +75,7 @@ public class GroupPurchaseReindexService {
         if (retryRows.isEmpty()) {
             return failedIds;
         }
-        List<GroupPurchaseDocument> retryDocs = retryRows.stream()
-                .map(GroupPurchaseDocument::fromReindexRow)
-                .toList();
+        List<GroupPurchaseDocument> retryDocs = buildDocumentsFromRows(retryRows);
 
         List<String> retryFailed = failedIds;
         for (int attempt = 0; attempt < RETRY_MAX_ATTEMPTS; attempt++) {
@@ -85,6 +85,20 @@ public class GroupPurchaseReindexService {
             }
         }
         return retryFailed;
+    }
+
+    public List<GroupPurchaseDocument> buildDocumentsFromRows(List<? extends GroupPurchaseReindexRow> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> productIds = rows.stream()
+                .map(GroupPurchaseReindexRow::productId)
+                .distinct()
+                .toList();
+        Map<UUID, float[]> vectorMap = productVectorQueryRepository.findVectorsByProductIds(productIds);
+        return rows.stream()
+                .map(row -> GroupPurchaseDocument.fromReindexRow(row, vectorMap.get(row.productId())))
+                .toList();
     }
 
     public void switchAliasAfterValidation(String aliasName, String targetIndex) {

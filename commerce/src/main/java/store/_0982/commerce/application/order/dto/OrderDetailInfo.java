@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record OrderDetailInfo(
         UUID orderId,
+        String orderNumber,
         int quantity,
         Long price,
         OrderStatus status,
@@ -25,6 +26,7 @@ public record OrderDetailInfo(
     public static OrderDetailInfo from(Order order){
         return new OrderDetailInfo(
                 order.getOrderId(),
+                order.getOrderNumber(),
                 order.getQuantity(),
                 order.getPrice(),
                 order.getStatus(),

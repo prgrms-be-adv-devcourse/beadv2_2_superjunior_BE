@@ -34,8 +34,8 @@ spec:
               value: "http://member-service:8083"
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
-            - name: GATEWAY_HOST
-              value: "http://gateway-service:8000"
+            - name: SPRING_AI_OPENAI_EMBEDDING_OPTIONS_MODEL
+              value: text-embedding-3-small
           resources:
             requests:
               cpu: "200m"

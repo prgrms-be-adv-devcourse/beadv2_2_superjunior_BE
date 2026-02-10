@@ -19,5 +19,5 @@ public class LoggingAutoProperties {
 
     @Valid
     @NestedConfigurationProperty
-    private final ServiceProperties service = new ServiceProperties(true, null);
+    private ServiceProperties service = new ServiceProperties(true, null);
 }

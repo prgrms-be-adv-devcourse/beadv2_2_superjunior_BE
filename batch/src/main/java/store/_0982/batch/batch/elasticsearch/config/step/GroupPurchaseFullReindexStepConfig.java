@@ -18,7 +18,6 @@ import store._0982.batch.batch.elasticsearch.processor.GroupPurchaseReindexProce
 import store._0982.batch.batch.elasticsearch.reader.GroupPurchaseReindexReader;
 import store._0982.batch.batch.elasticsearch.writer.GroupPurchaseReindexWriter;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
-import store._0982.batch.domain.elasticsearch.GroupPurchaseDocument;
 import store._0982.batch.application.elasticsearch.GroupPurchaseReindexService;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
 
@@ -35,11 +34,11 @@ public class GroupPurchaseFullReindexStepConfig {
     @Bean
     public Step groupPurchaseFullReindexStep(
             @Qualifier("groupPurchaseFullReindexReader") ItemReader<GroupPurchaseReindexRow> groupPurchaseFullReindexReader,
-            @Qualifier("groupPurchaseFullReindexProcessor") ItemProcessor<GroupPurchaseReindexRow, GroupPurchaseDocument> groupPurchaseReindexProcessor,
-            @Qualifier("groupPurchaseFullReindexWriter") ItemWriter<GroupPurchaseDocument> groupPurchaseReindexWriter
+            @Qualifier("groupPurchaseFullReindexProcessor") ItemProcessor<GroupPurchaseReindexRow, GroupPurchaseReindexRow> groupPurchaseReindexProcessor,
+            @Qualifier("groupPurchaseFullReindexWriter") ItemWriter<GroupPurchaseReindexRow> groupPurchaseReindexWriter
     ) {
         return new StepBuilder("groupPurchaseFullReindex", jobRepository)
-                .<GroupPurchaseReindexRow, GroupPurchaseDocument>chunk(properties.getBatchSize(), transactionManager)
+                .<GroupPurchaseReindexRow, GroupPurchaseReindexRow>chunk(properties.getBatchSize(), transactionManager)
                 .reader(groupPurchaseFullReindexReader)
                 .processor(groupPurchaseReindexProcessor)
                 .writer(groupPurchaseReindexWriter)
@@ -53,13 +52,13 @@ public class GroupPurchaseFullReindexStepConfig {
     }
 
     @Bean
-    public ItemProcessor<GroupPurchaseReindexRow, GroupPurchaseDocument> groupPurchaseFullReindexProcessor() {
+    public ItemProcessor<GroupPurchaseReindexRow, GroupPurchaseReindexRow> groupPurchaseFullReindexProcessor() {
         return new GroupPurchaseReindexProcessor();
     }
 
     @Bean
     @StepScope
-    public ItemWriter<GroupPurchaseDocument> groupPurchaseFullReindexWriter(
+    public ItemWriter<GroupPurchaseReindexRow> groupPurchaseFullReindexWriter(
             @Value("#{jobExecutionContext['targetIndex']}") String targetIndex
     ) {
         return new GroupPurchaseReindexWriter(reindexService, targetIndex);

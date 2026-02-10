@@ -71,7 +71,7 @@ public class Seller {
     }
 
 
-    private enum Status {
+    public enum Status {
         PENDING, ACTIVE
     }
 }

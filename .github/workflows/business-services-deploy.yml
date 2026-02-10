@@ -10,7 +10,7 @@ on:
       - 'member/**'
       - 'point/**'
       - 'commerce/**'
-      - 'ai/**'
+      - 'recommendation/**'
       - 'elastic-search/**'
       - 'common/**'
       - 'build.gradle'
@@ -27,7 +27,7 @@ jobs:
       member: ${{ steps.filter.outputs.member }}
       point: ${{ steps.filter.outputs.point }}
       commerce: ${{ steps.filter.outputs.commerce }}
-      ai: ${{ steps.filter.outputs.ai }}
+      recommendation: ${{ steps.filter.outputs.recommendation }}
       search: ${{ steps.filter.outputs.search }}
     steps:
       - name: 코드 체크아웃
@@ -74,15 +74,15 @@ jobs:
             echo "commerce=false" >> $GITHUB_OUTPUT
           fi
           
-          # AI
-          if echo "$CHANGED_FILES" | grep -qE '^(ai/|common/|build\.gradle|settings\.gradle|docs/k8s/service/ai\.yml)'; then
-            echo "ai=true" >> $GITHUB_OUTPUT
+          # Recommendation
+          if echo "$CHANGED_FILES" | grep -qE '^(recommendation/|common/|build\.gradle|settings\.gradle|docs/k8s/service/ai\.yml)'; then
+            echo "recommendation=true" >> $GITHUB_OUTPUT
           else
-            echo "ai=false" >> $GITHUB_OUTPUT
+            echo "recommendation=false" >> $GITHUB_OUTPUT
           fi
           
           # Search
-          if echo "$CHANGED_FILES" | grep -qE '^(search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
+          if echo "$CHANGED_FILES" | grep -qE '^(elastic-search/|common/|build\.gradle|settings\.gradle|docs/k8s/service/search\.yml)'; then
             echo "search=true" >> $GITHUB_OUTPUT
           else
             echo "search=false" >> $GITHUB_OUTPUT
@@ -190,9 +190,9 @@ jobs:
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
 
   # AI 배포
-  deploy-ai:
+  deploy-recommendation:
     needs: [ detect-changes, deploy-gateway ]
-    if: always() && needs.detect-changes.outputs.ai == 'true'
+    if: always() && needs.detect-changes.outputs.recommendation == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 코드 체크아웃
@@ -200,10 +200,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Search 배포
+      - name: Recommendation 배포
         uses: ./.github/actions/deploy-business-service
         with:
           service-name: ai
+          module-name: recommendation
           manifest-path: docs/k8s/service/ai.yml
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
           dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}

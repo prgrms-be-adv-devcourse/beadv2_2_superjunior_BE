@@ -11,30 +11,21 @@ import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.dto.OrderDetailInfo;
 import store._0982.commerce.application.order.dto.OrderInfo;
-import store._0982.commerce.application.product.dto.OrderVectorInfo;
-import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.common.domain.order.CancelStatus;
 import store._0982.common.domain.order.CanceledOrder;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.OrderRepository;
-import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.domain.product.ProductVector;
 import store._0982.commerce.exception.CustomErrorCode;
-import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
-import store._0982.common.domain.product.Product;
 import store._0982.common.dto.PageResponse;
 import store._0982.common.exception.CustomException;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -43,9 +34,6 @@ public class OrderQueryService {
 
     private final OrderRepository orderRepository;
     private final CanceledOrderRepository canceledOrderRepository;
-    private final GroupPurchaseRepository groupPurchaseRepository;
-    private final ProductRepository productRepository;
-    private final ProductVectorJpaRepository productVectorRepository;
 
     private final GroupPurchaseService groupPurchaseService;
 
@@ -92,42 +80,6 @@ public class OrderQueryService {
 
     public List<Order> getAllOrderByMemberId(UUID memberId) {
         return orderRepository.findAllByMemberId(memberId);
-    }
-
-    public List<OrderVectorInfo> getOrderVector(UUID memberId) {
-        List<Order> orders = orderRepository.findAllByMemberId(memberId);
-        List<UUID> groupPurchaseIds = orders.stream()
-                .map(Order::getGroupPurchaseId)
-                .toList();
-        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
-        List<UUID> productIds = groupPurchases.stream()
-                .map(GroupPurchase::getProductId)
-                .toList();
-        List<ProductVector> productVectors = productVectorRepository.findByProductIdIn(productIds);
-        Map<UUID, UUID> groupPurchaseToProduct = groupPurchases.stream()
-                .collect(toMap(GroupPurchase::getGroupPurchaseId, GroupPurchase::getProductId));
-        Map<UUID, ProductVector> productIdToVector = productVectors.stream()
-                .collect(toMap(ProductVector::getProductId, Function.identity()));
-        List<Product> products = productRepository.findByProductIdIn(productIds);
-        Map<UUID, String> productIdToDescription = products.stream()
-                .collect(toMap(Product::getProductId, Product::getDescription));
-        return orders.stream()
-                .map(order -> {
-                    UUID productId = groupPurchaseToProduct.get(order.getGroupPurchaseId());
-                    ProductVector vector = productIdToVector.get(productId);
-                    float[] productVector = vector == null ? null : vector.getVector();
-                    return new OrderVectorInfo(
-                            order.getOrderId(),
-                            order.getMemberId(),
-                            productId,
-                            productIdToDescription.get(productId),
-                            order.getQuantity(),
-                            order.getCreatedAt(),
-                            order.getStatus(),
-                            productVector
-                    );
-                })
-                .toList();
     }
 
     public List<UUID> getGroupPurchaseParticipants(UUID groupPurchaseId) {
