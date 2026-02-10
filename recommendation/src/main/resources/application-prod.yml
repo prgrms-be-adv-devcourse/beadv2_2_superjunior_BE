@@ -5,3 +5,4 @@ spring:
 
 client:
   search: ${CLIENT_SEARCH_URL}
+  commerce: ${CLIENT_COMMERCE_URL}

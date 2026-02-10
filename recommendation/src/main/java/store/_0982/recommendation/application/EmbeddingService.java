@@ -11,6 +11,9 @@ import store._0982.common.domain.vector.ProductVector;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,6 +55,56 @@ public class EmbeddingService {
         float[] embedding = embeddingModel.embed(input);
         ProductVector productVector = new ProductVector(event.getProductId(), embedding, currentModelVersion);
         vectorRepository.save(productVector);
+    }
+
+    @Transactional
+    public void vectorizeBatch(List<ProductUpsertedEvent> events) {
+        if (events == null || events.isEmpty()) {
+            return;
+        }
+        List<String> inputs = new ArrayList<>(events.size());
+        List<ProductUpsertedEvent> filtered = new ArrayList<>(events.size());
+
+        for (ProductUpsertedEvent event : events) {
+            if (event == null || event.getProductId() == null) {
+                continue;
+            }
+            String input = buildInput(event)
+                    .replaceAll("[ \\t]+", " ")
+                    .replaceAll("\\n+", "\n")
+                    .trim();
+
+            if (input.length() > MAX_INPUT_LENGTH) {
+                log.warn("벡터화 입력 길이 초과, 부분 처리: productId={}, originalLength={}",
+                        event.getProductId(), input.length());
+                String truncated = input.substring(0, MAX_INPUT_LENGTH);
+                int cut = Math.max(
+                        truncated.lastIndexOf(' '),
+                        Math.max(truncated.lastIndexOf('\n'), truncated.lastIndexOf('\t'))
+                );
+                if (cut > 0) {
+                    truncated = truncated.substring(0, cut);
+                }
+                input = truncated
+                        .replaceAll("[^\\p{IsAlphabetic}\\p{IsHangul}\\d\\)\\]%~+/-]+$", "")
+                        .trim();
+            }
+
+            inputs.add(input);
+            filtered.add(event);
+        }
+
+        if (inputs.isEmpty()) {
+            return;
+        }
+
+        List<float[]> embeddings = embeddingModel.embed(inputs);
+        List<ProductVector> vectors = new ArrayList<>(embeddings.size());
+        for (int i = 0; i < embeddings.size(); i++) {
+            ProductUpsertedEvent event = filtered.get(i);
+            vectors.add(new ProductVector(event.getProductId(), embeddings.get(i), currentModelVersion));
+        }
+        vectorRepository.saveAll(vectors);
     }
 
     private String buildInput(ProductUpsertedEvent event) {

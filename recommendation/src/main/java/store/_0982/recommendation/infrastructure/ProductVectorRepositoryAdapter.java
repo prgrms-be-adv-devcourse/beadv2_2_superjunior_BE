@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import store._0982.common.domain.vector.ProductVector;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,11 @@ public class ProductVectorRepositoryAdapter implements ProductVectorRepository {
     @Override
     public void save(ProductVector productVector) {
         vectorRepository.save(productVector);
+    }
+
+    @Override
+    public void saveAll(List<ProductVector> productVectors) {
+        vectorRepository.saveAll(productVectors);
     }
 
     @Override
