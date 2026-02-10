@@ -12,7 +12,7 @@ import store._0982.recommendation.infrastructure.feign.commerce.dto.ProductPageR
 )
 public interface CommerceProductFeignClient {
 
-    @GetMapping("/internal/products/embedding")
+    @GetMapping("/internal/products/vector")
     PageResponse<ProductPageResponse> fetchEmbeddingPage(
             @RequestParam("page") int page,
             @RequestParam("size") int size
