@@ -21,10 +21,8 @@ public class RecommendationController {
     @GetMapping
     @ControllerLog
     public ResponseDto<RecommandInfo> getRecommendations(
-            @RequestHeader(value = HeaderName.ID) UUID memberId,
-            @RequestParam(value = "keyword", defaultValue = "") String keyword,
-            @RequestParam(value = "category", defaultValue = "") String category
+            @RequestHeader(value = HeaderName.ID) UUID memberId
     ) {
-        return new ResponseDto<>(HttpStatus.OK, recommendationService.getRecommendations(memberId, keyword, category), "추천 공동구매 목록");
+        return new ResponseDto<>(HttpStatus.OK, recommendationService.getRecommendations(memberId), "추천 공동구매 목록");
     }
 }

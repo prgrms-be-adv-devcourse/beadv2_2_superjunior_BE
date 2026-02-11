@@ -24,16 +24,16 @@ public class PromptService {
     private final ChatModel chatModel;
 
     @ServiceLog
-    public LlmResponse askToChatModel(String keyword, String category, List<SimpleGroupPurchaseInfo> gpInfos, String interestSummary, int numOfReco){
+    public LlmResponse askToChatModel(List<SimpleGroupPurchaseInfo> gpInfos, String interestSummary, int numOfReco){
         try {
-            Prompt prompt = generatePrompt(keyword, category, gpInfos, interestSummary, numOfReco);
+            Prompt prompt = generatePrompt(gpInfos, interestSummary, numOfReco);
             return parseResponse(chatModel.call(prompt), LlmResponse.class);
         } catch (JsonProcessingException e) {
             return new LlmResponse(List.of(), "");
         }
     }
 
-    private Prompt generatePrompt(String keyword, String category , List<SimpleGroupPurchaseInfo> gpInfos, String interestSummary, int numOfReco) throws JsonProcessingException {
+    private Prompt generatePrompt(List<SimpleGroupPurchaseInfo> gpInfos, String interestSummary, int numOfReco) throws JsonProcessingException {
         String gpInfosJson = objectMapper.writeValueAsString(gpInfos);
 
         PromptTemplate systemTemplate = new SystemPromptTemplate(
@@ -69,8 +69,6 @@ public class PromptService {
 
         PromptTemplate userTemplate = new PromptTemplate(
                 """
-                        사용자 검색어: {keyword}
-                        선호 카테고리: {category}
                         후보 목록(JSON): {gpInfos}
                         사용자 관심 정보: {interestSummary}
                         
@@ -78,8 +76,6 @@ public class PromptService {
                         추천 이유를 100자 이내로 작성해줘.
                         """
         );
-        userTemplate.add("keyword", keyword);
-        userTemplate.add("category", category);
         userTemplate.add("gpInfos", gpInfosJson);
         userTemplate.add("interestSummary", interestSummary);
 

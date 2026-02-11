@@ -1,8 +1,5 @@
 package store._0982.recommendation.application.dto;
 
-import store._0982.recommendation.infrastructure.feign.search.dto.ProductSearchInfo;
-import store._0982.recommendation.infrastructure.feign.search.dto.ProductVectorInfo;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
