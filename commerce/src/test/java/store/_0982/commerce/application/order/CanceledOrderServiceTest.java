@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
@@ -41,6 +42,9 @@ class CanceledOrderServiceTest {
 
     @Mock
     private GroupPurchaseService groupPurchaseService;
+
+    @Mock
+    private GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     @Mock
     private OrderRepository orderRepository;
@@ -225,7 +229,7 @@ class CanceledOrderServiceTest {
         canceledOrderService.cancelOrder(command);
 
         // then
-        verify(groupPurchaseService).decreaseQuantity(groupPurchaseId, 2);
+        verify(groupPurchaseQuantityService).decreaseQuantity(groupPurchaseId, 2);
         verify(order).requestCanceledAt();
         verify(canceledOrderRepository).save(canceledOrderCaptor.capture());
         CanceledOrder saved = canceledOrderCaptor.getValue();
@@ -297,7 +301,7 @@ class CanceledOrderServiceTest {
         canceledOrderService.cancelOrder(command);
 
         // then
-        verify(groupPurchaseService).decreaseQuantity(groupPurchaseId, 4);
+        verify(groupPurchaseQuantityService).decreaseQuantity(groupPurchaseId, 4);
         verify(canceledOrderRepository).save(canceledOrderCaptor.capture());
         CanceledOrder saved = canceledOrderCaptor.getValue();
         assertThat(saved.getStatus()).isEqualTo(CancelStatus.PENDING);

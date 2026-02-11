@@ -16,7 +16,6 @@ import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.order.CanceledOrderRepository;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.infrastructure.product.ProductVectorJpaRepository;
 import store._0982.common.domain.order.CancelReason;
 import store._0982.common.domain.order.CancelStatus;
 import store._0982.common.domain.order.CanceledOrder;
@@ -43,9 +42,6 @@ class OrderQueryServiceTest {
 
     @Mock
     private ProductRepository productRepository;
-
-    @Mock
-    private ProductVectorJpaRepository productVectorRepository;
 
     @Mock
     private GroupPurchaseService groupPurchaseService;
