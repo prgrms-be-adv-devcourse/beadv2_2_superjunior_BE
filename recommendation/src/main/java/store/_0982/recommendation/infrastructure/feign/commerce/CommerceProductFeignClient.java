@@ -2,9 +2,15 @@ package store._0982.recommendation.infrastructure.feign.commerce;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import store._0982.common.dto.PageResponse;
+import store._0982.recommendation.infrastructure.feign.commerce.dto.GroupPurchaseIdsRequest;
+import store._0982.recommendation.infrastructure.feign.commerce.dto.GroupPurchaseSearchRow;
 import store._0982.recommendation.infrastructure.feign.commerce.dto.ProductPageResponse;
+
+import java.util.List;
 
 @FeignClient(
         name = "commerce-service",
@@ -17,4 +23,7 @@ public interface CommerceProductFeignClient {
             @RequestParam("page") int page,
             @RequestParam("size") int size
     );
+
+    @PostMapping("/internal/purchases/search")
+    List<GroupPurchaseSearchRow> findPurchasesByIds(@RequestBody GroupPurchaseIdsRequest request);
 }
