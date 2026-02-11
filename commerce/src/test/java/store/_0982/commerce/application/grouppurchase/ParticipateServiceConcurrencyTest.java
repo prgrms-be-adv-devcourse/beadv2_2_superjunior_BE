@@ -86,9 +86,9 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
             try{
                 participateService.participate(
                         groupPurchase.getGroupPurchaseId(),
-                        1,
-                        "테스트 셀러",
-                        requestId
+                        1
+//                        "테스트 셀러",
+//                        requestId
                 );
 
                 successCount.incrementAndGet();
