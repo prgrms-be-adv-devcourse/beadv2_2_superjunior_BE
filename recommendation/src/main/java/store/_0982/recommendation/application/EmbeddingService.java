@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.common.domain.vector.ProductVector;
 import store._0982.common.kafka.dto.ProductUpsertedEvent;
+import store._0982.common.log.ServiceLog;
 import store._0982.recommendation.domain.ProductVectorRepository;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class EmbeddingService {
     private static final int MAX_INPUT_LENGTH = 8000;
 
     @Transactional
+    @ServiceLog
     public void vectorize(ProductUpsertedEvent event) {
         String input = buildInput(event)
                 .replaceAll("[ \\t]+", " ")   // space, tab만 정리
