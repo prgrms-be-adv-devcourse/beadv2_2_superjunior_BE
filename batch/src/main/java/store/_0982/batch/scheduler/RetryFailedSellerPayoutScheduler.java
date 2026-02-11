@@ -6,6 +6,7 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Profile("dev")
@@ -16,7 +17,7 @@ public class RetryFailedSellerPayoutScheduler {
     private final JobLauncher jobLauncher;
     private final Job retryFailedSellerPayoutJob;
 
-//    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
     public void scheduleRetryFailedSellerPayout() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())

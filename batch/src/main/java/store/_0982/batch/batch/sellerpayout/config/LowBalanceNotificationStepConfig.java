@@ -11,12 +11,12 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.sellerpayout.dto.SellerBalanceDto;
 import store._0982.batch.batch.sellerpayout.listener.LowBalanceNotificationReaderListener;
 import store._0982.batch.batch.sellerpayout.listener.SellerPayoutStepListener;
 import store._0982.batch.batch.sellerpayout.policy.SellerPayoutPolicy;
 import store._0982.batch.batch.sellerpayout.processor.LowBalanceNotificationProcessor;
 import store._0982.batch.batch.sellerpayout.writer.LowBalanceNotificationWriter;
-import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.domain.sellerpayout.SellerPayout;
 
 import java.util.Map;
@@ -42,9 +42,9 @@ public class LowBalanceNotificationStepConfig {
 
     @Bean
     public Step lowBalanceNotificationStep(
-            JpaPagingItemReader<SellerBalance> lowBalanceNotificationReader) {
+            JpaPagingItemReader<SellerBalanceDto> lowBalanceNotificationReader) {
         return new StepBuilder("lowBalanceNotificationStep", jobRepository)
-                .<SellerBalance, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
+                .<SellerBalanceDto, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
                 .reader(lowBalanceNotificationReader)
                 .processor(lowBalanceNotificationProcessor)
                 .writer(lowBalanceNotificationWriter)
@@ -55,13 +55,16 @@ public class LowBalanceNotificationStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SellerBalance> lowBalanceNotificationReader() {
-        return new JpaPagingItemReaderBuilder<SellerBalance>()
+    public JpaPagingItemReader<SellerBalanceDto> lowBalanceNotificationReader() {
+        return new JpaPagingItemReaderBuilder<SellerBalanceDto>()
                 .name("lowBalanceNotificationReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SellerPayoutPolicy.CHUNK_UNIT)
                 .queryString("""
-                          SELECT s
+                          SELECT new store._0982.batch.batch.sellerpayout.dto.SellerBalanceDto(
+                              s.memberId,
+                              s.settlementBalance
+                          )
                           FROM SellerBalance s
                           WHERE s.settlementBalance > 0
                             AND s.settlementBalance < :amount
