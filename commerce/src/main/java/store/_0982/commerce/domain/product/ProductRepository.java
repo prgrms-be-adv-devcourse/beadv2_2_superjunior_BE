@@ -23,6 +23,4 @@ public interface ProductRepository {
     Optional<Product> findByIdempotencyKey(String idempotencyKey);
 
     List<Product> findByProductIdIn(List<UUID> productIds);
-
-    Page<Product> findAll(Pageable pageable);
 }
