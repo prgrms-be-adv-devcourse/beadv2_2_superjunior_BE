@@ -3,7 +3,6 @@ package store._0982.commerce.presentation.order;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +15,10 @@ import store._0982.common.dto.ResponseDto;
 
 import java.util.UUID;
 
-@Tag(name = "Order", description = "주문 관련 정보")
-@RestController
+@Tag(name = "Order", description = "주문 취소 관련 정보")
 @RequiredArgsConstructor
-@Slf4j
 @RequestMapping("/api/orders/cancel")
+@RestController
 public class CanceledOrderController {
 
     private final OrderService orderService;
