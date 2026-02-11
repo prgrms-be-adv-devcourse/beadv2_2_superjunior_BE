@@ -21,10 +21,6 @@ public class GroupPurchase {
     @Id
     private UUID groupPurchaseId;
 
-    @Version
-    @Column(name = "version")
-    private Long version;
-
     @Column(name = "min_quantity", nullable = false)
     private int minQuantity;
 
