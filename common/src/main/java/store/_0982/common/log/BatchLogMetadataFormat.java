@@ -116,5 +116,22 @@ public class BatchLogMetadataFormat {
         };
     }
 
+    public static Object[] itemWriterFailed(
+            String jobName,
+            String stepName,
+            String writerName,
+            String errorType,
+            String errorMessage
+    ) {
+        return new StructuredArgument[]{
+                keyValue("event", "ITEM_WRITER_FAILED"),
+                keyValue("job", jobName),
+                keyValue("step", stepName),
+                keyValue("writer", writerName),
+                keyValue("errorType", errorType),
+                keyValue("errorMessage", errorMessage)
+        };
+    }
+
     private BatchLogMetadataFormat() {}
 }
