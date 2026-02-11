@@ -11,7 +11,7 @@ on:
       - 'common/**'
       - 'build.gradle'
       - 'settings.gradle'
-      - 'batch-jobs-build.yml'
+      - './.github/workflows/batch-jobs-build.yml'
 
 env:
   DOCKER_IMAGE: minbros/batch
