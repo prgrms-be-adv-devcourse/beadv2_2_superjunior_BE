@@ -52,12 +52,6 @@ management:
 kafka:
   bootstrap-servers: ${spring.kafka.bootstrap-servers}
 
-reindex:
-  group-purchase:
-    alias: group-purchase
-    batch-size: 1000
-    switch-alias: true
-
 logging:
   level:
     # Spring Batch 프레임워크의 중복 로그 최소화

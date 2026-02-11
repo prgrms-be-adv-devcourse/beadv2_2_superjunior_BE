@@ -13,12 +13,12 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.sellerpayout.dto.SellerBalanceDto;
 import store._0982.batch.batch.sellerpayout.listener.SellerPayoutReaderListener;
 import store._0982.batch.batch.sellerpayout.listener.SellerPayoutStepListener;
 import store._0982.batch.batch.sellerpayout.policy.SellerPayoutPolicy;
 import store._0982.batch.batch.sellerpayout.processor.SellerPayoutProcessor;
 import store._0982.batch.batch.sellerpayout.writer.SellerPayoutWriter;
-import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.domain.sellerpayout.SellerPayout;
 import store._0982.common.exception.CustomException;
 
@@ -46,9 +46,9 @@ public class SellerPayoutStepConfig {
 
     @Bean
     public Step sellerPayoutStep(
-            JpaPagingItemReader<SellerBalance> sellerPayoutReader) {
+            JpaPagingItemReader<SellerBalanceDto> sellerPayoutReader) {
         return new StepBuilder("sellerPayoutStep", jobRepository)
-                .<SellerBalance, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
+                .<SellerBalanceDto, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
                 .reader(sellerPayoutReader)
                 .processor(sellerPayoutProcessor)
                 .writer(sellerPayoutWriter)
@@ -65,13 +65,16 @@ public class SellerPayoutStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SellerBalance> sellerPayoutReader() {
-        return new JpaPagingItemReaderBuilder<SellerBalance>()
+    public JpaPagingItemReader<SellerBalanceDto> sellerPayoutReader() {
+        return new JpaPagingItemReaderBuilder<SellerBalanceDto>()
                 .name("sellerPayoutReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SellerPayoutPolicy.CHUNK_UNIT)
                 .queryString("""
-                          SELECT s
+                          SELECT new store._0982.batch.batch.sellerpayout.dto.SellerBalanceDto(
+                              s.memberId,
+                              s.settlementBalance
+                          )
                           FROM SellerBalance s
                           WHERE s.settlementBalance >= :amount
                           ORDER BY s.balanceId ASC

@@ -12,11 +12,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.TransientDataAccessException;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.settlement.dto.OrderSettlementDto;
 import store._0982.batch.batch.settlement.listener.SettlementStepListener;
 import store._0982.batch.batch.settlement.listener.SettlementWriterListener;
 import store._0982.batch.batch.settlement.policy.SettlementPolicy;
 import store._0982.batch.batch.settlement.writer.SettlementWriter;
-import store._0982.common.domain.settlement.OrderSettlement;
 import store._0982.common.exception.CustomException;
 
 @RequiredArgsConstructor
@@ -33,9 +33,9 @@ public class SettlementStepConfig {
 
     @Bean
     public Step settlementStep(
-            JpaPagingItemReader<OrderSettlement> settlementReader) {
+            JpaPagingItemReader<OrderSettlementDto> settlementReader) {
         return new StepBuilder("settlementStep", jobRepository)
-                .<OrderSettlement, OrderSettlement>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
+                .<OrderSettlementDto, OrderSettlementDto>chunk(SettlementPolicy.CHUNK_UNIT, transactionManager)
                 .reader(settlementReader)
                 .writer(settlementWriter)
                 .listener(settlementWriterListener)
@@ -50,13 +50,17 @@ public class SettlementStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<OrderSettlement> settlementReader() {
-        return new JpaPagingItemReaderBuilder<OrderSettlement>()
+    public JpaPagingItemReader<OrderSettlementDto> settlementReader() {
+        return new JpaPagingItemReaderBuilder<OrderSettlementDto>()
                 .name("settlementReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SettlementPolicy.CHUNK_UNIT)
                 .queryString("""
-                        SELECT os
+                        SELECT new store._0982.batch.batch.settlement.dto.OrderSettlementDto(
+                            os.orderSettlementId,
+                            os.sellerId,
+                            os.settlementAmount
+                        )
                         FROM OrderSettlement os
                         WHERE os.settledAt IS NULL
                         ORDER BY os.orderSettlementId
