@@ -52,11 +52,12 @@ public class VectorInputService {
                 );
                 batch.add(event);
                 if (batch.size() >= EMBEDDING_BATCH_SIZE) {
-                    embeddingService.vectorizeBatch(batch);
-                    processed += batch.size();
-                    log.info("Embedding batch saved: total={}, current={}, processed={}, page={}/{}",
+                    int saved = embeddingService.vectorizeBatch(batch);
+                    processed += saved;
+                    log.info("Embedding batch saved: total={}, requested={}, saved={}, processed={}, page={}/{}",
                             totalElements < 0 ? "unknown" : totalElements,
                             batch.size(),
+                            saved,
                             processed,
                             page + 1,
                             response.totalPages());
@@ -64,11 +65,12 @@ public class VectorInputService {
                 }
             }
             if (!batch.isEmpty()) {
-                embeddingService.vectorizeBatch(batch);
-                processed += batch.size();
-                log.info("Embedding batch saved: total={}, current={}, processed={}, page={}/{}",
+                int saved = embeddingService.vectorizeBatch(batch);
+                processed += saved;
+                log.info("Embedding batch saved: total={}, requested={}, saved={}, processed={}, page={}/{}",
                         totalElements < 0 ? "unknown" : totalElements,
                         batch.size(),
+                        saved,
                         processed,
                         page + 1,
                         response.totalPages());

@@ -58,21 +58,28 @@ public class EmbeddingService {
     }
 
     @Transactional
-    public void vectorizeBatch(List<ProductUpsertedEvent> events) {
+    public int vectorizeBatch(List<ProductUpsertedEvent> events) {
         if (events == null || events.isEmpty()) {
-            return;
+            return 0;
         }
         List<String> inputs = new ArrayList<>(events.size());
         List<ProductUpsertedEvent> filtered = new ArrayList<>(events.size());
+        int skippedNullId = 0;
+        int skippedBlank = 0;
 
         for (ProductUpsertedEvent event : events) {
             if (event == null || event.getProductId() == null) {
+                skippedNullId++;
                 continue;
             }
             String input = buildInput(event)
                     .replaceAll("[ \\t]+", " ")
                     .replaceAll("\\n+", "\n")
                     .trim();
+            if (input.isBlank()) {
+                skippedBlank++;
+                continue;
+            }
 
             if (input.length() > MAX_INPUT_LENGTH) {
                 log.warn("벡터화 입력 길이 초과, 부분 처리: productId={}, originalLength={}",
@@ -95,16 +102,27 @@ public class EmbeddingService {
         }
 
         if (inputs.isEmpty()) {
-            return;
+            if (skippedNullId > 0 || skippedBlank > 0) {
+                log.warn("Embedding batch skipped: nullId={}, blankInput={}", skippedNullId, skippedBlank);
+            }
+            return 0;
         }
 
         List<float[]> embeddings = embeddingModel.embed(inputs);
+        if (embeddings.size() != inputs.size()) {
+            log.warn("Embedding size mismatch: inputs={}, embeddings={}", inputs.size(), embeddings.size());
+        }
         List<ProductVector> vectors = new ArrayList<>(embeddings.size());
-        for (int i = 0; i < embeddings.size(); i++) {
+        int limit = Math.min(embeddings.size(), filtered.size());
+        for (int i = 0; i < limit; i++) {
             ProductUpsertedEvent event = filtered.get(i);
             vectors.add(new ProductVector(event.getProductId(), embeddings.get(i), currentModelVersion));
         }
         vectorRepository.saveAll(vectors);
+        if (skippedNullId > 0 || skippedBlank > 0) {
+            log.warn("Embedding batch skipped: nullId={}, blankInput={}", skippedNullId, skippedBlank);
+        }
+        return vectors.size();
     }
 
     private String buildInput(ProductUpsertedEvent event) {
