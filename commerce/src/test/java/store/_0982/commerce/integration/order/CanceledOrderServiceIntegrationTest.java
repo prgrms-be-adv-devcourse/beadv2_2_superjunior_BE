@@ -1,5 +1,6 @@
 package store._0982.commerce.integration.order;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,9 @@ class CanceledOrderServiceIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private ApplicationEvents applicationEvents;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @Test
     @DisplayName("구매자 귀책 사유 취소는 REQUESTED 상태로 저장되고 이벤트를 발행한다")
     void cancelOrder_buyerFault_persistsCanceledOrder() {
@@ -62,7 +66,13 @@ class CanceledOrderServiceIntegrationTest extends BaseIntegrationTest {
 
         long beforeEvents = applicationEvents.stream(OrderCancelProcessedEvent.class).count();
 
+        entityManager.flush();
+        entityManager.clear();
+
         canceledOrderService.cancelOrder(command);
+
+        entityManager.flush();
+        entityManager.clear();
 
         CanceledOrder canceledOrder = canceledOrderRepository.findByOrderId(order.getOrderId())
                 .orElseThrow();
@@ -100,7 +110,13 @@ class CanceledOrderServiceIntegrationTest extends BaseIntegrationTest {
 
         long beforeEvents = applicationEvents.stream(OrderCancelProcessedEvent.class).count();
 
+        entityManager.flush();
+        entityManager.clear();
+
         canceledOrderService.cancelOrder(command);
+
+        entityManager.flush();
+        entityManager.clear();
 
         CanceledOrder canceledOrder = canceledOrderRepository.findByOrderId(order.getOrderId())
                 .orElseThrow();
