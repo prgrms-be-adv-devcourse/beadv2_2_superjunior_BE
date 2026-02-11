@@ -50,4 +50,9 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     public void delete(Product product) {
         productJpaRepository.delete(product);
     }
+
+    @Override
+    public Page<Product> findAll(Pageable pageable) {
+        return productJpaRepository.findAll(pageable);
+    }
 }

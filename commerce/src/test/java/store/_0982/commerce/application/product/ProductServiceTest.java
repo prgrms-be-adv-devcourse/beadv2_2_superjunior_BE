@@ -42,9 +42,6 @@ class ProductServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
-    @Mock
-    private ProductVectorRepository productVectorRepository;
-
     @InjectMocks
     private ProductService productService;
 
@@ -142,7 +139,6 @@ class ProductServiceTest {
             verify(groupPurchaseRepository).existsByProductId(productId);
             verify(productRepository).delete(product);
             verify(productRepository, never()).save(any());
-            verify(productVectorRepository).deleteById(productId);
         }
 
 
@@ -173,7 +169,6 @@ class ProductServiceTest {
             verify(product).softDelete();
             verify(productRepository).save(product);
             verify(productRepository, never()).delete(any());
-            verify(productVectorRepository, never()).deleteById(any());
         }
 
         @Test
@@ -379,7 +374,6 @@ class ProductServiceTest {
         verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
         verify(groupPurchaseRepository).existsByProductId(productId);
         verify(productRepository).delete(product);
-        verify(productVectorRepository).deleteById(productId);
         verify(productRepository, never()).save(any());
     }
 
@@ -425,7 +419,6 @@ class ProductServiceTest {
         verify(product).softDelete();
         verify(productRepository).save(product);
         verify(productRepository, never()).delete(any());
-        verify(productVectorRepository, never()).deleteById(any());
     }
 
     @Test
