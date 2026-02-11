@@ -21,7 +21,7 @@ class InternalProductController {
 
     @GetMapping("vector")
     public PageResponse<ProductInfoForVector> getProducts(@RequestParam("page") int page, @RequestParam("size") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("productId").ascending());
         return PageResponse.from(productService.findAllProductsForVector(pageable));
     }
 }
