@@ -74,6 +74,9 @@ public class DummyOrderSettlementGenerator {
                     if (canceledRow == null || canceledRow.status() != CancelStatus.COMPLETED) {
                         continue;
                     }
+                    if (canceledRow.reason().isSellerFault()) {
+                        continue;
+                    }
                     UUID settlementId = UUID.randomUUID();
                     OrderSettlementCsvRow row = createCanceledSettlement(order, canceledRow, settlementId);
                     sequenceWriter.write(row);
@@ -124,13 +127,7 @@ public class DummyOrderSettlementGenerator {
     private OrderSettlementCsvRow createCanceledSettlement(OrderCsvRow order,
                                                            CanceledOrderCsvRow canceled,
                                                            UUID settlementId) {
-        boolean buyerFault = canceled.reason().isBuyerFault();
-        OrderSettlementStatus status = buyerFault
-                ? OrderSettlementStatus.BUYER_CANCEL
-                : OrderSettlementStatus.SELLER_CANCEL;
-        long settlementAmount = buyerFault
-                ? canceled.cancelFeeAmount()
-                : -canceled.shippingFeeAmount();
+        long settlementAmount = canceled.cancelFeeAmount();
         OffsetDateTime createdAt = canceled.createdAt() != null ? canceled.createdAt() : OffsetDateTime.now();
 
         return new OrderSettlementCsvRow(
@@ -138,7 +135,7 @@ public class DummyOrderSettlementGenerator {
                 order.sellerId(),
                 order.groupPurchaseId(),
                 order.orderId(),
-                status,
+                OrderSettlementStatus.BUYER_CANCEL,
                 0L,
                 0.0,
                 0L,
