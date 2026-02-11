@@ -24,10 +24,6 @@ dependencies {
     // JUnit 5 연동
     testImplementation "org.testcontainers:junit-jupiter:1.19.8"
 
-    //DB
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.postgresql:postgresql'
-
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
