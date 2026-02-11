@@ -18,6 +18,7 @@ public class GroupPurchaseReindexWriter implements ItemWriter<GroupPurchaseReind
 
     private final GroupPurchaseReindexService reindexService;
     private final String targetIndex;
+    private long totalIndexed = 0;
 
     @Override
     public void write(Chunk<? extends GroupPurchaseReindexRow> chunk) {
@@ -27,17 +28,22 @@ public class GroupPurchaseReindexWriter implements ItemWriter<GroupPurchaseReind
         }
         List<GroupPurchaseDocument> docs = reindexService.buildDocumentsFromRows(rows);
         List<String> failedIds = reindexService.bulkIndex(targetIndex, docs);
-        log.info("Reindex bulk completed: index={}, requested={}, indexed={}, failed={}",
-                targetIndex,
-                rows.size(),
-                docs.size() - failedIds.size(),
-                failedIds.size());
+        int retryFailedCount = 0;
         if (!failedIds.isEmpty()) {
             List<String> retryFailed = reindexService.retryFailedRows(targetIndex, failedIds);
             if (!retryFailed.isEmpty()) {
+                retryFailedCount = retryFailed.size();
                 log.error("Reindex retry failed ids: {}", retryFailed);
                 throw new CustomException(CustomErrorCode.ES_REINDEX_RETRY_FAILED);
             }
         }
+        int indexed = docs.size() - retryFailedCount;
+        totalIndexed += indexed;
+        log.info("Reindex bulk completed: index={}, requested={}, indexed={}, failed={}, totalIndexed={}",
+                targetIndex,
+                rows.size(),
+                indexed,
+                retryFailedCount,
+                totalIndexed);
     }
 }
