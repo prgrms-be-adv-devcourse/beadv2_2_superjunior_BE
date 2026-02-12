@@ -44,18 +44,23 @@ public class LoggingAspect {
                 Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
         HttpServletRequest request = attributes.getRequest();
 
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
+        String endpoint = request.getRequestURI();
+        String httpMethod = request.getMethod();
         String memberId = request.getHeader(HeaderName.ID);
-        log.atInfo().log(LogFormat.request(method, uri, memberId));
+
+        LogFormatInfo requestLogInfo = LogFormatter.request(httpMethod, endpoint, memberId);
+        log.info(requestLogInfo.message(), requestLogInfo.args());
 
         long startTime = System.currentTimeMillis();
         Object result = joinPoint.proceed();
-        long endTime = System.currentTimeMillis() - startTime;
+        long executionTime = System.currentTimeMillis() - startTime;
 
         HttpServletResponse response = attributes.getResponse();
         HttpStatus status = HttpStatus.valueOf(Objects.requireNonNull(response).getStatus());
-        log.atInfo().log(LogFormat.response(status, method, uri, endTime, memberId));
+
+        LogFormatInfo responseLogInfo = LogFormatter.response(httpMethod, endpoint, status, executionTime, memberId);
+        log.info(requestLogInfo.message(), responseLogInfo.args());
+
         return result;
     }
 
@@ -75,12 +80,14 @@ public class LoggingAspect {
             Object result = joinPoint.proceed();
             long executionTime = System.currentTimeMillis() - startTime;
             if (executionTime >= threshold) {
-                log.atInfo().log(LogFormat.serviceComplete(methodName, executionTime));
+                LogFormatInfo logFormatInfo = LogFormatter.serviceComplete(methodName, executionTime);
+                log.info(logFormatInfo.message(), logFormatInfo.args());
             }
             return result;
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
-            log.atWarn().log(LogFormat.serviceFail(methodName, executionTime));
+            LogFormatInfo logFormatInfo = LogFormatter.serviceFail(methodName, executionTime);
+            log.info(logFormatInfo.message(), logFormatInfo.args());
             throw e;
         }
     }

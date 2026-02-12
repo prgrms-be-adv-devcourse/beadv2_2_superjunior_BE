@@ -11,7 +11,8 @@ import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.BaseExceptionHandler;
 import store._0982.common.exception.CustomException;
 import store._0982.common.exception.DefaultErrorCode;
-import store._0982.common.log.LogFormat;
+import store._0982.common.log.LogFormatInfo;
+import store._0982.common.log.LogFormatter;
 
 @Slf4j
 @RestControllerAdvice
@@ -20,14 +21,16 @@ public class GlobalExceptionHandler extends BaseExceptionHandler {
     @ExceptionHandler(NegligibleWebhookException.class)
     public ResponseEntity<ResponseDto<Void>> handleNegligibleWebhookException(NegligibleWebhookException e) {
         // 상태 코드는 BAD_REQUEST가 어울릴 것 같아서 이걸로 지정함
-        log.error(LogFormat.error(HttpStatus.BAD_REQUEST, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.BAD_REQUEST, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return ResponseEntity.ok(new ResponseDto<>(HttpStatus.OK, null, "무시된 웹훅 이벤트입니다."));
     }
 
     @ExceptionHandler(PaymentClientException.class)
     public ResponseEntity<ResponseDto<Void>> handlePaymentClientException(PaymentClientException e) {
         HttpStatus httpStatus = e.getStatus();
-        log.error(LogFormat.error(httpStatus, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(httpStatus, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
     }
