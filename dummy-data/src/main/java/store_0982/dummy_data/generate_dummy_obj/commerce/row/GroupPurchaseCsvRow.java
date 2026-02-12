@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @JsonPropertyOrder({
         "groupPurchaseId",
-        "version",
         "minQuantity",
         "maxQuantity",
         "title",
