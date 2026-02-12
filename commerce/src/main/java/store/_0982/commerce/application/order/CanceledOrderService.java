@@ -2,9 +2,6 @@ package store._0982.commerce.application.order;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
@@ -13,8 +10,10 @@ import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
 import store._0982.commerce.application.product.ProductService;
-import store._0982.commerce.domain.order.*;
+import store._0982.commerce.domain.order.CanceledOrderRepository;
+import store._0982.commerce.domain.order.OrderCancellationPolicy;
 import store._0982.commerce.domain.order.OrderCancellationPolicy.RefundAmount;
+import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.CancelStatus;
@@ -44,15 +43,6 @@ public class CanceledOrderService {
 
     private final OrderCancellationPolicyResolver orderCancellationPolicyResolver;
 
-    @Retryable(
-            retryFor = OptimisticLockingFailureException.class,
-            maxAttempts = 10,
-            backoff = @Backoff(
-                    delay = 50,
-                    maxDelay = 500,
-                    random = true
-            )
-    )
     @ServiceLog
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
