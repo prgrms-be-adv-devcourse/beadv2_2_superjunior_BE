@@ -27,12 +27,13 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
                 p.seller_id as sellerId
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
+            where (:lastId is null or gp.group_purchase_id > :lastId)
             order by gp.group_purchase_id
-            limit :limit offset :offset
+            limit :limit
             """, nativeQuery = true)
     List<GroupPurchaseReindexProjection> findAllRows(
             @Param("limit") int limit,
-            @Param("offset") long offset
+            @Param("lastId") UUID lastId
     );
 
     @Query(value = """
@@ -52,13 +53,14 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
             where coalesce(gp.updated_at, gp.created_at) >= :since
+              and (:lastId is null or gp.group_purchase_id > :lastId)
             order by gp.group_purchase_id
-            limit :limit offset :offset
+            limit :limit
             """, nativeQuery = true)
     List<GroupPurchaseReindexProjection> findIncrementalRows(
             @Param("since") OffsetDateTime since,
             @Param("limit") int limit,
-            @Param("offset") long offset
+            @Param("lastId") UUID lastId
     );
 
     @Query(value = """

@@ -6,6 +6,7 @@ import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class GroupPurchaseReindexReader implements ItemReader<GroupPurchaseReindexRow> {
 
@@ -13,9 +14,9 @@ public class GroupPurchaseReindexReader implements ItemReader<GroupPurchaseReind
     private final int batchSize;
     private final OffsetDateTime since;
 
-    private long offset = 0;
     private int index = 0;
     private List<GroupPurchaseReindexRow> buffer = List.of();
+    private UUID lastId = null;
 
     public GroupPurchaseReindexReader(GroupPurchaseReindexRepository repository, int batchSize, String since) {
         this.repository = repository;
@@ -37,9 +38,11 @@ public class GroupPurchaseReindexReader implements ItemReader<GroupPurchaseReind
 
     private List<GroupPurchaseReindexRow> fetchBatch() {
         List<GroupPurchaseReindexRow> rows = since == null
-                ? repository.fetchAllRows(batchSize, offset)
-                : repository.fetchIncrementalRows(since, batchSize, offset);
-        offset += batchSize;
+                ? repository.fetchAllRows(batchSize, lastId)
+                : repository.fetchIncrementalRows(since, batchSize, lastId);
+        if (!rows.isEmpty()) {
+            lastId = rows.get(rows.size() - 1).groupPurchaseId();
+        }
         return rows;
     }
 }
