@@ -13,12 +13,12 @@ import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import store._0982.batch.batch.sellerpayout.dto.SellerPayoutFailureDto;
 import store._0982.batch.batch.sellerpayout.listener.SellerPayoutStepListener;
 import store._0982.batch.batch.sellerpayout.policy.SellerPayoutPolicy;
 import store._0982.batch.batch.sellerpayout.processor.RetryFailedSellerPayoutProcessor;
 import store._0982.batch.batch.sellerpayout.writer.RetryFailedSellerPayoutWriter;
 import store._0982.common.domain.sellerpayout.SellerPayout;
-import store._0982.common.domain.sellerpayout.SellerPayoutFailure;
 import store._0982.common.exception.CustomException;
 
 import java.util.Map;
@@ -44,9 +44,9 @@ public class RetryFailedSellerPayoutStepConfig {
 
     @Bean
     public Step retryFailedSellerPayoutStep(
-            JpaPagingItemReader<SellerPayoutFailure> retryFailedSellerPayoutReader) {
+            JpaPagingItemReader<SellerPayoutFailureDto> retryFailedSellerPayoutReader) {
         return new StepBuilder("retryFailedSellerPayoutStep", jobRepository)
-                .<SellerPayoutFailure, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
+                .<SellerPayoutFailureDto, SellerPayout>chunk(SellerPayoutPolicy.CHUNK_UNIT, transactionManager)
                 .reader(retryFailedSellerPayoutReader)
                 .processor(retryFailedSellerPayoutProcessor)
                 .writer(retryFailedSellerPayoutWriter)
@@ -62,13 +62,15 @@ public class RetryFailedSellerPayoutStepConfig {
 
     @Bean
     @StepScope
-    public JpaPagingItemReader<SellerPayoutFailure> retryFailedSellerPayoutReader() {
-        return new JpaPagingItemReaderBuilder<SellerPayoutFailure>()
+    public JpaPagingItemReader<SellerPayoutFailureDto> retryFailedSellerPayoutReader() {
+        return new JpaPagingItemReaderBuilder<SellerPayoutFailureDto>()
                 .name("retryFailedSellerPayoutReader")
                 .entityManagerFactory(entityManagerFactory)
                 .pageSize(SellerPayoutPolicy.CHUNK_UNIT)
                 .queryString("""
-                          SELECT sf
+                          SELECT new store._0982.batch.batch.sellerpayout.dto.SellerPayoutFailureDto(
+                              sf.sellerPayoutId
+                          )
                           FROM SellerPayoutFailure sf
                           WHERE sf.retryCount < :maxRetry
                           ORDER BY sf.createdAt ASC
