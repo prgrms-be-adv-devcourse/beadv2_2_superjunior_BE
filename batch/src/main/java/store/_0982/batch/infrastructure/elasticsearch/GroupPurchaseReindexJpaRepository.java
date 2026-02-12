@@ -54,11 +54,11 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
             join product_schema.product p on p.product_id = gp.product_id
             where coalesce(gp.updated_at, gp.created_at) >= :since
               and (
-                :lastUpdatedAt is null
-                or coalesce(gp.updated_at, gp.created_at) > :lastUpdatedAt
+                cast(:lastUpdatedAt as timestamptz) is null
+                or coalesce(gp.updated_at, gp.created_at) > cast(:lastUpdatedAt as timestamptz)
                 or (
-                  coalesce(gp.updated_at, gp.created_at) = :lastUpdatedAt
-                  and gp.group_purchase_id > :lastId
+                  coalesce(gp.updated_at, gp.created_at) = cast(:lastUpdatedAt as timestamptz)
+                  and gp.group_purchase_id > cast(:lastId as uuid)
                 )
               )
             order by coalesce(gp.updated_at, gp.created_at), gp.group_purchase_id
