@@ -27,7 +27,13 @@ public class GroupPurchaseReindexWriter implements ItemWriter<GroupPurchaseReind
             return;
         }
         List<GroupPurchaseDocument> docs = reindexService.buildDocumentsFromRows(rows);
-        List<String> failedIds = reindexService.bulkIndex(targetIndex, docs);
+        List<String> failedIds;
+        try {
+            failedIds = reindexService.bulkIndex(targetIndex, docs);
+        } catch (Exception e) {
+            log.error("Reindex bulk failed: index={}, requested={}", targetIndex, rows.size(), e);
+            throw e;
+        }
         int retryFailedCount = 0;
         if (!failedIds.isEmpty()) {
             List<String> retryFailed = reindexService.retryFailedRows(targetIndex, failedIds);

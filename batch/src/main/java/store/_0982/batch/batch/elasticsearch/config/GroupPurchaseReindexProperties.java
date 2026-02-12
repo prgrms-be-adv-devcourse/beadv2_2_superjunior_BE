@@ -9,6 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "reindex.group-purchase")
 public class GroupPurchaseReindexProperties {
     private String alias = "group-purchase";
-    private int batchSize = 2000;
+    private int batchSize = 500;
     private boolean switchAlias = true;
 }
