@@ -1,7 +1,10 @@
 package store._0982.batch.batch.elasticsearch.config.step;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
@@ -20,6 +23,8 @@ import store._0982.batch.batch.elasticsearch.writer.GroupPurchaseReindexWriter;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRow;
 import store._0982.batch.application.elasticsearch.GroupPurchaseReindexService;
 import store._0982.batch.domain.elasticsearch.GroupPurchaseReindexRepository;
+
+import java.time.OffsetDateTime;
 
 @Configuration
 @RequiredArgsConstructor
@@ -42,6 +47,7 @@ public class GroupPurchaseFullReindexStepConfig {
                 .reader(groupPurchaseFullReindexReader)
                 .processor(groupPurchaseReindexProcessor)
                 .writer(groupPurchaseReindexWriter)
+                .listener(fullReindexSinceUpdateListener())
                 .build();
     }
 
@@ -62,5 +68,17 @@ public class GroupPurchaseFullReindexStepConfig {
             @Value("#{jobExecutionContext['targetIndex']}") String targetIndex
     ) {
         return new GroupPurchaseReindexWriter(reindexService, targetIndex);
+    }
+
+    @Bean
+    public StepExecutionListener fullReindexSinceUpdateListener() {
+        return new StepExecutionListener() {
+            @Override
+            public ExitStatus afterStep(StepExecution stepExecution) {
+                stepExecution.getJobExecution().getExecutionContext()
+                        .putString("since", OffsetDateTime.now().toString());
+                return stepExecution.getExitStatus();
+            }
+        };
     }
 }
