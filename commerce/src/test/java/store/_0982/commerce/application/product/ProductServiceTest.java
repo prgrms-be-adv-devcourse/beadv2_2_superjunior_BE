@@ -120,7 +120,6 @@ class ProductServiceTest {
             UUID memberId = UUID.randomUUID();
 
             Product product = mock(Product.class);
-            when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
 
             when(productRepository.findById(productId))
@@ -360,7 +359,6 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(product.getSellerId()).thenReturn(memberId);
-        when(product.getProductId()).thenReturn(productId);
 
         when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
                 .thenReturn(false);

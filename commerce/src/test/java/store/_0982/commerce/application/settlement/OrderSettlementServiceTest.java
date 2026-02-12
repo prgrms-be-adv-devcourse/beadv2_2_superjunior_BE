@@ -91,38 +91,22 @@ class OrderSettlementServiceTest {
     }
 
     @Test
-    @DisplayName("판매자 귀책 취소 시 배송비 차감 정산을 저장한다")
+    @DisplayName("판매자 귀책인 경우 정산을 저장하지 않는다")
     void saveCanceledOrderSettlement_sellerFault() {
         // given
-        UUID canceledOrderId = UUID.randomUUID();
-        UUID sellerId = UUID.randomUUID();
-        UUID groupPurchaseId = UUID.randomUUID();
-
         Order order = mock(Order.class);
-        when(order.getSellerId()).thenReturn(sellerId);
-        when(order.getGroupPurchaseId()).thenReturn(groupPurchaseId);
-
         CanceledOrder canceledOrder = mock(CanceledOrder.class);
-        when(canceledOrder.getReason()).thenReturn(CancelReason.PRODUCT_DEFECT);
-        when(canceledOrder.getOrderId()).thenReturn(canceledOrderId);
-        when(canceledOrder.getShippingFeeAmount()).thenReturn(6_000L);
-
-        ArgumentCaptor<OrderSettlement> captor = ArgumentCaptor.forClass(OrderSettlement.class);
+        when(canceledOrder.getReason()).thenReturn(CancelReason.OUT_OF_STOCK);
 
         // when
         orderSettlementService.saveCanceledOrderSettlement(order, canceledOrder);
 
         // then
-        verify(orderSettlementRepository).save(captor.capture());
-        OrderSettlement saved = captor.getValue();
-        assertThat(saved.getOrderId()).isEqualTo(canceledOrderId);
-        assertThat(saved.getSellerId()).isEqualTo(sellerId);
-        assertThat(saved.getSettlementAmount()).isEqualTo(-6_000L);
-        assertThat(saved.getStatus()).isEqualTo(OrderSettlementStatus.SELLER_CANCEL);
+        verify(orderSettlementRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("판매자/구매자 귀책이 아닌 경우 정산을 저장하지 않는다")
+    @DisplayName("쇼핑물 귀책인 경우 정산을 저장하지 않는다")
     void saveCanceledOrderSettlement_noActionWhenOtherReason() {
         // given
         Order order = mock(Order.class);
