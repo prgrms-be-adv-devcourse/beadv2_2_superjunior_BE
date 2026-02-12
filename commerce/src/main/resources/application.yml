@@ -9,6 +9,7 @@ spring:
     schemas:
       - product_schema
       - order_schema
+      - settlement_schema
     create-schemas: true
 
   datasource:
