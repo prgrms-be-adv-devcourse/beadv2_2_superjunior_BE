@@ -65,7 +65,7 @@ public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
 
     private void signalReadyAndAwaitStart() throws InterruptedException {
         readyLatch.countDown();
-        startLatch.await();;
+        startLatch.await();
     }
 
     private void awaitAllAndRun() throws InterruptedException{
