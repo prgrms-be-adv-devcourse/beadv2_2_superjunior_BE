@@ -1,14 +1,13 @@
 package store_0982.dummy_data.generate_dummy_obj.commerce.row;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 @JsonPropertyOrder({
         "groupPurchaseId",
-        "version",
         "minQuantity",
         "maxQuantity",
         "title",
@@ -30,7 +29,6 @@ import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 })
 public record GroupPurchaseCsvRow(
         UUID groupPurchaseId,
-        Long version,
         int minQuantity,
         int maxQuantity,
         String title,
