@@ -43,4 +43,6 @@ public interface OrderRepository {
     List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(@Param("groupPurchaseId") UUID groupPurchaseId, List<OrderStatus> orderStatuses);
 
     List<Order> findExpiredPendingOrders(@Param("now")OffsetDateTime now);
+
+    int markOrderExpired(UUID orderId);
 }

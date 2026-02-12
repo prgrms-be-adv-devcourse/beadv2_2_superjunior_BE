@@ -66,4 +66,13 @@ public interface OrderJpaRepository extends JpaRepository<Order, UUID> {
         AND o.deletedAt IS NULL
    """)
     List<Order> findExpiredPendingOrders(@Param("now")OffsetDateTime now);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+        UPDATE Order o
+        SET o.status = 'EXPIRED'
+        WHERE o.orderId = :orderId
+        AND o.status = 'PENDING'
+    """)
+    int markOrderExpired(@Param("orderId") UUID orderId);
 }

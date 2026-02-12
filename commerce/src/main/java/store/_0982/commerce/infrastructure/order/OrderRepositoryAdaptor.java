@@ -97,4 +97,9 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     public List<Order> findExpiredPendingOrders(OffsetDateTime now) {
         return orderJpaRepository.findExpiredPendingOrders(now);
     }
+
+    @Override
+    public int markOrderExpired(UUID orderId) {
+        return orderJpaRepository.markOrderExpired(orderId);
+    }
 }

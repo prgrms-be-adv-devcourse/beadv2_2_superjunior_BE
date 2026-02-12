@@ -33,7 +33,7 @@ public class OrderSchedulerService {
 
         for(Order order : expiredOrders){
             try{
-                orderExpirationService.expireSingleOrders(order);
+                orderExpirationService.expireSingleOrders(order.getOrderId());
                 successCount++;
             }catch (CustomException e){
                 failCount++;
