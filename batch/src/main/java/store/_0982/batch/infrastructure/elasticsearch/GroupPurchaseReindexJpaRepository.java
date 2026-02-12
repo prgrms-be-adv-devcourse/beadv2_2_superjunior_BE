@@ -53,14 +53,22 @@ public interface GroupPurchaseReindexJpaRepository extends Repository<GroupPurch
             from product_schema.group_purchase gp
             join product_schema.product p on p.product_id = gp.product_id
             where coalesce(gp.updated_at, gp.created_at) >= :since
-              and (:lastId is null or gp.group_purchase_id > :lastId)
-            order by gp.group_purchase_id
+              and (
+                :lastUpdatedAt is null
+                or coalesce(gp.updated_at, gp.created_at) > :lastUpdatedAt
+                or (
+                  coalesce(gp.updated_at, gp.created_at) = :lastUpdatedAt
+                  and gp.group_purchase_id > :lastId
+                )
+              )
+            order by coalesce(gp.updated_at, gp.created_at), gp.group_purchase_id
             limit :limit
             """, nativeQuery = true)
     List<GroupPurchaseReindexProjection> findIncrementalRows(
             @Param("since") OffsetDateTime since,
-            @Param("limit") int limit,
-            @Param("lastId") UUID lastId
+            @Param("lastUpdatedAt") OffsetDateTime lastUpdatedAt,
+            @Param("lastId") UUID lastId,
+            @Param("limit") int limit
     );
 
     @Query(value = """

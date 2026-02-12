@@ -9,7 +9,12 @@ public interface GroupPurchaseReindexRepository {
 
     List<GroupPurchaseReindexRow> fetchAllRows(int limit, UUID lastId);
 
-    List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, UUID lastId);
+    List<GroupPurchaseReindexRow> fetchIncrementalRows(
+            OffsetDateTime since,
+            OffsetDateTime lastUpdatedAt,
+            UUID lastId,
+            int limit
+    );
 
     List<GroupPurchaseReindexRow> fetchByIds(List<UUID> ids);
 }

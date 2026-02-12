@@ -87,6 +87,11 @@ public class GroupPurchaseReindexJobListener implements JobExecutionListener {
                     .map(Throwable::getMessage)
                     .orElse("Unknown error");
 
+            ExecutionContext context = jobExecution.getExecutionContext();
+            String lastId = context.containsKey("lastId") ? context.getString("lastId") : "unknown";
+            String lastUpdatedAt = context.containsKey("lastUpdatedAt") ? context.getString("lastUpdatedAt") : "unknown";
+            log.error("Reindex progress at failure: lastUpdatedAt={}, lastId={}", lastUpdatedAt, lastId);
+
             log.error(
                     BatchLogMessageFormat.jobFailed(jobName),
                     BatchLogMetadataFormat.jobFailed(

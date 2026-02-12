@@ -29,8 +29,13 @@ public class GroupPurchaseReindexRepositoryAdapter implements GroupPurchaseReind
     }
 
     @Override
-    public List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, UUID lastId) {
-        return repository.findIncrementalRows(since, limit, lastId)
+    public List<GroupPurchaseReindexRow> fetchIncrementalRows(
+            OffsetDateTime since,
+            OffsetDateTime lastUpdatedAt,
+            UUID lastId,
+            int limit
+    ) {
+        return repository.findIncrementalRows(since, lastUpdatedAt, lastId, limit)
                 .stream()
                 .map(GroupPurchaseReindexRow::from)
                 .toList();
