@@ -129,7 +129,6 @@ public class DummyGroupPurchaseGenerator {
     private GroupPurchaseCsvRow toCsvRow(GroupPurchase groupPurchase) {
         return new GroupPurchaseCsvRow(
                 groupPurchase.getGroupPurchaseId(),
-                groupPurchase.getVersion(),
                 groupPurchase.getMinQuantity(),
                 groupPurchase.getMaxQuantity(),
                 groupPurchase.getTitle(),
