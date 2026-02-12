@@ -5,6 +5,9 @@ import lombok.NoArgsConstructor;
 import net.logstash.logback.argument.StructuredArgument;
 import org.springframework.http.HttpStatus;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,7 +21,7 @@ public class LogMetadataFormat {
     private static final String SERVICE_METHOD_NAME = "serviceMethod";
     private static final String IS_COMPLETED = "isCompleted";
     private static final String ERROR_MESSAGE = "errorMessage";
-    private static final String STACK_TRACE = "stackTrace";
+    private static final String STACK_TRACE = "errorStackTrace"; //stackTrace는 이미 고정된 키워드 사용자 필드로 사용 금지
 
     public static StructuredArgument[] request(String httpMethod, String endpoint) {
         return new StructuredArgument[]{
@@ -83,10 +86,14 @@ public class LogMetadataFormat {
     }
 
     public static StructuredArgument[] error(HttpStatus status, Throwable throwable) {
+
         return new StructuredArgument[]{
                 keyValue(ERROR_MESSAGE, throwable.getMessage()),
                 keyValue(STATUS, status),
-                keyValue(STACK_TRACE, throwable.getStackTrace())
+                keyValue(STACK_TRACE, Stream.of(throwable.getStackTrace()).limit(10)
+                        .map(StackTraceElement::toString)
+                        .collect(Collectors.joining(", "))
+                )
         };
     }
 }
