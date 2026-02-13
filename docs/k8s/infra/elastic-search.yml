@@ -56,8 +56,6 @@ spec:
           volumeMounts:
             - name: elasticsearch-storage
               mountPath: /usr/share/elasticsearch/data
-            - name: plugins
-              mountPath: /usr/share/elasticsearch/plugins
           lifecycle:
             preStop:
               exec:
@@ -106,9 +104,6 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
-      volumes:
-        - name: plugins
-          emptyDir: {}
   volumeClaimTemplates:
     - metadata:
         name: elasticsearch-storage
