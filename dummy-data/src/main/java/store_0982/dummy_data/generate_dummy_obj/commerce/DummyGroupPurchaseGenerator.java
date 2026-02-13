@@ -1,18 +1,10 @@
 package store_0982.dummy_data.generate_dummy_obj.commerce;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
-
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.EasyRandomParameters;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +14,14 @@ import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.GroupPurchaseCsvRow;
 import store_0982.dummy_data.generate_dummy_obj.commerce.row.ProductCsvRow;
 import store_0982.dummy_data.util.Utils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Component
 public class DummyGroupPurchaseGenerator {
@@ -74,7 +74,6 @@ public class DummyGroupPurchaseGenerator {
                 ProductCsvRow productRow = productIterator.next();
                 GroupPurchase groupPurchase = easyRandom.nextObject(GroupPurchase.class);
                 Utils.setField(groupPurchase, "groupPurchaseId", groupPurchaseIds.get(index));
-                Utils.setField(groupPurchase, "version", 0L);
                 Utils.setField(groupPurchase, "sellerId", memberIds.get(index / 10));
                 Utils.setField(groupPurchase, "productId", productRow.productId());
 
