@@ -47,6 +47,8 @@ jobs:
   # 배치 테스트 실행 (단일 Job으로 통합)
   batch-test:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[skip deploy]')"
+
     timeout-minutes: 120  # 2시간
 
     steps:

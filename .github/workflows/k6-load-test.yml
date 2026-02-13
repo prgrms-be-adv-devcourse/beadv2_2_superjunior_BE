@@ -54,6 +54,8 @@ permissions:
 jobs:
   load-test:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[skip deploy]')"
+
     timeout-minutes: 180  # 3시간
 
     steps:
