@@ -77,7 +77,7 @@ jobs:
           NODE_NAME="batch-server-${GITHUB_RUN_ID}"
           echo "node-name=${NODE_NAME}" >> $GITHUB_OUTPUT
 
-          sed -e "s|__CONTROL_PLANE_IP__|${{ secrets.CONTROL_PLANE_IP }}|g" \
+          sed -e "s|__CONTROL_PLANE_IP__|${{ secrets.K3S_CONTROL_PLANE_IP }}|g" \
               -e "s|__K3S_TOKEN__|${{ secrets.K3S_TOKEN }}|g" \
               -e "s|__NODE_NAME__|${NODE_NAME}|g" \
               .github/workflows/templates/batch-user-data.sh > user-data.sh
