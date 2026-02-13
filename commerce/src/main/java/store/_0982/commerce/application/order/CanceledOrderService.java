@@ -46,8 +46,7 @@ public class CanceledOrderService {
     @ServiceLog
     @Transactional
     public void cancelOrder(OrderCancelCommand command) {
-        if (canceledOrderRepository.existsByIdempotencyKey(command.idempotencyKey())
-                || canceledOrderRepository.existsByOrderId(command.orderId())) {
+        if (canceledOrderRepository.existsByOrderId(command.orderId())) {
             return;
         }
 
