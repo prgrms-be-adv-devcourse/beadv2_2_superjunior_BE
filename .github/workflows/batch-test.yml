@@ -71,7 +71,7 @@ jobs:
       - name: Generate timestamp
         id: timestamp
         run: |
-          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
           echo "📅 Test ID: $TIMESTAMP"
 
