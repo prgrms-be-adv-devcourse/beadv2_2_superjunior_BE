@@ -1,0 +1,462 @@
+#file: noinspection SpellCheckingInspection
+name: Batch Test on Spot Instance
+
+on:
+  push:
+    branches:
+      - feature/ci-cd
+    paths:
+      - '.github/workflows/templates/init-batch-test.sh'
+      - '.github/workflows/templates/batch-user-data.sh'
+      - '.github/workflows/batch-test.yml'
+      - 'docs/k8s/job/*.yml'
+
+  workflow_dispatch:
+    inputs:
+      job_names:
+        description: 'Batch jobs to test (comma-separated, e.g., "monthly-settlement,seller-balance")'
+        required: true
+        default: 'monthly-settlement,seller-balance,group-purchase'
+        type: string
+      job_interval:
+        description: 'Interval between job deployments in seconds (0 for parallel execution)'
+        required: false
+        default: 0
+        type: number
+      dump_file_url:
+        description: 'S3 URL of initial database dump'
+        required: true
+        default: 's3://0909-store-bucket/postgres-backups/only-schemas-.sql'
+
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET: 0909-store-bucket
+  BATCH_AMI_ID: ami-04f06fb5ae9dcc778
+  CONTROL_PLANE_IP: ${{ secrets.K3S_CONTROL_PLANE_IP }}
+  K3S_TOKEN: ${{ secrets.K3S_TOKEN }}
+  KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  JOB_NAMES: ${{ github.event.inputs.job_names || 'monthly-settlement' }}
+  JOB_INTERVAL: ${{ github.event.inputs.job_interval || '0' }}
+  DUMP_FILE_URL: ${{ github.event.inputs.dump_file_url || 's3://0909-store-bucket/postgres-backups/only-schemas-init.sql.gz' }}
+
+permissions:
+  id-token: write   # OIDC 토큰 발급용
+  contents: read
+
+jobs:
+  # 배치 테스트 실행 (단일 Job으로 통합)
+  batch-test:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[skip deploy]')"
+
+    timeout-minutes: 120  # 2시간
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsK6Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Generate timestamp
+        id: timestamp
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "📅 Test ID: $TIMESTAMP"
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gettext-base bc
+
+      - name: Prepare user data script
+        id: prepare
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          echo "node-name=${NODE_NAME}" >> $GITHUB_OUTPUT
+
+          sed -e "s|__CONTROL_PLANE_IP__|${{ secrets.K3S_CONTROL_PLANE_IP }}|g" \
+              -e "s|__K3S_TOKEN__|${{ secrets.K3S_TOKEN }}|g" \
+              -e "s|__NODE_NAME__|${NODE_NAME}|g" \
+              .github/workflows/templates/batch-user-data.sh > user-data.sh
+
+          base64 -w 0 user-data.sh > user-data-encoded.txt
+          echo "✅ User data script prepared"
+
+      - name: Launch Spot Instance
+        id: create-instance
+        env:
+          SUBNET_ID: ${{ secrets.AWS_BATCH_TEST_SUBNET_ID }}
+          SECURITY_GROUP_ID: ${{ secrets.AWS_BATCH_TEST_SECURITY_GROUP_ID }}
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          echo "🚀 Launching Spot Instance: ${NODE_NAME}"
+
+          SPOT_REQUEST=$(aws ec2 request-spot-instances \
+            --instance-count 1 --type one-time \
+            --launch-specification "{
+              \"ImageId\": \"${BATCH_AMI_ID}\",
+              \"InstanceType\": \"m6g.xlarge\",
+              \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceRole\"},
+              \"SecurityGroupIds\": [\"${SECURITY_GROUP_ID}\"],
+              \"SubnetId\": \"${SUBNET_ID}\",
+              \"UserData\": \"$(cat user-data-encoded.txt)\",
+              \"BlockDeviceMappings\": [{\"DeviceName\": \"/dev/sda1\", \"Ebs\": {\"VolumeSize\": 70, \"VolumeType\": \"gp3\", \"DeleteOnTermination\": true}}]
+            }" \
+            --region "${AWS_REGION}" \
+            --query 'SpotInstanceRequests[0].SpotInstanceRequestId' \
+            --output text)
+
+          echo "spot-request-id=${SPOT_REQUEST}" >> $GITHUB_OUTPUT
+
+          # Spot Request에 태그 추가
+          aws ec2 create-tags --resources "${SPOT_REQUEST}" \
+            --tags "Key=test-run,Value=${TIMESTAMP}" \
+                   "Key=auto-cleanup,Value=true" \
+            --region "${AWS_REGION}"
+
+          # Spot fulfilled 대기
+          for i in {1..60}; do
+            STATUS=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids "${SPOT_REQUEST}" --region "${AWS_REGION}" --query 'SpotInstanceRequests[0].State' --output text)
+            [ "$STATUS" == "active" ] && break
+            [ "$STATUS" == "failed" -o "$STATUS" == "cancelled" ] && echo "❌ Spot request failed" && exit 1
+            sleep 5
+          done
+
+          INSTANCE_ID=$(aws ec2 describe-spot-instance-requests --spot-instance-request-ids "${SPOT_REQUEST}" --region "${AWS_REGION}" --query 'SpotInstanceRequests[0].InstanceId' --output text)
+          echo "instance-id=${INSTANCE_ID}" >> $GITHUB_OUTPUT
+
+          # Instance 실행 대기
+          aws ec2 wait instance-running --instance-ids "${INSTANCE_ID}" --region "${AWS_REGION}"
+
+          # 태그 추가
+          aws ec2 create-tags --resources "${INSTANCE_ID}" \
+            --tags "Key=Name,Value=${NODE_NAME}" \
+                   "Key=test-run,Value=${TIMESTAMP}" \
+                   "Key=auto-cleanup,Value=true" \
+            --region "${AWS_REGION}"
+
+          echo "✅ Instance started: ${INSTANCE_ID} (${NODE_NAME})"
+
+      - name: Wait for Node to Join Cluster
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          echo "⏳ Waiting for node ${NODE_NAME} to join cluster..."
+
+          # Node Ready 대기 (백그라운드 실행)
+          kubectl wait --for=condition=ready "node/${NODE_NAME}" --timeout=300s &
+          WAIT_PID=$!
+
+          # 진행 상황 출력 (1분마다)
+          ELAPSED=0
+          while kill -0 $WAIT_PID 2>/dev/null; do
+            sleep 60
+            ELAPSED=$((ELAPSED + 1))
+            echo "⏱️ Still waiting for node... (${ELAPSED} minute(s) elapsed)"
+          done
+
+          # kubectl wait 결과 확인
+          wait $WAIT_PID
+
+          # 레이블 추가
+          kubectl label "node/${NODE_NAME}" \
+            logging=enabled \
+            test-run="${TIMESTAMP}" \
+            batch-test=true \
+            --overwrite
+
+          echo "✅ Node ${NODE_NAME} is ready!"
+
+          # 노드 정보 출력
+          kubectl describe "node/${NODE_NAME}"
+
+      - name: Create Test Namespace
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          kubectl create namespace "${NAMESPACE}" || true
+          kubectl label "namespace/${NAMESPACE}" \
+            test-run="${TIMESTAMP}" \
+            cleanup=auto \
+            purpose=batch-test \
+            --overwrite
+
+      - name: Deploy Kafka
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📦 Deploying Kafka to ${NODE_NAME}..."
+
+          export NODE_SELECTOR="${NODE_NAME}"
+          export RUN_ID="${TIMESTAMP}"
+
+          # Kafka 배포
+          envsubst < docs/k8s/infra/batch-kafka.yml | \
+            sed "s/namespace: default/namespace: ${NAMESPACE}/" | \
+            kubectl apply -n "${NAMESPACE}" -f -
+
+          # Kafka Ready 대기
+          echo "⏳ Waiting for Kafka to be ready..."
+          kubectl wait --for=condition=ready pod/kafka-batch-0 \
+            -n "${NAMESPACE}" --timeout=300s
+
+          echo "✅ Kafka is ready!"
+
+      - name: Deploy PostgreSQL
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📦 Deploying PostgreSQL to ${NODE_NAME}..."
+
+          export NODE_SELECTOR="${NODE_NAME}"
+
+          # PostgreSQL 배포
+          envsubst < docs/k8s/infra/postgres-batch.yml | \
+            sed "s/namespace: default/namespace: ${NAMESPACE}/" | \
+            kubectl apply -n "${NAMESPACE}" -f -
+
+          # PostgreSQL Ready 대기
+          echo "⏳ Waiting for PostgreSQL to be ready..."
+          kubectl wait --for=condition=ready pod/postgres-batch-0 \
+            -n "${NAMESPACE}" --timeout=300s
+
+          # PostgreSQL 연결 대기 (실제 접속 가능할 때까지)
+          echo "⏳ Waiting for PostgreSQL connection..."
+          for i in {1..30}; do
+            if kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
+              psql -U postgres -c "SELECT 1" > /dev/null 2>&1; then
+              echo "✅ PostgreSQL is ready!"
+              break
+            fi
+            echo "Attempt $i/30: PostgreSQL not ready yet..."
+            sleep 2
+          done
+
+      - name: Restore Initial Database Dump
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📥 Downloading database dump from S3..."
+          aws s3 cp "${DUMP_FILE_URL}" initial-dump.sql.gz
+
+          echo "📦 Extracting compressed dump..."
+          gunzip initial-dump.sql.gz
+
+          echo "📥 Restoring database dump..."
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -i -- \
+            psql -U postgres < initial-dump.sql
+
+          echo "✅ Database restored successfully!"
+
+          # 데이터 확인
+          echo "📊 Database statistics:"
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
+            psql -U postgres -c "
+              SELECT schemaname, tablename,
+                     pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+              FROM pg_tables
+              WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+              ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
+              LIMIT 10;
+            "
+
+      - name: Collect DB Metrics Before Test
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📊 Collecting DB metrics before test..."
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
+            curl -s localhost:9187/metrics > metrics-before.txt || true
+
+          echo "📊 Connection count:"
+          grep "pg_stat_database_numbackends" metrics-before.txt | grep -v "^#" || true
+
+      - name: Deploy and Run Batch Jobs
+        id: run-batch
+        env:
+          JOB_NAMES_INPUT: ${{ env.JOB_NAMES }}
+          GITHUB_RUN_ID: ${{ steps.timestamp.outputs.timestamp }}
+        run: bash .github/workflows/templates/init-batch-test.sh
+
+      - name: Collect DB Metrics After Test
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📊 Collecting DB metrics after test..."
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
+            curl -s localhost:9187/metrics > metrics-after.txt || true
+
+          # 캐시 히트율 계산
+          echo "📊 Cache Hit Ratio:"
+          BLKS_HIT=$(grep 'pg_stat_database_blks_hit{datname="postgres"}' metrics-after.txt | awk '{print $2}' || echo "0")
+          BLKS_READ=$(grep 'pg_stat_database_blks_read{datname="postgres"}' metrics-after.txt | awk '{print $2}' || echo "0")
+
+          if [ "$BLKS_READ" != "0" ]; then
+            CACHE_HIT_RATIO=$(echo "scale=2; $BLKS_HIT / ($BLKS_HIT + $BLKS_READ) * 100" | bc)
+            echo "Cache Hit Ratio: ${CACHE_HIT_RATIO}%"
+
+            if (( $(echo "$CACHE_HIT_RATIO < 90" | bc -l) )); then
+              echo "⚠️ WARNING: Low cache hit ratio! Consider increasing shared_buffers"
+            fi
+          fi
+
+          # Sequential Scan 확인
+          echo ""
+          echo "📋 Table Scan Statistics:"
+          grep "pg_stat_user_tables_seq_scan" metrics-after.txt | grep -v "^#" | head -5 || true
+
+      - name: Verify Kafka Events Published
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          echo "📊 Checking Kafka events..."
+          kubectl exec -n "${NAMESPACE}" kafka-batch-0 -- \
+            kafka-console-consumer \
+              --bootstrap-server localhost:9092 \
+              --topic settlement-done \
+              --from-beginning \
+              --max-messages 10 \
+              --timeout-ms 5000 > kafka-messages.json || true
+
+          MESSAGE_COUNT=$(wc -l < kafka-messages.json || echo "0")
+          echo "Published ${MESSAGE_COUNT} events to settlement-done topic"
+
+      - name: Dump Test Results
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+          RESULT_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+          echo "💾 Dumping test results..."
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
+            pg_dump -U postgres > "result-dump-${RESULT_TIMESTAMP}.sql" || true
+
+          # S3에 업로드
+          if [ -f "result-dump-${RESULT_TIMESTAMP}.sql" ]; then
+            aws s3 cp "result-dump-${RESULT_TIMESTAMP}.sql" \
+              "s3://batch-test-results/${TIMESTAMP}/"
+            echo "✅ Results saved to S3"
+          fi
+
+      - name: Collect Logs
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+
+          mkdir -p logs
+
+          # Pod 로그 수집
+          kubectl logs -n "${NAMESPACE}" postgres-batch-0 -c postgres > logs/postgres.log || true
+          kubectl logs -n "${NAMESPACE}" kafka-batch-0 > logs/kafka.log || true
+
+          # Job 로그 수집
+          for job in $(kubectl get jobs -n "${NAMESPACE}" -l purpose=batch-test -o name); do
+            JOB_NAME=$(echo "$job" | cut -d'/' -f2)
+            kubectl logs -n "${NAMESPACE}" "job/${JOB_NAME}" > "logs/${JOB_NAME}.log" || true
+          done
+
+          # 메트릭 저장
+          mv metrics-*.txt logs/ 2>/dev/null || true
+          mv kafka-messages.json logs/ 2>/dev/null || true
+
+      - name: Upload Logs and Metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-test-logs-${{ steps.timestamp.outputs.timestamp }}
+          path: logs/
+          retention-days: 30
+
+      - name: Delete Kubernetes Resources
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
+
+          echo "🧹 Cleaning up Kubernetes resources..."
+
+          # 네임스페이스 삭제 (모든 리소스 함께 삭제)
+          kubectl delete "namespace/${NAMESPACE}" --timeout=120s || true
+
+          # 노드 드레인 및 삭제
+          kubectl drain "${NODE_NAME}" \
+            --ignore-daemonsets \
+            --delete-emptydir-data \
+            --force \
+            --timeout=60s || true
+
+          kubectl delete "node/${NODE_NAME}" || true
+
+          echo "✅ Kubernetes resources cleaned up"
+
+      - name: Terminate Spot Instance
+        if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          # Spot Request 취소
+          SPOT_REQUEST_ID=$(aws ec2 describe-spot-instance-requests \
+            --filters "Name=tag:test-run,Values=${TIMESTAMP}" \
+                      "Name=state,Values=open,active" \
+            --query 'SpotInstanceRequests[0].SpotInstanceRequestId' \
+            --output text 2>/dev/null || echo "")
+
+          if [ -n "$SPOT_REQUEST_ID" ] && [ "$SPOT_REQUEST_ID" != "None" ]; then
+            echo "🗑️ Cancelling spot request: $SPOT_REQUEST_ID"
+            aws ec2 cancel-spot-instance-requests --spot-instance-request-ids "$SPOT_REQUEST_ID" --region "${AWS_REGION}" 2>/dev/null || true
+          fi
+
+          # 태그로 인스턴스 찾기
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:test-run,Values=${TIMESTAMP}" \
+                      "Name=instance-state-name,Values=running,pending" \
+            --query 'Reservations[0].Instances[0].InstanceId' \
+            --output text)
+
+          if [ "$INSTANCE_ID" != "None" ] && [ -n "$INSTANCE_ID" ]; then
+            echo "🗑️ Terminating instance: $INSTANCE_ID"
+            aws ec2 terminate-instances --instance-ids "$INSTANCE_ID" --region "${AWS_REGION}"
+            echo "✅ Instance terminated"
+          else
+            echo "ℹ️ No instance found to terminate"
+          fi

@@ -1,5 +1,5 @@
 #file: noinspection SpellCheckingInspection
-name: Batch Jobs Deploy
+name: Batch Jobs Build
 
 on:
   push:
@@ -11,15 +11,13 @@ on:
       - 'common/**'
       - 'build.gradle'
       - 'settings.gradle'
-      - 'docs/k8s/job/*.yml'
-      - '!docs/k8s/job/group-purchase-reindex-job.yml'
-      - '.github/workflows/batch-jobs-deploy.yml'
+      - './.github/workflows/batch-jobs-build.yml'
 
 env:
   DOCKER_IMAGE: minbros/batch
 
 jobs:
-  build-and-deploy:
+  build-batch-image:
     runs-on: ubuntu-latest
     if: "!startsWith(github.event.head_commit.message, '[skip deploy]')"
 
@@ -60,34 +58,3 @@ jobs:
           -Djib.to.tags=${{ steps.version.outputs.tag }} \
           -Djib.to.auth.username=${{ secrets.DOCKER_USERNAME }} \
           -Djib.to.auth.password=${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Kubectl 설치
-      uses: azure/setup-kubectl@v4
-      with:
-        version: 'latest'
-
-    - name: Kubectl 설정
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-
-    - name: Kustomize로 이미지 태그 설정
-      run: |
-        cd docs/k8s/job
-        kustomize edit set image ${{ env.DOCKER_IMAGE }}=${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}
-        cat kustomization.yml
-
-    - name: Kustomize로 cronjob 배포
-      run: |
-        kubectl apply -k docs/k8s/job
-
-    - name: CronJob 배포 검증
-      run: |
-        echo "=== CronJob List ==="
-        kubectl get cronjobs -l app=batch-service
-
-        echo "=== Deployment Summary ==="
-        echo "Image: ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.tag }}"
-        echo "Commit: ${{ github.sha }}"
-        echo "Deployed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"

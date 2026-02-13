@@ -2,27 +2,29 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: postgres-batch
   labels:
-    app: database
+    app: postgres-batch
 spec:
-  serviceName: "postgres-service"
+  serviceName: "postgres-batch-service"
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: postgres-batch
   template:
     metadata:
       labels:
-        app: postgres
+        app: postgres-batch
+        purpose: batch-test
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9187"
+        prometheus.io/path: "/metrics"
         fluentbit.io/exclude: "true"
     spec:
       automountServiceAccountToken: false
       nodeSelector:
-        kubernetes.io/hostname: infra-server
+        kubernetes.io/hostname: ${NODE_SELECTOR}
       terminationGracePeriodSeconds: 60
       containers:
         - name: postgres
@@ -32,18 +34,18 @@ spec:
             - containerPort: 5432
           envFrom:
             - secretRef:
-                name: postgres-secret
+                name: postgres-batch-secret
           resources:
             requests:
               ephemeral-storage: "2Gi"
               memory: "1Gi"
               cpu: "500m"
             limits:
-              ephemeral-storage: "3Gi"
-              memory: "1.5Gi"
-              cpu: "1000m"
+              ephemeral-storage: "4Gi"
+              memory: "2.5Gi"
+              cpu: "1500m"
           volumeMounts:
-            - name: postgres-storage
+            - name: postgres-batch-storage
               mountPath: /var/lib/postgresql/data
               subPath: postgres
           lifecycle:
@@ -60,7 +62,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: DATA_SOURCE_NAME
-                  name: postgres-secret
+                  name: postgres-batch-secret
+            - name: PG_EXPORTER_DISABLE_DEFAULT_METRICS
+              value: "false"
+            - name: PG_EXPORTER_DISABLE_SETTINGS_METRICS
+              value: "false"
           ports:
             - containerPort: 9187
               name: metrics
@@ -75,7 +81,7 @@ spec:
               memory: 64Mi
   volumeClaimTemplates:
     - metadata:
-        name: postgres-storage
+        name: postgres-batch-storage
       spec:
         accessModes:
           - ReadWriteOnce
@@ -88,12 +94,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: postgres-batch-service
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
-    app: postgres
+    app: postgres-batch
   ports:
     - port: 5432
       targetPort: 5432

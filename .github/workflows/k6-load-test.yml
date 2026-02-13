@@ -8,7 +8,7 @@ on:
       - 'docs/script/k6/common/**'
       - 'docs/script/k6/scenarios/ci-test.js'
       - '.github/workflows/k6-load-test.yml'
-      - '.github/workflows/templates/user-data.sh'
+      - 'templates/k6-user-data.sh'
 
   workflow_dispatch:
     inputs:
@@ -54,6 +54,8 @@ permissions:
 jobs:
   load-test:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[skip deploy]')"
+
     timeout-minutes: 180  # 3시간
 
     steps:
@@ -115,7 +117,7 @@ jobs:
               -e "s|__INSTANCE_TYPE__|${INSTANCE_TYPE}|g" \
               -e "s|__TEST_SCENARIO__|${TEST_SCENARIO}|g" \
               -e "s|__GITHUB_RUN_ID__|${{ github.run_id }}|g" \
-              .github/workflows/templates/user-data.sh > user-data.sh
+              .github/workflows/templates/k6-user-data.sh > user-data.sh
 
           base64 -w 0 user-data.sh > user-data-encoded.txt
           echo "✅ User data script prepared"

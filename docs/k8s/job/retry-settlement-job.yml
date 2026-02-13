@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: retry-settlement-job
+  labels:
+    app: batch
+    component: job
+    job-type: retry-settlement
+    purpose: batch-test
+spec:
+  ttlSecondsAfterFinished: 3600
+  backoffLimit: 3  # 재시도 작업이므로 더 많은 재시도 허용
+  activeDeadlineSeconds: 3600  # 60분 제한
+  template:
+    metadata:
+      labels:
+        app: batch
+        job-type: retry-settlement
+        purpose: batch-test
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      nodeSelector:
+        kubernetes.io/hostname: ${NODE_SELECTOR}
+      containers:
+      - name: batch-job
+        image: minbros/batch:latest
+        imagePullPolicy: Always
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: TZ
+          value: "Asia/Seoul"
+        - name: SPRING_BATCH_JOB_NAME
+          value: "retryFailedSettlementJob"
+        - name: JOB_DESCRIPTION
+          value: "실패한 정산 재시도 작업 (배치 테스트)"
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-batch-service:9092"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres-batch-service:5432/postgres"
+        - name: ELASTICSEARCH_URIS
+          value: "http://elasticsearch-service:9200"
+        envFrom:
+          - secretRef:
+              name: batch-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+            ephemeral-storage: "512Mi"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            ephemeral-storage: "1Gi"
