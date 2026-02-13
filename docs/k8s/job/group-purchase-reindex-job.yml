@@ -46,10 +46,10 @@ spec:
               name: batch-secret
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
-            ephemeral-storage: "512Mi"
+            memory: "1.5Gi"
+            cpu: "2000m"
+            ephemeral-storage: "2Gi"
           limits:
-            memory: "512Mi"
-            cpu: "500m"
-            ephemeral-storage: "1Gi"
+            memory: "2Gi"
+            cpu: "3500m"
+            ephemeral-storage: "3Gi"
