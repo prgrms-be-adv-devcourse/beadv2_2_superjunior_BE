@@ -2,6 +2,7 @@ package store._0982.commerce.application.order;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
@@ -66,9 +67,6 @@ public class CanceledOrderService {
 
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
-        groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-
-        order.requestCanceledAt();
         OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolve(groupPurchase, order, command.reason());
         RefundAmount refundAmount = policy.calculate(order);
 
@@ -92,7 +90,16 @@ public class CanceledOrderService {
                 command.idempotencyKey(),
                 order.getPaymentMethod()
         );
-        canceledOrderRepository.save(canceledOrder);
+
+        try {
+            canceledOrderRepository.save(canceledOrder);
+        } catch (DataIntegrityViolationException e) {
+            return;
+        }
+
+        groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+
+        order.requestCanceledAt();
 
         if (command.reason().isBuyerFault()) {
             publishCancellationEvent(canceledOrder, productName);
