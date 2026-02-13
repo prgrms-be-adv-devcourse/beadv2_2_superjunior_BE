@@ -7,10 +7,7 @@ spring:
     web-application-type: none
 
   flyway:
-    enabled: true
-    create-schemas: true
-    default-schema: settlement_schema
-    schemas: settlement_schema
+    enabled: false
 
   datasource:
     url: ${BATCH_SPRING_DATASOURCE_URL}
@@ -37,6 +34,7 @@ spring:
   batch:
     jdbc:
       initialize-schema: never
+      table-prefix: batch_schema.BATCH_
 
 management:
   endpoints:
@@ -51,12 +49,6 @@ management:
 
 kafka:
   bootstrap-servers: ${spring.kafka.bootstrap-servers}
-
-reindex:
-  group-purchase:
-    alias: group-purchase
-    batch-size: 1000
-    switch-alias: true
 
 logging:
   level:

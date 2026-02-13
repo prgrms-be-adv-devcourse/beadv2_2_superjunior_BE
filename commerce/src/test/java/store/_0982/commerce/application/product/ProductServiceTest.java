@@ -42,9 +42,6 @@ class ProductServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
-    @Mock
-    private ProductVectorRepository productVectorRepository;
-
     @InjectMocks
     private ProductService productService;
 
@@ -123,7 +120,6 @@ class ProductServiceTest {
             UUID memberId = UUID.randomUUID();
 
             Product product = mock(Product.class);
-            when(product.getProductId()).thenReturn(productId);
             when(product.getSellerId()).thenReturn(memberId);
 
             when(productRepository.findById(productId))
@@ -142,7 +138,6 @@ class ProductServiceTest {
             verify(groupPurchaseRepository).existsByProductId(productId);
             verify(productRepository).delete(product);
             verify(productRepository, never()).save(any());
-            verify(productVectorRepository).deleteById(productId);
         }
 
 
@@ -173,7 +168,6 @@ class ProductServiceTest {
             verify(product).softDelete();
             verify(productRepository).save(product);
             verify(productRepository, never()).delete(any());
-            verify(productVectorRepository, never()).deleteById(any());
         }
 
         @Test
@@ -365,7 +359,6 @@ class ProductServiceTest {
         Product product = mock(Product.class);
         when(productRepository.findById(productId)).thenReturn(Optional.of(product));
         when(product.getSellerId()).thenReturn(memberId);
-        when(product.getProductId()).thenReturn(productId);
 
         when(groupPurchaseRepository.existsByProductIdAndStatusIn(eq(productId), anyList()))
                 .thenReturn(false);
@@ -379,7 +372,6 @@ class ProductServiceTest {
         verify(groupPurchaseRepository).existsByProductIdAndStatusIn(eq(productId), anyList());
         verify(groupPurchaseRepository).existsByProductId(productId);
         verify(productRepository).delete(product);
-        verify(productVectorRepository).deleteById(productId);
         verify(productRepository, never()).save(any());
     }
 
@@ -425,7 +417,6 @@ class ProductServiceTest {
         verify(product).softDelete();
         verify(productRepository).save(product);
         verify(productRepository, never()).delete(any());
-        verify(productVectorRepository, never()).deleteById(any());
     }
 
     @Test

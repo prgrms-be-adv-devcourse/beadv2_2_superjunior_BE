@@ -7,9 +7,14 @@ import java.util.UUID;
 public interface GroupPurchaseReindexRepository {
     long countSource();
 
-    List<GroupPurchaseReindexRow> fetchAllRows(int limit, long offset);
+    List<GroupPurchaseReindexRow> fetchAllRows(int limit, UUID lastId);
 
-    List<GroupPurchaseReindexRow> fetchIncrementalRows(OffsetDateTime since, int limit, long offset);
+    List<GroupPurchaseReindexRow> fetchIncrementalRows(
+            OffsetDateTime since,
+            OffsetDateTime lastUpdatedAt,
+            UUID lastId,
+            int limit
+    );
 
     List<GroupPurchaseReindexRow> fetchByIds(List<UUID> ids);
 }

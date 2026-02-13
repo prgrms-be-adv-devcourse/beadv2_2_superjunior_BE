@@ -20,15 +20,15 @@ public class SellerBalanceService {
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
 
     @Transactional
-    public void clearBalance(SellerPayout settlement) {
-        SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(settlement.getSellerId())
+    public void clearBalance(SellerPayout sellerPayout) {
+        SellerBalance sellerBalance = sellerBalanceRepository.findByMemberId(sellerPayout.getSellerId())
                 .orElseThrow(() -> new CustomException(CustomErrorCode.SELLER_NOT_FOUND));
 
-        long transferAmount = settlement.getTotalAmount();
+        long transferAmount = sellerPayout.getTotalAmount();
         sellerBalance.decreaseBalance(transferAmount);
         sellerBalanceRepository.save(sellerBalance);
 
-        saveSellerBalanceHistory(settlement, transferAmount);
+        saveSellerBalanceHistory(sellerPayout, transferAmount);
     }
 
     private void saveSellerBalanceHistory(SellerPayout settlement, long transferAmount) {

@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
+import store._0982.batch.batch.settlement.dto.OrderSettlementDto;
 import store._0982.batch.domain.sellerbalance.SellerBalanceHistoryRepository;
 import store._0982.batch.domain.sellerbalance.SellerBalanceRepository;
 import store._0982.batch.domain.settlement.OrderSettlementRepository;
 import store._0982.common.domain.sellerbalance.SellerBalance;
 import store._0982.common.domain.sellerbalance.SellerBalanceHistory;
-import store._0982.common.domain.settlement.OrderSettlement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,22 +22,22 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SettlementWriter implements ItemWriter<OrderSettlement> {
+public class SettlementWriter implements ItemWriter<OrderSettlementDto> {
 
     private final SellerBalanceRepository sellerBalanceRepository;
     private final SellerBalanceHistoryRepository sellerBalanceHistoryRepository;
     private final OrderSettlementRepository orderSettlementRepository;
 
     @Override
-    public void write(Chunk<? extends OrderSettlement> chunk) {
-        List<OrderSettlement> orderSettlements = new ArrayList<>(chunk.getItems());
+    public void write(Chunk<? extends OrderSettlementDto> chunk) {
+        List<OrderSettlementDto> orderSettlements = new ArrayList<>(chunk.getItems());
 
         if (orderSettlements.isEmpty()) {
             return;
         }
 
-        Map<UUID, List<OrderSettlement>> settlementsBySeller = orderSettlements.stream()
-                .collect(Collectors.groupingBy(OrderSettlement::getSellerId));
+        Map<UUID, List<OrderSettlementDto>> settlementsBySeller = orderSettlements.stream()
+                .collect(Collectors.groupingBy(OrderSettlementDto::sellerId));
 
         List<UUID> sellerIds = new ArrayList<>(settlementsBySeller.keySet());
         Map<UUID, SellerBalance> sellerBalanceMap = sellerBalanceRepository.findAllByMemberIdIn(sellerIds)
@@ -48,9 +48,9 @@ public class SettlementWriter implements ItemWriter<OrderSettlement> {
         List<UUID> settlementIds = new ArrayList<>(orderSettlements.size());
         List<SellerBalance> changedBalances = new ArrayList<>();
 
-        for (Map.Entry<UUID, List<OrderSettlement>> entry : settlementsBySeller.entrySet()) {
+        for (Map.Entry<UUID, List<OrderSettlementDto>> entry : settlementsBySeller.entrySet()) {
             UUID sellerId = entry.getKey();
-            List<OrderSettlement> settlements = entry.getValue();
+            List<OrderSettlementDto> settlements = entry.getValue();
 
             SellerBalance sellerBalance = sellerBalanceMap.get(sellerId);
             if (sellerBalance == null) {
@@ -61,14 +61,14 @@ public class SettlementWriter implements ItemWriter<OrderSettlement> {
             }
 
             long totalAmount = 0L;
-            for (OrderSettlement orderSettlement : settlements) {
-                totalAmount += orderSettlement.getSettlementAmount();
+            for (OrderSettlementDto orderSettlement : settlements) {
+                totalAmount += orderSettlement.settlementAmount();
                 histories.add(SellerBalanceHistory.createCreditHistory(
-                        orderSettlement.getSellerId(),
-                        orderSettlement.getOrderSettlementId(),
-                        orderSettlement.getSettlementAmount()
+                        orderSettlement.sellerId(),
+                        orderSettlement.orderSettlementId(),
+                        orderSettlement.settlementAmount()
                 ));
-                settlementIds.add(orderSettlement.getOrderSettlementId());
+                settlementIds.add(orderSettlement.orderSettlementId());
             }
             sellerBalance.increaseBalance(totalAmount);
             changedBalances.add(sellerBalance);
