@@ -12,7 +12,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
-import store._0982.common.log.LogFormat;
+import store._0982.common.log.LogFormatInfo;
+import store._0982.common.log.LogFormatter;
 
 /**
  * 기본적인 에러 핸들링을 정의한 핸들러입니다.
@@ -36,9 +37,11 @@ public abstract class BaseExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         HttpStatus httpStatus = errorCode.getHttpStatus();
         if (errorCode instanceof DefaultErrorCode) {
-            log.error(LogFormat.error(httpStatus, e.getMessage()));
+            LogFormatInfo logFormatInfo = LogFormatter.error(httpStatus, e.getMessage());
+            log.error(logFormatInfo.message(), logFormatInfo.args());
         } else {
-            log.error(LogFormat.error(httpStatus, e.getMessage()), e);
+            LogFormatInfo logFormatInfo = LogFormatter.error(httpStatus, e);
+            log.error(logFormatInfo.message(), logFormatInfo.args());
         }
         return ResponseEntity.status(httpStatus)
                 .body(new ResponseDto<>(httpStatus, null, e.getMessage()));
@@ -75,28 +78,32 @@ public abstract class BaseExceptionHandler {
     @ExceptionHandler(SecurityException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseDto<String> handleSecurityException(SecurityException e) {
-        log.error(LogFormat.error(HttpStatus.FORBIDDEN, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.FORBIDDEN, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return new ResponseDto<>(HttpStatus.FORBIDDEN, null, e.getMessage());
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseDto<String> handleNoResourceFoundException(NoResourceFoundException e) {
-        log.error(LogFormat.error(HttpStatus.NOT_FOUND, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.NOT_FOUND, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseDto<String> handleNoHandlerFoundException(NoHandlerFoundException e) {
-        log.error(LogFormat.error(HttpStatus.NOT_FOUND, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.NOT_FOUND, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return new ResponseDto<>(HttpStatus.NOT_FOUND, null, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseDto<String> handleException(Exception e) {
-        log.error(LogFormat.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()), e);
+        LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.INTERNAL_SERVER_ERROR, e);
+        log.error(logFormatInfo.message(), logFormatInfo.args());
         return new ResponseDto<>(HttpStatus.INTERNAL_SERVER_ERROR, null, e.getMessage());
     }
 }

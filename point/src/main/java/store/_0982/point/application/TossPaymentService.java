@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import store._0982.common.exception.CustomException;
-import store._0982.common.log.LogFormat;
+import store._0982.common.log.LogFormatInfo;
+import store._0982.common.log.LogFormatter;
 import store._0982.common.log.ServiceLog;
 import store._0982.point.application.dto.pg.PgCancelCommand;
 import store._0982.point.application.dto.pg.PgConfirmCommand;
@@ -74,7 +75,8 @@ public class TossPaymentService {
         } catch (ResourceAccessException e) {
             throw new CustomException(CustomErrorCode.PAYMENT_API_TIMEOUT);
         } catch (Exception e) {
-            log.error(LogFormat.error(HttpStatus.BAD_GATEWAY, e.getMessage()), e);
+            LogFormatInfo logFormatInfo = LogFormatter.error(HttpStatus.BAD_GATEWAY, e);
+            log.error(logFormatInfo.message(), logFormatInfo.args());
             throw new CustomException(CustomErrorCode.PAYMENT_API_ERROR);
         }
     }
