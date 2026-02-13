@@ -157,28 +157,29 @@ jobs:
           NODE_NAME="batch-server-${TIMESTAMP}"
           echo "⏳ Waiting for node ${NODE_NAME} to join cluster..."
 
-          # 최대 5분 대기
-          for i in {1..60}; do
-            if kubectl get node "${NODE_NAME}" 2>/dev/null; then
-              echo "✅ Node ${NODE_NAME} found!"
+          # Node Ready 대기 (백그라운드 실행)
+          kubectl wait --for=condition=ready "node/${NODE_NAME}" --timeout=300s &
+          WAIT_PID=$!
 
-              # Ready 상태 대기
-              kubectl wait --for=condition=ready "node/${NODE_NAME}" --timeout=180s
-
-              # 레이블 추가
-              kubectl label "node/${NODE_NAME}" \
-                logging=enabled \
-                test-run="${TIMESTAMP}" \
-                batch-test=true \
-                --overwrite
-
-              echo "✅ Node ${NODE_NAME} is ready!"
-              break
-            fi
-
-            echo "Attempt $i/60: Node not found yet..."
-            sleep 5
+          # 진행 상황 출력 (1분마다)
+          ELAPSED=0
+          while kill -0 $WAIT_PID 2>/dev/null; do
+            sleep 60
+            ELAPSED=$((ELAPSED + 1))
+            echo "⏱️ Still waiting for node... (${ELAPSED} minute(s) elapsed)"
           done
+
+          # kubectl wait 결과 확인
+          wait $WAIT_PID
+
+          # 레이블 추가
+          kubectl label "node/${NODE_NAME}" \
+            logging=enabled \
+            test-run="${TIMESTAMP}" \
+            batch-test=true \
+            --overwrite
+
+          echo "✅ Node ${NODE_NAME} is ready!"
 
           # 노드 정보 출력
           kubectl describe "node/${NODE_NAME}"
