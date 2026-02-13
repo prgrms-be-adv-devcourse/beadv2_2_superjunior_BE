@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-exec > >(tee /var/log/batch-setup.log) 2>&1
+exec > >(tee /logs/batch-setup.log) 2>&1
 
 echo "Starting k3s agent installation..."
 echo "Node Name: __NODE_NAME__"

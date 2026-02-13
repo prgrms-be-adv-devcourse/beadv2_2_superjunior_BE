@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+exec > >(tee /logs/run-batch-test.log) 2>&1
 
 # 환경변수 확인
 if [ -z "$JOB_NAMES_INPUT" ] || [ -z "$GITHUB_RUN_ID" ]; then

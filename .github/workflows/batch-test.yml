@@ -423,31 +423,3 @@ jobs:
           else
             echo "ℹ️ No instance found to terminate"
           fi
-
-  summary:
-    needs: batch-test
-    if: always()
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download All Logs
-        uses: actions/download-artifact@v4
-        with:
-          path: all-logs
-
-      - name: Generate Summary
-        run: |
-          echo "# 🧪 Batch Test Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Run ID:** ${GITHUB_RUN_ID}" >> $GITHUB_STEP_SUMMARY
-          echo "**Jobs Executed:** ${JOB_NAMES}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "## 📊 Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "- Logs: Check artifact \`batch-test-logs\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Results: s3://batch-test-results/${GITHUB_RUN_ID}/" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          echo "## 🔗 Useful Links" >> $GITHUB_STEP_SUMMARY
-          echo "- [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${GITHUB_RUN_NUMBER})" >> $GITHUB_STEP_SUMMARY
-          echo "- [S3 Results](https://s3.console.aws.amazon.com/s3/buckets/batch-test-results?prefix=${GITHUB_RUN_ID}/)" >> $GITHUB_STEP_SUMMARY
