@@ -68,13 +68,22 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
+      - name: Generate timestamp
+        id: timestamp
+        run: |
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "📅 Test ID: $TIMESTAMP"
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y gettext-base bc
 
       - name: Prepare user data script
         id: prepare
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
           echo "node-name=${NODE_NAME}" >> $GITHUB_OUTPUT
 
           sed -e "s|__CONTROL_PLANE_IP__|${{ secrets.K3S_CONTROL_PLANE_IP }}|g" \
@@ -90,8 +99,9 @@ jobs:
         env:
           SUBNET_ID: ${{ secrets.AWS_BATCH_TEST_SUBNET_ID }}
           SECURITY_GROUP_ID: ${{ secrets.AWS_BATCH_TEST_SECURITY_GROUP_ID }}
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
           echo "🚀 Launching Spot Instance: ${NODE_NAME}"
 
           SPOT_REQUEST=$(aws ec2 request-spot-instances \
@@ -113,7 +123,7 @@ jobs:
 
           # Spot Request에 태그 추가
           aws ec2 create-tags --resources "${SPOT_REQUEST}" \
-            --tags "Key=test-run,Value=${GITHUB_RUN_ID}" \
+            --tags "Key=test-run,Value=${TIMESTAMP}" \
                    "Key=auto-cleanup,Value=true" \
             --region "${AWS_REGION}"
 
@@ -134,15 +144,17 @@ jobs:
           # 태그 추가
           aws ec2 create-tags --resources "${INSTANCE_ID}" \
             --tags "Key=Name,Value=${NODE_NAME}" \
-                   "Key=test-run,Value=${GITHUB_RUN_ID}" \
+                   "Key=test-run,Value=${TIMESTAMP}" \
                    "Key=auto-cleanup,Value=true" \
             --region "${AWS_REGION}"
 
           echo "✅ Instance started: ${INSTANCE_ID} (${NODE_NAME})"
 
       - name: Wait for Node to Join Cluster
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
           echo "⏳ Waiting for node ${NODE_NAME} to join cluster..."
 
           # 최대 5분 대기
@@ -156,7 +168,7 @@ jobs:
               # 레이블 추가
               kubectl label "node/${NODE_NAME}" \
                 logging=enabled \
-                test-run="${GITHUB_RUN_ID}" \
+                test-run="${TIMESTAMP}" \
                 batch-test=true \
                 --overwrite
 
@@ -172,25 +184,29 @@ jobs:
           kubectl describe "node/${NODE_NAME}"
 
       - name: Create Test Namespace
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           kubectl create namespace "${NAMESPACE}" || true
           kubectl label "namespace/${NAMESPACE}" \
-            test-run="${GITHUB_RUN_ID}" \
+            test-run="${TIMESTAMP}" \
             cleanup=auto \
             purpose=batch-test \
             --overwrite
 
       - name: Deploy Kafka
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📦 Deploying Kafka to ${NODE_NAME}..."
 
           export NODE_SELECTOR="${NODE_NAME}"
-          export RUN_ID="${GITHUB_RUN_ID}"
+          export RUN_ID="${TIMESTAMP}"
 
           # Kafka 배포
           envsubst < docs/k8s/infra/batch-kafka.yml | \
@@ -205,9 +221,11 @@ jobs:
           echo "✅ Kafka is ready!"
 
       - name: Deploy PostgreSQL
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📦 Deploying PostgreSQL to ${NODE_NAME}..."
 
@@ -236,8 +254,10 @@ jobs:
           done
 
       - name: Restore Initial Database Dump
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📥 Downloading database dump from S3..."
           aws s3 cp "${DUMP_FILE_URL}" initial-dump.sql.gz
@@ -264,8 +284,10 @@ jobs:
             "
 
       - name: Collect DB Metrics Before Test
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📊 Collecting DB metrics before test..."
           kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
@@ -278,13 +300,15 @@ jobs:
         id: run-batch
         env:
           JOB_NAMES_INPUT: ${{ env.JOB_NAMES }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ID: ${{ steps.timestamp.outputs.timestamp }}
         run: bash .github/workflows/templates/init-batch-test.sh
 
       - name: Collect DB Metrics After Test
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📊 Collecting DB metrics after test..."
           kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
@@ -311,8 +335,10 @@ jobs:
 
       - name: Verify Kafka Events Published
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📊 Checking Kafka events..."
           kubectl exec -n "${NAMESPACE}" kafka-batch-0 -- \
@@ -328,25 +354,29 @@ jobs:
 
       - name: Dump Test Results
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          NAMESPACE="batch-test-${TIMESTAMP}"
+          RESULT_TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
           echo "💾 Dumping test results..."
           kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
-            pg_dump -U postgres > "result-dump-${TIMESTAMP}.sql" || true
+            pg_dump -U postgres > "result-dump-${RESULT_TIMESTAMP}.sql" || true
 
           # S3에 업로드
-          if [ -f "result-dump-${TIMESTAMP}.sql" ]; then
-            aws s3 cp "result-dump-${TIMESTAMP}.sql" \
-              "s3://batch-test-results/${GITHUB_RUN_ID}/"
+          if [ -f "result-dump-${RESULT_TIMESTAMP}.sql" ]; then
+            aws s3 cp "result-dump-${RESULT_TIMESTAMP}.sql" \
+              "s3://batch-test-results/${TIMESTAMP}/"
             echo "✅ Results saved to S3"
           fi
 
       - name: Collect Logs
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
 
           mkdir -p logs
 
@@ -368,15 +398,17 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: batch-test-logs
+          name: batch-test-logs-${{ steps.timestamp.outputs.timestamp }}
           path: logs/
           retention-days: 30
 
       - name: Delete Kubernetes Resources
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
-          NAMESPACE="batch-test-${GITHUB_RUN_ID}"
-          NODE_NAME="batch-server-${GITHUB_RUN_ID}"
+          NAMESPACE="batch-test-${TIMESTAMP}"
+          NODE_NAME="batch-server-${TIMESTAMP}"
 
           echo "🧹 Cleaning up Kubernetes resources..."
 
@@ -396,10 +428,12 @@ jobs:
 
       - name: Terminate Spot Instance
         if: always()
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
           # Spot Request 취소
           SPOT_REQUEST_ID=$(aws ec2 describe-spot-instance-requests \
-            --filters "Name=tag:test-run,Values=${GITHUB_RUN_ID}" \
+            --filters "Name=tag:test-run,Values=${TIMESTAMP}" \
                       "Name=state,Values=open,active" \
             --query 'SpotInstanceRequests[0].SpotInstanceRequestId' \
             --output text 2>/dev/null || echo "")
@@ -411,7 +445,7 @@ jobs:
 
           # 태그로 인스턴스 찾기
           INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:test-run,Values=${GITHUB_RUN_ID}" \
+            --filters "Name=tag:test-run,Values=${TIMESTAMP}" \
                       "Name=instance-state-name,Values=running,pending" \
             --query 'Reservations[0].Instances[0].InstanceId' \
             --output text)
