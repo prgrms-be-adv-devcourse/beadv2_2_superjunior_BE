@@ -214,7 +214,7 @@ jobs:
           NAMESPACE="batch-test-${TIMESTAMP}"
           
           # GitHub Secrets로부터 시크릿 생성
-          kubectl create secret generic postgres-batch-secret \
+          kubectl create secret generic batch-secret \
             -n "${NAMESPACE}" \
             --from-literal=BATCH_SPRING_DATASOURCE_URL="jdbc:postgresql://postgres-batch-service:5432/batch_test" \
             --from-literal=BATCH_SPRING_DATASOURCE_USERNAME=postgres \
