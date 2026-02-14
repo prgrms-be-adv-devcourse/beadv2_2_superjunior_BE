@@ -714,6 +714,128 @@ class OrderConcurrencyIntegrationTest extends BaseIntegrationTest {
     }
 
     @Test
+    @DisplayName("참여자 수가 다 차기 직전 참여 시 GROUP_PURCHASE_IS_REACHED 에러 발생")
+    void concurrentOrder_nearMaxQuantity_throwsGroupPurchaseIsReachedError() throws Exception {
+        int maxQuantity = 10;
+        int preFilled = 9;  // 1개 남은 상태
+
+        UUID sellerId = UUID.randomUUID();
+        Product product = productRepository.saveAndFlush(Product.createProduct(
+                "테스트 상품",
+                10000L,
+                ProductCategory.BEAUTY,
+                "테스트 상품 설명",
+                100,
+                "https://example.com/product",
+                null,
+                "test-key-near-max",
+                sellerId
+        ));
+
+        OffsetDateTime now = OffsetDateTime.now();
+        GroupPurchase groupPurchase = new GroupPurchase(
+                1,
+                maxQuantity,
+                "테스트 공동구매",
+                "설명",
+                5000L,
+                now.minusDays(1),
+                now.plusDays(3),
+                sellerId,
+                product.getProductId(),
+                null
+        );
+        groupPurchase.open();
+        GroupPurchase savedGroupPurchase = groupPurchaseRepository.saveAndFlush(groupPurchase);
+
+        // 9개 미리 채우기
+        for (int i = 0; i < preFilled; i++) {
+            UUID memberId = UUID.randomUUID();
+            OrderRegisterCommand command = new OrderRegisterCommand(
+                    1,
+                    "서울시 강남구",
+                    "상세 주소",
+                    "12345",
+                    "수령인",
+                    sellerId,
+                    savedGroupPurchase.getGroupPurchaseId(),
+                    "prefill-" + i + "-" + UUID.randomUUID()
+            );
+            orderCommandService.createOrder(memberId, command);
+        }
+
+        // 2명이 동시에 주문 시도
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch readyLatch = new CountDownLatch(2);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(2);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger groupPurchaseReachedErrorCount = new AtomicInteger();
+        AtomicInteger otherErrorCount = new AtomicInteger();
+
+        for (int i = 0; i < 2; i++) {
+            int index = i;
+            executor.submit(() -> {
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+                    UUID memberId = UUID.randomUUID();
+                    OrderRegisterCommand command = new OrderRegisterCommand(
+                            1,
+                            "서울시 강남구",
+                            "상세 주소",
+                            "12345",
+                            "수령인",
+                            sellerId,
+                            savedGroupPurchase.getGroupPurchaseId(),
+                            "concurrent-" + index + "-" + UUID.randomUUID()
+                    );
+                    orderCommandService.createOrder(memberId, command);
+                    successCount.incrementAndGet();
+                } catch (store._0982.common.exception.CustomException e) {
+                    if (e.getErrorCode() == store._0982.commerce.exception.CustomErrorCode.GROUP_PURCHASE_IS_REACHED) {
+                        groupPurchaseReachedErrorCount.incrementAndGet();
+                        log.info("GROUP_PURCHASE_IS_REACHED 에러 발생 (예상된 동작)");
+                    } else {
+                        otherErrorCount.incrementAndGet();
+                        log.error("예상치 못한 CustomException: {}", e.getErrorCode(), e);
+                    }
+                } catch (Exception e) {
+                    otherErrorCount.incrementAndGet();
+                    log.error("예상치 못한 Exception", e);
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        readyLatch.await(10, TimeUnit.SECONDS);
+        startLatch.countDown();
+        doneLatch.await(30, TimeUnit.SECONDS);
+        executor.shutdown();
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+
+        GroupPurchase updated = groupPurchaseRepository.findById(savedGroupPurchase.getGroupPurchaseId())
+                .orElseThrow();
+        List<Order> orders = orderRepository.findByGroupPurchaseIdAndDeletedAtIsNull(savedGroupPurchase.getGroupPurchaseId());
+
+        log.info("=== OrderConcurrencyIntegrationTest Result (GROUP_PURCHASE_IS_REACHED 에러 테스트) ===");
+        log.info("successCount={}, groupPurchaseReachedErrorCount={}, otherErrorCount={}",
+                successCount.get(), groupPurchaseReachedErrorCount.get(), otherErrorCount.get());
+        log.info("maxQuantity={}, preFilled={}, currentQuantity={}, status={}",
+                maxQuantity, preFilled, updated.getCurrentQuantity(), updated.getStatus());
+
+        // 검증
+        assertThat(successCount.get()).isEqualTo(1);  // 1명만 성공
+        assertThat(groupPurchaseReachedErrorCount.get()).isEqualTo(1);  // 1명은 GROUP_PURCHASE_IS_REACHED 에러
+        assertThat(otherErrorCount.get()).isZero();  // 다른 에러는 없어야 함
+        assertThat(updated.getCurrentQuantity()).isEqualTo(maxQuantity);  // 최대치까지만 증가
+        assertThat(updated.getStatus()).isEqualTo(GroupPurchaseStatus.SUCCESS);
+        assertThat(orders.size()).isEqualTo(maxQuantity);  // 총 10개 주문만 존재
+    }
+
+    @Test
     @DisplayName("최대치에 가까울 때 참여와 취소가 동시 발생")
     void concurrentParticipateAndCancel_nearMaxQuantity() throws Exception {
         int maxQuantity = 50;
