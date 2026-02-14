@@ -33,7 +33,7 @@ env:
   BATCH_AMI_ID: ami-04f06fb5ae9dcc778
   CONTROL_PLANE_IP: ${{ secrets.K3S_CONTROL_PLANE_IP }}
   K3S_TOKEN: ${{ secrets.K3S_TOKEN }}
-  KUBECONFIG: ${{ secrets.KUBE_CONFIG }}
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
   JOB_NAMES: ${{ github.event.inputs.job_names || 'monthly-settlement' }}
   JOB_INTERVAL: ${{ github.event.inputs.job_interval || '0' }}
   DUMP_FILE_URL: ${{ github.event.inputs.dump_file_url || 's3://0909-store-bucket/postgres-backups/only-schemas-init.sql.gz' }}
@@ -66,7 +66,7 @@ jobs:
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${KUBECONFIG}" > ~/.kube/config
+          echo "${KUBE_CONFIG_DATA}" > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Generate timestamp
