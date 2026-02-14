@@ -38,20 +38,20 @@ spec:
               value: "single-node"
             - name: xpack.security.enabled
               value: "false"
-            - name: ES_JAVA_OPTS
-              value: "-Xms1g -Xmx1g"
+            - name: ELASTIC_HEAP_SIZE
+              value: "1536m"
             - name: cluster.name
               value: "group-purchase-cluster"
             - name: node.name
               value: "group-purchase-node"
           resources:
             requests:
-              ephemeral-storage: "2Gi"
-              memory: "1.5Gi"
-              cpu: "500m"
-            limits:
               ephemeral-storage: "3Gi"
               memory: "2Gi"
+              cpu: "500m"
+            limits:
+              ephemeral-storage: "4Gi"
+              memory: "2.5Gi"
               cpu: "1000m"
           volumeMounts:
             - name: elasticsearch-storage

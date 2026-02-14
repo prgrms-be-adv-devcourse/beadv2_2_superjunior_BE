@@ -20,6 +20,7 @@ import store._0982.batch.exception.CustomErrorCode;
 import store._0982.batch.infrastructure.recommendation.ProductVectorQueryRepository;
 import store._0982.common.exception.CustomException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,27 +45,21 @@ public class GroupPurchaseReindexService {
         indexOps.create(settings, mapping);
     }
 
-    public List<String> bulkIndex(String indexName, List<? extends GroupPurchaseDocument> docs) {
-        BulkResponse response = null;
-        try {
-            response = elasticsearchClient.bulk(bulk -> {
-                for (GroupPurchaseDocument doc : docs) {
-                    bulk.operations(op -> op
-                            .index(idx -> idx
-                                    .index(indexName)
-                                    .id(doc.getGroupPurchaseId())
-                                    .document(doc)
-                            ));
-                }
-                return bulk;
-            });
-        } catch (Exception e) {
-            throw new CustomException(CustomErrorCode.ES_BULK_INSERT_ERROR);
-        }
-        return collectFailedIds(response);
+    public List<String> bulkIndex(String indexName, List<? extends GroupPurchaseDocument> docs) throws IOException {
+        return collectFailedIds(elasticsearchClient.bulk(bulk -> {
+            for (GroupPurchaseDocument doc : docs) {
+                bulk.operations(op -> op
+                        .index(idx -> idx
+                                .index(indexName)
+                                .id(doc.getGroupPurchaseId())
+                                .document(doc)
+                        ));
+            }
+            return bulk;
+        }));
     }
 
-    public List<String> retryFailedRows(String indexName, List<String> failedIds) {
+    public List<String> retryFailedRows(String indexName, List<String> failedIds) throws IOException {
         if (failedIds == null || failedIds.isEmpty()) {
             return List.of();
         }
@@ -87,7 +82,7 @@ public class GroupPurchaseReindexService {
         return retryFailed;
     }
 
-    public List<GroupPurchaseDocument> buildDocumentsFromRows(List<? extends GroupPurchaseReindexRow> rows) {
+    public List<GroupPurchaseDocument> buildDocumentsFromRows(List<GroupPurchaseReindexRow> rows) {
         if (rows == null || rows.isEmpty()) {
             return List.of();
         }
