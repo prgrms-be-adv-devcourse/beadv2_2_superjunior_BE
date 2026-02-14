@@ -194,9 +194,6 @@ jobs:
 
           echo "✅ Node ${NODE_NAME} is ready!"
 
-          # 노드 정보 출력
-          kubectl describe "node/${NODE_NAME}"
-
       - name: Create Test Namespace
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
@@ -209,6 +206,22 @@ jobs:
             cleanup=auto \
             purpose=batch-test \
             --overwrite
+
+      - name: Create PostgreSQL Secret
+        env:
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+        run: |
+          NAMESPACE="batch-test-${TIMESTAMP}"
+          
+          # GitHub Secrets로부터 시크릿 생성
+          kubectl create secret generic postgres-batch-secret \
+            -n "${NAMESPACE}" \
+            --from-literal=POSTGRES_DB=postgres \
+            --from-literal=POSTGRES_USER=postgres \
+            --from-literal=POSTGRES_PASSWORD="${{ secrets.BATCH_POSTGRES_PASSWORD }}" \
+            --from-literal=DATA_SOURCE_NAME="postgresql://postgres:${{ secrets.BATCH_POSTGRES_PASSWORD }}@localhost:5432/postgres?sslmode=disable"
+          
+          echo "✅ PostgreSQL secret created in namespace ${NAMESPACE}"
 
       - name: Deploy Kafka
         env:
@@ -346,25 +359,6 @@ jobs:
           echo ""
           echo "📋 Table Scan Statistics:"
           grep "pg_stat_user_tables_seq_scan" metrics-after.txt | grep -v "^#" | head -5 || true
-
-      - name: Verify Kafka Events Published
-        if: always()
-        env:
-          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
-        run: |
-          NAMESPACE="batch-test-${TIMESTAMP}"
-
-          echo "📊 Checking Kafka events..."
-          kubectl exec -n "${NAMESPACE}" kafka-batch-0 -- \
-            kafka-console-consumer \
-              --bootstrap-server localhost:9092 \
-              --topic settlement-done \
-              --from-beginning \
-              --max-messages 10 \
-              --timeout-ms 5000 > kafka-messages.json || true
-
-          MESSAGE_COUNT=$(wc -l < kafka-messages.json || echo "0")
-          echo "Published ${MESSAGE_COUNT} events to settlement-done topic"
 
       - name: Dump Test Results
         if: always()
