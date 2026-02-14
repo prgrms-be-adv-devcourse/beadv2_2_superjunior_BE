@@ -3,13 +3,13 @@ set -e
 exec > >(tee /logs/run-batch-test.log) 2>&1
 
 # 환경변수 확인
-if [ -z "$JOB_NAMES_INPUT" ] || [ -z "$GITHUB_RUN_ID" ]; then
-  echo "❌ Required environment variables missing: JOB_NAMES_INPUT, GITHUB_RUN_ID"
+if [ -z "$JOB_NAMES_INPUT" ] || [ -z "$TIMESTAMP" ]; then
+  echo "❌ Required environment variables missing: JOB_NAMES_INPUT, TIMESTAMP"
   exit 1
 fi
 
-NODE_NAME="batch-server-${GITHUB_RUN_ID}"
-NAMESPACE="batch-test-${GITHUB_RUN_ID}"
+NODE_NAME="batch-server-${TIMESTAMP}"
+NAMESPACE="batch-test-${TIMESTAMP}"
 
 export NODE_SELECTOR="${NODE_NAME}"
 
@@ -48,7 +48,7 @@ for job in $JOBS; do
     exit 1
   fi
 
-  UNIQUE_JOB_NAME="${job}-job-${GITHUB_RUN_ID}"
+  UNIQUE_JOB_NAME="${job}-job-${TIMESTAMP}"
 
   # Job 배포
   envsubst < "${JOB_FILE}" | \

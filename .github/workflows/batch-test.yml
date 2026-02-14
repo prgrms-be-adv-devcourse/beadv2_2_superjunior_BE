@@ -294,7 +294,7 @@ jobs:
 
           echo "📥 Restoring database dump..."
           kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -i -- \
-            psql -U postgres < initial-dump.sql
+            psql -U postgres -q < initial-dump.sql
 
           echo "✅ Database restored successfully!"
 
@@ -327,7 +327,7 @@ jobs:
         id: run-batch
         env:
           JOB_NAMES_INPUT: ${{ env.JOB_NAMES }}
-          GITHUB_RUN_ID: ${{ steps.timestamp.outputs.timestamp }}
+          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: bash .github/workflows/templates/init-batch-test.sh
 
       - name: Collect DB Metrics After Test
