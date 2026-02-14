@@ -207,7 +207,7 @@ jobs:
             purpose=batch-test \
             --overwrite
 
-      - name: Create PostgreSQL Secret
+      - name: Create Secrets
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
@@ -216,12 +216,18 @@ jobs:
           # GitHub Secrets로부터 시크릿 생성
           kubectl create secret generic postgres-batch-secret \
             -n "${NAMESPACE}" \
+            --from-literal=BATCH_SPRING_DATASOURCE_URL="jdbc:postgresql://postgres-batch-service:5432/batch_test" \
+            --from-literal=BATCH_SPRING_DATASOURCE_USERNAME=postgres \
+            --from-literal=BATCH_SPRING_DATASOURCE_PASSWORD="${{ secrets.BATCH_POSTGRES_PASSWORD }}"
+          
+          kubectl create secret generic postgres-batch-secret \
+            -n "${NAMESPACE}" \
             --from-literal=POSTGRES_DB=postgres \
             --from-literal=POSTGRES_USER=postgres \
             --from-literal=POSTGRES_PASSWORD="${{ secrets.BATCH_POSTGRES_PASSWORD }}" \
             --from-literal=DATA_SOURCE_NAME="postgresql://postgres:${{ secrets.BATCH_POSTGRES_PASSWORD }}@localhost:5432/postgres?sslmode=disable"
           
-          echo "✅ PostgreSQL secret created in namespace ${NAMESPACE}"
+          echo "✅ Secrets created in namespace ${NAMESPACE}"
 
       - name: Deploy Kafka
         env:
