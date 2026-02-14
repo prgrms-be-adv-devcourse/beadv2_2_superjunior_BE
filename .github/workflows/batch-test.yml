@@ -223,7 +223,7 @@ jobs:
           export RUN_ID="${TIMESTAMP}"
 
           # Kafka 배포
-          envsubst < docs/k8s/infra/batch-kafka.yml | \
+          envsubst < docs/k8s/infra/kafka-batch.yml | \
             sed "s/namespace: default/namespace: ${NAMESPACE}/" | \
             kubectl apply -n "${NAMESPACE}" -f -
 
