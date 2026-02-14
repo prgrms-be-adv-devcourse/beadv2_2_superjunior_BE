@@ -9,7 +9,6 @@ on:
       - '.github/workflows/templates/init-batch-test.sh'
       - '.github/workflows/templates/batch-user-data.sh'
       - '.github/workflows/batch-test.yml'
-      - 'docs/k8s/job/*.yml'
 
   workflow_dispatch:
     inputs:
