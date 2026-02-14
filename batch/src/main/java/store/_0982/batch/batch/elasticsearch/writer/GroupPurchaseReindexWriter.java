@@ -10,6 +10,7 @@ import store._0982.batch.application.elasticsearch.GroupPurchaseReindexService;
 import store._0982.batch.exception.CustomErrorCode;
 import store._0982.common.exception.CustomException;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class GroupPurchaseReindexWriter implements ItemWriter<GroupPurchaseReind
     private long totalIndexed = 0;
 
     @Override
-    public void write(Chunk<? extends GroupPurchaseReindexRow> chunk) {
+    public void write(Chunk<? extends GroupPurchaseReindexRow> chunk) throws IOException {
         List<? extends GroupPurchaseReindexRow> rows = chunk.getItems();
         if (rows.isEmpty()) {
             return;

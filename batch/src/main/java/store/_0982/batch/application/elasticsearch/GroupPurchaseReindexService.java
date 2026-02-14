@@ -82,7 +82,7 @@ public class GroupPurchaseReindexService {
         return retryFailed;
     }
 
-    public List<GroupPurchaseDocument> buildDocumentsFromRows(List<GroupPurchaseReindexRow> rows) {
+    public List<GroupPurchaseDocument> buildDocumentsFromRows(List<? extends GroupPurchaseReindexRow> rows) {
         if (rows == null || rows.isEmpty()) {
             return List.of();
         }
