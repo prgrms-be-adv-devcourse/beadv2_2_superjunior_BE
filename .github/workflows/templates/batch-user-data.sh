@@ -12,5 +12,4 @@ curl -sfL https://get.k3s.io | K3S_URL=https://__CONTROL_PLANE_IP__:6443 \
   sh -s - agent
 
 # 노드 준비 완료 시그널
-touch /tmp/k3s-ready
 echo "✅ k3s agent installation completed"

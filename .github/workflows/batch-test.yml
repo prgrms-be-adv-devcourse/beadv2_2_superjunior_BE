@@ -66,7 +66,11 @@ jobs:
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${KUBE_CONFIG_DATA}" > ~/.kube/config
+          if echo "${KUBE_CONFIG_DATA}" | base64 -d > /dev/null 2>&1; then
+            echo "${KUBE_CONFIG_DATA}" | base64 -d > ~/.kube/config
+          else
+            echo "${KUBE_CONFIG_DATA}" > ~/.kube/config
+          fi
           chmod 600 ~/.kube/config
 
       - name: Generate timestamp
@@ -90,6 +94,7 @@ jobs:
           sed -e "s|__CONTROL_PLANE_IP__|${{ secrets.K3S_CONTROL_PLANE_IP }}|g" \
               -e "s|__K3S_TOKEN__|${{ secrets.K3S_TOKEN }}|g" \
               -e "s|__NODE_NAME__|${NODE_NAME}|g" \
+              -e "s|__AWS_REGION__|${{ env.AWS_REGION }}|g" \
               .github/workflows/templates/batch-user-data.sh > user-data.sh
 
           base64 -w 0 user-data.sh > user-data-encoded.txt
@@ -157,8 +162,28 @@ jobs:
         run: |
           NODE_NAME="batch-server-${TIMESTAMP}"
 
-          echo "⏳ Waiting for node ${NODE_NAME} to join cluster..."
-          kubectl wait --for=condition=ready "node/${NODE_NAME}" --timeout=180s
+          echo "⏳ Waiting for node ${NODE_NAME} to be registered (max 3m)..."
+          FOUND=false
+          for i in {1..18}; do
+            if kubectl get node "${NODE_NAME}" >/dev/null 2>&1; then
+              FOUND=true
+              echo "✅ Node name appeared in K8s!"
+              break
+            fi
+            
+            if [ $((i % 6)) -eq 0 ]; then
+              echo "Still waiting for node name to appear... ($((i/6)) min passed)"
+            fi
+            sleep 10
+          done
+
+          if [ "$FOUND" = false ]; then
+            echo "❌ Timeout: Node ${NODE_NAME} failed to register within 3 minutes"
+            exit 1
+          fi
+
+          echo "⏳ Finally, waiting for node ${NODE_NAME} to be fully Ready..."
+          kubectl wait --for=condition=ready "node/${NODE_NAME}" --timeout=60s
 
           # 레이블 추가
           kubectl label "node/${NODE_NAME}" \
