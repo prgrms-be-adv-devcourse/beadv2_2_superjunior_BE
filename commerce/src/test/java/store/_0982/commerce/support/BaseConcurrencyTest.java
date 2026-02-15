@@ -139,15 +139,14 @@ public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
 
         // 결과 출력
         public void printSummary(String testName) {
-            System.out.println("\n" + "=".repeat(80));
-            System.out.println("[동시성 테스트 결과] " + testName);
-            System.out.println("=".repeat(80));
+            System.out.println("\n" + "-".repeat(50));
+            System.out.println("[동시성 테스트 결과] " + testName + "\n");
             System.out.println("소요 시간: " + durationMs + "ms");
             System.out.println("성공: " + successCount + " / 실패: " + failCount);
             System.out.println("TPS: " + String.format("%.2f", (successCount + failCount) * 1000.0 / durationMs));
 
             if (!exceptions.isEmpty()) {
-                System.out.println("-".repeat(80));
+                System.out.println("-".repeat(50));
                 System.out.println("예외 발생: " + exceptions.size() + "건");
                 var exceptionCounts = exceptions.stream()
                         .collect(java.util.stream.Collectors.groupingBy(
@@ -158,7 +157,7 @@ public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
                         System.out.println("  - " + type + ": " + count + "회")
                 );
             }
-            System.out.println("=".repeat(80) + "\n");
+            System.out.println("-".repeat(50) + "\n");
         }
     }
 }
