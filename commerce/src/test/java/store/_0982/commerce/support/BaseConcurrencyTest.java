@@ -1,7 +1,6 @@
 package store._0982.commerce.support;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -13,19 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
 
-    private static final int DEFAULT_THREAD_COUNT = 10;
-
     private ExecutorService executorService;
-    private CountDownLatch readyLatch;
-    private CountDownLatch startLatch;
-    private CountDownLatch doneLatch;
-
-    private int threadCount;
-
-    @BeforeEach
-    void baseSetup() {
-        initializeConcurrencyContext(getDefaultThreadCount());
-    }
 
     @AfterEach
     void baseTearDown() {
@@ -34,83 +21,86 @@ public abstract class BaseConcurrencyTest extends BaseIntegrationTest{
         }
     }
 
-    protected int getDefaultThreadCount() {
-        return DEFAULT_THREAD_COUNT;
+    /**
+     * Race Condition 테스트 - 모든 스레드가 정확히 같은 순간 시작 (스레드 개수 = 작업 개수)
+     *
+     * @param concurrentCount 동시 실행할 개수 (스레드 개수 = 작업 개수)
+     * @param task 실행할 작업
+     */
+    protected ConcurrencyResult runSynchronizedTask(int concurrentCount, Runnable task) throws InterruptedException {
+        return runConcurrentTest(concurrentCount, concurrentCount, task);
     }
 
-    protected ConcurrencyResult runSynchronizedTask(Runnable task) throws InterruptedException{
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failCount = new AtomicInteger(0);
-
-        List<Exception> exceptions = new CopyOnWriteArrayList<>();
-
-        long startTime = System.currentTimeMillis();
-        for(int i=0;i<threadCount;i++){
-            submitSingle(task, successCount, failCount, exceptions);
-        }
-
-        awaitAllAndRun();
-        long duration = System.currentTimeMillis() - startTime;
-        return new ConcurrencyResult(duration, successCount.get(), failCount.get(), exceptions);
+    /**
+     * 부하 테스트 - 고정된 스레드 풀이 많은 작업을 처리 (실제 서버 환경 시뮬레이션)
+     *
+     * @param threadCount 고정 스레드 개수 (예: 32개)
+     * @param taskCount 처리할 작업 개수 (예: 1000개)
+     * @param task 실행할 작업
+     */
+    protected ConcurrencyResult runLoadTest(int threadCount, int taskCount, Runnable task) throws InterruptedException {
+        return runConcurrentTest(threadCount, taskCount, task);
     }
 
-    protected ConcurrencyResult runSynchronizedTask(int customThreadCount, Runnable task) throws InterruptedException {
-        resetConcurrencyContext(customThreadCount);
-        return runSynchronizedTask(task);
-    }
-
-    protected void initializeConcurrencyContext(int threadCount){
-        this.threadCount = threadCount;
-        executorService = Executors.newFixedThreadPool(threadCount);
-        readyLatch = new CountDownLatch(threadCount);
-        startLatch = new CountDownLatch(1);
-        doneLatch = new CountDownLatch(threadCount);
-    }
-
-    private void resetConcurrencyContext(int threadCount) {
+    private ConcurrencyResult runConcurrentTest(int threadCount, int taskCount, Runnable task) throws InterruptedException {
+        // 기존 스레드 풀 종료
         if (executorService != null && !executorService.isShutdown()) {
             executorService.shutdown();
-            try {
-                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (InterruptedException e) {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
                 executorService.shutdownNow();
-                Thread.currentThread().interrupt();
             }
         }
-        initializeConcurrencyContext(threadCount);
-    }
 
-    private void submitSingle(Runnable task,
-                              AtomicInteger successCount,
-                              AtomicInteger failCount,
-                              List<Exception> exceptions
-    ){
-        executorService.submit(() -> {
-            try{
-                signalReadyAndAwaitStart();
-                task.run();
-                successCount.incrementAndGet();
-            } catch(Exception e){
-                System.err.println(e.getMessage());
-                exceptions.add(e);
-                failCount.incrementAndGet();
-            } finally {
-                doneLatch.countDown();
-            }
-        });
-    }
+        // threadCount만큼 스레드 풀 생성
+        executorService = Executors.newFixedThreadPool(threadCount);
 
-    private void signalReadyAndAwaitStart() throws InterruptedException {
-        readyLatch.countDown();
-        startLatch.await();
-    }
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);  // 모든 스레드 준비 완료 대기
+        CountDownLatch startLatch = new CountDownLatch(1);            // 동시 시작 신호
+        CountDownLatch doneLatch = new CountDownLatch(taskCount);     // 모든 작업 완료 대기
 
-    private void awaitAllAndRun() throws InterruptedException{
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+        AtomicInteger taskIndex = new AtomicInteger(0);
+        List<Exception> exceptions = new CopyOnWriteArrayList<>();
+
+        // threadCount개 스레드를 모두 대기 상태로 만듦
+        for(int i=0; i<threadCount; i++){
+            executorService.submit(() -> {
+                try {
+                    readyLatch.countDown();
+                    startLatch.await();
+
+                    while(true) {
+                        int currentIndex = taskIndex.getAndIncrement();
+                        if(currentIndex >= taskCount) {
+                            break;
+                        }
+
+                        try {
+                            task.run();
+                            successCount.incrementAndGet();
+                        } catch(Exception e) {
+                            System.err.println(e.getMessage());
+                            exceptions.add(e);
+                            failCount.incrementAndGet();
+                        } finally {
+                            doneLatch.countDown();
+                        }
+                    }
+                } catch(InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+        }
+
         readyLatch.await();
+        long startTime = System.currentTimeMillis();
         startLatch.countDown();
+
         doneLatch.await();
+        long duration = System.currentTimeMillis() - startTime;
+
+        return new ConcurrencyResult(duration, successCount.get(), failCount.get(), exceptions);
     }
 
     public static class ConcurrencyResult {

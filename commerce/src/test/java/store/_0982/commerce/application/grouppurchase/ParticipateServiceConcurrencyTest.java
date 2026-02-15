@@ -54,11 +54,6 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
     private Product product;
     private UUID testSellerId;
 
-    @Override
-    protected int getDefaultThreadCount() {
-        return 100;  // 100개 스레드
-    }
-
     @BeforeEach
     void setUp(){
         redisTemplate.getConnectionFactory()
@@ -80,7 +75,7 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
         AtomicInteger failCount = new AtomicInteger(0);
         AtomicInteger index = new AtomicInteger(0);
 
-        runSynchronizedTask(() -> {
+        runSynchronizedTask(100, () -> {
             String requestId = "request-" + index.getAndIncrement();
 
             try{
