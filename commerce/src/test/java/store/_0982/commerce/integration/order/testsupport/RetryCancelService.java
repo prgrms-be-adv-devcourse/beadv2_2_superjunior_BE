@@ -25,7 +25,11 @@ public class RetryCancelService {
     public void cancelLike(UUID orderId, UUID memberId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
 
-        retryQuantityService.decreaseQuantity(order.getGroupPurchaseId(), order.getQuantity());
+        try {
+            retryQuantityService.decreaseQuantity(order.getGroupPurchaseId(), order.getQuantity());
+        } catch (Exception e) {
+            return;
+        }
 
         CanceledOrder canceledOrder = CanceledOrder.createCanceledOrder(
                 order.getOrderId(),
