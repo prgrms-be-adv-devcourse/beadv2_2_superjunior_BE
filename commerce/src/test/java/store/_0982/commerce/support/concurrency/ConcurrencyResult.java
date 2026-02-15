@@ -5,13 +5,9 @@ import java.util.List;
 
 public record ConcurrencyResult(long durationMs, int successCount, int failCount, List<Exception> exceptions, List<Long> latenciesNs) {
 
-    public ConcurrencyResult(long durationMs, int successCount, int failCount,
-                             List<Exception> exceptions, List<Long> latenciesNs) {
-        this.durationMs = durationMs;
-        this.successCount = successCount;
-        this.failCount = failCount;
-        this.exceptions = exceptions;
-        this.latenciesNs = (latenciesNs == null) ? List.of() : Collections.unmodifiableList(latenciesNs);
+    public ConcurrencyResult {
+        exceptions = (exceptions == null) ? List.of() : Collections.unmodifiableList(exceptions);
+        latenciesNs = (latenciesNs == null) ? List.of() : Collections.unmodifiableList(latenciesNs);
     }
 
     public double tps() {
