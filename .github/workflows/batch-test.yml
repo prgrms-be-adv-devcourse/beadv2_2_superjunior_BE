@@ -22,10 +22,6 @@ on:
         required: false
         default: 0
         type: number
-      dump_file_url:
-        description: 'S3 URL of initial database dump'
-        required: true
-        default: 's3://0909-store-bucket/postgres-backups/only-schemas-.sql'
 
 env:
   AWS_REGION: ap-northeast-2
@@ -36,7 +32,6 @@ env:
   KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
   JOB_NAMES: ${{ github.event.inputs.job_names || 'settlement' }}
   JOB_INTERVAL: ${{ github.event.inputs.job_interval || '0' }}
-  DUMP_FILE_URL: ${{ github.event.inputs.dump_file_url || 's3://0909-store-bucket/postgres-backups/only-schemas-init.sql.gz' }}
 
 permissions:
   id-token: write   # OIDC 토큰 발급용
@@ -289,20 +284,37 @@ jobs:
       - name: Restore Initial Database Dump
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
+          JOB_NAMES_INPUT: ${{ env.JOB_NAMES }}
         run: |
           NAMESPACE="batch-test-${TIMESTAMP}"
 
-          echo "📥 Downloading database dump from S3..."
-          aws s3 cp "${DUMP_FILE_URL}" initial-dump.sql.gz
+          # 기본 스키마 목록 (항상 복원)
+          DUMP_FILES=("commerce-init" "member-init" "public-init")
 
-          echo "📦 Extracting compressed dump..."
-          gunzip initial-dump.sql.gz
+          # vector-refresh job이 포함되어 있으면 recommendation-init 추가
+          if echo "${JOB_NAMES_INPUT}" | grep -q "vector-refresh"; then
+            echo "📊 Vector refresh job detected, including recommendation schema"
+            DUMP_FILES+=("recommendation-init")
+          fi
 
-          echo "📥 Restoring database dump..."
-          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -i -- \
-            psql -U postgres -q < initial-dump.sql
+          echo "📥 Downloading and restoring database dumps..."
+          for dump_file in "${DUMP_FILES[@]}"; do
+            echo "Processing ${dump_file}.sql.gz..."
 
-          echo "✅ Database restored successfully!"
+            # S3에서 다운로드
+            aws s3 cp "s3://${S3_BUCKET}/postgres-backups/${dump_file}.sql.gz" "${dump_file}.sql.gz"
+
+            # 압축 해제
+            gunzip "${dump_file}.sql.gz"
+
+            # 복원
+            kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -i -- \
+              psql -U postgres -q < "${dump_file}.sql"
+
+            echo "✅ ${dump_file} restored successfully!"
+          done
+
+          echo "✅ All database dumps restored successfully!"
 
           # 데이터 확인
           echo "📊 Database statistics:"
