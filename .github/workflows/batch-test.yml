@@ -165,7 +165,7 @@ jobs:
               echo "✅ Node name appeared in K8s!"
               break
             fi
-            
+          
             if [ $((i % 6)) -eq 0 ]; then
               echo "Still waiting for node name to appear... ($((i/6)) min passed)"
             fi
@@ -221,7 +221,7 @@ jobs:
             --from-literal=POSTGRES_USER=postgres \
             --from-literal=POSTGRES_PASSWORD="${{ secrets.BATCH_POSTGRES_PASSWORD }}" \
             --from-literal=DATA_SOURCE_NAME="postgresql://postgres:${{ secrets.BATCH_POSTGRES_PASSWORD }}@localhost:5432/postgres?sslmode=disable"
-            
+          
           echo "✅ Secrets created in namespace ${NAMESPACE}"
 
       - name: Deploy Kafka
@@ -483,3 +483,5 @@ jobs:
           else
             echo "ℹ️ No instance found to terminate"
           fi
+
+#
