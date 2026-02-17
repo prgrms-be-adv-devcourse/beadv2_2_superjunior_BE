@@ -1,4 +1,13 @@
 #file: noinspection KubernetesUnknownValues
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-batch-init
+data:
+  init-vector.sql: |
+    ALTER EXTENSION vector SET SCHEMA public;
+
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -48,6 +57,9 @@ spec:
             - name: postgres-batch-storage
               mountPath: /var/lib/postgresql/data
               subPath: postgres
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
           lifecycle:
             preStop:
               exec:
@@ -79,6 +91,10 @@ spec:
               ephemeral-storage: 128Mi
               cpu: 100m
               memory: 64Mi
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: postgres-batch-init
   volumeClaimTemplates:
     - metadata:
         name: postgres-batch-storage
