@@ -328,55 +328,12 @@ jobs:
               LIMIT 10;
             "
 
-      - name: Collect DB Metrics Before Test
-        env:
-          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
-        run: |
-          NAMESPACE="batch-test-${TIMESTAMP}"
-
-          echo "📊 Collecting DB metrics before test..."
-          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
-            curl -s localhost:9187/metrics > metrics-before.txt || true
-
-          echo "📊 Connection count:"
-          grep "pg_stat_database_numbackends" metrics-before.txt | grep -v "^#" || true
-
       - name: Deploy and Run Batch Jobs
         id: run-batch
         env:
           JOB_NAMES_INPUT: ${{ env.JOB_NAMES }}
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: bash .github/workflows/templates/init-batch-test.sh
-
-      - name: Collect DB Metrics After Test
-        if: always()
-        env:
-          TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
-        run: |
-          NAMESPACE="batch-test-${TIMESTAMP}"
-
-          echo "📊 Collecting DB metrics after test..."
-          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
-            curl -s localhost:9187/metrics > metrics-after.txt || true
-
-          # 캐시 히트율 계산
-          echo "📊 Cache Hit Ratio:"
-          BLKS_HIT=$(grep 'pg_stat_database_blks_hit{datname="postgres"}' metrics-after.txt | awk '{print $2}' || echo "0")
-          BLKS_READ=$(grep 'pg_stat_database_blks_read{datname="postgres"}' metrics-after.txt | awk '{print $2}' || echo "0")
-
-          if [ "$BLKS_READ" != "0" ]; then
-            CACHE_HIT_RATIO=$(echo "scale=2; $BLKS_HIT / ($BLKS_HIT + $BLKS_READ) * 100" | bc)
-            echo "Cache Hit Ratio: ${CACHE_HIT_RATIO}%"
-
-            if (( $(echo "$CACHE_HIT_RATIO < 90" | bc -l) )); then
-              echo "⚠️ WARNING: Low cache hit ratio! Consider increasing shared_buffers"
-            fi
-          fi
-
-          # Sequential Scan 확인
-          echo ""
-          echo "📋 Table Scan Statistics:"
-          grep "pg_stat_user_tables_seq_scan" metrics-after.txt | grep -v "^#" | head -5 || true
 
       - name: Dump Test Results
         if: always()
@@ -393,7 +350,7 @@ jobs:
           # S3에 업로드
           if [ -f "result-dump-${RESULT_TIMESTAMP}.sql" ]; then
             aws s3 cp "result-dump-${RESULT_TIMESTAMP}.sql" \
-              "s3://${S3_BUCKET}/batch-test-results/${TIMESTAMP}/"
+              "s3://${S3_BUCKET}/batch-test-results/${TIMESTAMP}/" --no-progress
             echo "✅ Results saved to S3"
           fi
 
@@ -483,5 +440,3 @@ jobs:
           else
             echo "ℹ️ No instance found to terminate"
           fi
-
-#
