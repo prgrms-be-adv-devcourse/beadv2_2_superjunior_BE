@@ -381,7 +381,7 @@ jobs:
           # S3에 업로드
           if [ -f "result-dump-${RESULT_TIMESTAMP}.sql" ]; then
             aws s3 cp "result-dump-${RESULT_TIMESTAMP}.sql" \
-              "s3://batch-test-results/${TIMESTAMP}/"
+              "s3://${S3_BUCKET}/batch-test-results/${TIMESTAMP}/"
             echo "✅ Results saved to S3"
           fi
 
