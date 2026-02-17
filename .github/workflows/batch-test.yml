@@ -289,7 +289,7 @@ jobs:
           NAMESPACE="batch-test-${TIMESTAMP}"
 
           # 기본 스키마 목록 (항상 복원)
-          DUMP_FILES=("public-init" "commerce-init" "member-init")
+          DUMP_FILES=("only-schemas-init" "commerce-init" "member-init")
 
           # vector-refresh job이 포함되어 있으면 recommendation-init 추가
           if echo "${JOB_NAMES_INPUT}" | grep -q "vector-refresh"; then
