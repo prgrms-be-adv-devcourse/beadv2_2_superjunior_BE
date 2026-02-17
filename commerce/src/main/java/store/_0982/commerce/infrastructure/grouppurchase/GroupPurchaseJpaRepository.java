@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.ProductCategory;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -30,6 +31,24 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
 
     boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
+
+    @Query("""
+        SELECT g, p
+        FROM GroupPurchase g
+        JOIN Product p ON g.productId = p.productId
+        WHERE (:keyword IS NULL OR LOWER(g.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+            OR LOWER(g.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:status IS NULL OR g.status = :status)
+        AND (:category IS NULL OR p.category = :category)
+        AND (:sellerId IS NULL OR g.sellerId = :sellerId)
+    """)
+    Page<Object[]> searchWithProduct(
+            @Param("keyword") String keyword,
+            @Param("status") GroupPurchaseStatus status,
+            @Param("category") ProductCategory category,
+            @Param("sellerId") UUID sellerId,
+            Pageable pageable
+    );
 
     @Modifying
     @Query("""

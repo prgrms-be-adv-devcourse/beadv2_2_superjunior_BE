@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.ProductCategory;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -34,6 +36,14 @@ public interface GroupPurchaseRepository {
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
+    Page<GroupPurchaseSearchRow> searchRows(
+            String keyword,
+            GroupPurchaseStatus status,
+            ProductCategory category,
+            UUID sellerId,
+            Pageable pageable
+    );
 
     int increaseQuantity(UUID groupPurchaseId, int quantity);
 

@@ -1,12 +1,19 @@
 package store._0982.commerce.application.grouppurchase;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
+import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.domain.product.Product;
+import store._0982.common.dto.PageResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,5 +78,54 @@ public class GroupPurchaseSearchService {
             ));
         }
         return rows;
+    }
+
+    public PageResponse<GroupPurchaseSearchInfo> searchGroupPurchasesByDb(
+            String keyword,
+            String status,
+            UUID sellerId,
+            String category,
+            Pageable pageable
+    ) {
+        String normalizedKeyword = normalizeKeyword(keyword);
+        GroupPurchaseStatus statusFilter;
+        ProductCategory categoryFilter;
+        try {
+            statusFilter = parseStatus(status);
+            categoryFilter = parseCategory(category);
+        } catch (IllegalArgumentException ex) {
+            return PageResponse.from(new PageImpl<>(List.of(), pageable, 0));
+        }
+
+        Page<GroupPurchaseSearchRow> page = groupPurchaseRepository.searchRows(
+                normalizedKeyword,
+                statusFilter,
+                categoryFilter,
+                sellerId,
+                pageable
+        );
+        Page<GroupPurchaseSearchInfo> mapped = page.map(GroupPurchaseSearchInfo::from);
+        return PageResponse.from(mapped);
+    }
+
+    private String normalizeKeyword(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return null;
+        }
+        return keyword.trim();
+    }
+
+    private GroupPurchaseStatus parseStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        return GroupPurchaseStatus.valueOf(status.trim().toUpperCase());
+    }
+
+    private ProductCategory parseCategory(String category) {
+        if (category == null || category.isBlank()) {
+            return null;
+        }
+        return ProductCategory.valueOf(category.trim().toUpperCase());
     }
 }
