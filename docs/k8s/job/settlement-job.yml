@@ -1,21 +1,21 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: retry-settlement-job
+  name: seller-balance-job
   labels:
     app: batch
     component: job
-    job-type: retry-settlement
+    job-type: seller-balance
     purpose: batch-test
 spec:
   ttlSecondsAfterFinished: 3600
-  backoffLimit: 3  # 재시도 작업이므로 더 많은 재시도 허용
-  activeDeadlineSeconds: 3600  # 60분 제한
+  backoffLimit: 2
+  activeDeadlineSeconds: 3600
   template:
     metadata:
       labels:
         app: batch
-        job-type: retry-settlement
+        job-type: seller-balance
         purpose: batch-test
     spec:
       automountServiceAccountToken: false
@@ -32,9 +32,9 @@ spec:
         - name: TZ
           value: "Asia/Seoul"
         - name: SPRING_BATCH_JOB_NAME
-          value: "retryFailedSettlementJob"
+          value: "settlementJob"
         - name: JOB_DESCRIPTION
-          value: "실패한 정산 재시도 작업 (배치 테스트)"
+          value: "판매자 잔액 갱신 (배치 테스트)"
         - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
           value: "kafka-batch-service:9092"
         - name: SPRING_DATASOURCE_URL
@@ -46,10 +46,10 @@ spec:
               name: batch-secret
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
-            ephemeral-storage: "512Mi"
-          limits:
-            memory: "512Mi"
+            memory: "1.5Gi"
             cpu: "500m"
-            ephemeral-storage: "1Gi"
+            ephemeral-storage: "2Gi"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+            ephemeral-storage: "3Gi"

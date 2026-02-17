@@ -28,14 +28,19 @@ data:
           ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
         bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
         relabel_configs:
-          - action: labelmap
-            regex: __meta_kubernetes_node_label_(.+)
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node_name
           - target_label: __address__
             replacement: kubernetes.default.svc:443
           - source_labels: [__meta_kubernetes_node_name]
             regex: (.+)
             target_label: __metrics_path__
             replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+        metric_relabel_configs:
+          - regex: 'id|name|image'
+            action: labeldrop
+          - regex: 'container_label_.*'
+            action: labeldrop
 
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
@@ -53,16 +58,23 @@ data:
             regex: ([^:]+)(?::\d+)?;(\d+)
             replacement: $1:$2
             target_label: __address__
-          - action: labelmap
-            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
           - source_labels: [__meta_kubernetes_namespace]
             action: replace
             target_label: kubernetes_namespace
           - source_labels: [__meta_kubernetes_pod_name]
             action: replace
             target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: node_name
+        metric_relabel_configs:
+          - regex: 'pod_template_hash|controller_revision_hash|pod_template_generation'
+            action: labeldrop
+          - regex: 'statefulset_kubernetes_io_pod_name'
+            action: labeldrop
 
-      # TODO: 나중에 AI 모듈 이름이 수정되면, K3s에서도 pod 이름을 같이 수정하자
       - job_name: 'spring-actuator'
         metrics_path: '/actuator/prometheus'
         kubernetes_sd_configs:
@@ -73,7 +85,37 @@ data:
             regex: (gateway|member|commerce|point|search|ai)
           - source_labels: [__meta_kubernetes_pod_label_app]
             action: replace
-            target_label: application
+            target_label: app
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: node_name
+        metric_relabel_configs:
+          # 고카디널리티 라벨 제거
+          - regex: 'exception|error|class'
+            action: labeldrop
+
+          # URI 라벨 정규화 (UUID 패턴화)
+          - source_labels: [uri]
+            target_label: uri
+            regex: '(.*)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(.*)'
+            replacement: '$1/{uuid}$2'
+
+          # URI 라벨 정규화 (숫자 ID 패턴화)
+          - source_labels: [uri]
+            target_label: uri
+            regex: '(.*)\/[0-9]+(\/.*|$)'
+            replacement: '$1/{id}$2'
+
+          # 불필요한 메트릭 제외
+          - source_labels: [__name__]
+            regex: 'jvm_classes_.*|jvm_threads_states_.*|process_files_.*'
+            action: drop
 
 ---
 apiVersion: apps/v1
@@ -103,7 +145,7 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
         - name: prometheus
-          image: prom/prometheus:v3.1.0
+          image: prom/prometheus:v3.5.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9090

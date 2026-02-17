@@ -10,7 +10,7 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 3600
   backoffLimit: 2
-  activeDeadlineSeconds: 600  # 10분 제한
+  activeDeadlineSeconds: 3600
   template:
     metadata:
       labels:
@@ -46,10 +46,10 @@ spec:
               name: batch-secret
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "250m"
-            ephemeral-storage: "512Mi"
-          limits:
-            memory: "512Mi"
+            memory: "1.5Gi"
             cpu: "500m"
-            ephemeral-storage: "1Gi"
+            ephemeral-storage: "2Gi"
+          limits:
+            memory: "2Gi"
+            cpu: "1500m"
+            ephemeral-storage: "3Gi"

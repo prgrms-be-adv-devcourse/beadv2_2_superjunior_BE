@@ -10,7 +10,7 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 3600
   backoffLimit: 2
-  activeDeadlineSeconds: 3600  # 60분 제한 (벡터라서 오래 걸림)
+  activeDeadlineSeconds: 5400
   template:
     metadata:
       labels:
@@ -47,9 +47,9 @@ spec:
           resources:
             requests:
               memory: "1.5Gi"
-              cpu: "1000m"
-              ephemeral-storage: "3Gi"
+              cpu: "500m"
+              ephemeral-storage: "2Gi"
             limits:
               memory: "2Gi"
-              cpu: "2000m"
-              ephemeral-storage: "4Gi"
+              cpu: "1500m"
+              ephemeral-storage: "3Gi"
