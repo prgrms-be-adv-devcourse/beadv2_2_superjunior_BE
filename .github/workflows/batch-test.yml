@@ -338,7 +338,7 @@ jobs:
         run: bash .github/workflows/templates/init-batch-test.sh
 
       - name: Dump Test Results
-        if: always()
+        if: always() && !cancelled()
         env:
           TIMESTAMP: ${{ steps.timestamp.outputs.timestamp }}
         run: |
@@ -379,7 +379,7 @@ jobs:
           mv metrics-*.txt logs/ 2>/dev/null || true
           mv kafka-messages.json logs/ 2>/dev/null || true
 
-      - name: Upload Logs and Metrics
+      - name: Upload Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
