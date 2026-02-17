@@ -5,6 +5,7 @@ metadata:
   name: postgres-batch-init
 data:
   init-vector.sql: |
+    CREATE EXTENSION IF NOT EXISTS vector;
     ALTER EXTENSION vector SET SCHEMA public;
 
 ---
