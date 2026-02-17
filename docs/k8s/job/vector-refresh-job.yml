@@ -10,7 +10,7 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 3600
   backoffLimit: 2
-  activeDeadlineSeconds: 3600  # 60분 제한 (벡터라서 오래 걸림)
+  activeDeadlineSeconds: 5400
   template:
     metadata:
       labels:

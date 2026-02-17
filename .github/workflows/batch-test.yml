@@ -109,7 +109,7 @@ jobs:
             --instance-count 1 --type one-time \
             --launch-specification "{
               \"ImageId\": \"${BATCH_AMI_ID}\",
-              \"InstanceType\": \"m6g.xlarge\",
+              \"InstanceType\": \"c6g.xlarge\",
               \"IamInstanceProfile\": {\"Name\": \"K6SpotInstanceRole\"},
               \"SecurityGroupIds\": [\"${SECURITY_GROUP_ID}\"],
               \"SubnetId\": \"${SUBNET_ID}\",

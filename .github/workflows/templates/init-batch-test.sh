@@ -71,7 +71,7 @@ echo "⏳ Waiting for all jobs to complete or fail..."
 echo "========================================="
 
 # 모든 Job 완료/실패 대기 (1시간 타임아웃)
-TIMEOUT=3600
+TIMEOUT=7200
 ELAPSED=0
 SLEEP_INTERVAL=10
 

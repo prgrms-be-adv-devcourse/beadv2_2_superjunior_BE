@@ -10,7 +10,7 @@ metadata:
 spec:
   ttlSecondsAfterFinished: 3600
   backoffLimit: 2
-  activeDeadlineSeconds: 900  # 15분 제한 (판매자 정산은 시간이 더 걸릴 수 있음)
+  activeDeadlineSeconds: 3600
   template:
     metadata:
       labels:
