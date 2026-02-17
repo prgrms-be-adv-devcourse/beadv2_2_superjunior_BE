@@ -67,14 +67,37 @@ done
 
 echo ""
 echo "========================================="
-echo "⏳ Waiting for all jobs to complete..."
+echo "⏳ Waiting for all jobs to complete or fail..."
 echo "========================================="
 
-# 모든 Job 완료 대기 (1시간 타임아웃)
-kubectl wait --for=condition=complete \
-  jobs -l purpose=batch-test \
-  -n "${NAMESPACE}" \
-  --timeout=3600s
+# 모든 Job 완료/실패 대기 (1시간 타임아웃)
+TIMEOUT=3600
+ELAPSED=0
+SLEEP_INTERVAL=10
+
+while [ $ELAPSED -lt $TIMEOUT ]; do
+  # 완료된 Job 수 (성공)
+  COMPLETED_JOBS=$(kubectl get jobs -n "${NAMESPACE}" -l purpose=batch-test -o jsonpath='{.items[?(@.status.succeeded>0)].metadata.name}' 2>/dev/null | wc -w)
+
+  # 실패한 Job 수
+  FAILED_JOBS_COUNT=$(kubectl get jobs -n "${NAMESPACE}" -l purpose=batch-test -o jsonpath='{.items[?(@.status.failed>0)].metadata.name}' 2>/dev/null | wc -w)
+
+  # 완료 + 실패 = 전체
+  FINISHED_JOBS=$((COMPLETED_JOBS + FAILED_JOBS_COUNT))
+
+  if [ $FINISHED_JOBS -eq "$TOTAL_JOBS" ]; then
+    echo "✅ All jobs have finished execution!"
+    break
+  fi
+
+  sleep $SLEEP_INTERVAL
+  ELAPSED=$((ELAPSED + SLEEP_INTERVAL))
+done
+
+if [ $ELAPSED -ge $TIMEOUT ]; then
+  echo "❌ Timeout: Jobs did not finish within ${TIMEOUT} seconds"
+  exit 1
+fi
 
 echo ""
 echo "========================================="

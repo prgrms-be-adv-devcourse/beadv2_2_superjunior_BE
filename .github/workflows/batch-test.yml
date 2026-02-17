@@ -289,7 +289,7 @@ jobs:
           NAMESPACE="batch-test-${TIMESTAMP}"
 
           # 기본 스키마 목록 (항상 복원)
-          DUMP_FILES=("commerce-init" "member-init" "public-init")
+          DUMP_FILES=("public-init" "commerce-init" "member-init")
 
           # vector-refresh job이 포함되어 있으면 recommendation-init 추가
           if echo "${JOB_NAMES_INPUT}" | grep -q "vector-refresh"; then
@@ -302,7 +302,7 @@ jobs:
             echo "Processing ${dump_file}.sql.gz..."
 
             # S3에서 다운로드
-            aws s3 cp "s3://${S3_BUCKET}/postgres-backups/${dump_file}.sql.gz" "${dump_file}.sql.gz"
+            aws s3 cp "s3://${S3_BUCKET}/postgres-backups/${dump_file}.sql.gz" "${dump_file}.sql.gz" --no-progress
 
             # 압축 해제
             gunzip "${dump_file}.sql.gz"
