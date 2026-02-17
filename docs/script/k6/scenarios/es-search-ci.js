@@ -5,25 +5,12 @@ import {check, sleep} from 'k6';
 
 export {handleSummary} from '../common/summary.js'
 
-// CI/CD 테스트용 간단 설정
 export const options = {
-    scenarios: {
-        search: {
-            executor: 'ramping-arrival-rate',
-            timeUnit: '1s',
-            preAllocatedVUs: 100,
-            maxVUs: 200,
-            stages: [
-                {duration: '30s', target: 50},  // Ramp-up
-                {duration: '2m', target: 50},   // Steady 1
-                {duration: '30s', target: 100}, // Ramp-up 2
-                {duration: '5m', target: 100},  // Steady 2
-                {duration: '30s', target: 150}, // Ramp-up 3
-                {duration: '5m', target: 150},  // Steady 3
-                {duration: '30s', target: 0},  // Ramp-down
-            ],
-        },
-    },
+    stages: [
+        {duration: '30s', target: parseInt(__ENV.VUS) || 100},  // Ramp-up
+        {duration: __ENV.DURATION || '5m', target: parseInt(__ENV.VUS) || 100},  // Steady
+        {duration: '30s', target: 0},  // Ramp-down
+    ],
     thresholds: {
         'http_req_duration': ['p(95)<2000'],  // 95%가 2초 이내
         'http_req_failed': ['rate<0.05'],     // 에러율 5% 미만
