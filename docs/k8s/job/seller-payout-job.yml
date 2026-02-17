@@ -32,9 +32,9 @@ spec:
         - name: TZ
           value: "Asia/Seoul"
         - name: SPRING_BATCH_JOB_NAME
-          value: "settlementWithdrawalJob"
+          value: "sellerPayoutJob"
         - name: JOB_DESCRIPTION
-          value: "월별 정산 작업 (배치 테스트)"
+          value: "월별 송금 작업 (배치 테스트)"
         - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
           value: "kafka-batch-service:9092"
         - name: SPRING_DATASOURCE_URL
