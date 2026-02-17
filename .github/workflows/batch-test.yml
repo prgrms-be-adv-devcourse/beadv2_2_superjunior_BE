@@ -226,7 +226,7 @@ jobs:
             --from-literal=POSTGRES_USER=postgres \
             --from-literal=POSTGRES_PASSWORD="${{ secrets.BATCH_POSTGRES_PASSWORD }}" \
             --from-literal=DATA_SOURCE_NAME="postgresql://postgres:${{ secrets.BATCH_POSTGRES_PASSWORD }}@localhost:5432/postgres?sslmode=disable"
-          
+            
           echo "✅ Secrets created in namespace ${NAMESPACE}"
 
       - name: Deploy Kafka
@@ -323,7 +323,7 @@ jobs:
           NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📊 Collecting DB metrics before test..."
-          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
             curl -s localhost:9187/metrics > metrics-before.txt || true
 
           echo "📊 Connection count:"
@@ -344,7 +344,7 @@ jobs:
           NAMESPACE="batch-test-${TIMESTAMP}"
 
           echo "📊 Collecting DB metrics after test..."
-          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres-exporter -- \
+          kubectl exec -n "${NAMESPACE}" postgres-batch-0 -c postgres -- \
             curl -s localhost:9187/metrics > metrics-after.txt || true
 
           # 캐시 히트율 계산
