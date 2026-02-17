@@ -75,13 +75,13 @@ class CanceledOrderServiceTest {
                 "idem-key"
         );
 
-        when(canceledOrderRepository.existsByIdempotencyKey("idem-key")).thenReturn(true);
+        when(canceledOrderRepository.existsByOrderId(orderId)).thenReturn(true);
 
         // when
         canceledOrderService.cancelOrder(command);
 
         // then
-        verify(canceledOrderRepository, never()).existsByOrderId(any());
+        verify(canceledOrderRepository).existsByOrderId(orderId);
         verifyNoInteractions(orderRepository, groupPurchaseService, productService,
                 orderCancellationPolicyResolver, eventPublisher);
     }
@@ -103,7 +103,6 @@ class CanceledOrderServiceTest {
         Order order = mock(Order.class);
         when(order.getStatus()).thenReturn(OrderStatus.PENDING);
 
-        when(canceledOrderRepository.existsByIdempotencyKey(anyString())).thenReturn(false);
         when(canceledOrderRepository.existsByOrderId(any())).thenReturn(false);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -130,7 +129,6 @@ class CanceledOrderServiceTest {
                 "idem-key"
         );
 
-        when(canceledOrderRepository.existsByIdempotencyKey("idem-key")).thenReturn(false);
         when(canceledOrderRepository.existsByOrderId(orderId)).thenReturn(false);
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
@@ -162,7 +160,6 @@ class CanceledOrderServiceTest {
         when(order.getStatus()).thenReturn(OrderStatus.PAYMENT_COMPLETED);
         when(order.getMemberId()).thenReturn(otherMemberId);
 
-        when(canceledOrderRepository.existsByIdempotencyKey("idem-key")).thenReturn(false);
         when(canceledOrderRepository.existsByOrderId(orderId)).thenReturn(false);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
@@ -214,7 +211,6 @@ class CanceledOrderServiceTest {
         when(policy.getPolicyId()).thenReturn("CANCEL_POLICY_VOID_V1");
         when(policy.buildSnapshot(refundAmount)).thenReturn("snapshot");
 
-        when(canceledOrderRepository.existsByIdempotencyKey("idem-key")).thenReturn(false);
         when(canceledOrderRepository.existsByOrderId(orderId)).thenReturn(false);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(groupPurchaseService.findByGroupPurchase(groupPurchaseId)).thenReturn(groupPurchase);
@@ -273,13 +269,11 @@ class CanceledOrderServiceTest {
         when(order.getSellerId()).thenReturn(sellerId);
         when(order.getGroupPurchaseId()).thenReturn(groupPurchaseId);
         when(order.getPaidPrice()).thenReturn(120_000L);
-        when(order.getQuantity()).thenReturn(4);
         when(order.getPaymentMethod()).thenReturn(PaymentMethod.POINT);
         doNothing().when(order).requestCanceledAt();
 
         GroupPurchase groupPurchase = mock(GroupPurchase.class);
         when(groupPurchase.getProductId()).thenReturn(productId);
-        when(groupPurchase.getGroupPurchaseId()).thenReturn(groupPurchaseId);
 
         OrderCancellationPolicy policy = mock(OrderCancellationPolicy.class);
         RefundAmount refundAmount = new RefundAmount(120_000L, 0L, 0L);
@@ -287,7 +281,6 @@ class CanceledOrderServiceTest {
         when(policy.getPolicyId()).thenReturn("CANCEL_POLICY_VOID_V1");
         when(policy.buildSnapshot(refundAmount)).thenReturn("snapshot");
 
-        when(canceledOrderRepository.existsByIdempotencyKey("idem-key")).thenReturn(false);
         when(canceledOrderRepository.existsByOrderId(orderId)).thenReturn(false);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(groupPurchaseService.findByGroupPurchase(groupPurchaseId)).thenReturn(groupPurchase);
@@ -301,7 +294,7 @@ class CanceledOrderServiceTest {
         canceledOrderService.cancelOrder(command);
 
         // then
-        verify(groupPurchaseQuantityService).decreaseQuantity(groupPurchaseId, 4);
+        verify(groupPurchaseQuantityService, never()).decreaseQuantity(any(), anyInt());
         verify(canceledOrderRepository).save(canceledOrderCaptor.capture());
         CanceledOrder saved = canceledOrderCaptor.getValue();
         assertThat(saved.getStatus()).isEqualTo(CancelStatus.PENDING);
@@ -340,6 +333,7 @@ class CanceledOrderServiceTest {
         Order order = mock(Order.class);
         when(order.getSellerId()).thenReturn(sellerId);
         when(order.getGroupPurchaseId()).thenReturn(groupPurchaseId);
+        when(order.getQuantity()).thenReturn(2);
 
         GroupPurchase groupPurchase = mock(GroupPurchase.class);
         when(groupPurchase.getProductId()).thenReturn(productId);
@@ -355,6 +349,7 @@ class CanceledOrderServiceTest {
         OrderCancelInfo info = canceledOrderService.approvePendingOrder(sellerId, orderId);
 
         // then
+        verify(groupPurchaseQuantityService).decreaseQuantity(groupPurchaseId, 2);
         verify(canceledOrder).markApproved();
         verify(eventPublisher).publishEvent(eventCaptor.capture());
         OrderCancelProcessedEvent event = eventCaptor.getValue();
@@ -850,6 +845,7 @@ class CanceledOrderServiceTest {
         when(orderRepository.findById(validOrderId)).thenReturn(Optional.of(validOrder));
         when(orderRepository.findById(invalidOrderId)).thenReturn(Optional.empty());
         when(validOrder.getGroupPurchaseId()).thenReturn(groupPurchaseId);
+        when(validOrder.getQuantity()).thenReturn(3);
 
         OrderCancellationPolicy policy = mock(OrderCancellationPolicy.class);
         when(orderCancellationPolicyResolver.resolveByPolicyId("policy-valid")).thenReturn(policy);
@@ -866,6 +862,7 @@ class CanceledOrderServiceTest {
 
         verify(orderRepository).findById(validOrderId);
         verify(orderRepository).findById(invalidOrderId);
+        verify(groupPurchaseQuantityService).decreaseQuantity(groupPurchaseId, 3);
         verify(groupPurchaseService).findByGroupPurchase(groupPurchaseId);
         verify(productService).findByProductName(productId);
         verify(eventPublisher).publishEvent(eventCaptor.capture());

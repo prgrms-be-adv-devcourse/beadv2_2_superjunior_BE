@@ -97,11 +97,10 @@ public class CanceledOrderService {
             return;
         }
 
-        groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
-
         order.requestCanceledAt();
 
         if (command.reason().isBuyerFault()) {
+            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
             publishCancellationEvent(canceledOrder, productName);
         }
     }
@@ -122,6 +121,7 @@ public class CanceledOrderService {
                 .findByGroupPurchase(findOrder.getGroupPurchaseId());
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
+        groupPurchaseQuantityService.decreaseQuantity(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
         findCanceledOrder.markApproved();
         publishCancellationEvent(findCanceledOrder, productName);
 
@@ -208,6 +208,7 @@ public class CanceledOrderService {
                     .findByGroupPurchase(order.getGroupPurchaseId());
             String productName = productService.findByProductName(groupPurchase.getProductId());
 
+            groupPurchaseQuantityService.decreaseQuantity(order.getGroupPurchaseId(), order.getQuantity());
             canceledOrder.markApproved();
             publishCancellationEvent(canceledOrder, productName);
         }
