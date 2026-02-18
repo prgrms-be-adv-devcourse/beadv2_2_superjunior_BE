@@ -67,6 +67,8 @@ public class CanceledOrderService {
 
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
+        order.requestCanceledAt();
+
         OrderCancellationPolicy policy = orderCancellationPolicyResolver.resolve(groupPurchase, order, command.reason());
         RefundAmount refundAmount = policy.calculate(order);
 
@@ -96,8 +98,6 @@ public class CanceledOrderService {
         } catch (DataIntegrityViolationException e) {
             return;
         }
-
-        order.requestCanceledAt();
 
         if (command.reason().isBuyerFault()) {
             groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
