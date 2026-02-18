@@ -8,6 +8,7 @@ import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.common.domain.order.Order;
 import store._0982.common.domain.order.OrderStatus;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,5 +91,15 @@ public class OrderRepositoryAdaptor implements OrderRepository {
     @Override
     public List<UUID> findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(UUID groupPurchaseId, List<OrderStatus> orderStatuses) {
         return orderJpaRepository.findByGroupPurchaseIdAndStatusAndDeletedAtIsNull(groupPurchaseId, orderStatuses);
+    }
+
+    @Override
+    public List<Order> findExpiredPendingOrders(OffsetDateTime now) {
+        return orderJpaRepository.findExpiredPendingOrders(now);
+    }
+
+    @Override
+    public int markOrderExpired(UUID orderId) {
+        return orderJpaRepository.markOrderExpired(orderId);
     }
 }
