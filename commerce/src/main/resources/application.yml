@@ -13,8 +13,8 @@ spring:
     create-schemas: true
 
   datasource:
-    url: ${PRODUCT_DATABASE_URL}
-    driver-class-name: org.postgresql.Driver
+    url: ${PRODUCT_DATABASE_P6SPY_URL}
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     username: ${PRODUCT_DATABASE_USERNAME}
     password: ${PRODUCT_DATABASE_PASSWORD}
     hikari:
