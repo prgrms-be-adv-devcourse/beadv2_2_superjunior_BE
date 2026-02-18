@@ -157,12 +157,12 @@ spec:
             - '--web.enable-lifecycle'
           resources:
             requests:
-              ephemeral-storage: "2Gi"
-              memory: "1Gi"
+              ephemeral-storage: "1Gi"
+              memory: "512Mi"
               cpu: "500m"
             limits:
-              ephemeral-storage: "3Gi"
-              memory: "2Gi"
+              ephemeral-storage: "2Gi"
+              memory: "1Gi"
               cpu: "1000m"
           volumeMounts:
             - name: prometheus-storage

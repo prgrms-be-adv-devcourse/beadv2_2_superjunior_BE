@@ -1,4 +1,56 @@
-#file: noinspection KubernetesUnknownValues
+#file: noinspection KubernetesUnknownValues, SpellCheckingInspection
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+data:
+  init-vector.sql: |
+    CREATE EXTENSION IF NOT EXISTS vector;
+    ALTER EXTENSION vector SET SCHEMA public;
+    CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-exporter-queries
+data:
+  queries.yaml: |
+    pg_stat_statements:
+      query: |
+        SELECT
+          userid,
+          dbid,
+          queryid,
+          query,
+          calls,
+          total_exec_time,
+          mean_exec_time,
+          min_exec_time,
+          max_exec_time,
+          stddev_exec_time,
+          rows
+        FROM pg_stat_statements
+        WHERE queryid IS NOT NULL
+      master: true
+      metrics:
+        - calls:
+            usage: "COUNTER"
+            description: "Number of times executed"
+        - total_exec_time:
+            usage: "COUNTER"
+            description: "Total time spent executing"
+        - mean_exec_time:
+            usage: "GAUGE"
+            description: "Mean execution time"
+        - max_exec_time:
+            usage: "GAUGE"
+            description: "Maximum execution time"
+        - rows:
+            usage: "COUNTER"
+            description: "Total rows retrieved or affected"
+
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -28,6 +80,17 @@ spec:
         - name: postgres
           image: pgvector/pgvector:pg15
           imagePullPolicy: IfNotPresent
+          args:
+            - -c
+            - shared_preload_libraries=pg_stat_statements
+            - -c
+            - pg_stat_statements.track=all
+            - -c
+            - pg_stat_statements.max=10000
+            - -c
+            - max_connections=200
+            - -c
+            - shared_buffers=384MB
           ports:
             - containerPort: 5432
           envFrom:
@@ -41,11 +104,17 @@ spec:
             limits:
               ephemeral-storage: "3Gi"
               memory: "1.5Gi"
-              cpu: "1000m"
+              cpu: "2000m"
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data
               subPath: postgres
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            - name: exporter-queries
+              mountPath: /etc/postgres-exporter
+              readOnly: true
           lifecycle:
             preStop:
               exec:
@@ -61,6 +130,8 @@ spec:
                 secretKeyRef:
                   key: DATA_SOURCE_NAME
                   name: postgres-secret
+            - name: PG_EXPORTER_EXTEND_QUERY_PATH
+              value: "/etc/postgres-exporter/queries.yaml"
           ports:
             - containerPort: 9187
               name: metrics
@@ -73,6 +144,13 @@ spec:
               ephemeral-storage: 128Mi
               cpu: 100m
               memory: 64Mi
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: postgres-init
+        - name: exporter-queries
+          configMap:
+            name: postgres-exporter-queries
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage

@@ -15,7 +15,7 @@ on:
       job_names:
         description: 'Batch jobs to test (comma-separated, e.g., "monthly-settlement,seller-balance")'
         required: true
-        default: 'monthly-settlement,seller-balance,group-purchase'
+        default: 'settlement'
         type: string
       job_interval:
         description: 'Interval between job deployments in seconds (0 for parallel execution)'
