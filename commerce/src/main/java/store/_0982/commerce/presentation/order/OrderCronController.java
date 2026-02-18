@@ -34,4 +34,12 @@ public class OrderCronController {
         orderService.autoCancelOrder();
         return new ResponseDto<>(HttpStatus.OK, null, "주문 취소 재처리를 실행했습니다.");
     }
+
+    @PostMapping("/expire")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "주문 만료 처리", description = "만료된 주문에 대해서 참여자 수 감소하는 API입니다.")
+    public ResponseDto<Void> expiredOrders() {
+        orderService.processExpiredOrders();
+        return new ResponseDto<>(HttpStatus.OK, null, "만료된 주문을 처리했습니다.");
+    }
 }

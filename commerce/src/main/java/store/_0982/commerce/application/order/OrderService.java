@@ -20,6 +20,7 @@ public class OrderService {
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
     private final CanceledOrderService canceledOrderService;
+    private final OrderSchedulerService orderSchedulerService;
 
     /**
      * 주문 생성
@@ -187,5 +188,14 @@ public class OrderService {
      */
     public PageResponse<OrderCancelInfo> getPendingOrder(UUID memberId, Pageable pageable) {
         return orderQueryService.getPendingOrder(memberId, pageable);
+    }
+
+    /**
+     * 만료된 주문 처리
+     *
+     * @return 만료된 주문 개수
+     */
+    public int processExpiredOrders(){
+        return orderSchedulerService.processExpiredOrders();
     }
 }

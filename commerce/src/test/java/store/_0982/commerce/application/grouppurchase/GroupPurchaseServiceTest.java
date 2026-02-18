@@ -610,7 +610,7 @@ class GroupPurchaseServiceTest {
         verify(memberClient).getMember(memberId);
         verify(groupPurchaseRepository).saveAndFlush(any(GroupPurchase.class));
         verify(upsertKafkaTemplate).send(
-                eq(KafkaTopics.GROUP_PURCHASE_CREATED),
+                eq(KafkaTopics.GROUP_PURCHASE_CHANGED),
                 anyString(),
                 any(GroupPurchaseEvent.class)
         );

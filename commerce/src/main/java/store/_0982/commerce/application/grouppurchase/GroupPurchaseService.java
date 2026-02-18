@@ -221,6 +221,10 @@ public class GroupPurchaseService {
     private void validateAvailable(GroupPurchase groupPurchase){
         // 상태확인
         if (groupPurchase.getStatus() != GroupPurchaseStatus.OPEN) {
+            // SUCCESS 상태 = 참여자 수가 최대에 도달
+            if (groupPurchase.getStatus() == GroupPurchaseStatus.SUCCESS) {
+                throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_REACHED);
+            }
             throw new CustomException(CustomErrorCode.GROUP_PURCHASE_IS_NOT_OPEN);
         }
 
