@@ -31,6 +31,16 @@ public interface GroupPurchaseJpaRepository extends JpaRepository<GroupPurchase,
 
     boolean existsByProductIdAndStatusIn(UUID productId, List<GroupPurchaseStatus> statuses);
 
+    @Query("""
+        SELECT g, p
+        FROM GroupPurchase g
+        JOIN Product p ON g.productId = p.productId
+        WHERE g.groupPurchaseId IN :groupPurchaseIds
+    """)
+    List<Object[]> findSearchRowsByIdsWithProduct(
+            @Param("groupPurchaseIds") List<UUID> groupPurchaseIds
+    );
+
     @Modifying
     @Query("""
         UPDATE GroupPurchase g
