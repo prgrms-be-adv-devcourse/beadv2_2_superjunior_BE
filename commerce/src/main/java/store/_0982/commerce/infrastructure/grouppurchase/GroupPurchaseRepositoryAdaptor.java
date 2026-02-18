@@ -5,11 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.Product;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -79,6 +82,40 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     @Override
     public List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds) {
         return groupPurchaseJpaRepository.findAllByGroupPurchaseIdIn(groupPurchaseIds);
+    }
+
+    @Override
+    public List<GroupPurchaseSearchRow> findSearchRowsByIds(List<UUID> groupPurchaseIds) {
+        List<Object[]> rows = groupPurchaseJpaRepository.findSearchRowsByIdsWithProduct(groupPurchaseIds);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+        List<GroupPurchaseSearchRow> result = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            GroupPurchase groupPurchase = (GroupPurchase) row[0];
+            Product product = (Product) row[1];
+            result.add(new GroupPurchaseSearchRow(
+                    groupPurchase.getGroupPurchaseId(),
+                    groupPurchase.getMinQuantity(),
+                    groupPurchase.getMaxQuantity(),
+                    groupPurchase.getTitle(),
+                    groupPurchase.getDescription(),
+                    groupPurchase.getImageUrl(),
+                    groupPurchase.getDiscountedPrice(),
+                    groupPurchase.getStatus().name(),
+                    groupPurchase.getStartDate().toInstant(),
+                    groupPurchase.getEndDate().toInstant(),
+                    groupPurchase.getCreatedAt().toInstant(),
+                    groupPurchase.getUpdatedAt() == null ? null : groupPurchase.getUpdatedAt().toInstant(),
+                    groupPurchase.getCurrentQuantity(),
+                    product.getProductId(),
+                    product.getCategory().name(),
+                    product.getPrice(),
+                    product.getOriginalUrl(),
+                    groupPurchase.getSellerId()
+            ));
+        }
+        return result;
     }
 
     @Override

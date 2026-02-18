@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
-import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.common.domain.grouppurchase.GroupPurchase;
-import store._0982.common.domain.product.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,56 +17,24 @@ import java.util.stream.Collectors;
 public class GroupPurchaseSearchService {
 
     private final GroupPurchaseRepository groupPurchaseRepository;
-    private final ProductRepository productRepository;
-
     public List<GroupPurchaseSearchRow> findSearchRowsByIds(List<UUID> purchaseIds) {
         if (purchaseIds == null || purchaseIds.isEmpty()) {
             return List.of();
         }
-        List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(purchaseIds);
-        if (groupPurchases.isEmpty()) {
+        List<GroupPurchaseSearchRow> rows = groupPurchaseRepository.findSearchRowsByIds(purchaseIds);
+        if (rows.isEmpty()) {
             return List.of();
         }
-        Map<UUID, GroupPurchase> groupPurchaseMap = groupPurchases.stream()
-                .collect(Collectors.toMap(GroupPurchase::getGroupPurchaseId, Function.identity()));
-        List<UUID> productIds = groupPurchases.stream()
-                .map(GroupPurchase::getProductId)
-                .distinct()
-                .toList();
-        Map<UUID, Product> productMap = productRepository.findByProductIdIn(productIds).stream()
-                .collect(Collectors.toMap(Product::getProductId, Function.identity()));
+        Map<UUID, GroupPurchaseSearchRow> rowMap = rows.stream()
+                .collect(Collectors.toMap(GroupPurchaseSearchRow::groupPurchaseId, Function.identity()));
 
-        List<GroupPurchaseSearchRow> rows = new ArrayList<>(purchaseIds.size());
+        List<GroupPurchaseSearchRow> ordered = new ArrayList<>(purchaseIds.size());
         for (UUID purchaseId : purchaseIds) {
-            GroupPurchase groupPurchase = groupPurchaseMap.get(purchaseId);
-            if (groupPurchase == null) {
-                continue;
+            GroupPurchaseSearchRow row = rowMap.get(purchaseId);
+            if (row != null) {
+                ordered.add(row);
             }
-            Product product = productMap.get(groupPurchase.getProductId());
-            if (product == null) {
-                continue;
-            }
-            rows.add(new GroupPurchaseSearchRow(
-                    groupPurchase.getGroupPurchaseId(),
-                    groupPurchase.getMinQuantity(),
-                    groupPurchase.getMaxQuantity(),
-                    groupPurchase.getTitle(),
-                    groupPurchase.getDescription(),
-                    groupPurchase.getImageUrl(),
-                    groupPurchase.getDiscountedPrice(),
-                    groupPurchase.getStatus().name(),
-                    groupPurchase.getStartDate().toInstant(),
-                    groupPurchase.getEndDate().toInstant(),
-                    groupPurchase.getCreatedAt().toInstant(),
-                    groupPurchase.getUpdatedAt() == null ? null : groupPurchase.getUpdatedAt().toInstant(),
-                    groupPurchase.getCurrentQuantity(),
-                    product.getProductId(),
-                    product.getCategory().name(),
-                    product.getPrice(),
-                    product.getOriginalUrl(),
-                    groupPurchase.getSellerId()
-            ));
         }
-        return rows;
+        return ordered;
     }
 }

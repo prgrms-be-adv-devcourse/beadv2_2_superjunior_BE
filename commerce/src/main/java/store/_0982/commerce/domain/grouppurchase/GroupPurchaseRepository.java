@@ -2,6 +2,7 @@ package store._0982.commerce.domain.grouppurchase;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
@@ -34,6 +35,10 @@ public interface GroupPurchaseRepository {
     List<GroupPurchase> findAllByStatusAndStartDateBefore(GroupPurchaseStatus status, OffsetDateTime now);
 
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
+
+    List<GroupPurchaseSearchRow> findSearchRowsByIds(
+            List<UUID> groupPurchaseIds
+    );
 
     int increaseQuantity(UUID groupPurchaseId, int quantity);
 
