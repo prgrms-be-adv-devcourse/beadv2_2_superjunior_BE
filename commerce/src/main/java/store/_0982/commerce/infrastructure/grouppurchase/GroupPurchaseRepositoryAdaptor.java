@@ -9,7 +9,6 @@ import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseSearchRow
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
-import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
 
 import java.time.OffsetDateTime;
@@ -85,6 +84,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     }
 
     @Override
+    public List<GroupPurchaseSearchRow> findSearchRowsByIds(List<UUID> groupPurchaseIds) {
+        return groupPurchaseJpaRepository.findSearchRowsByIds(groupPurchaseIds);
+    }
+
+    @Override
     public Page<GroupPurchaseSearchRow> searchRows(
             String keyword,
             GroupPurchaseStatus status,
@@ -92,31 +96,7 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
             UUID sellerId,
             Pageable pageable
     ) {
-        Page<Object[]> rows = groupPurchaseJpaRepository.searchWithProduct(keyword, status, category, sellerId, pageable);
-        return rows.map(result -> {
-            GroupPurchase groupPurchase = (GroupPurchase) result[0];
-            Product product = (Product) result[1];
-            return new GroupPurchaseSearchRow(
-                    groupPurchase.getGroupPurchaseId(),
-                    groupPurchase.getMinQuantity(),
-                    groupPurchase.getMaxQuantity(),
-                    groupPurchase.getTitle(),
-                    groupPurchase.getDescription(),
-                    groupPurchase.getImageUrl(),
-                    groupPurchase.getDiscountedPrice(),
-                    groupPurchase.getStatus().name(),
-                    groupPurchase.getStartDate().toInstant(),
-                    groupPurchase.getEndDate().toInstant(),
-                    groupPurchase.getCreatedAt().toInstant(),
-                    groupPurchase.getUpdatedAt() == null ? null : groupPurchase.getUpdatedAt().toInstant(),
-                    groupPurchase.getCurrentQuantity(),
-                    product.getProductId(),
-                    product.getCategory().name(),
-                    product.getPrice(),
-                    product.getOriginalUrl(),
-                    groupPurchase.getSellerId()
-            );
-        });
+        return groupPurchaseJpaRepository.searchWithProduct(keyword, status, category, sellerId, pageable);
     }
 
     @Override

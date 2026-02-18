@@ -1,8 +1,6 @@
 package store._0982.commerce.application.grouppurchase.dto;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 
 public record GroupPurchaseSearchInfo(
         String groupPurchaseId,
@@ -30,16 +28,16 @@ public record GroupPurchaseSearchInfo(
                 row.description(),
                 row.imageUrl(),
                 row.discountedPrice(),
-                row.status(),
+                row.status().name(),
                 toStringOrNull(row.startDate()),
                 toStringOrNull(row.endDate()),
-                toOffsetDateTime(row.createdAt()),
-                toOffsetDateTime(row.updatedAt()),
+                row.createdAt(),
+                row.updatedAt(),
                 row.currentQuantity(),
                 calculateDiscountRate(row.price(), row.discountedPrice()),
                 new ProductSearchInfo(
                         row.productId().toString(),
-                        row.category(),
+                        row.category().name(),
                         row.price(),
                         row.originalUrl(),
                         row.sellerId().toString()
@@ -47,15 +45,7 @@ public record GroupPurchaseSearchInfo(
         );
     }
 
-    private static OffsetDateTime toOffsetDateTime(Instant instant) {
-        if (instant == null) {
-            return null;
-        }
-        return OffsetDateTime.ofInstant(instant, ZoneId.systemDefault());
-    }
-
-    private static String toStringOrNull(Instant instant) {
-        OffsetDateTime value = toOffsetDateTime(instant);
+    private static String toStringOrNull(OffsetDateTime value) {
         return value != null ? value.toString() : null;
     }
 

@@ -37,6 +37,8 @@ public interface GroupPurchaseRepository {
 
     List<GroupPurchase> findAllByGroupPurchaseIdIn(List<UUID> groupPurchaseIds);
 
+    List<GroupPurchaseSearchRow> findSearchRowsByIds(List<UUID> groupPurchaseIds);
+
     Page<GroupPurchaseSearchRow> searchRows(
             String keyword,
             GroupPurchaseStatus status,

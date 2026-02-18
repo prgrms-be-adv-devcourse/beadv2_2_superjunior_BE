@@ -1,7 +1,9 @@
 package store._0982.commerce.application.grouppurchase.dto;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
+import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
+import store._0982.common.domain.product.ProductCategory;
 
 public record GroupPurchaseSearchRow(
         UUID groupPurchaseId,
@@ -11,14 +13,14 @@ public record GroupPurchaseSearchRow(
         String description,
         String imageUrl,
         Long discountedPrice,
-        String status,
-        Instant startDate,
-        Instant endDate,
-        Instant createdAt,
-        Instant updatedAt,
+        GroupPurchaseStatus status,
+        OffsetDateTime startDate,
+        OffsetDateTime endDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
         int currentQuantity,
         UUID productId,
-        String category,
+        ProductCategory category,
         Long price,
         String originalUrl,
         UUID sellerId
