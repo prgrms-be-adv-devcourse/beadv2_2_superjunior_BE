@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import store._0982.recommendation.application.RecommendationService;
-import store._0982.recommendation.application.dto.RecommandInfo;
+import store._0982.recommendation.application.dto.RecommendInfo;
 import store._0982.common.HeaderName;
 import store._0982.common.dto.ResponseDto;
 import store._0982.common.log.ControllerLog;
@@ -20,7 +20,7 @@ public class RecommendationController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     @ControllerLog
-    public ResponseDto<RecommandInfo> getRecommendations(
+    public ResponseDto<RecommendInfo> getRecommendations(
             @RequestHeader(value = HeaderName.ID) UUID memberId,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "category", defaultValue = "") String category

@@ -1,61 +1,49 @@
 package store._0982.recommendation.application;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import store._0982.recommendation.application.dto.RecommendInfo;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class RedisCacheService implements CacheService {
-    private static final String PRODUCT_LIST_CACHE_KEY_PREFIX = "recommendation:product-list:";
+    private static final String PRODUCT_LIST_CACHE_KEY_PREFIX = "recommendation:recommend-info:";
 
-    private final StringRedisTemplate stringRedisTemplate;
+    private final RedisTemplate<String, RecommendInfo> redisTemplate;
+
+    // 단일 추천 결과를 Value로 캐싱
+    @Override
+    public RecommendInfo getRecommendationList(UUID memberId) {
+        String key = getKey(memberId);
+        return redisTemplate.opsForValue().get(key);
+    }
 
     @Override
-    public List<UUID> refreshProductListCache(UUID memberId) {
-        return List.of();
+    public void putRecommendationList(UUID memberId, RecommendInfo recommendInfo) {
+        String key = getKey(memberId);
+        if (recommendInfo == null) {
+            redisTemplate.delete(key);
+            return;
+        }
+
+        redisTemplate.opsForValue().set(key, recommendInfo, TTL_SECONDS, TimeUnit.SECONDS);
     }
 
     @Override
-    public List<UUID> getProductListCache(UUID memberId) {
-        String key = getProductListCacheKey(memberId);
-        long ttlSeconds = getTtlOfKey(key);
-
-        if (ttlSeconds == -2L) {
-            return refreshProductListCache(memberId);
-        }
-
-        List<String> cachedProductIds = stringRedisTemplate.opsForList().range(key, 0, -1);
-        if (cachedProductIds == null || cachedProductIds.isEmpty()) {
-            return refreshProductListCache(memberId);
-        }
-
-        return cachedProductIds.stream()
-                .map(this::toUuid)
-                .flatMap(Optional::stream)
-                .collect(Collectors.toList());
+    public Long getTtlOfKey(UUID memberId) {
+        return getTtlOfKey(getKey(memberId));
     }
 
-    private long getTtlOfKey(String key) {
-        return Optional.ofNullable(stringRedisTemplate.getExpire(key, TimeUnit.SECONDS))
-                .orElse(-2L);
+    private Long getTtlOfKey(String key) {
+        Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+        return ttl == null ? -2L : ttl;
     }
 
-    private String getProductListCacheKey(UUID memberId) {
+    private String getKey(UUID memberId) {
         return PRODUCT_LIST_CACHE_KEY_PREFIX + memberId;
-    }
-
-    private Optional<UUID> toUuid(String value) {
-        try {
-            return Optional.of(UUID.fromString(value));
-        } catch (IllegalArgumentException ex) {
-            return Optional.empty();
-        }
     }
 }
