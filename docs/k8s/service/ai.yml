@@ -28,6 +28,10 @@ spec:
               value: text-embedding-3-small
             - name: CLIENT_SEARCH
               value: http://search-service:8082
+            - name: REDIS_HOST
+              value: "redis-service"
+            - name: REDIS_PORT
+              value: "6379"
           envFrom:
             - secretRef:
                 name: ai-secret
