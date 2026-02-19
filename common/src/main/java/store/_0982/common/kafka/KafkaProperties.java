@@ -1,16 +1,21 @@
 package store._0982.common.kafka;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * Kafka 설정에 대한 기본값을 정의한 클래스입니다.
  * <p>필요한 경우 외부 모듈에서 불러와 사용하세요.</p>
  *
  * @author Minhyung Kim
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class KafkaProperties {
-    public static final int DEFAULT_PARTITIONS = 1;
+
+    public static final int DEFAULT_PARTITIONS = 6;
     public static final int DEFAULT_REPLICAS = 1;
 
-    public static final int DEFAULT_CONSUMER_CONCURRENCY = 1;
+    public static final int DEFAULT_CONSUMER_CONCURRENCY = 3;
 
     public static final String DEFAULT_ACK = "all";
 
@@ -22,7 +27,4 @@ public final class KafkaProperties {
     public static final int DEFAULT_LINGER_MS = 5;
 
     public static final String DEFAULT_AUTO_OFFSET_RESET = "earliest";
-
-    private KafkaProperties() {
-    }
 }
