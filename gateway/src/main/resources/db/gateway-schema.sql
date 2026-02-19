@@ -95,8 +95,8 @@ VALUES
 -- Searches
 ('GET', '^/api/searches/purchase/search$', 'GUEST, CONSUMER, SELLER'),
 ('GET', '^/api/searches/purchase/mine$', 'SELLER'),
--- AI
-('GET', '^/api/ai/recommendations$', 'CONSUMER,SELLER'),
+-- Recommendations
+('GET', '^/api/recommendations$', 'CONSUMER,SELLER'),
 -- Notification settings
 ('GET', '^/api/notification-settings$', 'CONSUMER,SELLER'),
 ('PUT', '^/api/notification-settings$', 'CONSUMER,SELLER');
