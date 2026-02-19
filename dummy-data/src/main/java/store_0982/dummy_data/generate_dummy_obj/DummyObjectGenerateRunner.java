@@ -12,6 +12,7 @@ import store_0982.dummy_data.generate_dummy_obj.commerce.DummyOrderGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyCanceledOrderGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyOrderSettlementGenerator;
 import store_0982.dummy_data.generate_dummy_obj.commerce.DummyProductGenerator;
+import store_0982.dummy_data.generate_dummy_obj.commerce.DummySellerBalanceHistoryGenerator;
 import store_0982.dummy_data.generate_dummy_obj.member.DummyMemberGenerator;
 import store_0982.dummy_data.generate_dummy_obj.member.DummySellerGenerator;
 import store_0982.dummy_data.generate_dummy_obj.recommendation.DummyProductVectorGenerator;
@@ -39,6 +40,7 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
     private final DummyOrderGenerator dummyOrderGenerator;
     private final DummyCanceledOrderGenerator dummyCanceledOrderGenerator;
     private final DummyOrderSettlementGenerator dummyOrderSettlementGenerator;
+    private final DummySellerBalanceHistoryGenerator dummySellerBalanceHistoryGenerator;
 
     @Value("${dummy-data.product-id-pool.count}")
     private int productCount;
@@ -103,6 +105,12 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
             log.info("[더미데이터 정산 더미 생성 완료.]");
         }
 
+        if (targets.contains(GeneratorType.SELLER_BALANCE_HISTORY)) {
+            log.info("[더미데이터 판매자 잔액 이력 생성 시작.]");
+            dummySellerBalanceHistoryGenerator.generate();
+            log.info("[더미데이터 판매자 잔액 이력 생성 완료.]");
+        }
+
         log.info("더미데이터 생성 완료");
     }
 
@@ -114,7 +122,8 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
         SELLER,
         ORDER,
         CANCELED_ORDER,
-        ORDER_SETTLEMENT
+        ORDER_SETTLEMENT,
+        SELLER_BALANCE_HISTORY
     }
 
     private java.util.EnumSet<GeneratorType> parseTargets(ApplicationArguments args) {
@@ -148,6 +157,8 @@ public class DummyObjectGenerateRunner implements ApplicationRunner {
                 case "order" -> set.add(GeneratorType.ORDER);
                 case "canceled-order" -> set.add(GeneratorType.CANCELED_ORDER);
                 case "order-settlement" -> set.add(GeneratorType.ORDER_SETTLEMENT);
+                case "seller-balance-history", "seller_balance_history", "balance-history" ->
+                        set.add(GeneratorType.SELLER_BALANCE_HISTORY);
                 default -> log.warn("Unknown generator target: {}", token);
             }
         }
