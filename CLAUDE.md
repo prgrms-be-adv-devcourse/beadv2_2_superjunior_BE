@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 #### 인프라 서비스 실행 (Docker Compose)
 ```bash
-# PostgreSQL, Redis, Kafka, Elasticsearch 실행
+# PostgreSQL, Redis, Kafka, Elasticsearch, Logstash 실행
 docker-compose up -d
 
 # 인프라 종료
@@ -49,7 +49,7 @@ docker-compose down
 ./gradlew :commerce:bootRun        # 포트 8087
 ./gradlew :point:bootRun           # 포트 8086
 ./gradlew :elastic-search:bootRun  # 포트 8082
-./gradlew :ai:bootRun              # 포트 8088
+./gradlew :recommendation:bootRun  # 포트 8088
 ```
 
 ### 테스트 실행
@@ -82,24 +82,37 @@ Kubernetes 매니페스트는 `docs/k8s/` 디렉토리에 구성되어 있습니
 ```
 docs/k8s/
 ├── infra/              # 인프라 서비스 (StatefulSet)
-│   ├── kafka.yml       # Kafka (5Gi PVC)
-│   ├── postgres.yml    # PostgreSQL
-│   ├── redis.yml       # Redis
+│   ├── kafka.yml           # Kafka (메인)
+│   ├── kafka-batch.yml     # Kafka (배치 전용)
+│   ├── postgres.yml        # PostgreSQL (메인)
+│   ├── postgres-batch.yml  # PostgreSQL (배치 전용)
+│   ├── redis.yml           # Redis
 │   └── elastic-search.yml  # Elasticsearch
 ├── service/            # 마이크로서비스 (Deployment)
-│   ├── gateway.yml     # API Gateway
-│   ├── member.yml      # Member 서비스
-│   ├── commerce.yml    # Commerce 서비스
-│   ├── point.yml       # Point 서비스
-│   ├── search.yml      # Elastic Search 서비스
-│   └── ai.yml          # AI 서비스
-├── job/                # CronJob (배치 작업)
-│   ├── group-purchase-cronjob.yml      # 공구 상태 업데이트 (매시간)
-│   ├── seller-balance-cronjob.yml      # 판매자 잔액 업데이트 (매일 02:30)
-│   ├── monthly-settlement-cronjob.yml  # 월별 정산 (매월 1일 00:30)
-│   ├── retry-settlement-cronjob.yml    # 정산 재시도 (매월 2일 00:30)
-│   ├── vector-refresh-cronjob.yml      # 벡터 갱신 (매일 03:13)
-│   └── kustomization.yml
+│   ├── gateway.yml         # API Gateway
+│   ├── member.yml          # Member 서비스
+│   ├── commerce.yml        # Commerce 서비스
+│   ├── point.yml           # Point 서비스
+│   ├── search.yml          # Elastic Search 서비스
+│   └── ai.yml              # Recommendation 서비스
+├── job/                # Job (배치 작업)
+│   ├── group-purchase-job.yml          # 공구 상태 업데이트
+│   ├── group-purchase-reindex-job.yml  # 공구 재인덱싱
+│   ├── settlement-job.yml              # 정산
+│   ├── seller-payout-job.yml           # 판매자 지급
+│   ├── retry-seller-payout-job.yml     # 판매자 지급 재시도
+│   └── vector-refresh-job.yml          # 벡터 갱신
+├── monitoring/         # 모니터링 서비스
+│   ├── prometheus.yml      # 메트릭 수집
+│   ├── grafana.yml         # 대시보드
+│   ├── kibana.yml          # 로그 분석
+│   └── fluent-bit.yml      # 로그 수집
+├── secret/             # Secret (민감 정보)
+│   ├── commerce-secret.yml
+│   ├── elasticsearch-secret.yml
+│   ├── grafana-secret.yml
+│   ├── kibana-secret.yml
+│   └── postgres-secret.yml
 └── cert/               # TLS 인증서 (cert-manager + Let's Encrypt)
     └── tls.yml         # Ingress 설정 (0982.store)
 ```
@@ -113,14 +126,14 @@ kubectl apply -f docs/k8s/infra/
 # 2. 마이크로서비스 배포
 kubectl apply -f docs/k8s/service/
 
-# 3. CronJob 배포 (Kustomize 사용)
-kubectl apply -k docs/k8s/job/
+# 3. Job 배포
+kubectl apply -f docs/k8s/job/
 
-# 4. TLS/Ingress 설정 (cert-manager 필요)
+# 4. 모니터링 배포
+kubectl apply -f docs/k8s/monitoring/
+
+# 5. TLS/Ingress 설정 (cert-manager 필요)
 kubectl apply -f docs/k8s/cert/
-
-# 전체 한번에 배포
-kubectl apply -f docs/k8s/infra/ -f docs/k8s/service/ -k docs/k8s/job/ -f docs/k8s/cert/
 ```
 
 #### 배포 확인
@@ -132,14 +145,14 @@ kubectl get pods
 # 서비스 확인
 kubectl get svc
 
-# CronJob 확인
-kubectl get cronjobs
+# Job 확인
+kubectl get jobs
 
 # 특정 서비스 로그 확인
 kubectl logs -f deployment/gateway
 kubectl logs -f deployment/member
 
-# CronJob 실행 이력
+# Job 실행 이력
 kubectl get jobs
 ```
 
@@ -163,13 +176,6 @@ kubectl get jobs
 - `gateway-secret`, `member-secret`, `commerce-secret` 등 각 서비스별 Secret 필요
 - JWT_SECRET, DB 비밀번호 등 민감 정보 포함
 
-**CronJob 스케줄 (Asia/Seoul):**
-- `group-purchase-cronjob`: 매시간 (`0 * * * *`)
-- `seller-balance-cronjob`: 매일 02:30 (`30 2 * * *`)
-- `monthly-settlement-cronjob`: 매월 1일 00:30 (`30 0 1 * *`)
-- `retry-settlement-cronjob`: 매월 2일 00:30 (`30 0 2 * *`)
-- `vector-refresh-cronjob`: 매일 03:13 (`13 3 * * *`)
-
 **Ingress (TLS):**
 - 도메인: `0982.store`
 - TLS: Let's Encrypt (cert-manager)
@@ -188,11 +194,25 @@ kubectl get jobs
 |--------|------|------|-------------|
 | **gateway** | 8000 | JWT 인증, 라우팅, 권한 관리 | - |
 | **member** | 8083 | 회원/판매자 관리, 알림 | Member, Seller, Notification |
-| **commerce** | 8087 | 상품/주문/공동구매 관리 | Product, Order, GroupPurchase, Cart |
+| **commerce** | 8087 | 상품/주문/공동구매 관리 | Product, Order, GroupPurchase, Cart, SellerBalance |
 | **point** | 8086 | 포인트 충전/결제 (Toss Payments) | PgPayment, BonusPolicy |
 | **elastic-search** | 8082 | 상품 검색 인덱싱 (벡터 검색) | GroupPurchaseDocument |
-| **batch** | - | 일일/월별 정산 배치 | Settlement |
-| **ai** | 8088 | 상품 벡터화, AI 기능 | - |
+| **batch** | - | 일일/월별 정산 배치 | Settlement, SellerPayout, GroupPurchase |
+| **recommendation** | 8088 | 상품 벡터화, AI 추천 | - |
+
+### 모듈 목록
+
+settings.gradle에 정의된 10개 모듈:
+- `common` - 공통 라이브러리
+- `gateway` - API Gateway
+- `member` - 회원/판매자 관리
+- `commerce` - 상품/주문/공동구매
+- `point` - 포인트/결제
+- `elastic-search` - 검색 서비스
+- `batch` - 배치 작업
+- `recommendation` - AI 추천
+- `dummy-data` - 더미 데이터 생성
+- `conductor` - 추가 모듈
 
 ### 레이어 아키텍처 (Hexagonal Architecture)
 
@@ -229,11 +249,11 @@ Common 모듈은 모든 서비스에서 공유하는 기능을 제공합니다:
 
 1. **Kafka 설정 (`kafka/`)**
    - `KafkaCommonConfigs`: Producer/Consumer Factory 제공
-   - `KafkaTopics`: 14개 토픽 상수 (ORDER_CREATED, PAYMENT_CHANGED 등)
+   - `KafkaTopics`: 14개 토픽 상수
    - 이벤트 DTO: `OrderCreatedEvent`, `PaymentChangedEvent` 등 (BaseEvent 확장)
    - Producer 전략:
-     - `defaultProducerFactory()`: 안정성 우선 (acks=all, idempotence=true)
-     - `fastProducerFactory()`: 성능 우선 (acks=0, idempotence=false)
+     - `defaultProducerFactory()`: 안정성 우선 (acks=all, idempotence=true) - 주문, 결제
+     - `fastProducerFactory()`: 성능 우선 (acks=0, idempotence=false) - 알림, 로그
 
 2. **예외 처리 (`exception/`)**
    - `CustomException`: 커스텀 예외 기본 클래스
@@ -246,10 +266,12 @@ Common 모듈은 모든 서비스에서 공유하는 기능을 제공합니다:
 
 4. **인증 (`auth/`)**
    - `Role`: GUEST, CONSUMER, SELLER, ADMIN
-   - `RequireRole`: 권한 검증 어노테이션 (Deprecated - Gateway에서 처리)
 
 5. **공통 DTO (`dto/`)**
    - `ResponseDto<T>`, `PageResponse<T>`
+
+6. **도메인 공유 (`domain/`)**
+   - grouppurchase, order, product, sellerbalance, sellerpayout, settlement, vector
 
 ### Gateway 인증 및 라우팅
 
@@ -263,10 +285,12 @@ Common 모듈은 모든 서비스에서 공유하는 기능을 제공합니다:
 ```
 
 **라우팅 규칙 (`gateway/src/main/resources/application.yml`):**
-- `/api/members/**` → Member 서비스
-- `/api/orders/**, /api/carts/**` → Commerce 서비스
-- `/api/points/**, /api/payments/**` → Point 서비스
+- `/api/members/**`, `/api/notifications/**` → Member 서비스
+- `/auth/**`, `/oauth2/**` → Member 서비스 (인증)
+- `/api/orders/**`, `/api/carts/**`, `/api/balances/**`, `/api/products/**`, `/api/purchases/**` → Commerce 서비스
+- `/api/points/**`, `/api/payments/**` → Point 서비스
 - `/api/searches/**` → Elastic Search 서비스
+- `/api/recommendation/**` → Recommendation 서비스
 - `/webhooks/**` → Point 서비스 (Toss IP 화이트리스트)
 
 **보안:**
@@ -282,16 +306,17 @@ Common 모듈은 모든 서비스에서 공유하는 기능을 제공합니다:
 - Member → Point: `PointFeignClient.postPointBalance()` (판매자 등록 시)
 - Commerce → Member: `MemberClient.getProfile()` (주문 시 회원 정보 조회)
 - Point → Commerce: `CommerceServiceClient.getOrder()` (결제 시 주문 정보 조회)
+- Elastic Search → Recommendation: `RecommendationClient` (벡터 검색)
 
 #### 2. Kafka 이벤트 (비동기 통신)
 
 **주요 토픽:**
-- `ORDER_CREATED`, `ORDER_CANCELED`, `ORDER_CONFIRMED` (주문)
+- `ORDER_CREATED`, `ORDER_CANCELED`, `ORDER_CHANGED`, `ORDER_CONFIRMED` (주문)
 - `PAYMENT_CHANGED`, `POINT_CHANGED` (결제/포인트)
 - `PRODUCT_UPSERTED`, `PRODUCT_EMBEDDING_COMPLETED` (상품)
 - `GROUP_PURCHASE_CHANGED`, `GROUP_PURCHASE_FAILED` (공동구매)
 - `MEMBER_DELETED`, `MEMBER_LOGGED_IN` (회원)
-- `SETTLEMENT_DONE` (정산)
+- `SELLER_PAYOUT_DONE` (판매자 지급, 구 SETTLEMENT_DONE은 Deprecated)
 
 **이벤트 발행 패턴:**
 ```java
@@ -323,8 +348,22 @@ PostgreSQL에 서비스별 스키마로 분리:
 - `commerce_schema` - Commerce 서비스
 - `point_schema` - Point 서비스
 - `search_schema` - Elastic Search 서비스
+- `batch_schema` - Batch 서비스 (Spring Batch 메타데이터 포함)
 
 **초기화 스크립트:** `docker/postgres/init/` 디렉토리
+
+**Batch DB:** 배치 전용 PostgreSQL 인스턴스 사용 (K8s: `postgres-batch.yml`)
+- `batch_schema`, `order_schema`, `product_schema`, `recommendation_schema`, `settlement_schema` 연결
+
+### 모니터링 스택
+
+| 도구 | 역할 |
+|------|------|
+| **Prometheus** | 메트릭 수집 (`/actuator/metrics`, `/actuator/prometheus`) |
+| **Grafana** | 메트릭 대시보드 |
+| **Kibana** | 로그 분석 (Elasticsearch 기반) |
+| **Fluent-bit** | 로그 수집 및 전달 |
+| **Logstash** | 로그 처리 파이프라인 (로컬: Docker Compose) |
 
 ## 개발 가이드
 
@@ -332,7 +371,7 @@ PostgreSQL에 서비스별 스키마로 분리:
 
 1. **Common 모듈에 이벤트 정의**
    ```java
-   // common/src/main/java/store/_0982/common/kafka/event/
+   // common/src/main/java/store/_0982/common/kafka/dto/
    public record NewEvent(
        UUID entityId,
        String data
@@ -414,6 +453,8 @@ TOSS_PAYMENTS_SECRET_KEY=your-toss-secret
 
 2. **환경변수:** 프로젝트 루트에 `.env` 파일 필수 (JWT_SECRET, TOSS_PAYMENTS_SECRET_KEY 등)
 
+3. **PostgreSQL 포트:** 로컬 Docker는 5433 포트 사용 (기본 5432와 충돌 방지)
+
 ### Kubernetes 배포
 
 1. **Secret 생성:** 배포 전 각 서비스별 Secret 생성 필요
@@ -434,18 +475,15 @@ TOSS_PAYMENTS_SECRET_KEY=your-toss-secret
 
 3. **PVC 확인:** Kafka는 5Gi PVC를 사용하므로, StorageClass `local-path` 필요
 
-4. **CronJob 수동 실행:** 테스트를 위해 CronJob을 즉시 실행
-   ```bash
-   kubectl create job --from=cronjob/group-purchase-cronjob test-job-1
-   ```
-
-5. **이미지 업데이트:** 새 이미지 배포 시 Pod 재시작
+4. **이미지 업데이트:** 새 이미지 배포 시 Pod 재시작
    ```bash
    kubectl rollout restart deployment/gateway
    kubectl rollout restart deployment/member
    ```
 
-6. **nodeSelector 주의:** 일부 서비스는 특정 노드에 배포되도록 설정됨 (gateway: ip-10-0-0-5, kafka: ip-10-0-0-244)
+5. **nodeSelector 주의:** 일부 서비스는 특정 노드에 배포되도록 설정됨
+
+6. **배치 DB 분리:** Batch 서비스는 전용 PostgreSQL 인스턴스(`postgres-batch.yml`)에 연결됨
 
 ### 공통
 
@@ -459,4 +497,4 @@ TOSS_PAYMENTS_SECRET_KEY=your-toss-secret
 
 5. **Gateway 라우트 권한:** DB 기반이므로 새 엔드포인트 추가 시 `gateway_route` 테이블 업데이트 필수
 
-6. **CronJob 동시 실행 방지:** `concurrencyPolicy: Forbid` 설정으로 중복 실행 방지됨
+6. **Kafka 토픽 네이밍:** `SETTLEMENT_DONE` → `SELLER_PAYOUT_DONE` 으로 변경됨. 신규 개발 시 `SELLER_PAYOUT_DONE` 사용
