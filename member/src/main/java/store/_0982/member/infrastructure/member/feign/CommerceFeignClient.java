@@ -1,7 +1,6 @@
 package store._0982.member.infrastructure.member.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,7 @@ import java.util.UUID;
 public interface CommerceFeignClient {
   
     // TODO: 참여자 ID 목록을 조회할 수 있는 API가 필요하다
-    @GetMapping("/{groupPurchaseId}/participants")
+    @GetMapping("/internal/orders/{groupPurchaseId}/participants")
     List<UUID> getGroupPurchaseParticipants(@PathVariable UUID groupPurchaseId);
   
     @PostMapping(value = "/internal/balances")
