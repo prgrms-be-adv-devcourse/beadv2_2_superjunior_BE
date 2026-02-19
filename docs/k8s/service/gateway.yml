@@ -38,7 +38,7 @@ spec:
             - name: SEARCH_SERVICE_URL
               value: http://search-service:8082
             - name: RECOMMENDATION_SERVICE_URL
-              value: http://recommendation-service:8088
+              value: http://ai-service:8088
           envFrom:
             - secretRef:
                 name: gateway-secret
