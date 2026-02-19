@@ -23,3 +23,8 @@ management:
 
 kafka:
   bootstrap-servers: ${spring.kafka.bootstrap-servers}
+
+logging:
+  level:
+    org.apache.kafka: warn
+    org.springframework.kafka: warn

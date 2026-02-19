@@ -57,5 +57,9 @@ logging:
     org.springframework.batch.core.step.AbstractStep: WARN
     org.springframework.batch.core.job.SimpleStepHandler: WARN
 
+    # 불필요한 Kafka 로그 제거
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+
     # 커스텀 배치 로그는 INFO 유지
     store._0982.batch: INFO

@@ -41,6 +41,7 @@ spring:
 logging:
   level:
     org.apache.kafka: warn
+    org.springframework.kafka: warn
 
 management:
   endpoints:

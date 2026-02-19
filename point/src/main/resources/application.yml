@@ -47,6 +47,7 @@ management:
 logging:
   level:
     org.apache.kafka: warn
+    org.springframework.kafka: warn
 
 toss:
   secret-key: ${TOSS_SECRET_KEY}
