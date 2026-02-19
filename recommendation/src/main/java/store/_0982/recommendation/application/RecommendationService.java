@@ -22,6 +22,7 @@ public class RecommendationService {
     private final PersonalVectorRepository personalVectorRepository;
     private final PromptService promptService ;
     private final ProductVectorRepository productVectorRepository;
+    private final CacheService cacheService;
 
     public RecommandInfo getRecommendations(UUID memberId, String keyword, String category) {
         PersonalVector personalVector = personalVectorRepository.findById(memberId).orElse(null);
