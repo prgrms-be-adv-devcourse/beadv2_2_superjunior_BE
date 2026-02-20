@@ -17,7 +17,16 @@ import java.util.UUID;
 @Builder(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "bonus_earning", schema = "payment_schema")
+@Table(
+        name = "bonus_earning",
+        schema = "payment_schema",
+        indexes = {
+                @Index(
+                        name = "idx_bonus_earning_member_status",
+                        columnList = "member_id, status"
+                )
+        }
+)
 public class BonusEarning {
 
     @Id

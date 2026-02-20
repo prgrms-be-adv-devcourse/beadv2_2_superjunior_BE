@@ -31,7 +31,7 @@ public class PgCancelService {
         List<String> incomingKeys = tossPaymentInfo.cancels().stream()
                 .map(TossPaymentInfo.CancelInfo::transactionKey)
                 .toList();
-        Set<String> existingKeys = pgPaymentCancelRepository.findExistingTransactionKeys(incomingKeys);
+        Set<String> existingKeys = pgPaymentCancelRepository.findExistingTransactionKeys(pgPayment, incomingKeys);
 
         List<PgPaymentCancel> newCancels = extractNewCancellationInfo(tossPaymentInfo, existingKeys, pgPayment);
 

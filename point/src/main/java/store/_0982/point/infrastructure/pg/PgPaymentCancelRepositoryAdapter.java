@@ -2,6 +2,7 @@ package store._0982.point.infrastructure.pg;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 import store._0982.point.domain.repository.PgPaymentCancelRepository;
 
@@ -22,8 +23,9 @@ public class PgPaymentCancelRepositoryAdapter implements PgPaymentCancelReposito
     }
 
     @Override
-    public Set<String> findExistingTransactionKeys(List<String> transactionKeys) {
-        return new HashSet<>(pgPaymentCancelJpaRepository.findAllTransactionKeysByTransactionKeyIn(transactionKeys));
+    public Set<String> findExistingTransactionKeys(PgPayment payment, List<String> transactionKeys) {
+        return new HashSet<>(pgPaymentCancelJpaRepository
+                .findAllTransactionKeysByTransactionKeyIn(payment, transactionKeys));
     }
 
     @Override

@@ -12,6 +12,7 @@ public interface PgPaymentCancelJpaRepository extends JpaRepository<PgPaymentCan
 
     List<PgPaymentCancel> findAllByPgPayment(PgPayment pgPayment);
 
-    @Query("SELECT pc.transactionKey FROM PgPaymentCancel pc WHERE pc.transactionKey IN :transactionKeys")
-    List<String> findAllTransactionKeysByTransactionKeyIn(List<String> transactionKeys);
+    @Query("SELECT pc.transactionKey FROM PgPaymentCancel pc WHERE pc.pgPayment = :pgPayment " +
+            "AND pc.transactionKey IN :transactionKeys")
+    List<String> findAllTransactionKeysByTransactionKeyIn(PgPayment pgPayment, List<String> transactionKeys);
 }

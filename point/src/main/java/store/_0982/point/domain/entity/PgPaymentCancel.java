@@ -11,7 +11,13 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "pg_payment_cancel", schema = "payment_schema")
+@Table(
+        name = "pg_payment_cancel",
+        schema = "payment_schema",
+        indexes = {
+                @Index(name = "idx_pg_payment_cancel_payment", columnList = "payment_id")
+        }
+)
 public class PgPaymentCancel {
 
     @Id

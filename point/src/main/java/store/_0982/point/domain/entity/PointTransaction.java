@@ -26,6 +26,12 @@ import java.util.UUID;
                         name = "uc_point_transaction",
                         columnNames = {"order_id", "status"}
                 )
+        },
+        indexes = {
+                @Index(
+                        name = "idx_point_transaction_member_created",
+                        columnList = "member_id, created_at DESC"
+                )
         }
 )
 public class PointTransaction {
