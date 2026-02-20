@@ -19,6 +19,7 @@ docker/postgres/init/*.log
 **/env.*
 **/.env*
 docs/env
+docs/dummy-data
 
 # 로그 파일
 *.log
