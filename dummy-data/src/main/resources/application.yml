@@ -31,6 +31,10 @@ dummy-data:
     path: docs/dummy-data/dummy-datas/canceled-order-dummy.csv
   order-settlement-dummy:
     path: docs/dummy-data/dummy-datas/order-settlement-dummy.csv
+  point-balance-dummy:
+    path: docs/dummy-data/dummy-datas/point-balance-dummy.csv
+  seller-balance-dummy:
+    path: docs/dummy-data/dummy-datas/seller-balance-dummy.csv
   product-vector-dummy:
     path: docs/dummy-data/dummy-datas/product-vector-dummy.csv
   product-vector:

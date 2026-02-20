@@ -122,7 +122,9 @@ public final class ProductTextProvider {
             "안전한", "편안한", "대형", "미니"
     };
     private static final String[] PET_NOUN = {
-            "고양이 급수기"
+            "고양이 급수기", "강아지 간식", "반려동물 하우스", "고양이 스크래처",
+            "강아지 목줄", "반려동물 샴푸", "고양이 장난감", "강아지 방석",
+            "반려동물 영양제", "고양이 사료"
     };
 
     private static final String[] HOME_DESC_PREFIX = {
