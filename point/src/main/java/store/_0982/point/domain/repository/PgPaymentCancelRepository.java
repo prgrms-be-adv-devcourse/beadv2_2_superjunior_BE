@@ -1,5 +1,6 @@
 package store._0982.point.domain.repository;
 
+import store._0982.point.domain.entity.PgPayment;
 import store._0982.point.domain.entity.PgPaymentCancel;
 
 import java.util.Collection;
@@ -9,7 +10,7 @@ import java.util.Set;
 public interface PgPaymentCancelRepository {
     PgPaymentCancel save(PgPaymentCancel pgPaymentCancel);
 
-    Set<String> findExistingTransactionKeys(List<String> transactionKeys);
+    Set<String> findExistingTransactionKeys(PgPayment payment, List<String> transactionKeys);
 
     void saveAllAndFlush(Collection<PgPaymentCancel> pgPaymentCancels);
 }

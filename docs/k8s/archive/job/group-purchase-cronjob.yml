@@ -26,7 +26,7 @@ spec:
         spec:
           restartPolicy: OnFailure
           nodeSelector:
-            kubernetes.io/hostname: batch-server
+            kubernetes.io/hostname: api-server
           containers:
           - name: batch-job
             image: minbros/batch:latest

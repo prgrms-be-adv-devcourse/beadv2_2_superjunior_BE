@@ -79,7 +79,7 @@ class PgCancelServiceTest {
     @DisplayName("환불 마킹을 성공적으로 처리한다")
     void markRefundedPayment_success() {
         when(pgQueryService.findRefundablePayment(orderId, memberId)).thenReturn(pgPayment);
-        when(pgPaymentCancelRepository.findExistingTransactionKeys(anyList())).thenReturn(Set.of());
+        when(pgPaymentCancelRepository.findExistingTransactionKeys(eq(pgPayment), anyList())).thenReturn(Set.of());
 
         pgCancelService.markRefundedPayment(tossPaymentInfo, orderId, memberId);
 
@@ -110,7 +110,7 @@ class PgCancelServiceTest {
                 .build();
 
         when(pgQueryService.findRefundablePayment(orderId, memberId)).thenReturn(pgPayment);
-        when(pgPaymentCancelRepository.findExistingTransactionKeys(anyList())).thenReturn(Set.of());
+        when(pgPaymentCancelRepository.findExistingTransactionKeys(eq(pgPayment), anyList())).thenReturn(Set.of());
 
         pgCancelService.markRefundedPayment(partialRefundInfo, orderId, memberId);
 
@@ -150,7 +150,7 @@ class PgCancelServiceTest {
                 .build();
 
         when(pgQueryService.findRefundablePayment(orderId, memberId)).thenReturn(pgPayment);
-        when(pgPaymentCancelRepository.findExistingTransactionKeys(anyList())).thenReturn(Set.of(duplicateKey));
+        when(pgPaymentCancelRepository.findExistingTransactionKeys(eq(pgPayment), anyList())).thenReturn(Set.of(duplicateKey));
 
         pgCancelService.markRefundedPayment(multiCancelInfo, orderId, memberId);
 
@@ -163,7 +163,7 @@ class PgCancelServiceTest {
     @DisplayName("환불 마킹 시 이벤트가 발행된다")
     void markRefundedPayment_publishesEvent() {
         when(pgQueryService.findRefundablePayment(orderId, memberId)).thenReturn(pgPayment);
-        when(pgPaymentCancelRepository.findExistingTransactionKeys(anyList())).thenReturn(Set.of());
+        when(pgPaymentCancelRepository.findExistingTransactionKeys(eq(pgPayment), anyList())).thenReturn(Set.of());
 
         pgCancelService.markRefundedPayment(tossPaymentInfo, orderId, memberId);
 
