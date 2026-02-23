@@ -59,9 +59,9 @@ public record BenchmarkStats(
     }
 
     public void printReport() {
-        System.out.println("\n" + "=".repeat(60));
+        System.out.println("\n" + "-".repeat(40));
         System.out.println("[벤치마크 결과] " + name);
-        System.out.println("=".repeat(60));
+        System.out.println("-".repeat(40));
 
         System.out.println("\n[실행 시간 통계]");
         System.out.printf("  최소: %dms%n", minMs);
@@ -87,7 +87,7 @@ public record BenchmarkStats(
                 .sum();
         System.out.printf("  총 요청 수: %d건%n", totalRequests);
 
-        System.out.println("\n" + "=".repeat(60) + "\n");
+        System.out.println("\n" + "-".repeat(40) + "\n");
     }
 
     private static double calculateStdDeviation(List<Long> values, double mean) {
