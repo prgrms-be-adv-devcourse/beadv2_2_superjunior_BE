@@ -1,7 +1,12 @@
 #file: noinspection SpellCheckingInspection
 spring:
+  elasticsearch:
+    uris: ${SPRING_ELASTICSEARCH_URIS}
+    connection-timeout: 1s
+    socket-timeout: 3s
+
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
 
 client:
-  search: ${CLIENT_SEARCH_URL}
+  commerce: ${CLIENT_COMMERCE_URL}

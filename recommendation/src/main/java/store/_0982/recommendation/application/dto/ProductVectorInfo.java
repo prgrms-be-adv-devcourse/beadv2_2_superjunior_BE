@@ -1,4 +1,4 @@
-package store._0982.recommendation.infrastructure.feign.search.dto;
+package store._0982.recommendation.application.dto;
 
 public record ProductVectorInfo(
         String productId,

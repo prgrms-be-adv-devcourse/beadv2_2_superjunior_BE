@@ -1,4 +1,4 @@
-package store._0982.recommendation.infrastructure.feign.search;
+package store._0982.recommendation.infrastructure;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

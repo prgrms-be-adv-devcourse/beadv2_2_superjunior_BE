@@ -9,6 +9,9 @@ dependencies {
     // OpenFeign client for search inter-service calls
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
+    //elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
     //DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
