@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.OrderCancelCommand;
 import store._0982.commerce.application.order.dto.OrderCancelInfo;
 import store._0982.commerce.application.order.event.OrderCancelProcessedEvent;
@@ -36,6 +37,7 @@ public class CanceledOrderService {
     private final ProductService productService;
     private final GroupPurchaseService groupPurchaseService;
     private final GroupPurchaseQuantityService groupPurchaseQuantityService;
+    private final ParticipateService participateService;
 
     private final OrderRepository orderRepository;
     private final CanceledOrderRepository canceledOrderRepository;
@@ -100,7 +102,10 @@ public class CanceledOrderService {
         }
 
         if (command.reason().isBuyerFault()) {
-            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), order.getQuantity());
+            // after
+            if (order.getStatus() != OrderStatus.CANCELLED) {
+                participateService.rollback(order.getGroupPurchaseId(), order.getQuantity());
+            }
             publishCancellationEvent(canceledOrder, productName);
         }
     }
@@ -121,7 +126,7 @@ public class CanceledOrderService {
                 .findByGroupPurchase(findOrder.getGroupPurchaseId());
         String productName = productService.findByProductName(groupPurchase.getProductId());
 
-        groupPurchaseQuantityService.decreaseQuantity(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
+        participateService.rollback(findOrder.getGroupPurchaseId(), findOrder.getQuantity());
         findCanceledOrder.markApproved();
         publishCancellationEvent(findCanceledOrder, productName);
 
@@ -208,7 +213,10 @@ public class CanceledOrderService {
                     .findByGroupPurchase(order.getGroupPurchaseId());
             String productName = productService.findByProductName(groupPurchase.getProductId());
 
-            groupPurchaseQuantityService.decreaseQuantity(order.getGroupPurchaseId(), order.getQuantity());
+            // after
+            if (order.getStatus() != OrderStatus.CANCELLED) {
+                participateService.rollback(order.getGroupPurchaseId(), order.getQuantity());
+            }
             canceledOrder.markApproved();
             publishCancellationEvent(canceledOrder, productName);
         }
