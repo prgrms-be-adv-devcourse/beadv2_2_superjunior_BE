@@ -3,10 +3,13 @@ package store._0982.commerce.application.order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.CartService;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseService.GroupPurchaseWithProduct;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
 import store._0982.commerce.application.order.dto.OrderCartRegisterCommand;
 import store._0982.commerce.application.order.dto.OrderRegisterCommand;
@@ -28,7 +31,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Slf4j
 public class OrderCommandService {
 
@@ -37,6 +39,8 @@ public class OrderCommandService {
     private final CartService cartService;
     private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
+    private final TxCreateOrderService txCreateOrderService;
+    private final GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     private final MemberClient memberClient;
 
@@ -45,43 +49,31 @@ public class OrderCommandService {
 
 
     @ServiceLog
-    @Transactional
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
 
-        // 이미 처리된 주문이면 기존 결과 반환
-        Optional<Order> existingOrder = orderRepository.findByIdempotenceKey(command.requestId());
-
-        if(existingOrder.isPresent()){
-            return OrderRegisterInfo.from(existingOrder.get());
-        }
-
-        // 공동 구매 존재 여부
-        GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
+        // GroupPurchase, Product 조회
+        GroupPurchaseWithProduct validated = groupPurchaseService.getAvailableForOrderWithProduct(command.groupPurchaseId());
+        GroupPurchase groupPurchase = validated.groupPurchase();
 
         // 참여
-        participateService.participate(groupPurchase.getGroupPurchaseId(), command.quantity());
+        participateService.participate(groupPurchase, validated.product(), command.quantity());
 
-        // order 생성
-        Order order = Order.create(
-                command.quantity(),
-                groupPurchase.getDiscountedPrice(),
-                ((long) command.quantity() * groupPurchase.getDiscountedPrice()),
-                memberId,
-                command.address(),
-                command.addressDetail(),
-                command.postalCode(),
-                command.receiverName(),
-                command.sellerId(),
-                groupPurchase.getGroupPurchaseId(),
-                command.requestId()
-        );
-
-        Order savedOrder = orderRepository.save(order);
-
-        return OrderRegisterInfo.from(savedOrder);
-
+        try{
+            return txCreateOrderService.create(memberId, command, groupPurchase);
+        } catch (DataIntegrityViolationException e){
+            Optional<Order> existingOrder = orderRepository.findByIdempotenceKey(command.requestId());
+            if (existingOrder.isPresent()) {
+                groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), command.quantity());
+                return OrderRegisterInfo.from(existingOrder.get());
+            }
+            throw e;
+        } catch (RuntimeException e) {
+            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), command.quantity());
+            throw e;
+        }
     }
 
+    @Deprecated
     @Transactional
     @ServiceLog
     public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
@@ -110,6 +102,7 @@ public class OrderCommandService {
         return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
+    @Deprecated
     private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command){
         List<Order> orderToSave = new ArrayList<>();
 
@@ -123,7 +116,7 @@ public class OrderCommandService {
             String orderRequestId = command.requestId() + "-" + cart.getCartId();
 
 
-            participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity());
+            //participateService.participate(cart.getGroupPurchaseId(), cart.getQuantity());
 
             Order order = Order.create(
                     cart.getQuantity(),

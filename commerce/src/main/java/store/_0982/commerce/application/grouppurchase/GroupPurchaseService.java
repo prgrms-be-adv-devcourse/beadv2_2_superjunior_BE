@@ -202,6 +202,20 @@ public class GroupPurchaseService {
         return groupPurchase;
     }
 
+    public record GroupPurchaseWithProduct(GroupPurchase groupPurchase, Product product) {}
+
+    public GroupPurchaseWithProduct getAvailableForOrderWithProduct(UUID groupPurchaseId) {
+        GroupPurchase groupPurchase = groupPurchaseRepository.findById(groupPurchaseId)
+                .orElseThrow(() -> new CustomException(CustomErrorCode.GROUP_PURCHASE_NOT_FOUND));
+
+        validateAvailable(groupPurchase);
+
+        Product product = productRepository.findById(groupPurchase.getProductId())
+                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+
+        return new GroupPurchaseWithProduct(groupPurchase, product);
+    }
+
     public Map<UUID, GroupPurchase> getAvailableGroupPurchasesOrder(Set<UUID> groupPurchaseIds){
         List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByGroupPurchaseIdIn(new ArrayList<>(groupPurchaseIds));
 

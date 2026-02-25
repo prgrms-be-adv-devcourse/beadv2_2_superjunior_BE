@@ -80,7 +80,8 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
             try{
                 participateService.participate(
-                        groupPurchase.getGroupPurchaseId(),
+                        groupPurchase,
+                        product,
                         1
 //                        "테스트 셀러",
 //                        requestId

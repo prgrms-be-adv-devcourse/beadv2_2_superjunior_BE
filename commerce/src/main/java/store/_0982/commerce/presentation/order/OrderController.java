@@ -43,6 +43,7 @@ public class OrderController {
         return new ResponseDto<>(HttpStatus.CREATED, response, "주문이 생성되었습니다.");
     }
 
+    @Deprecated
     @Operation(summary = "장바구니에서 주문 생성", description = "장바구니에서 주문을 생성합니다.")
     @PostMapping("/cart")
     @ResponseStatus(HttpStatus.CREATED)

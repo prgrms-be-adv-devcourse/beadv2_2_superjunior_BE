@@ -5,15 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
 import store._0982.commerce.domain.product.ProductRepository;
-import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.product.Product;
-import store._0982.common.exception.CustomException;
 import store._0982.common.log.ServiceLog;
-
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,21 +17,24 @@ public class ParticipateService {
 
     private final ProductRepository productRepository;
     private final GroupPurchaseQuantityService groupPurchaseQuantityService;
+    private final TxParticipateService txParticipateService;
 
     private final ApplicationEventPublisher eventPublisher;
 
     @ServiceLog
     @Transactional
-    public void participate(UUID groupPurchaseId, int quantity) {
+    public void participate(GroupPurchase groupPurchase, Product product, int quantity) {
+
         // 공동 구매 조회
-        GroupPurchase groupPurchase = groupPurchaseQuantityService.increaseQuantity(groupPurchaseId, quantity);
+        GroupPurchase increased = groupPurchaseQuantityService.increaseQuantity(groupPurchase.getGroupPurchaseId(), quantity);
 
-        // Kafka 이벤트 발행
-        Product product = productRepository.findById(groupPurchase.getProductId())
-                .orElseThrow(() -> new CustomException(CustomErrorCode.PRODUCT_NOT_FOUND));
+        int currentCount = increased.getCurrentQuantity();
 
-        eventPublisher.publishEvent(
-                new GroupPurchaseParticipatedEvent(groupPurchase, product)
-        );
+        try{
+            txParticipateService.afterReserve(groupPurchase, product, currentCount);
+        } catch(RuntimeException e){
+            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), quantity);
+            throw e;
+        }
     }
 }
