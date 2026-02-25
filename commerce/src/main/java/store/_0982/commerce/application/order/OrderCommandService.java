@@ -1,6 +1,5 @@
 package store._0982.commerce.application.order;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,10 +17,8 @@ import store._0982.commerce.domain.cart.Cart;
 import store._0982.commerce.domain.order.OrderRepository;
 import store._0982.commerce.exception.CustomErrorCode;
 import store._0982.commerce.infrastructure.client.member.MemberClient;
-import store._0982.commerce.infrastructure.client.member.dto.ProfileInfo;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.order.Order;
-import store._0982.common.dto.ResponseDto;
 import store._0982.common.exception.CustomException;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 import store._0982.common.log.ServiceLog;
@@ -58,9 +55,6 @@ public class OrderCommandService {
             return OrderRegisterInfo.from(existingOrder.get());
         }
 
-        // 주문자 존재 여부
-        String memberName = validateMember(memberId);
-
         // 공동 구매 존재 여부
         GroupPurchase groupPurchase = validateGroupPurchase(command.groupPurchaseId());
 
@@ -91,8 +85,6 @@ public class OrderCommandService {
     @Transactional
     @ServiceLog
     public List<OrderRegisterInfo> createOrderCart(UUID memberId, OrderCartRegisterCommand command) {
-        // 주문자 존재 여부
-        String memberName = validateMember(memberId);
 
         // cartId 리스트로 장바구니 아이템들 조회
         List<Cart> carts = cartService.validateAndGetCartForOrder(memberId,command.cartIds());
@@ -106,7 +98,7 @@ public class OrderCommandService {
         Map<UUID, GroupPurchase> purchasesMap = groupPurchaseService.getAvailableGroupPurchasesOrder(groupPurchaseIds);
 
         // 주문 생성
-        List<OrderRegisterInfo> orders = createOrderFromCart(memberId, carts, purchasesMap, command, memberName);
+        List<OrderRegisterInfo> orders = createOrderFromCart(memberId, carts, purchasesMap, command);
 
         // 장바구니 비우기
         eventPublisher.publishEvent(new OrderCartCompletedEvent(carts));
@@ -114,24 +106,11 @@ public class OrderCommandService {
         return orders;
     }
 
-
-    private String validateMember(UUID memberId) {
-        try {
-            ResponseDto<ProfileInfo> member = memberClient.getMember(memberId);
-            return member.data().name();
-        } catch (FeignException.NotFound e) {
-            throw new CustomException(CustomErrorCode.MEMBER_NOT_FOUND);
-        } catch (FeignException e) {
-            log.error("회원 조회 실패 : memberId={}, status={}", memberId, e.status());
-            throw new RuntimeException("회원 정보 조회 오류");
-        }
-    }
-
     private GroupPurchase validateGroupPurchase(UUID groupPurchaseId) {
         return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
     }
 
-    private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command, String memberName){
+    private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command){
         List<Order> orderToSave = new ArrayList<>();
 
         for(Cart cart: carts){
