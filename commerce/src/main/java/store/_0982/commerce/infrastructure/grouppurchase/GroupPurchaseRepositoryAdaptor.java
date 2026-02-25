@@ -1,5 +1,7 @@
 package store._0982.commerce.infrastructure.grouppurchase;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +24,9 @@ import java.util.UUID;
 public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
 
     private final GroupPurchaseJpaRepository groupPurchaseJpaRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public GroupPurchase save(GroupPurchase groupPurchase) {
@@ -129,6 +134,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     }
 
     @Override
+    public int updateStatusToSuccess(UUID groupPurchaseId, int currentQuantity) {
+        return groupPurchaseJpaRepository.updateStatusToSuccess(groupPurchaseId, currentQuantity);
+    }
+
+    @Override
     public void increaseLikeCount(UUID id) {
         groupPurchaseJpaRepository.increaseLikeCount(id);
     }
@@ -136,5 +146,28 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     @Override
     public void decreaseLikeCount(UUID id) {
         groupPurchaseJpaRepository.decreaseLikeCount(id);
+    }
+
+    @Override
+    public GroupPurchase increaseQuantityReturning(UUID groupPurchaseId, int quantity) {
+        String sql = """
+            UPDATE product_schema.group_purchase
+            SET current_quantity = current_quantity + :quantity,
+                status = CASE
+                    WHEN current_quantity + :quantity = max_quantity THEN 'SUCCESS'
+                    ELSE status
+                END
+            WHERE group_purchase_id = :id
+              AND status = 'OPEN'
+              AND current_quantity + :quantity <= max_quantity
+            RETURNING *
+        """;
+
+        List<GroupPurchase> result = em.createNativeQuery(sql, GroupPurchase.class)
+                .setParameter("id", groupPurchaseId)
+                .setParameter("quantity", quantity)
+                .getResultList();
+
+        return result.isEmpty() ? null : result.get(0);
     }
 }

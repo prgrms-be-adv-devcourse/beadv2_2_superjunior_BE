@@ -19,7 +19,7 @@ spring:
     password: ${PRODUCT_DATABASE_PASSWORD}
     hikari:
       connection-init-sql: SET search_path TO product_schema, order_schema, public
-      maximum-pool-size: 30
+      maximum-pool-size: 80
       minimum-idle: 10
       connection-timeout: 3000
       idle-timeout: 600000

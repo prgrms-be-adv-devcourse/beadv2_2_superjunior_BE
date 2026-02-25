@@ -7,7 +7,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store._0982.commerce.application.cart.CartService;
-import store._0982.commerce.application.grouppurchase.GroupPurchaseQuantityService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService.GroupPurchaseWithProduct;
 import store._0982.commerce.application.grouppurchase.ParticipateService;
@@ -39,14 +38,12 @@ public class OrderCommandService {
     private final CartService cartService;
     private final GroupPurchaseService groupPurchaseService;
     private final ParticipateService participateService;
-    private final TxCreateOrderService txCreateOrderService;
-    private final GroupPurchaseQuantityService groupPurchaseQuantityService;
 
     private final MemberClient memberClient;
 
     private final ApplicationEventPublisher eventPublisher;
     private final OrderSettlementService orderSettlementService;
-
+    private final TxCreateOrderService txCreateOrderService;
 
     @ServiceLog
     public OrderRegisterInfo createOrder(UUID memberId, OrderRegisterCommand command) {
@@ -60,15 +57,15 @@ public class OrderCommandService {
 
         try{
             return txCreateOrderService.create(memberId, command, groupPurchase);
-        } catch (DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             Optional<Order> existingOrder = orderRepository.findByIdempotenceKey(command.requestId());
             if (existingOrder.isPresent()) {
-                groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), command.quantity());
+                participateService.rollback(groupPurchase.getGroupPurchaseId(), command.quantity());
                 return OrderRegisterInfo.from(existingOrder.get());
             }
             throw e;
         } catch (RuntimeException e) {
-            groupPurchaseQuantityService.decreaseQuantity(groupPurchase.getGroupPurchaseId(), command.quantity());
+            participateService.rollback(groupPurchase.getGroupPurchaseId(), command.quantity());
             throw e;
         }
     }
@@ -98,9 +95,6 @@ public class OrderCommandService {
         return orders;
     }
 
-    private GroupPurchase validateGroupPurchase(UUID groupPurchaseId) {
-        return groupPurchaseService.getAvailableForOrder(groupPurchaseId);
-    }
 
     @Deprecated
     private List<OrderRegisterInfo> createOrderFromCart(UUID memberId, List<Cart> carts, Map<UUID, GroupPurchase> purchaseMap, OrderCartRegisterCommand command){

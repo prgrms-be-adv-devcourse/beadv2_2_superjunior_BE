@@ -44,8 +44,12 @@ public interface GroupPurchaseRepository {
 
     int decreaseQuantity(UUID groupPurchaseId, int quantity);
 
+    int updateStatusToSuccess(UUID groupPurchaseId, int currentQuantity);
+
     void increaseLikeCount(UUID id);
 
     void decreaseLikeCount(UUID id);
+
+    GroupPurchase increaseQuantityReturning(UUID groupPurchaseId, int quantity);
 }
 
