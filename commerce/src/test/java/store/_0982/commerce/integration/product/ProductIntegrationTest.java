@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("Product 통합 테스트")
@@ -68,7 +66,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key"
+                "test-key-" + UUID.randomUUID()
         );
 
         // when & then - HTTP 응답 검증
@@ -142,7 +140,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key"
+                "test-key-" + UUID.randomUUID()
         );
 
         // when & then - Member ID 헤더 없이 요청
@@ -167,7 +165,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 null,  // 선택 필드
                 null,
-                "test-key"
+                "test-key-" + UUID.randomUUID()
         );
 
         // when & then
@@ -194,7 +192,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key-harddelete",
+                "test-key-hard-delete-" + UUID.randomUUID(),
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
@@ -227,7 +225,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key-softdelete",
+                "test-key-soft-delete-" + UUID.randomUUID(),
                 testMemberId
         );
         Product savedProduct = productRepository.save(product);
@@ -293,7 +291,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key",
+                "test-key-forbidden-" + UUID.randomUUID(),
                 otherSellerId
         );
         Product savedProduct = productRepository.save(product);
@@ -319,7 +317,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 50,
                 "https://example.com/product",
                 null,
-                "test-key-active",
+                "test-key-active-" + UUID.randomUUID(),
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
