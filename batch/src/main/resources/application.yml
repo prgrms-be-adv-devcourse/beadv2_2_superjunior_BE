@@ -64,6 +64,9 @@ logging:
     # 커스텀 배치 로그는 INFO 유지
     store._0982.batch: INFO
 
+  discord:
+    webhook-url: ${DISCORD_WEBHOOK_URL}
+
 vector:
   chunk:
     size: 100
