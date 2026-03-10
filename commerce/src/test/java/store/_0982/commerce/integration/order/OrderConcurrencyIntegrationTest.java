@@ -350,7 +350,7 @@ class OrderConcurrencyIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key",
+                "test-key-lastOneLeft",
                 sellerId
         ));
 

@@ -194,7 +194,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key",
+                "test-key-harddelete",
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
@@ -227,7 +227,7 @@ class ProductIntegrationTest extends BaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key",
+                "test-key-softdelete",
                 testMemberId
         );
         Product savedProduct = productRepository.save(product);

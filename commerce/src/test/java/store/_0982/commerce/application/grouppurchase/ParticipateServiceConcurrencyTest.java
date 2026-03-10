@@ -5,11 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
 import store._0982.commerce.exception.CustomErrorCode;
@@ -19,6 +16,7 @@ import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
 import store._0982.common.exception.CustomException;
+import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -28,15 +26,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
-    @Container
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
-            .withExposedPorts(6379);
-
-    @DynamicPropertySource
-    static void redisProperties(DynamicPropertyRegistry registry){
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", redis::getFirstMappedPort);
-    }
 
     @Autowired
     private ParticipateService participateService;
@@ -47,8 +36,8 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
     @Autowired
     private ProductRepository productRepository;
 
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    @MockitoBean
+    private KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate;
 
     private GroupPurchase groupPurchase;
     private Product product;
@@ -56,10 +45,6 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
     @BeforeEach
     void setUp(){
-        redisTemplate.getConnectionFactory()
-                .getConnection()
-                .serverCommands()
-                .flushAll();
         testSellerId = UUID.randomUUID();
         product = createTestProduct();
         productRepository.save(product);
@@ -96,11 +81,6 @@ public class ParticipateServiceConcurrencyTest extends BaseConcurrencyTest {
 
         assertThat(successCount.get()).isEqualTo(100);
         assertThat(failCount.get()).isEqualTo(0);
-
-        // Redis 카운트 확인
-        String countKey = "gp:" + groupPurchase.getGroupPurchaseId() + ":count";
-        String redisCount = redisTemplate.opsForValue().get(countKey);
-        assertThat(redisCount).isEqualTo("100");
 
         // DB 확인
         GroupPurchase updated = groupPurchaseRepository.findById(groupPurchase.getGroupPurchaseId()).get();
