@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import store._0982.commerce.application.grouppurchase.GroupPurchaseService;
+import store._0982.commerce.application.grouppurchase.GroupPurchaseLikeService;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseDetailInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseInfo;
 import store._0982.commerce.application.grouppurchase.dto.GroupPurchaseThumbnailInfo;
@@ -43,6 +44,9 @@ class GroupPurchaseControllerTest {
 
     @MockitoBean
     private GroupPurchaseService groupPurchaseService;
+
+    @MockitoBean
+    private GroupPurchaseLikeService groupPurchaseLikeService;
 
     @BeforeEach
     void setUp() {
