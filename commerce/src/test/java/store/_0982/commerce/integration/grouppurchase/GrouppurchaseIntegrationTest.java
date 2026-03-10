@@ -7,26 +7,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
 import store._0982.commerce.domain.grouppurchase.GroupPurchaseRepository;
 import store._0982.commerce.domain.product.ProductRepository;
+import store._0982.commerce.support.BaseIntegrationTest;
 import store._0982.common.HeaderName;
 import store._0982.common.domain.grouppurchase.GroupPurchase;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 import store._0982.common.domain.product.Product;
 import store._0982.common.domain.product.ProductCategory;
-import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -37,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @DisplayName("GroupPurchase 통합 테스트")
-class GrouppurchaseIntegrationTest {
+class GrouppurchaseIntegrationTest extends BaseIntegrationTest {
 
     @MockitoBean
     private KafkaTemplate<String, GroupPurchaseEvent> groupPurchaseKafkaTemplate;
@@ -50,6 +49,9 @@ class GrouppurchaseIntegrationTest {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ApplicationEvents applicationEvents;
 
     private UUID testMemberId;
 
@@ -70,7 +72,7 @@ class GrouppurchaseIntegrationTest {
                 100,
                 "https://example.com/product",
                 null,
-                "test-key",
+                "test-key_detail",
                 testMemberId
         );
         Product savedProduct = productRepository.saveAndFlush(product);
@@ -150,11 +152,11 @@ class GrouppurchaseIntegrationTest {
     void getGroupPurchaseList_success() throws Exception {
         // given - 상품 3개 생성
         Product product1 = productRepository.saveAndFlush(Product.createProduct(
-                "상품1", 10000L, ProductCategory.BEAUTY, "설명1", 100, "url1", null, "test-key", testMemberId));
+                "상품1", 10000L, ProductCategory.BEAUTY, "설명1", 100, "url1", null, "test-key-success-1", testMemberId));
         Product product2 = productRepository.saveAndFlush(Product.createProduct(
-                "상품2", 20000L, ProductCategory.FASHION, "설명2", 200, "url2", null, "test-key", testMemberId));
+                "상품2", 20000L, ProductCategory.FASHION, "설명2", 200, "url2", null, "test-key-success-2", testMemberId));
         Product product3 = productRepository.saveAndFlush(Product.createProduct(
-                "상품3", 30000L, ProductCategory.FOOD, "설명3", 300, "url3", null, "test-key", testMemberId));
+                "상품3", 30000L, ProductCategory.FOOD, "설명3", 300, "url3", null, "test-key-success3", testMemberId));
 
         // given - 공동구매 3개 생성
         OffsetDateTime now = OffsetDateTime.now();
@@ -213,11 +215,11 @@ class GrouppurchaseIntegrationTest {
         UUID seller2 = UUID.randomUUID();
 
         Product p1 = productRepository.saveAndFlush(Product.createProduct(
-                "판매자1상품1", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", seller1));
+                "판매자1상품1", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key1", seller1));
         Product p2 = productRepository.saveAndFlush(Product.createProduct(
-                "판매자1상품2", 20000L, ProductCategory.FASHION, "설명", 200, "url", null, "test-key", seller1));
+                "판매자1상품2", 20000L, ProductCategory.FASHION, "설명", 200, "url", null, "test-key2", seller1));
         Product p3 = productRepository.saveAndFlush(Product.createProduct(
-                "판매자2상품1", 30000L, ProductCategory.FOOD, "설명", 300, "url", null, "test-key", seller2));
+                "판매자2상품1", 30000L, ProductCategory.FOOD, "설명", 300, "url", null, "test-key3", seller2));
 
         OffsetDateTime now = OffsetDateTime.now();
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
@@ -256,7 +258,7 @@ class GrouppurchaseIntegrationTest {
         UUID targetSeller = UUID.randomUUID();
 
         Product product = productRepository.saveAndFlush(Product.createProduct(
-                "다른판매자상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", otherSeller));
+                "다른판매자상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key-empty", otherSeller));
 
         OffsetDateTime now = OffsetDateTime.now();
         groupPurchaseRepository.saveAndFlush(new GroupPurchase(
@@ -294,7 +296,7 @@ class GrouppurchaseIntegrationTest {
     void deleteGroupPurchase_success() throws Exception {
         // given
         Product product = productRepository.saveAndFlush(Product.createProduct(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key-delete-success-1", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
@@ -316,12 +318,8 @@ class GrouppurchaseIntegrationTest {
         // then - DB에서 삭제 검증
         assertThat(groupPurchaseRepository.findById(purchaseId)).isEmpty();
 
-        // then - Kafka 이벤트 발행 검증
-        verify(groupPurchaseKafkaTemplate).send(
-                eq(KafkaTopics.GROUP_PURCHASE_CHANGED),
-                eq(purchaseId.toString()),
-                any(GroupPurchaseEvent.class)
-        );
+        // then - 이벤트 발행 검증
+        assertThat(applicationEvents.stream(GroupPurchaseDeletedEvent.class).findAny()).isPresent();
     }
 
     @Test
@@ -329,7 +327,7 @@ class GrouppurchaseIntegrationTest {
     void deleteGroupPurchase_openStatus() throws Exception {
         // given
         Product product = productRepository.saveAndFlush(Product.createProduct(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key_open", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = new GroupPurchase(
@@ -354,7 +352,7 @@ class GrouppurchaseIntegrationTest {
         // given - 다른 판매자의 상품 및 공동구매 생성
         UUID otherSeller = UUID.randomUUID();
         Product product = productRepository.saveAndFlush(Product.createProduct(
-                "다른 판매자 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", otherSeller));
+                "다른 판매자 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key-forbidden", otherSeller));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
@@ -391,7 +389,7 @@ class GrouppurchaseIntegrationTest {
     void deleteGroupPurchase_missingMemberId() throws Exception {
         // given - 공동구매 생성
         Product product = productRepository.saveAndFlush(Product.createProduct(
-                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key", testMemberId));
+                "테스트 상품", 10000L, ProductCategory.BEAUTY, "설명", 100, "url", null, "test-key-missingMemberId", testMemberId));
 
         OffsetDateTime now = OffsetDateTime.now();
         GroupPurchase groupPurchase = groupPurchaseRepository.saveAndFlush(new GroupPurchase(
