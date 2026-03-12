@@ -52,6 +52,11 @@ public class ProductRepositoryAdaptor implements ProductRepository {
     }
 
     @Override
+    public void deleteAllInBatch() {
+        productJpaRepository.deleteAllInBatch();
+    }
+
+    @Override
     public Page<Product> findAll(Pageable pageable) {
         return productJpaRepository.findAll(pageable);
     }

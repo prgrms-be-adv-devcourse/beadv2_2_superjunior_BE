@@ -57,6 +57,8 @@ class GrouppurchaseIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        groupPurchaseRepository.deleteAllInBatch();
+        productRepository.deleteAllInBatch();
         testMemberId = UUID.randomUUID();
     }
 

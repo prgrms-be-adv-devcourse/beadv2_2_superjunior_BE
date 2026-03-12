@@ -49,6 +49,11 @@ public class GroupPurchaseRepositoryAdaptor implements GroupPurchaseRepository {
     }
 
     @Override
+    public void deleteAllInBatch() {
+        groupPurchaseJpaRepository.deleteAllInBatch();
+    }
+
+    @Override
     public GroupPurchase saveAndFlush(GroupPurchase groupPurchase) {
         return groupPurchaseJpaRepository.saveAndFlush(groupPurchase);
     }

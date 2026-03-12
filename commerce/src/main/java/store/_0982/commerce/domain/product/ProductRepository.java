@@ -16,6 +16,8 @@ public interface ProductRepository {
 
     void delete(Product product);
 
+    void deleteAllInBatch();
+
     Product saveAndFlush(Product product);
 
     Page<Product> findBySellerId(UUID sellerId, Pageable pageable);
