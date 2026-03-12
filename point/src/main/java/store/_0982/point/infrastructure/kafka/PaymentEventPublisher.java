@@ -42,12 +42,14 @@ public class PaymentEventPublisher {
     }
 
     private void send(String key, PaymentChangedEvent event) {
+        log.info("[KAFKA][SEND] topic={}, key={}, orderId={}, status={}",
+                KafkaTopics.PAYMENT_CHANGED, key, event.getOrderId(), event.getStatus());
         kafkaTemplate.send(KafkaTopics.PAYMENT_CHANGED, key, event)
                 .whenComplete((result, throwable) -> {
                     if (throwable == null) {
-                        log.info("[Kafka] {} successfully sent to partition {}", KafkaTopics.POINT_CHANGED, result.getRecordMetadata().partition());
+                        log.info("[KAFKA][SEND_OK] topic={}, partition={}", KafkaTopics.PAYMENT_CHANGED, result.getRecordMetadata().partition());
                     } else {
-                        log.error("[Kafka] {} failed to send after infrastructure retries", KafkaTopics.POINT_CHANGED, throwable);
+                        log.error("[KAFKA][SEND_FAIL] topic={}", KafkaTopics.PAYMENT_CHANGED, throwable);
                     }
                 });
     }

@@ -78,3 +78,15 @@ logging:
   level:
     org.apache.kafka: warn
     org.springframework.kafka: warn
+
+
+outbox:
+  publisher:
+    fixed-delay-ms: 1000
+    batch-size: 100
+    send-timeout-ms: 5000
+    processing-timeout-ms: 600000
+    retry-base-delay-ms: 2000
+    retry-max-delay-ms: 60000
+    max-retries: 10
+

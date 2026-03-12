@@ -14,7 +14,7 @@ public class ProductEventListener {
 
     private final ProductKafkaEventPublisher eventPublisher;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleUpserted(ProductUpsertedEvent event) {
         eventPublisher.pulbish(event);
     }

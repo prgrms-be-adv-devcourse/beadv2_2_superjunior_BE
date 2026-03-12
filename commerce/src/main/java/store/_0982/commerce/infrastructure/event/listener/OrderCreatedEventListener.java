@@ -13,7 +13,7 @@ public class OrderCreatedEventListener {
 
     private final OrderCreatedKafkaEventPublisher orderCreatedKafkaEventPublisher;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void createOrder(OrderCreateProcessedEvent event){
         orderCreatedKafkaEventPublisher.publish(event);
     }

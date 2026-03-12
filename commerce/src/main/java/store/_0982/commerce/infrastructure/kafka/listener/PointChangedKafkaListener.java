@@ -1,6 +1,7 @@
 package store._0982.commerce.infrastructure.kafka.listener;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import store._0982.common.log.ServiceLog;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class PointChangedKafkaListener {
 
     private final OrderPaymentProcessorService orderPaymentProcessorService;
@@ -27,6 +29,13 @@ public class PointChangedKafkaListener {
             containerFactory = "paymentKafkaListenerFactory"
     )
     public void handlePointChangedEvent(PointChangedEvent event) {
+        if (event.getOrderId() == null) {
+            log.info("[KAFKA][RECV] topic={} ignored (no orderId). status={}, pointTxId={}",
+                    KafkaTopics.POINT_CHANGED, event.getStatus(), event.getTransactionId());
+            return;
+        }
+        log.info("[KAFKA][RECV] topic={}, orderId={}, status={}, pointTxId={}",
+                KafkaTopics.POINT_CHANGED, event.getOrderId(), event.getStatus(), event.getTransactionId());
         orderPaymentProcessorService.processPointStatusUpdate(event);
     }
 

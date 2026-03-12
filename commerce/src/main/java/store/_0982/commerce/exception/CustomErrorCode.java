@@ -34,6 +34,7 @@ public enum CustomErrorCode implements ErrorCode {
     CART_IS_EMPTY(HttpStatus.BAD_REQUEST, "장바구니가 비어있습니다."),
     ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "주문 취소가 불가능한 상태입니다."),
     GROUP_PURCHASE_IS_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "유효하지 않은 공동구매입니다."),
+    OUTBOX_NOT_FOUND(HttpStatus.BAD_REQUEST,"OutboxEvent를 찾을 수 없습니다."),
 
     // 404 Not Found
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),

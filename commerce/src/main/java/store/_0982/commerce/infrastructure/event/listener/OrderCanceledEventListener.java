@@ -13,7 +13,7 @@ public class OrderCanceledEventListener {
 
     private final OrderCanceledKafkaEventPublisher orderCanceledKafkaEventPublisher;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void cancelOrder(OrderCancelProcessedEvent event) {
         orderCanceledKafkaEventPublisher.publish(event);
     }

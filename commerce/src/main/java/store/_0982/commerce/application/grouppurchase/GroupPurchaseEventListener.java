@@ -1,7 +1,6 @@
 package store._0982.commerce.application.grouppurchase;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -9,6 +8,7 @@ import store._0982.commerce.application.grouppurchase.event.GroupPurchaseCreated
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseDeletedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseParticipatedEvent;
 import store._0982.commerce.application.grouppurchase.event.GroupPurchaseUpdatedEvent;
+import store._0982.commerce.infrastructure.outbox.OutboxEventService;
 import store._0982.common.kafka.KafkaTopics;
 import store._0982.common.kafka.dto.GroupPurchaseEvent;
 
@@ -16,9 +16,9 @@ import store._0982.common.kafka.dto.GroupPurchaseEvent;
 @RequiredArgsConstructor
 public class GroupPurchaseEventListener {
 
-    private final KafkaTemplate<String, GroupPurchaseEvent> kafkaTemplate;
+    private final OutboxEventService outboxEventService;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleCreated(GroupPurchaseCreatedEvent event) {
         GroupPurchaseEvent kafkaEvent = event.groupPurchase().toEvent(
                 GroupPurchaseEvent.Status.SCHEDULED,
@@ -29,14 +29,16 @@ public class GroupPurchaseEventListener {
                 )
         );
 
-        kafkaTemplate.send(
+        outboxEventService.record(
                 KafkaTopics.GROUP_PURCHASE_CHANGED,
-                kafkaEvent.getId().toString(),
-                kafkaEvent
+                kafkaEvent.getEventId().toString(),
+                kafkaEvent,
+                "GroupPurchase",
+                kafkaEvent.getId().toString()
         );
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleUpdated(GroupPurchaseUpdatedEvent event) {
         GroupPurchaseEvent kafkaEvent = event.groupPurchase().toEvent(
                 GroupPurchaseEvent.Status.valueOf(
@@ -49,14 +51,16 @@ public class GroupPurchaseEventListener {
                 )
         );
 
-        kafkaTemplate.send(
+        outboxEventService.record(
                 KafkaTopics.GROUP_PURCHASE_CHANGED,
-                kafkaEvent.getId().toString(),
-                kafkaEvent
+                kafkaEvent.getEventId().toString(),
+                kafkaEvent,
+                "GroupPurchase",
+                kafkaEvent.getId().toString()
         );
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleDeleted(GroupPurchaseDeletedEvent event) {
         GroupPurchaseEvent kafkaEvent = event.groupPurchase().toEvent(
                 GroupPurchaseEvent.Status.valueOf(
@@ -67,14 +71,16 @@ public class GroupPurchaseEventListener {
                 null
         );
 
-        kafkaTemplate.send(
+        outboxEventService.record(
                 KafkaTopics.GROUP_PURCHASE_CHANGED,
-                kafkaEvent.getId().toString(),
-                kafkaEvent
+                kafkaEvent.getEventId().toString(),
+                kafkaEvent,
+                "GroupPurchase",
+                kafkaEvent.getId().toString()
         );
     }
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handleGroupPurchaseParticipated(GroupPurchaseParticipatedEvent event) {
         GroupPurchaseEvent searchEvent = event.groupPurchase().toEvent(
                 GroupPurchaseEvent.Status.valueOf(
@@ -86,10 +92,13 @@ public class GroupPurchaseEventListener {
                         event.product().getCategory().name()
                 )
         );
-        kafkaTemplate.send(
+
+        outboxEventService.record(
                 KafkaTopics.GROUP_PURCHASE_CHANGED,
-                searchEvent.getId().toString(),
-                searchEvent
+                searchEvent.getEventId().toString(),
+                searchEvent,
+                "GroupPurchase",
+                searchEvent.getId().toString()
         );
     }
 }
