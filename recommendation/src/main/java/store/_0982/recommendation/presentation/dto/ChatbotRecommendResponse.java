@@ -5,6 +5,8 @@ import java.util.List;
 public record ChatbotRecommendResponse(
         ChatbotCriteria criteria,
         List<ChatbotRecommendationCard> results,
-        List<String> suggestions
+        List<String> suggestions,
+        String assistantMessage,
+        String nextQuestion
 ) {
 }

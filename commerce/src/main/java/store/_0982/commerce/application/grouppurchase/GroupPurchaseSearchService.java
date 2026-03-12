@@ -77,7 +77,7 @@ public class GroupPurchaseSearchService {
         List<GroupPurchase> groupPurchases = groupPurchaseRepository.findAllByStatusAndStartDateBefore(GroupPurchaseStatus.OPEN, now);
 
         return groupPurchases.stream()
-                .filter(gp -> gp.getEndDate() != null && gp.getEndDate().isBefore(now))
+                .filter(gp -> gp.getEndDate() != null && gp.getEndDate().isAfter(now))
                 .sorted(Comparator.comparing(GroupPurchase::getEndDate))
                 .limit(Math.max(0,limit))
                 .map(OpenGroupPurchaseInfo::from)

@@ -90,7 +90,7 @@ public class PromptService {
     }
 
     private <T> T parseResponse(ChatResponse response, Class<T> clazz) throws JsonProcessingException {
-        String content = response.getResult().getOutput().getContent();
+        String content = response.getResult().getOutput().toString();
         return objectMapper.readValue(content, clazz);
     }
 

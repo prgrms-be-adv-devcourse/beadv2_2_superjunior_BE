@@ -1,6 +1,6 @@
 package store._0982.recommendation.presentation.dto;
 
-public record ChatbotRecommendRequest(
+public record ChatbotRequest(
         String message,
         String category,
         String priceRange,

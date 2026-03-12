@@ -4,7 +4,8 @@ dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
 
     // OpenFeign client for search inter-service calls
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
@@ -28,7 +29,7 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.ai:spring-ai-bom:1.0.0-M5"
+        mavenBom "org.springframework.ai:spring-ai-bom:1.1.2"
     }
 }
 

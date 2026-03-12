@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/ai/advisor")
+@RequestMapping("/api/recommendation/advisor")
 public class AdvisorController {
 
     private final GroupPurchaseAdvisorService advisorService;

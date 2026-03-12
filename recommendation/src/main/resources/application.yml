@@ -36,7 +36,16 @@ spring:
       chat:
         options:
           model: gpt-5.2
-          temperature: 0.0
+          temperature: 0.2
+
+    # Spring AI VectorStore(챗봇 RAG 검색용)
+    vectorstore:
+      pgvector:
+        schema-name: recommendation_schema
+        table-name: chatbot_embed
+        dimensions: 1536
+        id-type: TEXT
+        initialize-schema: true
 
 logging:
   level:

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import store._0982.recommendation.application.dto.AdvisorVectorSearchRequest;
 import store._0982.recommendation.application.dto.VectorSearchRequest;
 import store._0982.recommendation.application.dto.VectorSearchResponse;
+import store._0982.recommendation.infrastructure.feign.search.dto.GroupPurchaseKeywordSearchRequest;
+import store._0982.recommendation.infrastructure.feign.search.dto.GroupPurchaseSearchInfo;
 
 import java.util.List;
 
@@ -22,5 +24,10 @@ public interface SearchFeignClient {
     @PostMapping("/internal/searches/purchase/advisor")
     List<VectorSearchResponse> getAdvisorCandidates(
             @RequestBody AdvisorVectorSearchRequest vectorSearchRequest
+    );
+
+    @PostMapping("/internal/searches/purchase/keyword")
+    List<GroupPurchaseSearchInfo> searchByKeyword(
+            @RequestBody GroupPurchaseKeywordSearchRequest request
     );
 }

@@ -96,7 +96,7 @@ public class GroupPurchaseAdvisorPromptService {
     }
 
     private <T> T parseResponse(ChatResponse response, Class<T> clazz) throws JsonProcessingException {
-        String content = response.getResult().getOutput().getContent();
+        String content = response.getResult().getOutput().getText();
         return objectMapper.readValue(content, clazz);
     }
 }
