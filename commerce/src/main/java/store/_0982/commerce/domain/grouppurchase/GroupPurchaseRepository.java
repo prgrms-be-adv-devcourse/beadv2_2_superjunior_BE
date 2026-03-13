@@ -22,6 +22,8 @@ public interface GroupPurchaseRepository {
 
     void delete(GroupPurchase groupPurchase);
 
+    void deleteAllInBatch();
+
     GroupPurchase saveAndFlush(GroupPurchase groupPurchase);
 
     List<GroupPurchase> saveAll(List<GroupPurchase> groupPurchaseList);
@@ -48,4 +50,3 @@ public interface GroupPurchaseRepository {
 
     void decreaseLikeCount(UUID id);
 }
-
