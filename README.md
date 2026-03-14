@@ -183,9 +183,26 @@ API 명세를 확인하려면 API 명세서를 참고하세요.
 
 테스트 가이드를 확인하려면 테스트 가이드 문서를 참고하세요.
 
+``` 
+beadv2_2_superjunior_BE/
+├── docs         
+│   ├── test/       
+│   │   ├── commerce.md
+│   │   ├── elastic-search.md   
+│   │   ├── notification.md     
+└── └── └── point.md
+```
+
+- [commerce.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/commerce.md)
+- [elastic-search.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/elastic-search.md)
+- [notification.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/notification.md) 
+- [point.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/point.md)
+
 ## 💬 기술적 고민
 
 기술적 고민 사항을 확인하려면 기술적 고민 문서를 참고하세요.
+
+
 
 ## ❗ 트러블 슈팅
 
