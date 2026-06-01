@@ -1,4 +1,4 @@
-package store._0982.batch.infrastructure.seller;
+package store._0982.batch.infrastructure.sellerpayout;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;

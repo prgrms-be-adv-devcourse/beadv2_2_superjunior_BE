@@ -13,7 +13,7 @@ import store._0982.batch.batch.sellerpayout.dto.SellerAccountDto;
 import store._0982.batch.domain.sellerpayout.SellerPayoutFailureRepository;
 import store._0982.batch.domain.sellerpayout.SellerPayoutRepository;
 import store._0982.batch.exception.CustomErrorCode;
-import store._0982.batch.infrastructure.seller.SellerAccountJdbcRepository;
+import store._0982.batch.infrastructure.sellerpayout.SellerAccountJdbcRepository;
 import store._0982.common.domain.sellerpayout.SellerPayout;
 import store._0982.common.domain.sellerpayout.SellerPayoutFailure;
 import store._0982.common.exception.CustomException;
