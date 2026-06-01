@@ -20,3 +20,12 @@ client:
 
 gateway:
   host: http://localhost:8000
+
+cloud:
+  aws:
+    credentials:
+      access-key: dummy
+      secret-key: dummy
+    s3:
+      bucket: dummy-bucket
+      region: ap-northeast-2

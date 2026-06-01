@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>0909 API Docs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body { margin: 0; }
+    .topbar { background-color: #1b1b1b !important; }
+    .topbar-wrapper img { display: none; }
+    .topbar-wrapper::after {
+      content: '0909 (공구공구) API';
+      color: white;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding-left: 16px;
+    }
+  </style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+<script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+<script>
+  window.onload = function () {
+    SwaggerUIBundle({
+      urls: [
+        { name: "member-service",         url: "./member.json" },
+        { name: "commerce-service",       url: "./commerce.json" },
+        { name: "point-service",          url: "./point.json" },
+        { name: "search-service",         url: "./search.json" },
+        { name: "recommendation-service", url: "./recommendation.json" }
+      ],
+      "urls.primaryName": "commerce-service",
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      layout: "StandaloneLayout",
+      deepLinking: true,
+      displayRequestDuration: true,
+      filter: true
+    });
+  };
+</script>
+</body>
+</html>
