@@ -1,6 +1,6 @@
 # 0909 (공구공구)
 
-판매자가 공동구매 상품을 등록하고, 소비자가 참여할 수 있는 마이크로서비스 기반 이커머스 플랫폼입니다.
+판매자가 공동구매 상품을 등록하고, 소비자가 참여할 수 있는 MSA 기반 공동구매 이커머스 서비스입니다.
 
 <br>
 
@@ -54,36 +54,6 @@
 
 <br>
 
-## 📁 프로젝트 구조
-
-```
-beadv2_2_superjunior_BE/
-├── common/                 # 공통 모듈 (DTO, Kafka, Exception, AOP)
-├── gateway/                # API 게이트웨이
-├── member/                 # 회원 서비스
-├── commerce/               # 상품/주문 서비스
-│   ├── domain/
-│   │   ├── product/
-│   │   ├── grouppurchase/
-│   │   ├── order/
-│   │   ├── cart/
-│   │   └── sellerbalance/
-├── point/                  # 포인트/결제 서비스
-├── elastic-search/         # 검색 서비스
-├── recommendation/         # AI 추천 서비스
-├── batch/                  # 배치 작업 (정산)
-├── dummy-data/             # 더미 데이터 생성
-├── docker/                 # Docker 설정 파일
-│   ├── postgres/init/
-│   └── logstash/
-├── docs/                   # 문서
-├── docker-compose.yml      # 인프라 구성
-├── build.gradle            # 루트 빌드 설정
-└── settings.gradle         # 모듈 설정
-```
-
-<br>
-
 ## 🚀 실행 방법
 
 ### 사전 요구사항
@@ -122,14 +92,6 @@ docker-compose up -d
 ./gradlew :elastic-search:bootRun  # 포트 8082
 ./gradlew :recommendation:bootRun  # 포트 8088
 ```
-
-### 4. 서비스 접근
-
-| 서비스 | URL |
-|--------|-----|
-| **API Gateway** | http://localhost:8000 |
-| **Elasticsearch** | http://localhost:9200 |
-| **Swagger UI** | http://localhost:8000/swagger-ui.html |
 
 <br>
 
@@ -174,10 +136,21 @@ docker-compose up -d
 - 판매자 지급 처리 및 실패 시 재시도
 - 판매자 잔액 실시간 조회
 
+<br>
 
 ## ✅ API 명세
 
 API 명세를 확인하려면 API 명세서를 참고하세요.
+
+| 서비스 | 링크 |
+|--------|------|
+| Member | [member-service](https://prgrms-be-adv-devcourse.github.io/beadv2_2_superjunior_BE/swagger/index.html?urls.primaryName=member-service) |
+| Commerce | [commerce-service](https://prgrms-be-adv-devcourse.github.io/beadv2_2_superjunior_BE/swagger/index.html?urls.primaryName=commerce-service) |
+| Point | [point-service](https://prgrms-be-adv-devcourse.github.io/beadv2_2_superjunior_BE/swagger/index.html?urls.primaryName=point-service) |
+| Search | [search-service](https://prgrms-be-adv-devcourse.github.io/beadv2_2_superjunior_BE/swagger/index.html?urls.primaryName=search-service) |
+| Recommendation | [recommendation-service](https://prgrms-be-adv-devcourse.github.io/beadv2_2_superjunior_BE/swagger/index.html?urls.primaryName=recommendation-service) |
+
+<br>
 
 ## 🧪 테스트
 
@@ -198,12 +171,40 @@ beadv2_2_superjunior_BE/
 - [notification.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/notification.md) 
 - [point.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/point.md)
 
-## 💬 기술적 고민
+<br>
 
-기술적 고민 사항을 확인하려면 기술적 고민 문서를 참고하세요.
+## 📁 프로젝트 구조
 
+```
+beadv2_2_superjunior_BE/
+├── common/                 # 공통 모듈 (DTO, Kafka, Exception, AOP)
+├── gateway/                # API 게이트웨이
+├── member/                 # 회원 서비스
+├── commerce/               # 상품/주문 서비스
+│   ├── domain/
+│   │   ├── product/
+│   │   ├── grouppurchase/
+│   │   ├── order/
+│   │   ├── cart/
+│   │   └── sellerbalance/
+├── point/                  # 포인트/결제 서비스
+├── elastic-search/         # 검색 서비스
+├── recommendation/         # AI 추천 서비스
+├── batch/                  # 배치 작업 (정산)
+├── dummy-data/             # 더미 데이터 생성
+├── docker/                 # Docker 설정 파일
+│   ├── postgres/init/
+│   └── logstash/
+├── docs/                   # 문서
+├── docker-compose.yml      # 인프라 구성
+├── build.gradle            # 루트 빌드 설정
+└── settings.gradle         # 모듈 설정
+```
+<br>
 
+## 역할
 
-## ❗ 트러블 슈팅
-
-트러블 슈팅을 확인하려면 트러블 슈팅 문서를 참고하세요.
+| 김민형 PO | 김희영 | 안진원 | 윤종석 | 전수연 |
+| :---: | :---: | :---: | :---: | :---: |
+| <a href="https://github.com/minbros"><img src="https://github.com/minbros.png" width="150px" alt="김민형"/></a> | <a href="https://github.com/Huiyeongkim"><img src="https://avatars.githubusercontent.com/u/146138986?v=4" width="150px" alt="김희영"/></a> | <a href="https://github.com/ahnjinwon"><img src="https://github.com/ahnjinwon.png" width="150px" alt="안진원"/></a> | <a href="https://github.com/AidenY915"><img src="https://github.com/AidenY915.png" width="150px" alt="윤종석"/></a> | <a href="https://github.com/sumyeom"><img src="https://github.com/sumyeom.png" width="150px" alt="전수연"/></a> |
+| 알림<br>포인트<br>CI/CD | 공동구매 · 상품<br>정산<br>주문 취소<br>프론트엔드 | 엘라스틱서치<br>AI | 인증/인가<br>장바구니<br>AI | 공동구매 · 상품<br>주문<br>프론트엔드 |
