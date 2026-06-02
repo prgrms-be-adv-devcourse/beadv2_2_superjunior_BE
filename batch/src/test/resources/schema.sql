@@ -37,6 +37,48 @@ CREATE TABLE IF NOT EXISTS product_schema.group_purchase (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
+CREATE SCHEMA IF NOT EXISTS settlement_schema;
+
+CREATE TABLE IF NOT EXISTS settlement_schema.order_settlement
+(
+    order_settlement_id     UUID                     NOT NULL,
+    seller_id               UUID                     NOT NULL,
+    group_purchase_id       UUID                     NOT NULL,
+    order_id                UUID                     NOT NULL,
+    order_settlement_status VARCHAR(255)             NOT NULL,
+    order_amount            BIGINT                   NOT NULL,
+    platform_fee_rate       DOUBLE PRECISION         NOT NULL,
+    platform_fee            BIGINT                   NOT NULL,
+    settlement_amount       BIGINT                   NOT NULL,
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    settled_at              TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT pk_order_settlement PRIMARY KEY (order_settlement_id)
+);
+
+CREATE TABLE IF NOT EXISTS settlement_schema.seller_balance
+(
+    balance_id         UUID                     NOT NULL,
+    member_id          UUID                     NOT NULL,
+    settlement_balance BIGINT                   NOT NULL,
+    created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT pk_seller_balance PRIMARY KEY (balance_id),
+    CONSTRAINT uc_seller_balance_member UNIQUE (member_id)
+);
+
+CREATE TABLE IF NOT EXISTS settlement_schema.seller_balance_history
+(
+    history_id          UUID                     NOT NULL,
+    member_id           UUID                     NOT NULL,
+    seller_payout_id    UUID,
+    order_settlement_id UUID,
+    amount              BIGINT                   NOT NULL,
+    status              VARCHAR(10)              NOT NULL,
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_seller_balance_history PRIMARY KEY (history_id),
+    CONSTRAINT uc_seller_balance_history_order_settlement UNIQUE (order_settlement_id)
+);
+
 -- 인덱스
 CREATE INDEX IF NOT EXISTS idx_group_purchase_status ON product_schema.group_purchase(status);
 CREATE INDEX IF NOT EXISTS idx_group_purchase_start_date ON product_schema.group_purchase(start_date);
