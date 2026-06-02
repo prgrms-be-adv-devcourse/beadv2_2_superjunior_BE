@@ -350,5 +350,23 @@ class SettlementJobIntegrationTest extends BatchApplicationTests {
             assertThat(getSellerBalance(sellerId)).isEqualTo(150_000L);
             assertThat(countBalanceHistory(sellerId)).isEqualTo(1);
         }
+
+        @Test
+        @DisplayName("Step 실패 시 Job도 FAILED 상태가 된다")
+        void job_shouldFailWhenStepFails() throws Exception {
+            // given
+            UUID sellerId = UUID.randomUUID();
+            insertSellerBalance(sellerId, 0L);
+            insertNegativeAmountOrderSettlement(sellerId, -1_000L);
+
+            // when
+            JobExecution execution = jobLauncherTestUtils.launchJob(createJobParameters());
+
+            // then
+            assertThat(execution.getStatus()).isEqualTo(BatchStatus.FAILED);
+            assertThat(execution.getStepExecutions()).anyMatch(
+                    step -> step.getStatus().isUnsuccessful()
+            );
+        }
     }
 }
