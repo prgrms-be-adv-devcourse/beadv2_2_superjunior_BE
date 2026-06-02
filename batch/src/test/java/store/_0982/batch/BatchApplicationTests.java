@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 })
 @Testcontainers
 @ActiveProfiles("test")
-class BatchApplicationTests {
+public class BatchApplicationTests {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
