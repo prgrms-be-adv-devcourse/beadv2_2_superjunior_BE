@@ -21,9 +21,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import store._0982.batch.config.BatchTestConfig;
-import store._0982.batch.infrastructure.client.ai.AiFeignClient;
-import store._0982.batch.infrastructure.client.commerce.CommerceFeignClient;
-import store._0982.batch.infrastructure.client.member.MemberClient;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
@@ -65,15 +62,6 @@ class GroupPurchaseJobIntegrationTest {
 
     @MockitoBean
     private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @MockitoBean
-    private MemberClient memberClient;
-
-    @MockitoBean
-    private CommerceFeignClient commerceFeignClient;
-
-    @MockitoBean
-    private AiFeignClient aiFeignClient;
 
     @MockitoBean
     private ElasticsearchClient elasticsearchClient;

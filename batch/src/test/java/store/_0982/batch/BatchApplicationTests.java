@@ -12,9 +12,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import store._0982.batch.infrastructure.client.ai.AiFeignClient;
-import store._0982.batch.infrastructure.client.commerce.CommerceFeignClient;
-import store._0982.batch.infrastructure.client.member.MemberClient;
 
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration,org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration"
@@ -39,15 +36,6 @@ class BatchApplicationTests {
 
     @MockitoBean
     private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @MockitoBean
-    private MemberClient memberClient;
-
-    @MockitoBean
-    private CommerceFeignClient commerceFeignClient;
-
-    @MockitoBean
-    private AiFeignClient aiFeignClient;
 
     @MockitoBean
     private ElasticsearchClient elasticsearchClient;
