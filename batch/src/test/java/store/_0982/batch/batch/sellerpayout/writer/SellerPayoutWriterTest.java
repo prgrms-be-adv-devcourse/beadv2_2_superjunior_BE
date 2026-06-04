@@ -231,5 +231,38 @@ class SellerPayoutWriterTest {
             verify(sellerPayoutFailureRepository).saveAll(failuresCaptor.capture());
             assertThat(failuresCaptor.getValue()).hasSize(1);
         }
+
+        @Test
+        @DisplayName("accountNumber가 null인 계좌이면 FAILED로 처리한다")
+        void write_shouldMarkFailedWhenAccountNumberIsNull() {
+            // given
+            UUID sellerId = UUID.randomUUID();
+            SellerPayout payout = createPayout(sellerId, 50_000L);
+            SellerAccountDto nullNumberAccount = new SellerAccountDto(sellerId, "004", null, "테스트판매자");
+            when(sellerAccountJdbcRepository.findAccountsBySellerIds(any()))
+                    .thenReturn(Map.of(sellerId, nullNumberAccount));
+
+            // when
+            writer.write(new Chunk<>(List.of(payout)));
+
+            // then
+            assertThat(payout.getStatus()).isEqualTo(SellerPayoutStatus.FAILED);
+        }
+
+        @Test
+        @DisplayName("실패가 없으면 sellerPayoutFailureRepository.saveAll이 호출되지 않는다")
+        void write_shouldNotSaveFailuresWhenAllSucceed() {
+            // given
+            UUID sellerId = UUID.randomUUID();
+            SellerPayout payout = createPayout(sellerId, 50_000L);
+            when(sellerAccountJdbcRepository.findAccountsBySellerIds(any()))
+                    .thenReturn(Map.of(sellerId, validAccount(sellerId)));
+
+            // when
+            writer.write(new Chunk<>(List.of(payout)));
+
+            // then
+            verify(sellerPayoutFailureRepository, never()).saveAll(any());
+        }
     }
 }
