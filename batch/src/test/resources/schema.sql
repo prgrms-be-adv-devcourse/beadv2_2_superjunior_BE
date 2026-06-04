@@ -79,6 +79,49 @@ CREATE TABLE IF NOT EXISTS settlement_schema.seller_balance_history
     CONSTRAINT uc_seller_balance_history_order_settlement UNIQUE (order_settlement_id)
 );
 
+CREATE TABLE IF NOT EXISTS settlement_schema.seller_payout
+(
+    seller_payout_id UUID                     NOT NULL,
+    seller_id        UUID                     NOT NULL,
+    period_start     TIMESTAMP WITH TIME ZONE NOT NULL,
+    period_end       TIMESTAMP WITH TIME ZONE NOT NULL,
+    total_amount     BIGINT                   NOT NULL,
+    status           VARCHAR(20)              NOT NULL,
+    paid_at          TIMESTAMP WITH TIME ZONE,
+    account_number   VARCHAR(20),
+    bank_code        VARCHAR(20),
+    created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT pk_seller_payout PRIMARY KEY (seller_payout_id)
+);
+
+CREATE TABLE IF NOT EXISTS settlement_schema.seller_payout_failure
+(
+    failure_id       UUID                     NOT NULL,
+    seller_payout_id UUID                     NOT NULL,
+    seller_id        UUID                     NOT NULL,
+    period_start     TIMESTAMP WITH TIME ZONE NOT NULL,
+    period_end       TIMESTAMP WITH TIME ZONE NOT NULL,
+    failure_reason   TEXT,
+    retry_count      INT                      NOT NULL DEFAULT 0,
+    created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_seller_payout_failure PRIMARY KEY (failure_id)
+);
+
+CREATE SCHEMA IF NOT EXISTS member_schema;
+
+CREATE TABLE IF NOT EXISTS member_schema.seller
+(
+    seller_id                    UUID        NOT NULL,
+    account_number               VARCHAR(20) NOT NULL,
+    bank_code                    VARCHAR(20) NOT NULL,
+    account_holder               VARCHAR(50) NOT NULL,
+    business_registration_number VARCHAR(15) NOT NULL,
+    created_at                   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                   TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT pk_seller PRIMARY KEY (seller_id)
+);
+
 -- 인덱스
 CREATE INDEX IF NOT EXISTS idx_group_purchase_status ON product_schema.group_purchase(status);
 CREATE INDEX IF NOT EXISTS idx_group_purchase_start_date ON product_schema.group_purchase(start_date);

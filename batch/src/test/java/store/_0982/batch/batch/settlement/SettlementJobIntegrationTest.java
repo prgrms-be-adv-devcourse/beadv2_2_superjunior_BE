@@ -7,10 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import store._0982.batch.BatchApplicationTests;
-import store._0982.batch.config.BatchTestConfig;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -18,7 +16,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import(BatchTestConfig.class)
 @DisplayName("Settlement Job 통합 테스트")
 class SettlementJobIntegrationTest extends BatchApplicationTests {
 
