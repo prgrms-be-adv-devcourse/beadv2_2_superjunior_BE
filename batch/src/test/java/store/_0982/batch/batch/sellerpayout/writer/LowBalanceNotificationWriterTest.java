@@ -120,4 +120,24 @@ class LowBalanceNotificationWriterTest {
             verify(eventPublisher, never()).publishEvent(any());
         }
     }
+
+    @Nested
+    @DisplayName("상태 변경 순서")
+    class StateChangeOrder {
+
+        @Test
+        @DisplayName("markAsDeferred 후 saveAll이 호출된다")
+        void write_shouldMarkDeferredBeforeSaveAll() {
+            // given
+            SellerPayout payout = createPayout(UUID.randomUUID(), 10_000L);
+
+            // when
+            writer.write(new Chunk<>(List.of(payout)));
+
+            // then: DEFERRED 상태로 변경된 뒤 저장됐는지 순서 검증
+            assertThat(payout.getStatus()).isEqualTo(SellerPayoutStatus.DEFERRED);
+            verify(sellerPayoutRepository).saveAll(payoutsCaptor.capture());
+            assertThat(payoutsCaptor.getValue().get(0).getStatus()).isEqualTo(SellerPayoutStatus.DEFERRED);
+        }
+    }
 }
