@@ -1,6 +1,5 @@
 package store._0982.batch.batch.grouppurchase;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -8,22 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import store._0982.batch.config.BatchTestConfig;
-import store._0982.batch.infrastructure.client.ai.AiFeignClient;
-import store._0982.batch.infrastructure.client.commerce.CommerceFeignClient;
-import store._0982.batch.infrastructure.client.member.MemberClient;
+import store._0982.batch.BatchApplicationTests;
 import store._0982.common.domain.grouppurchase.GroupPurchaseStatus;
 
 import java.time.OffsetDateTime;
@@ -31,28 +16,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration,org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration"
-})
-@Import(BatchTestConfig.class)
-@Testcontainers
-@ActiveProfiles("test")
 @DisplayName("GroupPurchase Job 통합 테스트")
-class GroupPurchaseJobIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test")
-            .withInitScript("schema.sql");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
+class GroupPurchaseJobIntegrationTest extends BatchApplicationTests {
 
     @Autowired
     private JobLauncherTestUtils jobLauncherTestUtils;
@@ -62,24 +27,6 @@ class GroupPurchaseJobIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @MockitoBean
-    private KafkaTemplate<String, Object> kafkaTemplate;
-
-    @MockitoBean
-    private MemberClient memberClient;
-
-    @MockitoBean
-    private CommerceFeignClient commerceFeignClient;
-
-    @MockitoBean
-    private AiFeignClient aiFeignClient;
-
-    @MockitoBean
-    private ElasticsearchClient elasticsearchClient;
-
-    @MockitoBean
-    private ElasticsearchOperations elasticsearchOperations;
 
     @BeforeEach
     void setUp() {
