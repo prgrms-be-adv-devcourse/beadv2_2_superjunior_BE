@@ -115,5 +115,20 @@ class RetryFailedSellerPayoutProcessorTest {
             // then
             assertThat(result).isNull();
         }
+
+        @Test
+        @DisplayName("DEFERRED 상태이면 재시도 대상으로 반환한다")
+        void process_shouldReturnDeferredPayout() throws Exception {
+            // given
+            UUID payoutId = UUID.randomUUID();
+            SellerPayout payout = createSellerPayout(UUID.randomUUID(), SellerPayoutStatus.DEFERRED);
+            when(sellerPayoutRepository.findById(payoutId)).thenReturn(Optional.of(payout));
+
+            // when
+            SellerPayout result = processor.process(new SellerPayoutFailureDto(payoutId));
+
+            // then
+            assertThat(result).isEqualTo(payout);
+        }
     }
 }
