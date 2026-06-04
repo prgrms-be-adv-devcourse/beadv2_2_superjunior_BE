@@ -160,12 +160,14 @@ API 명세를 확인하려면 API 명세서를 참고하세요.
 beadv2_2_superjunior_BE/
 ├── docs         
 │   ├── test/       
+│   │   ├── batch.md
 │   │   ├── commerce.md
 │   │   ├── elastic-search.md   
 │   │   ├── notification.md     
 └── └── └── point.md
 ```
 
+- [batch.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/batch.md)
 - [commerce.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/commerce.md)
 - [elastic-search.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/elastic-search.md)
 - [notification.md](https://github.com/prgrms-be-adv-devcourse/beadv2_2_superjunior_BE/blob/dev/docs/test/notification.md) 
